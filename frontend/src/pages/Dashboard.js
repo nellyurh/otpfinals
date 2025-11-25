@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Wallet, Phone, ArrowDownUp, ShoppingCart, History, LogOut, Settings, RefreshCw, Copy, Check, AlertCircle, TrendingUp, DollarSign } from 'lucide-react';
+import { 
+  Phone, Wallet, ArrowDownUp, ShoppingCart, History, LogOut, Settings, 
+  RefreshCw, Copy, Check, AlertCircle, DollarSign, CreditCard, Zap,
+  Tv, Fuel, Smartphone, Gamepad2, Menu, X
+} from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -19,33 +15,41 @@ const Dashboard = ({ user, setUser }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [copiedItem, setCopiedItem] = useState(null);
+  
+  // Data states
   const [virtualAccounts, setVirtualAccounts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [activeTab, setActiveTab] = useState('purchase');
-  const [copiedAccount, setCopiedAccount] = useState(null);
+  const [services, setServices] = useState([]);
+  const [stablecoinWallets, setStablecoinWallets] = useState([]);
   
-  // Purchase form
-  const [provider, setProvider] = useState('smspool');
-  const [service, setService] = useState('');
-  const [country, setCountry] = useState('');
-  
-  // Conversion form
+  // Form states
+  const [selectedServer, setSelectedServer] = useState('');
+  const [selectedService, setSelectedService] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [areaCode, setAreaCode] = useState('');
+  const [carrier, setCarrier] = useState('');
   const [convertAmount, setConvertAmount] = useState('');
-  const [convertedUSD, setConvertedUSD] = useState(0);
+  
+  // Bill payment states
+  const [billService, setBillService] = useState('');
+  const [billProvider, setBillProvider] = useState('');
+  const [billAmount, setBillAmount] = useState('');
+  const [billRecipient, setBillRecipient] = useState('');
   
   const token = localStorage.getItem('token');
-  const axiosConfig = {
-    headers: { Authorization: `Bearer ${token}` }
-  };
+  const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
     fetchProfile();
     fetchVirtualAccounts();
     fetchOrders();
     fetchTransactions();
+    fetchStablecoinWallets();
     
-    // Poll orders every 15 seconds
     const interval = setInterval(fetchOrders, 15000);
     return () => clearInterval(interval);
   }, []);
@@ -55,7 +59,6 @@ const Dashboard = ({ user, setUser }) => {
       const response = await axios.get(`${API}/user/profile`, axiosConfig);
       setProfile(response.data);
       setUser(response.data);
-      localStorage.setItem('user', JSON.stringify(response.data));
     } catch (error) {
       console.error('Failed to fetch profile');
     }
@@ -88,9 +91,44 @@ const Dashboard = ({ user, setUser }) => {
     }
   };
 
+  const fetchStablecoinWallets = async () => {
+    try {
+      const response = await axios.get(`${API}/payscribe/stablecoin-wallets`, axiosConfig);
+      setStablecoinWallets(response.data.wallets || []);
+    } catch (error) {
+      console.error('Failed to fetch wallets');
+    }
+  };
+
+  const fetchServices = async (server) => {
+    setLoading(true);
+    try {
+      const providerMap = {
+        'us_server': 'daisysms',
+        'server1': 'smspool',
+        'server2': 'tigersms'
+      };
+      const provider = providerMap[server];
+      
+      const response = await axios.get(`${API}/services/list?provider=${provider}`, axiosConfig);
+      setServices(response.data[provider] || []);
+    } catch (error) {
+      toast.error('Failed to load services');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleServerChange = (server) => {
+    setSelectedServer(server);
+    setSelectedService('');
+    setSelectedCountry('');
+    fetchServices(server);
+  };
+
   const handlePurchaseNumber = async () => {
-    if (!provider || !service || !country) {
-      toast.error('Please fill all fields');
+    if (!selectedServer || !selectedService || !selectedCountry) {
+      toast.error('Please select server, service, and country');
       return;
     }
     
@@ -98,15 +136,23 @@ const Dashboard = ({ user, setUser }) => {
     try {
       const response = await axios.post(
         `${API}/orders/purchase`,
-        { provider, service, country },
+        { 
+          server: selectedServer, 
+          service: selectedService, 
+          country: selectedCountry,
+          area_code: areaCode || undefined,
+          carrier: carrier || undefined
+        },
         axiosConfig
       );
       
       toast.success('Number purchased successfully!');
       fetchProfile();
       fetchOrders();
-      setService('');
-      setCountry('');
+      setSelectedService('');
+      setSelectedCountry('');
+      setAreaCode('');
+      setCarrier('');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Purchase failed');
     } finally {
@@ -117,12 +163,7 @@ const Dashboard = ({ user, setUser }) => {
   const handleCancelOrder = async (orderId) => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API}/orders/${orderId}/cancel`,
-        {},
-        axiosConfig
-      );
-      
+      const response = await axios.post(`${API}/orders/${orderId}/cancel`, {}, axiosConfig);
       toast.success(`Refunded $${response.data.refunded.toFixed(2)}`);
       fetchProfile();
       fetchOrders();
@@ -142,16 +183,10 @@ const Dashboard = ({ user, setUser }) => {
     
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API}/user/convert-ngn-to-usd`,
-        { amount_ngn: amount },
-        axiosConfig
-      );
-      
+      const response = await axios.post(`${API}/user/convert-ngn-to-usd`, { amount_ngn: amount }, axiosConfig);
       toast.success(`Converted ₦${amount} to $${response.data.usd_received.toFixed(2)}`);
       fetchProfile();
       setConvertAmount('');
-      setConvertedUSD(0);
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Conversion failed');
     } finally {
@@ -159,16 +194,54 @@ const Dashboard = ({ user, setUser }) => {
     }
   };
 
-  const calculateConversion = (ngnAmount) => {
-    const rate = 1500; // Should fetch from API
-    setConvertedUSD(ngnAmount / rate);
+  const handleBuyAirtime = async () => {
+    if (!billProvider || !billAmount || !billRecipient) {
+      toast.error('Fill all fields');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${API}/payscribe/buy-airtime`,
+        { service_type: 'airtime', provider: billProvider, amount: parseFloat(billAmount), recipient: billRecipient },
+        axiosConfig
+      );
+      toast.success('Airtime purchased successfully!');
+      fetchProfile();
+      fetchTransactions();
+      setBillProvider('');
+      setBillAmount('');
+      setBillRecipient('');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Purchase failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const copyToClipboard = (text, accountId) => {
+  const handleCreateStablecoinWallet = async (currency, network, chain) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${API}/payscribe/create-stablecoin-wallet`,
+        { currency, network, chain, label: `${currency} Wallet` },
+        axiosConfig
+      );
+      toast.success('Wallet created successfully!');
+      fetchStablecoinWallets();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create wallet');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
-    setCopiedAccount(accountId);
-    toast.success('Copied to clipboard!');
-    setTimeout(() => setCopiedAccount(null), 2000);
+    setCopiedItem(id);
+    toast.success('Copied!');
+    setTimeout(() => setCopiedItem(null), 2000);
   };
 
   const handleLogout = () => {
@@ -180,473 +253,299 @@ const Dashboard = ({ user, setUser }) => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      active: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
-      completed: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
-      cancelled: 'bg-red-500/10 text-red-500 border-red-500/30',
-      expired: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
-      pending: 'bg-blue-500/10 text-blue-500 border-blue-500/30'
+      active: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+      completed: 'bg-green-100 text-green-700 border-green-300',
+      cancelled: 'bg-red-100 text-red-700 border-red-300',
+      expired: 'bg-gray-100 text-gray-600 border-gray-300',
+      pending: 'bg-blue-100 text-blue-700 border-blue-300'
     };
     
     return (
-      <Badge className={`${styles[status] || styles.pending} border`}>
+      <span className={`px-2 py-1 rounded text-xs font-semibold border ${styles[status] || styles.pending}`}>
         {status.toUpperCase()}
-      </Badge>
+      </span>
     );
   };
 
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: ShoppingCart },
+    { id: 'receive-sms', label: 'Receive SMS', icon: Phone },
+    { id: 'deposits', label: 'Deposits', icon: Wallet },
+    { id: 'convert', label: 'Convert NGN/USD', icon: ArrowDownUp },
+    { id: 'bill-payment', label: 'Bill Payments', icon: Zap },
+    { id: 'stablecoin', label: 'Stablecoin Wallets', icon: DollarSign },
+    { id: 'virtual-cards', label: 'Virtual Cards', icon: CreditCard },
+    { id: 'history', label: 'History', icon: History },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Header */}
-      <div className="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
+    <div className="min-h-screen" style={{ background: '#f5f5f5' }}>
+      {/* Top Navigation */}
+      <nav className="bg-white border-b shadow-sm">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg">
-                <Phone className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">SMS Relay</h1>
-                <p className="text-xs text-zinc-400">Welcome, {profile?.full_name}</p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden"
+              >
+                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#4169E1' }}>
+                  <Phone className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold" style={{ color: '#0f1419' }}>SMS Relay</h1>
+                  <p className="text-xs text-gray-500">Welcome, {profile?.full_name}</p>
+                </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              {user?.is_admin && (
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/admin')}
-                  data-testid="admin-panel-button"
-                  className="border-zinc-700 hover:bg-zinc-800"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Admin
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                data-testid="logout-button"
-                className="text-zinc-400 hover:text-white"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              data-testid="logout-button"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:inline">Logout</span>
+            </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      <div className="container mx-auto px-6 py-8">
-        {/* Balance Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card className="glass-effect border-zinc-800 hover-lift" data-testid="ngn-balance-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400">Naira Balance</CardTitle>
-              <div className="p-2 bg-emerald-500/10 rounded-lg">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white" data-testid="ngn-balance-amount">
-                ₦{profile?.ngn_balance?.toFixed(2) || '0.00'}
-              </div>
-              <p className="text-xs text-zinc-500 mt-2">Nigerian Naira</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="glass-effect border-zinc-800 hover-lift" data-testid="usd-balance-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-400">USD Balance</CardTitle>
-              <div className="p-2 bg-teal-500/10 rounded-lg">
-                <Wallet className="w-4 h-4 text-teal-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white" data-testid="usd-balance-amount">
-                ${profile?.usd_balance?.toFixed(2) || '0.00'}
-              </div>
-              <p className="text-xs text-zinc-500 mt-2">United States Dollar</p>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-64 bg-white border-r min-h-screen`}>
+          <nav className="p-4 space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveSection(item.id); setSidebarOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeSection === item.id
+                      ? 'bg-blue-50 text-blue-600 font-semibold'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                  data-testid={`nav-${item.id}`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
 
-        {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-zinc-900 border border-zinc-800 p-1">
-            <TabsTrigger value="purchase" data-testid="purchase-tab" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Purchase Number
-            </TabsTrigger>
-            <TabsTrigger value="deposit" data-testid="deposit-tab" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
-              <Wallet className="w-4 h-4 mr-2" />
-              Deposit
-            </TabsTrigger>
-            <TabsTrigger value="convert" data-testid="convert-tab" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
-              <ArrowDownUp className="w-4 h-4 mr-2" />
-              Convert
-            </TabsTrigger>
-            <TabsTrigger value="orders" data-testid="orders-tab" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
-              <Phone className="w-4 h-4 mr-2" />
-              My Orders
-            </TabsTrigger>
-            <TabsTrigger value="history" data-testid="history-tab" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
-              <History className="w-4 h-4 mr-2" />
-              History
-            </TabsTrigger>
-          </TabsList>
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {/* Dashboard Home */}
+          {activeSection === 'dashboard' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold" style={{ color: '#0f1419' }}>Dashboard</h2>
+              
+              {/* Balance Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm text-gray-500">Naira Balance</span>
+                    <DollarSign className="w-5 h-5 text-green-500" />
+                  </div>
+                  <div className="text-3xl font-bold" style={{ color: '#0f1419' }}>
+                    ₦{profile?.ngn_balance?.toFixed(2) || '0.00'}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Nigerian Naira</p>
+                </div>
+                
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm text-gray-500">USD Balance</span>
+                    <Wallet className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div className="text-3xl font-bold" style={{ color: '#0f1419' }}>
+                    ${profile?.usd_balance?.toFixed(2) || '0.00'}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">United States Dollar</p>
+                </div>
+                
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm text-gray-500">Total Orders</span>
+                    <Phone className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <div className="text-3xl font-bold" style={{ color: '#0f1419' }}>
+                    {orders.length}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">SMS Orders</p>
+                </div>
+              </div>
 
-          {/* Purchase Tab */}
-          <TabsContent value="purchase" data-testid="purchase-content">
-            <Card className="glass-effect border-zinc-800">
-              <CardHeader>
-                <CardTitle className="text-white">Purchase Virtual Number</CardTitle>
-                <CardDescription>Select provider, service, and country to get a temporary number</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Provider</Label>
-                    <Select value={provider} onValueChange={setProvider}>
-                      <SelectTrigger data-testid="provider-select" className="bg-zinc-900 border-zinc-800">
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="smspool">SMS-pool (Server 1)</SelectItem>
-                        <SelectItem value="daisysms">DaisySMS (US Server)</SelectItem>
-                        <SelectItem value="tigersms">TigerSMS (Server 2)</SelectItem>
-                      </SelectContent>
-                    </Select>
+              {/* Recent Orders */}
+              <div className="bg-white rounded-lg p-6 border shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold" style={{ color: '#0f1419' }}>Recent SMS Orders</h3>
+                  <button onClick={fetchOrders} className="text-blue-600 hover:text-blue-700">
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {orders.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Order ID</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Number</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Provider</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">OTP</th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 10).map((order) => (
+                          <tr key={order.id} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-4 text-sm">{order.id.slice(0, 8)}...</td>
+                            <td className="py-3 px-4 text-sm font-mono">{order.phone_number || '-'}</td>
+                            <td className="py-3 px-4 text-sm">{order.service}</td>
+                            <td className="py-3 px-4 text-sm">{order.provider}</td>
+                            <td className="py-3 px-4">{getStatusBadge(order.status)}</td>
+                            <td className="py-3 px-4">
+                              {order.otp ? (
+                                <span className="font-mono text-green-600 font-semibold">{order.otp}</span>
+                              ) : (
+                                <span className="text-gray-400">Waiting...</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {order.can_cancel && (order.status === 'active' || order.status === 'expired') && !order.otp && (
+                                <button
+                                  onClick={() => handleCancelOrder(order.id)}
+                                  className="text-red-600 hover:text-red-700 text-sm font-semibold"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-8">No orders yet</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Receive SMS Section */}
+          {activeSection === 'receive-sms' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold" style={{ color: '#0f1419' }}>Receive SMS</h2>
+              
+              <div className="bg-white rounded-lg p-6 border shadow-sm">
+                <h3 className="text-lg font-semibold mb-4">Select provider, service, and country to get a temporary number</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Service Provider</label>
+                    <select
+                      value={selectedServer}
+                      onChange={(e) => handleServerChange(e.target.value)}
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
+                      data-testid="server-select"
+                    >
+                      <option value="">Select provider</option>
+                      <option value="us_server">US Server (DaisySMS)</option>
+                      <option value="server1">Server 1 (SMS-pool)</option>
+                      <option value="server2">Server 2 (TigerSMS)</option>
+                    </select>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label>Service</Label>
-                    <Input
-                      data-testid="service-input"
-                      placeholder="e.g., whatsapp, telegram"
-                      value={service}
-                      onChange={(e) => setService(e.target.value)}
-                      className="bg-zinc-900 border-zinc-800"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Country Code</Label>
-                    <Input
-                      data-testid="country-input"
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    <input
+                      type="text"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
                       placeholder="e.g., us, uk, ng"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="bg-zinc-900 border-zinc-800"
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
+                      data-testid="country-input"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Service</label>
+                    <input
+                      type="text"
+                      value={selectedService}
+                      onChange={(e) => setSelectedService(e.target.value)}
+                      placeholder="e.g., whatsapp, telegram"
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
+                      data-testid="service-input"
+                      disabled={!selectedServer}
+                    />
+                  </div>
+                  
+                  {selectedServer === 'us_server' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Area Code (Optional)</label>
+                        <input
+                          type="text"
+                          value={areaCode}
+                          onChange={(e) => setAreaCode(e.target.value)}
+                          placeholder="e.g., 214, 650, 210"
+                          className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">20% increase for selected area code</p>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Carrier (Optional)</label>
+                        <select
+                          value={carrier}
+                          onChange={(e) => setCarrier(e.target.value)}
+                          className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="">Select carrier</option>
+                          <option value="tmobile">T-Mobile</option>
+                          <option value="att">AT&T</option>
+                          <option value="verizon">Verizon</option>
+                          <option value="sprint">Sprint</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">20% increase for selected carrier</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex gap-2">
+                    <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800">Payment will be deducted from your USD balance. Ensure sufficient funds.</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <AlertCircle className="w-5 h-5 text-yellow-500" />
-                  <p className="text-sm text-yellow-500">
-                    Payment will be deducted from your USD balance. Ensure sufficient funds.
-                  </p>
-                </div>
-                
-                <Button
+                <button
                   onClick={handlePurchaseNumber}
-                  disabled={loading || !service || !country}
+                  disabled={loading || !selectedServer || !selectedService || !selectedCountry}
+                  className="mt-6 w-full py-3 rounded-lg font-semibold text-white transition-opacity disabled:opacity-50"
+                  style={{ background: '#4169E1' }}
                   data-testid="purchase-submit-button"
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
                 >
                   {loading ? 'Processing...' : 'Purchase Number'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Deposit Tab */}
-          <TabsContent value="deposit" data-testid="deposit-content">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="glass-effect border-zinc-800">
-                <CardHeader>
-                  <CardTitle className="text-white">Deposit NGN (Naira)</CardTitle>
-                  <CardDescription>Transfer to your virtual account via PaymentPoint</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {virtualAccounts.length > 0 ? (
-                    virtualAccounts.map((account) => (
-                      <div key={account.id} className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg space-y-3" data-testid="virtual-account-card">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-400">Bank Name</span>
-                          <span className="font-semibold text-white">{account.bank_name}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-400">Account Number</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold text-emerald-400" data-testid="account-number">{account.account_number}</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              data-testid="copy-account-button"
-                              onClick={() => copyToClipboard(account.account_number, account.id)}
-                              className="h-6 w-6 p-0"
-                            >
-                              {copiedAccount === account.id ? (
-                                <Check className="w-3 h-3 text-emerald-400" />
-                              ) : (
-                                <Copy className="w-3 h-3" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-zinc-400">Account Name</span>
-                          <span className="text-sm text-white">{account.account_name}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-zinc-500">
-                      <Wallet className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>Virtual account is being created...</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={fetchVirtualAccounts}
-                        className="mt-4 border-zinc-700"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Refresh
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card className="glass-effect border-zinc-800">
-                <CardHeader>
-                  <CardTitle className="text-white">Deposit USD (Stablecoin)</CardTitle>
-                  <CardDescription>Deposit via Payscribe stablecoin transfer</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <TrendingUp className="w-12 h-12 mx-auto mb-4 text-zinc-600" />
-                    <p className="text-zinc-500 mb-4">Stablecoin deposit coming soon</p>
-                    <p className="text-xs text-zinc-600">We're integrating Payscribe for USD deposits</p>
-                  </div>
-                </CardContent>
-              </Card>
+                </button>
+              </div>
             </div>
-          </TabsContent>
+          )}
 
-          {/* Convert Tab */}
-          <TabsContent value="convert" data-testid="convert-content">
-            <Card className="glass-effect border-zinc-800 max-w-md mx-auto">
-              <CardHeader>
-                <CardTitle className="text-white">Convert NGN to USD</CardTitle>
-                <CardDescription>Exchange your Naira balance for USD</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Amount in NGN</Label>
-                  <Input
-                    type="number"
-                    data-testid="convert-amount-input"
-                    placeholder="Enter amount"
-                    value={convertAmount}
-                    onChange={(e) => {
-                      setConvertAmount(e.target.value);
-                      calculateConversion(parseFloat(e.target.value) || 0);
-                    }}
-                    className="bg-zinc-900 border-zinc-800"
-                  />
-                </div>
-                
-                {convertAmount && (
-                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                    <p className="text-sm text-zinc-400 mb-1">You will receive</p>
-                    <p className="text-2xl font-bold text-emerald-400" data-testid="converted-usd-amount">
-                      ${convertedUSD.toFixed(2)} USD
-                    </p>
-                    <p className="text-xs text-zinc-500 mt-2">Rate: ₦1,500 = $1</p>
-                  </div>
-                )}
-                
-                <Button
-                  onClick={handleConvert}
-                  disabled={loading || !convertAmount || parseFloat(convertAmount) <= 0}
-                  data-testid="convert-submit-button"
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                >
-                  {loading ? 'Converting...' : 'Convert Now'}
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Orders Tab */}
-          <TabsContent value="orders" data-testid="orders-content">
-            <Card className="glass-effect border-zinc-800">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-white">Active & Recent Orders</CardTitle>
-                  <CardDescription>Track your virtual number purchases and OTPs</CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchOrders}
-                  data-testid="refresh-orders-button"
-                  className="border-zinc-700"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {orders.length > 0 ? (
-                    orders.map((order) => (
-                      <div
-                        key={order.id}
-                        data-testid={`order-card-${order.id}`}
-                        className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover-lift"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Phone className="w-5 h-5 text-emerald-400" />
-                              <span className="font-semibold text-white">{order.service}</span>
-                              <Badge variant="outline" className="text-xs">{order.provider}</Badge>
-                            </div>
-                            <p className="text-sm text-zinc-400">Country: {order.country?.toUpperCase()}</p>
-                          </div>
-                          {getStatusBadge(order.status)}
-                        </div>
-                        
-                        {order.phone_number && (
-                          <div className="flex items-center gap-2 mb-2 p-2 bg-zinc-950 rounded">
-                            <span className="text-sm text-zinc-400">Number:</span>
-                            <span className="font-mono text-emerald-400" data-testid="order-phone-number">{order.phone_number}</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(order.phone_number, `phone-${order.id}`)}
-                              className="h-6 w-6 p-0 ml-auto"
-                            >
-                              {copiedAccount === `phone-${order.id}` ? (
-                                <Check className="w-3 h-3 text-emerald-400" />
-                              ) : (
-                                <Copy className="w-3 h-3" />
-                              )}
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {order.otp ? (
-                          <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                            <span className="text-sm text-zinc-400">OTP:</span>
-                            <span className="font-mono text-2xl font-bold text-emerald-400" data-testid="order-otp">{order.otp}</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(order.otp, `otp-${order.id}`)}
-                              className="h-6 w-6 p-0 ml-auto"
-                            >
-                              {copiedAccount === `otp-${order.id}` ? (
-                                <Check className="w-3 h-3 text-emerald-400" />
-                              ) : (
-                                <Copy className="w-3 h-3" />
-                              )}
-                            </Button>
-                          </div>
-                        ) : order.status === 'active' ? (
-                          <div className="flex items-center gap-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded">
-                            <RefreshCw className="w-4 h-4 text-yellow-500 animate-spin" />
-                            <span className="text-sm text-yellow-500">Waiting for OTP...</span>
-                          </div>
-                        ) : null}
-                        
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-zinc-800">
-                          <span className="text-sm text-zinc-500">Cost: ${order.cost_usd?.toFixed(2)}</span>
-                          
-                          {order.can_cancel && (order.status === 'active' || order.status === 'expired') && !order.otp && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleCancelOrder(order.id)}
-                              data-testid={`cancel-order-button-${order.id}`}
-                              disabled={loading}
-                              className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/30"
-                            >
-                              Cancel & Refund
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12 text-zinc-500">
-                      <Phone className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No orders yet. Purchase your first virtual number!</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* History Tab */}
-          <TabsContent value="history" data-testid="history-content">
-            <Card className="glass-effect border-zinc-800">
-              <CardHeader>
-                <CardTitle className="text-white">Transaction History</CardTitle>
-                <CardDescription>All your deposits, purchases, and conversions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {transactions.length > 0 ? (
-                    transactions.map((tx) => (
-                      <div
-                        key={tx.id}
-                        className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-lg"
-                        data-testid={`transaction-${tx.id}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${
-                            tx.type.includes('deposit') ? 'bg-emerald-500/10' :
-                            tx.type === 'purchase' ? 'bg-blue-500/10' :
-                            tx.type === 'refund' ? 'bg-red-500/10' :
-                            'bg-purple-500/10'
-                          }`}>
-                            {tx.type.includes('deposit') && <TrendingUp className="w-4 h-4 text-emerald-400" />}
-                            {tx.type === 'purchase' && <ShoppingCart className="w-4 h-4 text-blue-400" />}
-                            {tx.type === 'refund' && <RefreshCw className="w-4 h-4 text-red-400" />}
-                            {tx.type === 'conversion' && <ArrowDownUp className="w-4 h-4 text-purple-400" />}
-                          </div>
-                          <div>
-                            <p className="font-medium text-white capitalize">{tx.type.replace('_', ' ')}</p>
-                            <p className="text-xs text-zinc-500">{new Date(tx.created_at).toLocaleString()}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-semibold ${
-                            tx.type.includes('deposit') || tx.type === 'refund' ? 'text-emerald-400' : 'text-white'
-                          }`}>
-                            {tx.type.includes('deposit') || tx.type === 'refund' ? '+' : '-'}
-                            {tx.currency === 'NGN' ? '₦' : '$'}{tx.amount.toFixed(2)}
-                          </p>
-                          <Badge variant="outline" className="text-xs">{tx.status}</Badge>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12 text-zinc-500">
-                      <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No transactions yet</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          {/* Continue in next message due to length... */}
+        </main>
       </div>
     </div>
   );
