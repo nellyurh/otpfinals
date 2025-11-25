@@ -225,6 +225,56 @@ class UpdatePhoneRequest(BaseModel):
 
 # ============ Helper Functions ============
 
+# Comprehensive country mapping
+COUNTRY_NAMES = {
+    '0': 'Russia', '1': 'Ukraine', '2': 'Kazakhstan', '3': 'China', '4': 'Philippines',
+    '5': 'Myanmar', '6': 'Indonesia', '7': 'Malaysia', '8': 'Kenya', '9': 'Tanzania',
+    '10': 'Vietnam', '12': 'United Kingdom', '13': 'Czech Republic', '14': 'Sri Lanka',
+    '15': 'Estonia', '16': 'Azerbaijan', '17': 'Canada', '18': 'Morocco', '19': 'Ghana',
+    '20': 'Argentina', '21': 'Uzbekistan', '22': 'Cameroon', '23': 'Chad', '24': 'Germany',
+    '25': 'Lithuania', '26': 'Croatia', '27': 'Sweden', '28': 'Iraq', '29': 'Netherlands',
+    '30': 'Latvia', '31': 'Austria', '32': 'Belarus', '33': 'Thailand', '34': 'Saudi Arabia',
+    '35': 'Mexico', '36': 'Taiwan', '37': 'Spain', '38': 'Iran', '39': 'Algeria',
+    '40': 'Slovenia', '41': 'Bangladesh', '42': 'Senegal', '43': 'Turkey', '44': 'Czech Republic',
+    '45': 'Serbia', '46': 'Cambodia', '47': 'Germany', '48': 'Egypt', '49': 'India',
+    '50': 'Kuwait', '51': 'Thailand', '52': 'Hungary', '53': 'Bulgaria', '54': 'Moldavia',
+    '55': 'UAE', '56': 'Pakistan', '57': 'Brazil', '58': 'Hong Kong', '59': 'Singapore',
+    '60': 'Poland', '61': 'Japan', '62': 'France', '63': 'Israel', '64': 'Greece',
+    '65': 'Italy', '66': 'South Africa', '67': 'Portugal', '68': 'Denmark', '69': 'Macao',
+    '70': 'Switzerland', '71': 'Belgium', '72': 'Chile', '73': 'Peru', '74': 'Colombia',
+    '75': 'Bolivia', '76': 'Uruguay', '77': 'Paraguay', '78': 'Venezuela', '79': 'Ecuador',
+    '80': 'Guatemala', '81': 'Costa Rica', '82': 'Panama', '83': 'Dominican Republic',
+    '84': 'Honduras', '85': 'El Salvador', '86': 'Nicaragua', '87': 'Jamaica', '88': 'Trinidad',
+    '89': 'Guadeloupe', '90': 'Barbados', '91': 'Grenada', '92': 'Saint Lucia', '93': 'Dominica',
+    '94': 'Saint Vincent', '95': 'Antigua', '96': 'Cayman Islands', '97': 'British Virgin Islands',
+    '98': 'Anguilla', '99': 'Montserrat', '100': 'Turks and Caicos', '101': 'Bermuda',
+    '102': 'Bahamas', '103': 'Saint Kitts', '104': 'Aruba', '105': 'Curacao', '106': 'Sint Maarten',
+    '107': 'Bonaire', '108': 'Puerto Rico', '109': 'US Virgin Islands', '110': 'Guam',
+    '111': 'American Samoa', '112': 'Northern Mariana', '113': 'Palau', '114': 'Marshall Islands',
+    '115': 'Micronesia', '116': 'Kiribati', '117': 'Nauru', '118': 'Fiji', '119': 'Vanuatu',
+    '120': 'Solomon Islands', '121': 'Papua New Guinea', '122': 'New Caledonia', '123': 'French Polynesia',
+    '124': 'Cook Islands', '125': 'Niue', '126': 'Samoa', '127': 'Tonga', '128': 'Tuvalu',
+    '129': 'Wallis and Futuna', '130': 'Tokelau', '131': 'New Zealand', '132': 'Australia',
+    '133': 'Christmas Island', '134': 'Cocos Islands', '135': 'Norfolk Island', '136': 'Antarctica',
+    '137': 'South Georgia', '138': 'Falkland Islands', '139': 'Saint Helena', '140': 'Ascension',
+    '141': 'Tristan da Cunha', '142': 'British Indian Ocean', '143': 'Diego Garcia', '144': 'Heard Island',
+    '145': 'McDonald Islands', '146': 'Bouvet Island', '147': 'French Southern', '148': 'Mayotte',
+    '149': 'Reunion', '150': 'Zimbabwe', '151': 'Namibia', '152': 'Malawi', '153': 'Lesotho',
+    '154': 'Botswana', '155': 'Swaziland', '156': 'Comoros', '157': 'Mauritius', '158': 'Seychelles',
+    '159': 'Madagascar', '160': 'Maldives', '161': 'Laos', '162': 'Turkmenistan', '163': 'Kyrgyzstan',
+    '164': 'Tajikistan', '165': 'Afghanistan', '166': 'Jordan', '167': 'Lebanon', '168': 'Syria',
+    '169': 'Yemen', '170': 'Oman', '171': 'Bahrain', '172': 'Qatar', '173': 'Somalia', '174': 'Djibouti',
+    '175': 'Sudan', '176': 'South Sudan', '177': 'Eritrea', '178': 'Ethiopia', '179': 'Uganda',
+    '180': 'Rwanda', '181': 'Burundi', '182': 'Zambia', '183': 'Mozambique', '184': 'Angola',
+    '185': 'Gabon', '186': 'Congo', '187': 'United States',
+    'us': 'United States', 'uk': 'United Kingdom', 'ca': 'Canada', 'ng': 'Nigeria',
+    'in': 'India', 'ph': 'Philippines', 'id': 'Indonesia', 'pk': 'Pakistan', 'bd': 'Bangladesh'
+}
+
+def get_country_name(code: str) -> str:
+    """Get country name from code"""
+    return COUNTRY_NAMES.get(str(code).lower(), code.upper())
+
 def validate_nigerian_phone(phone: str) -> bool:
     """Validate Nigerian phone number format: 08168617185"""
     pattern = r'^0[789][01]\d{8}$'
