@@ -207,7 +207,7 @@ const Landing = ({ setUser }) => {
                   <TabsContent value="register">
                     <form onSubmit={handleRegister} className="space-y-4" data-testid="register-form">
                       <div className="space-y-2">
-                        <Label htmlFor="register-name">Full Name</Label>
+                        <Label htmlFor="register-name" className="font-bold text-gray-900 dark:text-white uppercase text-xs">Full Name</Label>
                         <Input
                           id="register-name"
                           data-testid="register-name-input"
@@ -216,12 +216,12 @@ const Landing = ({ setUser }) => {
                           value={registerData.full_name}
                           onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })}
                           required
-                          className="bg-zinc-900 border-zinc-800"
+                          className="bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white focus:border-purple-500 font-medium"
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="register-email">Email</Label>
+                        <Label htmlFor="register-email\" className=\"font-bold text-gray-900 dark:text-white uppercase text-xs\">Email</Label>
                         <Input
                           id="register-email"
                           data-testid="register-email-input"
@@ -230,25 +230,31 @@ const Landing = ({ setUser }) => {
                           value={registerData.email}
                           onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                           required
-                          className="bg-zinc-900 border-zinc-800"
+                          className="bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white focus:border-purple-500 font-medium"
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="register-phone">Phone (Optional)</Label>
+                        <Label htmlFor="register-phone" className="font-bold text-gray-900 dark:text-white uppercase text-xs flex items-center gap-2">
+                          Phone Number
+                          <span className="text-red-500">*</span>
+                        </Label>
                         <Input
                           id="register-phone"
                           data-testid="register-phone-input"
                           type="tel"
-                          placeholder="+234..."
+                          placeholder="08168617185"
                           value={registerData.phone}
                           onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
-                          className="bg-zinc-900 border-zinc-800"
+                          required
+                          pattern="^0[789][01]\\d{8}$"
+                          className="bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white focus:border-purple-500 font-medium"
                         />
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Format: 08168617185 (Nigerian number required)</p>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="register-password">Password</Label>
+                        <Label htmlFor="register-password" className="font-bold text-gray-900 dark:text-white uppercase text-xs">Password</Label>
                         <Input
                           id="register-password"
                           data-testid="register-password-input"
@@ -257,7 +263,7 @@ const Landing = ({ setUser }) => {
                           value={registerData.password}
                           onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                           required
-                          className="bg-zinc-900 border-zinc-800"
+                          className="bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white focus:border-purple-500 font-medium"
                         />
                       </div>
                       
@@ -265,7 +271,7 @@ const Landing = ({ setUser }) => {
                         type="submit"
                         data-testid="register-submit-button"
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+                        className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold uppercase tracking-wide border-2 border-purple-600 shadow-lg hover:shadow-xl transition-all"
                       >
                         {loading ? 'Creating account...' : 'Create Account'}
                         <ArrowRight className="w-4 h-4 ml-2" />
