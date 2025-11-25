@@ -1532,12 +1532,28 @@ async def purchase_number(
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
     
-    # Start background OTP polling
+    # Start background OTP polling (only once!)
     background_tasks.add_task(poll_otp_daisysms, order.id, activation_id)
     
-    background_tasks.add_task(otp_polling_task, order.id)
-    
-    return {'success': True, 'order': order_dict}
+    # Return order data without MongoDB _id
+    return {
+        'success': True, 
+        'order': {
+            'id': order.id,
+            'phone_number': phone_number,
+            'activation_id': activation_id,
+            'service': data.service,
+            'country': data.country,
+            'status': 'active',
+            'cost_usd': final_price_usd,
+            'charged_amount': charged_amount,
+            'charged_currency': charged_currency,
+            'created_at': order_dict['created_at'],
+            'expires_at': order_dict['expires_at'],
+            'can_cancel': True
+        },
+        'message': f'Number {phone_number} purchased successfully. Waiting for OTP...'
+    }
 
 @api_router.get("/orders/list")
 async def list_orders(user: dict = Depends(get_current_user)):
