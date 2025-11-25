@@ -651,6 +651,112 @@ async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_c
     
     return {'success': True, 'ngn_deducted': data.amount_ngn, 'usd_received': usd_amount, 'rate': rate}
 
+# ============ SMS Service Discovery Routes ============
+
+@api_router.get("/services/smspool")
+async def get_smspool_services(user: dict = Depends(get_current_user)):
+    """Fetch available services and countries from SMS-pool"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://api.sms-pool.com/country/retrieve_all',
+                params={'key': SMSPOOL_API_KEY},
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {'success': True, 'data': data}
+            
+            return {'success': False, 'message': 'Failed to fetch SMS-pool services'}
+    except Exception as e:
+        logger.error(f"SMS-pool service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+@api_router.get("/services/daisysms")
+async def get_daisysms_services(user: dict = Depends(get_current_user)):
+    """Fetch available services and pricing from DaisySMS"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://daisysms.com/stubs/handler_api.php',
+                params={'api_key': DAISYSMS_API_KEY, 'action': 'getPricesVerification'},
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {'success': True, 'data': data}
+            
+            return {'success': False, 'message': 'Failed to fetch DaisySMS services'}
+    except Exception as e:
+        logger.error(f"DaisySMS service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+@api_router.get("/services/tigersms")
+async def get_tigersms_services(user: dict = Depends(get_current_user)):
+    """Fetch available services and pricing from TigerSMS"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://api.tiger-sms.com/stubs/handler_api.php',
+                params={'api_key': TIGERSMS_API_KEY, 'action': 'getPrices'},
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return {'success': True, 'data': data}
+            
+            return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
+    except Exception as e:
+        logger.error(f"TigerSMS service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+@api_router.get("/services/unified")
+async def get_unified_services(user: dict = Depends(get_current_user)):
+    """Get services in a unified format for the frontend"""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        if not config:
+            default_config = PricingConfig()
+            config_dict = default_config.model_dump()
+            config_dict['updated_at'] = config_dict['updated_at'].isoformat()
+            await db.pricing_config.insert_one(config_dict)
+            config = config_dict
+        
+        result = {
+            'success': True,
+            'servers': {
+                'us_server': {
+                    'name': 'US Server (DaisySMS)',
+                    'provider': 'daisysms',
+                    'markup': config.get('daisysms_markup', 20.0),
+                    'services': [],
+                    'countries': ['us']
+                },
+                'server1': {
+                    'name': 'Server 1 (SMS-pool)',
+                    'provider': 'smspool',
+                    'markup': config.get('smspool_markup', 20.0),
+                    'services': [],
+                    'countries': []
+                },
+                'server2': {
+                    'name': 'Server 2 (TigerSMS)',
+                    'provider': 'tigersms',
+                    'markup': config.get('tigersms_markup', 20.0),
+                    'services': [],
+                    'countries': []
+                }
+            }
+        }
+        
+        return result
+    except Exception as e:
+        logger.error(f"Unified services fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
 # ============ SMS Order Routes (Updated) ============
 
 @api_router.post("/orders/purchase")
