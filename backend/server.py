@@ -975,6 +975,87 @@ async def get_unified_services(user: dict = Depends(get_current_user)):
         logger.error(f"Unified services fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
 
+# ============ Price Calculation Route ============
+
+@api_router.post("/orders/calculate-price")
+async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_current_user)):
+    """Calculate price with all markups"""
+    try:
+        server_map = {
+            'us_server': 'daisysms',
+            'server1': 'smspool',
+            'server2': 'tigersms'
+        }
+        
+        provider = server_map.get(data.server)
+        if not provider:
+            raise HTTPException(status_code=400, detail="Invalid server")
+        
+        # Get pricing config
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        if not config:
+            default_config = PricingConfig()
+            config_dict = default_config.model_dump()
+            config_dict['updated_at'] = config_dict['updated_at'].isoformat()
+            await db.pricing_config.insert_one(config_dict)
+            config = config_dict
+        
+        # Get base price from cached services
+        cached_service = await db.cached_services.find_one({
+            'provider': provider,
+            'service_code': data.service,
+            'country_code': data.country
+        }, {'_id': 0})
+        
+        if not cached_service:
+            raise HTTPException(status_code=404, detail="Service/Country combination not found")
+        
+        base_price_usd = cached_service['base_price']
+        
+        # Convert RUB to USD if needed
+        if cached_service['currency'] == 'RUB':
+            base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
+        
+        # Apply provider markup
+        markup_key = f'{provider}_markup'
+        provider_markup = config.get(markup_key, 20.0)
+        price_after_markup = base_price_usd * (1 + provider_markup / 100)
+        
+        # Apply additional markups for DaisySMS
+        additional_markup = 0
+        if provider == 'daisysms':
+            if data.area_code:
+                additional_markup += config.get('area_code_markup', 20.0)
+            if data.carrier:
+                additional_markup += config.get('carrier_markup', 20.0)
+        
+        final_price_usd = price_after_markup * (1 + additional_markup / 100)
+        
+        # Convert to NGN
+        ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
+        final_price_ngn = final_price_usd * ngn_rate
+        
+        return {
+            'success': True,
+            'base_price_usd': round(base_price_usd, 2),
+            'provider_markup': provider_markup,
+            'additional_markup': additional_markup,
+            'final_price_usd': round(final_price_usd, 2),
+            'final_price_ngn': round(final_price_ngn, 2),
+            'currency_original': cached_service['currency'],
+            'breakdown': {
+                'base': round(base_price_usd, 2),
+                'after_provider_markup': round(price_after_markup, 2),
+                'area_code_markup': config.get('area_code_markup', 0) if data.area_code else 0,
+                'carrier_markup': config.get('carrier_markup', 0) if data.carrier else 0
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Price calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============ SMS Order Routes (Updated) ============
 
 @api_router.post("/orders/purchase")
