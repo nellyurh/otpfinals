@@ -34,6 +34,10 @@ const Dashboard = ({ user, setUser }) => {
   const [billAmount, setBillAmount] = useState('');
   const [billRecipient, setBillRecipient] = useState('');
   
+  const [availableServices, setAvailableServices] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
