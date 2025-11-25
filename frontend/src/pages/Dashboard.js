@@ -43,6 +43,7 @@ const Dashboard = ({ user, setUser }) => {
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const [priceLoading, setPriceLoading] = useState(false);
   const [servicesData, setServicesData] = useState(null);
+  const [paymentCurrency, setPaymentCurrency] = useState('USD');
   
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
