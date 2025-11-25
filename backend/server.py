@@ -1274,6 +1274,12 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['smspool_markup'] = data.smspool_markup
     if data.ngn_to_usd_rate is not None:
         update_fields['ngn_to_usd_rate'] = data.ngn_to_usd_rate
+    if data.rub_to_usd_rate is not None:
+        update_fields['rub_to_usd_rate'] = data.rub_to_usd_rate
+    if data.area_code_markup is not None:
+        update_fields['area_code_markup'] = data.area_code_markup
+    if data.carrier_markup is not None:
+        update_fields['carrier_markup'] = data.carrier_markup
     
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
     
