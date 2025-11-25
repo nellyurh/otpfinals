@@ -249,6 +249,11 @@ const Dashboard = ({ user, setUser }) => {
       return;
     }
     
+    if (!estimatedPrice) {
+      toast.error('Price not calculated yet');
+      return;
+    }
+    
     setLoading(true);
     try {
       const response = await axios.post(
@@ -257,6 +262,7 @@ const Dashboard = ({ user, setUser }) => {
           server: selectedServer, 
           service: selectedService, 
           country: selectedCountry,
+          payment_currency: paymentCurrency,
           area_code: areaCode || undefined,
           carrier: carrier || undefined
         },
@@ -266,6 +272,16 @@ const Dashboard = ({ user, setUser }) => {
       toast.success('Number purchased successfully!');
       fetchProfile();
       fetchOrders();
+      
+      // Reset form
+      setSelectedServer('');
+      setSelectedService('');
+      setSelectedCountry('');
+      setSelectedServiceOption(null);
+      setSelectedCountryOption(null);
+      setEstimatedPrice(null);
+      setAreaCode('');
+      setCarrier('');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Purchase failed');
     } finally {
