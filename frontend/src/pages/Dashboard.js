@@ -57,6 +57,10 @@ const Dashboard = ({ user, setUser }) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    calculatePrice();
+  }, [selectedService, selectedCountry, servicesData]);
+
   const fetchProfile = async () => {
     try {
       const response = await axios.get(`${API}/user/profile`, axiosConfig);
