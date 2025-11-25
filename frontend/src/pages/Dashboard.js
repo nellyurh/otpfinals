@@ -655,21 +655,69 @@ const Dashboard = ({ user, setUser }) => {
                   )}
                 </div>
                 
+                {/* Payment Currency Selector */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Currency</label>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setPaymentCurrency('USD')}
+                      className={`flex-1 py-2 px-4 rounded-lg font-semibold border-2 transition-colors ${
+                        paymentCurrency === 'USD' 
+                          ? 'bg-blue-600 text-white border-blue-600' 
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                      }`}
+                    >
+                      💵 USD
+                    </button>
+                    <button
+                      onClick={() => setPaymentCurrency('NGN')}
+                      className={`flex-1 py-2 px-4 rounded-lg font-semibold border-2 transition-colors ${
+                        paymentCurrency === 'NGN' 
+                          ? 'bg-blue-600 text-white border-blue-600' 
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                      }`}
+                    >
+                      ₦ NGN
+                    </button>
+                  </div>
+                </div>
+                
                 {/* Price Display */}
                 {estimatedPrice && (
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+                    <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-gray-600">Base Price:</span>
-                      <span className="font-semibold text-gray-900">${estimatedPrice.base.toFixed(2)}</span>
+                      <span className="font-semibold text-gray-900">${estimatedPrice.base?.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Markup ({estimatedPrice.markup}%):</span>
-                      <span className="font-semibold text-gray-900">${(estimatedPrice.final - estimatedPrice.base).toFixed(2)}</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm text-gray-600">Our Markup ({estimatedPrice.markup}%):</span>
+                      <span className="font-semibold text-gray-900">${(estimatedPrice.final_usd - estimatedPrice.base).toFixed(2)}</span>
                     </div>
-                    <div className="pt-2 border-t border-blue-300">
+                    {estimatedPrice.breakdown?.includes_area_code && (
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs text-blue-600">+ Area Code Selected (20% extra)</span>
+                      </div>
+                    )}
+                    {estimatedPrice.breakdown?.includes_carrier && (
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs text-blue-600">+ Carrier Selected (20% extra)</span>
+                      </div>
+                    )}
+                    <div className="pt-3 border-t-2 border-blue-300">
                       <div className="flex items-center justify-between">
-                        <span className="text-base font-semibold text-gray-700">Total Price:</span>
-                        <span className="text-2xl font-bold text-blue-600">${estimatedPrice.final.toFixed(2)}</span>
+                        <span className="text-lg font-semibold text-gray-700">You Pay:</span>
+                        <div className="text-right">
+                          <div className="text-3xl font-bold text-blue-600">
+                            {paymentCurrency === 'USD' 
+                              ? `$${estimatedPrice.final_usd?.toFixed(2)}` 
+                              : `₦${estimatedPrice.final_ngn?.toFixed(2)}`}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {paymentCurrency === 'USD' 
+                              ? `≈ ₦${estimatedPrice.final_ngn?.toFixed(2)}` 
+                              : `≈ $${estimatedPrice.final_usd?.toFixed(2)}`}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -685,9 +733,18 @@ const Dashboard = ({ user, setUser }) => {
                 <button
                   onClick={handlePurchaseNumber}
                   disabled={loading || !estimatedPrice}
-                  className="mt-6 w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="mt-6 w-full py-4 rounded-lg font-bold text-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all"
                 >
-                  {loading ? 'Processing...' : estimatedPrice ? `Purchase Number - $${estimatedPrice.final.toFixed(2)}` : 'Select service and country to see price'}
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Processing...
+                    </span>
+                  ) : estimatedPrice ? (
+                    `✓ Purchase Number - ${paymentCurrency === 'USD' ? '$' + estimatedPrice.final_usd?.toFixed(2) : '₦' + estimatedPrice.final_ngn?.toFixed(2)}`
+                  ) : (
+                    'Select service and country to continue'
+                  )}
                 </button>
               </div>
             </div>
