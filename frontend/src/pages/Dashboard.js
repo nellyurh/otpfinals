@@ -608,12 +608,39 @@ const Dashboard = ({ user, setUser }) => {
                   )}
                 </div>
                 
+                {/* Price Display */}
+                {estimatedPrice && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Base Price:</span>
+                      <span className="font-semibold text-gray-900">${estimatedPrice.base.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-gray-600">Markup ({estimatedPrice.markup}%):</span>
+                      <span className="font-semibold text-gray-900">${(estimatedPrice.final - estimatedPrice.base).toFixed(2)}</span>
+                    </div>
+                    <div className="pt-2 border-t border-blue-300">
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-semibold text-gray-700">Total Price:</span>
+                        <span className="text-2xl font-bold text-blue-600">${estimatedPrice.final.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {priceLoading && (
+                  <div className="mt-6 p-4 text-center text-gray-500">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
+                    <p className="text-sm">Calculating price...</p>
+                  </div>
+                )}
+                
                 <button
                   onClick={handlePurchaseNumber}
-                  disabled={loading}
-                  className="mt-6 w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  disabled={loading || !estimatedPrice}
+                  className="mt-6 w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Processing...' : 'Purchase Number'}
+                  {loading ? 'Processing...' : estimatedPrice ? `Purchase Number - $${estimatedPrice.final.toFixed(2)}` : 'Select service and country to see price'}
                 </button>
               </div>
             </div>
