@@ -1215,6 +1215,7 @@ async def purchase_number(
     if not provider:
         raise HTTPException(status_code=400, detail="Invalid server selection")
     
+    # Get pricing config
     config = await db.pricing_config.find_one({}, {'_id': 0})
     if not config:
         default_config = PricingConfig()
@@ -1223,35 +1224,69 @@ async def purchase_number(
         await db.pricing_config.insert_one(config_dict)
         config = config_dict
     
-    markup_key = f'{provider}_markup'
-    markup = config.get(markup_key, 20.0)
+    # Calculate price
+    if provider == 'daisysms':
+        base_price_usd = DAISYSMS_PRICES.get(data.service, 1.00)
+        # DaisySMS applies 20% markup for area codes and carriers
+        if data.area_code:
+            base_price_usd = base_price_usd * 1.20
+        if data.carrier:
+            base_price_usd = base_price_usd * 1.20
+    else:
+        # Get from cached services
+        cached_service = await db.cached_services.find_one({
+            'provider': provider,
+            'service_code': data.service,
+            'country_code': data.country
+        }, {'_id': 0})
+        
+        if not cached_service:
+            raise HTTPException(status_code=404, detail="Service not found")
+        
+        base_price_usd = cached_service['base_price']
+        if cached_service['currency'] == 'RUB':
+            base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
     
+    # Apply our markup (default 50%)
+    markup = config.get(f'{provider}_markup', 50.0)
+    final_price_usd = base_price_usd * (1 + markup / 100)
+    
+    # Convert to NGN if needed
+    ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
+    final_price_ngn = final_price_usd * ngn_rate
+    
+    # Check balance based on payment currency
+    if data.payment_currency == 'NGN':
+        if user.get('ngn_balance', 0) < final_price_ngn:
+            raise HTTPException(status_code=400, detail=f"Insufficient NGN balance. Need ₦{final_price_ngn:.2f}")
+    else:  # USD
+        if user.get('usd_balance', 0) < final_price_usd:
+            raise HTTPException(status_code=400, detail=f"Insufficient USD balance. Need ${final_price_usd:.2f}")
+    
+    # Purchase from provider
     result = None
-    provider_cost = 0.5
+    actual_price = base_price_usd
     
     if provider == 'smspool':
         result = await purchase_number_smspool(data.service, data.country)
         if result and result.get('success'):
-            provider_cost = result.get('price', 0.5)
+            actual_price = result.get('price', base_price_usd)
     elif provider == 'daisysms':
+        # Set max_price to prevent unexpected charges
+        max_price = base_price_usd * 1.5  # Allow 50% variance
         result = await purchase_number_daisysms(
-            data.service, data.country, 
+            data.service, max_price,
             data.area_code, data.carrier, data.phone_make
         )
-        if result and 'ACCESS_NUMBER' in str(result):
-            provider_cost = 0.5
+        if result and result.get('status_code') == 200:
+            actual_price = result.get('actual_price', base_price_usd)
     elif provider == 'tigersms':
         result = await purchase_number_tigersms(data.service, data.country)
         if result and 'ACCESS_NUMBER' in str(result):
-            provider_cost = 0.5
+            actual_price = base_price_usd
     
     if not result:
         raise HTTPException(status_code=400, detail="Failed to purchase number from provider")
-    
-    final_cost = provider_cost * (1 + markup / 100)
-    
-    if user.get('usd_balance', 0) < final_cost:
-        raise HTTPException(status_code=400, detail="Insufficient USD balance")
     
     phone_number = None
     activation_id = None
