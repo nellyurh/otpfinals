@@ -155,11 +155,11 @@ const Landing = ({ setUser }) => {
                 </div>
               </CardHeader>
               
-              <CardContent>
+              <CardContent className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-zinc-900">
-                    <TabsTrigger value="login" data-testid="login-tab">Login</TabsTrigger>
-                    <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 dark:bg-gray-700 p-1 border-2 border-gray-900 dark:border-white">
+                    <TabsTrigger value="login" data-testid="login-tab" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white font-bold uppercase">Login</TabsTrigger>
+                    <TabsTrigger value="register" data-testid="register-tab" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white font-bold uppercase">Register</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="login">
