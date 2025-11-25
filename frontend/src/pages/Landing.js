@@ -8,7 +8,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Landing = ({ setUser }) => {
-  const [activeTab, setActiveTab] = useState('login');
+  const [showAuth, setShowAuth] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
