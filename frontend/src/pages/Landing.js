@@ -80,19 +80,19 @@ const Landing = ({ setUser }) => {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
           {/* Left Side - Marketing */}
           <div className="flex-1 space-y-8 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <Zap className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm text-emerald-400 font-medium">Fast & Reliable OTP Service</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white border-2 border-blue-600 shadow-lg">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-bold uppercase tracking-wide">Fast & Reliable OTP Service</span>
             </div>
             
-            <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
+            <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-gray-900 dark:text-white">
               Get Instant
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+              <span className="block text-blue-600 dark:text-blue-400">
                 Virtual Numbers
               </span>
             </h1>
             
-            <p className="text-lg text-zinc-400 max-w-xl">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-xl font-medium">
               Access temporary phone numbers from multiple providers worldwide. Perfect for SMS verification, testing, and privacy protection.
             </p>
 
