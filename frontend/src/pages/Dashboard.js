@@ -885,31 +885,96 @@ const Dashboard = ({ user, setUser }) => {
 
           {activeSection === 'deposits' && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900">Deposits</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Fund Your Wallet</h2>
               
-              <div className="bg-white rounded-lg p-6 border shadow-sm">
-                <h3 className="text-lg font-semibold mb-4">Deposit NGN via Virtual Account</h3>
-                {virtualAccounts.length > 0 ? (
-                  virtualAccounts.map((account) => (
-                    <div key={account.id} className="p-4 bg-gray-50 rounded-lg space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">Bank</span>
-                        <span className="font-semibold">{account.bank_name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-500">Account Number</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-blue-600">{account.account_number}</span>
-                          <button onClick={() => copyToClipboard(account.account_number, account.id)}>
-                            {copiedItem === account.id ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                          </button>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* NGN Deposit via Virtual Account */}
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Deposit NGN</h3>
+                      <p className="text-xs text-gray-500">Via Virtual Bank Account</p>
+                    </div>
+                  </div>
+                  
+                  {virtualAccounts.length > 0 ? (
+                    virtualAccounts.map((account) => (
+                      <div key={account.id} className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Bank Name</span>
+                          <span className="font-semibold text-gray-900">{account.bank_name}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Account Number</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-green-600 text-lg">{account.account_number}</span>
+                            <button 
+                              onClick={() => copyToClipboard(account.account_number, account.id)}
+                              className="p-1 hover:bg-green-100 rounded"
+                            >
+                              {copiedItem === account.id ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-500" />}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Account Name</span>
+                          <span className="font-semibold text-gray-900">{account.account_name || 'SMS Relay'}</span>
+                        </div>
+                        <div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
+                          <p className="text-xs text-gray-600">
+                            💡 <strong>Note:</strong> Deposits are instant and will reflect in your NGN balance automatically.
+                          </p>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-3" />
+                      <p className="text-gray-500">Creating your virtual account...</p>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500 py-8">Creating virtual account...</p>
-                )}
+                  )}
+                </div>
+                
+                {/* USD Deposit via Stablecoins */}
+                <div className="bg-white rounded-lg p-6 border shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <DollarSign className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Deposit USD</h3>
+                      <p className="text-xs text-gray-500">Via Stablecoins (USDT/USDC)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10z"/>
+                        </svg>
+                        <span className="font-semibold text-gray-900">Accepted Coins</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="px-3 py-1 bg-white border border-blue-300 rounded-full text-sm font-semibold text-blue-700">USDT</span>
+                        <span className="px-3 py-1 bg-white border border-blue-300 rounded-full text-sm font-semibold text-blue-700">USDC</span>
+                      </div>
+                    </div>
+                    
+                    <button className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                      Deposit Stablecoins
+                    </button>
+                    
+                    <div className="p-3 bg-gray-50 rounded-lg border">
+                      <p className="text-xs text-gray-600">
+                        ⚠️ <strong>Coming Soon:</strong> Payscribe stablecoin integration for instant USD deposits.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
