@@ -533,9 +533,32 @@ const Dashboard = ({ user, setUser }) => {
 
           {activeSection === 'receive-sms' && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-900">Receive SMS</h2>
-              
               <div className="bg-white rounded-lg p-6 border shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">Purchase Numbers</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 border-2 border-blue-500 rounded-lg bg-blue-50">
+                    <div className="text-sm text-gray-600 mb-1">USA Numbers</div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {selectedServer === 'us_server' ? '✓ Selected' : 'Select'}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg bg-gray-50 opacity-50">
+                    <div className="text-sm text-gray-600 mb-1">All Country Numbers 1</div>
+                    <div className="text-lg font-semibold text-gray-500">Coming Soon</div>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg bg-gray-50 opacity-50">
+                    <div className="text-sm text-gray-600 mb-1">All Country Numbers 2</div>
+                    <div className="text-lg font-semibold text-gray-500">Coming Soon</div>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-gray-600 mb-4">
+                  Buy a phone number for 7 minutes. Credits are only used if you receive the SMS code.
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Server</label>
