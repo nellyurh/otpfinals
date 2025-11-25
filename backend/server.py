@@ -206,6 +206,9 @@ class UpdatePricingRequest(BaseModel):
     daisysms_markup: Optional[float] = None
     smspool_markup: Optional[float] = None
     ngn_to_usd_rate: Optional[float] = None
+    rub_to_usd_rate: Optional[float] = None
+    area_code_markup: Optional[float] = None
+    carrier_markup: Optional[float] = None
 
 class BillPaymentRequest(BaseModel):
     service_type: str
