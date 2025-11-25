@@ -142,15 +142,15 @@ const Landing = ({ setUser }) => {
 
           {/* Right Side - Auth Card */}
           <div className="flex-1 max-w-md w-full animate-slide-in-right">
-            <Card className="glass-effect border-zinc-800">
-              <CardHeader className="space-y-2">
+            <Card className="bg-white dark:bg-gray-800 border-4 border-gray-900 dark:border-white shadow-2xl">
+              <CardHeader className="space-y-2 border-b-4 border-gray-900 dark:border-white">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl">
-                    <Phone className="w-6 h-6 text-white" />
+                  <div className="p-3 bg-blue-500 text-white border-2 border-blue-600">
+                    <Phone className="w-6 h-6" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl text-white">SMS Relay</CardTitle>
-                    <CardDescription>Virtual numbers on demand</CardDescription>
+                    <CardTitle className="text-2xl text-gray-900 dark:text-white font-black">SMS RELAY</CardTitle>
+                    <CardDescription className="font-bold text-gray-600 dark:text-gray-300">Virtual numbers on demand</CardDescription>
                   </div>
                 </div>
               </CardHeader>
