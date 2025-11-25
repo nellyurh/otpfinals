@@ -38,6 +38,11 @@ const Dashboard = ({ user, setUser }) => {
   const [availableServices, setAvailableServices] = useState([]);
   const [availableCountries, setAvailableCountries] = useState([]);
   const [servicesLoading, setServicesLoading] = useState(false);
+  const [selectedServiceOption, setSelectedServiceOption] = useState(null);
+  const [selectedCountryOption, setSelectedCountryOption] = useState(null);
+  const [estimatedPrice, setEstimatedPrice] = useState(null);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [servicesData, setServicesData] = useState(null);
   
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
