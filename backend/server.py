@@ -241,6 +241,103 @@ class CreateStablecoinWalletRequest(BaseModel):
 class UpdatePhoneRequest(BaseModel):
     phone: str
 
+# ============ DaisySMS Static Pricing ============
+
+DAISYSMS_PRICES = {
+    'other': 1.00,  # Service not listed
+    'wa': 1.10,  # WhatsApp
+    'vi': 0.10,  # Viber
+    'oa': 0.10,  # OpenAI / ChatGPT
+    'tg': 1.30,  # Telegram
+    'ma': 0.15,  # Yahoo
+    'go': 0.50,  # Google / Gmail / Youtube
+    'fb': 1.10,  # Facebook
+    'ig': 0.20,  # Instagram
+    'tw': 0.12,  # Twitter
+    'li': 0.10,  # LinkedIn
+    'ds': 0.10,  # Discord
+    'tt': 0.30,  # TikTok
+    'ub': 0.10,  # Uber
+    'pp': 0.80,  # PayPal
+    'vm': 0.50,  # Venmo
+    'tn': 0.30,  # Tinder
+    'bu': 0.18,  # Bumble
+    'ap': 0.10,  # Apple
+    'am': 0.50,  # Amazon / AWS
+    'cb': 0.25,  # Coinbase
+    'sn': 0.10,  # Snapchat
+    'ca': 1.00,  # Cash App
+    'gv': 0.20,  # Google Voice
+    'vk': 0.20,  # VKontakte
+    'do': 0.10,  # DoorDash
+    'fi': 0.10,  # Fiverr
+    'nk': 0.20,  # Nike
+    'cr': 0.10,  # Craigslist
+    'eb': 0.10,  # eBay
+    'hg': 0.30,  # Hinge
+    'gr': 0.10,  # Grindr
+    'tk': 0.10,  # Ticketmaster
+    'tm': 0.10,  # Temu
+    'ln': 0.05,  # LINE messenger
+    'rd': 0.40,  # Reddit
+    'st': 0.50,  # Steam
+    'bl': 0.20,  # Blizzard / Battle.net
+    'nt': 0.10,  # Netflix
+    'ab': 0.10,  # Airbnb
+    'tc': 0.20,  # Twitch
+    'ch': 2.40,  # Chime
+    'rb': 0.40,  # Robinhood
+    'wm': 0.10,  # Walmart
+    'ci': 0.80,  # Citi
+    'wf': 0.80,  # Wells Fargo
+    'ba': 0.80,  # Bank of America
+    'pn': 0.80,  # PNC
+    'ch2': 0.30,  # Chase
+    'us': 0.80,  # USAA
+    'kb': 0.80,  # Keybank
+    'tr': 0.80,  # Truist
+    'sc': 0.80,  # Schwab
+    'sa': 0.80,  # Santander
+    'rg': 0.80,  # Regions
+    'db': 0.80,  # Discover Bank
+    'nf': 1.00,  # NFCU
+    'ub2': 0.80,  # U.S. Bank
+    'fd': 0.80,  # Fidelity
+    'ct': 0.80,  # Citizens
+    'bm': 0.80,  # BMO Harris
+    'sf': 0.80,  # SoFi Bank
+    'ht': 0.80,  # Huntington
+    'as': 0.80,  # Aspiration
+    'al': 0.80,  # Ally
+    'dv': 0.80,  # Dave.com
+    'no': 0.80,  # North One
+    'ax': 0.80,  # Axos Bank
+    'uf': 0.80,  # UFBdirect.com
+    'sp': 0.80,  # Stripe
+    'af': 0.80,  # af247.com
+    'nv': 0.80,  # Navy Federal
+    'sx': 0.80,  # Sezzle
+    'af2': 0.80,  # Affirm
+    'cl': 0.80,  # CashLoans Express
+    'om': 0.80,  # OneMain Financial
+    'ls': 0.80,  # LightStream.com
+    'tu': 0.80,  # TransUnion
+    'fn': 0.80,  # First National Bank
+    'sb': 0.80,  # Sunbit
+    'np': 0.80,  # Net Pay Advance
+    'ba2': 0.80,  # BankMobile
+    'gb': 0.80,  # GBank
+    'pf': 0.80,  # PenFed
+    'ew': 0.80,  # East West Bank
+    'td': 0.80,  # TD.com
+    'bm2': 0.80,  # BMO Alto
+    'va': 0.80,  # Varo
+    'g1': 0.80,  # Golden1
+    'ns': 1.00,  # Netspend
+    'fr': 1.00,  # Frost Bank
+    'ey': 0.80   # EverBank
+}
+
 # ============ Helper Functions ============
 
 # Comprehensive country mapping
