@@ -1141,36 +1141,37 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
             await db.pricing_config.insert_one(config_dict)
             config = config_dict
         
-        # Get base price from cached services
-        cached_service = await db.cached_services.find_one({
-            'provider': provider,
-            'service_code': data.service,
-            'country_code': data.country
-        }, {'_id': 0})
-        
-        if not cached_service:
-            raise HTTPException(status_code=404, detail="Service/Country combination not found")
-        
-        base_price_usd = cached_service['base_price']
-        
-        # Convert RUB to USD if needed
-        if cached_service['currency'] == 'RUB':
-            base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
-        
-        # Apply provider markup
-        markup_key = f'{provider}_markup'
-        provider_markup = config.get(markup_key, 20.0)
-        price_after_markup = base_price_usd * (1 + provider_markup / 100)
-        
-        # Apply additional markups for DaisySMS
-        additional_markup = 0
+        # Get base price
         if provider == 'daisysms':
+            # Use static pricing for DaisySMS
+            base_price_usd = DAISYSMS_PRICES.get(data.service, 1.00)
+            
+            # DaisySMS adds 20% for area codes and carriers (from their side)
             if data.area_code:
-                additional_markup += config.get('area_code_markup', 20.0)
+                base_price_usd = base_price_usd * 1.20
             if data.carrier:
-                additional_markup += config.get('carrier_markup', 20.0)
+                base_price_usd = base_price_usd * 1.20
+        else:
+            # Get from cached services for other providers
+            cached_service = await db.cached_services.find_one({
+                'provider': provider,
+                'service_code': data.service,
+                'country_code': data.country
+            }, {'_id': 0})
+            
+            if not cached_service:
+                raise HTTPException(status_code=404, detail="Service/Country combination not found")
+            
+            base_price_usd = cached_service['base_price']
+            
+            # Convert RUB to USD if needed
+            if cached_service['currency'] == 'RUB':
+                base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
         
-        final_price_usd = price_after_markup * (1 + additional_markup / 100)
+        # Apply OUR markup (default 50%)
+        markup_key = f'{provider}_markup'
+        provider_markup = config.get(markup_key, 50.0)
+        final_price_usd = base_price_usd * (1 + provider_markup / 100)
         
         # Convert to NGN
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
@@ -1179,16 +1180,14 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         return {
             'success': True,
             'base_price_usd': round(base_price_usd, 2),
-            'provider_markup': provider_markup,
-            'additional_markup': additional_markup,
+            'our_markup_percent': provider_markup,
             'final_price_usd': round(final_price_usd, 2),
             'final_price_ngn': round(final_price_ngn, 2),
-            'currency_original': cached_service['currency'],
             'breakdown': {
-                'base': round(base_price_usd, 2),
-                'after_provider_markup': round(price_after_markup, 2),
-                'area_code_markup': config.get('area_code_markup', 0) if data.area_code else 0,
-                'carrier_markup': config.get('carrier_markup', 0) if data.carrier else 0
+                'provider_base': round(base_price_usd, 2),
+                'our_markup_amount': round(final_price_usd - base_price_usd, 2),
+                'includes_area_code': data.area_code is not None,
+                'includes_carrier': data.carrier is not None
             }
         }
     except HTTPException:
