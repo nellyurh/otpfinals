@@ -88,6 +88,77 @@ const Dashboard = ({ user, setUser }) => {
     }
   };
 
+  const fetchServicesForServer = async (server) => {
+    if (!server) {
+      setAvailableServices([]);
+      setAvailableCountries([]);
+      return;
+    }
+
+    setServicesLoading(true);
+    try {
+      const serverMap = {
+        'us_server': 'daisysms',
+        'server1': 'smspool',
+        'server2': 'tigersms'
+      };
+      
+      const provider = serverMap[server];
+      const response = await axios.get(`${API}/services/${provider}`, axiosConfig);
+      
+      if (response.data.success) {
+        const data = response.data.data;
+        
+        if (provider === 'smspool') {
+          const services = Object.keys(data).map(countryCode => {
+            const countryData = data[countryCode];
+            return Object.keys(countryData).map(serviceName => ({
+              code: serviceName,
+              name: serviceName,
+              country: countryCode,
+              price: countryData[serviceName]?.cost || 0
+            }));
+          }).flat();
+          
+          const uniqueServices = [...new Set(services.map(s => s.code))].map(code => {
+            const service = services.find(s => s.code === code);
+            return { code, name: service.name };
+          });
+          
+          const uniqueCountries = [...new Set(services.map(s => s.country))].map(code => ({
+            code,
+            name: code.toUpperCase()
+          }));
+          
+          setAvailableServices(uniqueServices);
+          setAvailableCountries(uniqueCountries);
+        } else if (provider === 'daisysms' || provider === 'tigersms') {
+          const services = [];
+          const countries = [];
+          
+          for (const serviceCode in data) {
+            const serviceData = data[serviceCode];
+            services.push({ code: serviceCode, name: serviceCode });
+            
+            for (const countryCode in serviceData) {
+              if (!countries.find(c => c.code === countryCode)) {
+                countries.push({ code: countryCode, name: countryCode });
+              }
+            }
+          }
+          
+          setAvailableServices(services);
+          setAvailableCountries(countries);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      toast.error('Failed to load services');
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
   const handlePurchaseNumber = async () => {
     if (!selectedServer || !selectedService || !selectedCountry) {
       toast.error('Please fill all required fields');
