@@ -206,30 +206,37 @@ const Dashboard = ({ user, setUser }) => {
   };
 
   const calculatePrice = async () => {
-    if (!selectedService || !selectedCountry || !servicesData) {
+    if (!selectedService || !selectedCountry || !selectedServer) {
       setEstimatedPrice(null);
       return;
     }
 
     setPriceLoading(true);
     try {
-      const { provider, data } = servicesData;
-      let basePrice = 0;
+      const response = await axios.post(
+        `${API}/orders/calculate-price`,
+        {
+          server: selectedServer,
+          service: selectedService,
+          country: selectedCountry,
+          area_code: areaCode || undefined,
+          carrier: carrier || undefined
+        },
+        axiosConfig
+      );
       
-      if (provider === 'smspool') {
-        basePrice = data[selectedCountry]?.[selectedService]?.cost || 0;
-      } else if (provider === 'daisysms' || provider === 'tigersms') {
-        basePrice = parseFloat(data[selectedService]?.[selectedCountry]?.cost || 0);
+      if (response.data.success) {
+        setEstimatedPrice({
+          base: response.data.base_price_usd,
+          markup: response.data.our_markup_percent,
+          final_usd: response.data.final_price_usd,
+          final_ngn: response.data.final_price_ngn,
+          breakdown: response.data.breakdown
+        });
       }
-      
-      // Get markup from pricing config
-      const response = await axios.get(`${API}/admin/pricing`, axiosConfig);
-      const markup = response.data[`${provider}_markup`] || 20;
-      
-      const finalPrice = basePrice * (1 + markup / 100);
-      setEstimatedPrice({ base: basePrice, markup, final: finalPrice });
     } catch (error) {
       console.error('Failed to calculate price:', error);
+      toast.error('Failed to calculate price');
     } finally {
       setPriceLoading(false);
     }
