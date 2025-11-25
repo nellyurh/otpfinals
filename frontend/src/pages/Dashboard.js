@@ -98,6 +98,8 @@ const Dashboard = ({ user, setUser }) => {
     if (!server) {
       setAvailableServices([]);
       setAvailableCountries([]);
+      setServicesData(null);
+      setEstimatedPrice(null);
       return;
     }
 
@@ -114,6 +116,7 @@ const Dashboard = ({ user, setUser }) => {
       
       if (response.data.success) {
         const data = response.data.data;
+        setServicesData({ provider, data });
         
         if (provider === 'smspool') {
           const services = Object.keys(data).map(countryCode => {
@@ -128,33 +131,44 @@ const Dashboard = ({ user, setUser }) => {
           
           const uniqueServices = [...new Set(services.map(s => s.code))].map(code => {
             const service = services.find(s => s.code === code);
-            return { code, name: service.name };
+            return { value: code, label: service.name };
           });
           
           const uniqueCountries = [...new Set(services.map(s => s.country))].map(code => ({
-            code,
-            name: code.toUpperCase()
+            value: code,
+            label: getCountryName(code)
           }));
           
           setAvailableServices(uniqueServices);
           setAvailableCountries(uniqueCountries);
-        } else if (provider === 'daisysms' || provider === 'tigersms') {
+        } else if (provider === 'daisysms') {
+          // For US Server (DaisySMS), only show United States
+          const services = [];
+          
+          for (const serviceCode in data) {
+            const serviceData = data[serviceCode];
+            const firstCountryData = Object.values(serviceData)[0];
+            const serviceName = firstCountryData?.name || serviceCode;
+            
+            services.push({ value: serviceCode, label: serviceName });
+          }
+          
+          setAvailableServices(services);
+          setAvailableCountries([{ value: '187', label: 'United States' }]);
+        } else if (provider === 'tigersms') {
           const services = [];
           const countries = [];
           
           for (const serviceCode in data) {
             const serviceData = data[serviceCode];
-            
-            // Get service name from first country's data
             const firstCountryData = Object.values(serviceData)[0];
             const serviceName = firstCountryData?.name || serviceCode;
             
-            services.push({ code: serviceCode, name: serviceName });
+            services.push({ value: serviceCode, label: serviceName });
             
-            // Extract countries for this service
             for (const countryCode in serviceData) {
-              if (!countries.find(c => c.code === countryCode)) {
-                countries.push({ code: countryCode, name: countryCode });
+              if (!countries.find(c => c.value === countryCode)) {
+                countries.push({ value: countryCode, label: getCountryName(countryCode) });
               }
             }
           }
@@ -168,6 +182,52 @@ const Dashboard = ({ user, setUser }) => {
       toast.error('Failed to load services');
     } finally {
       setServicesLoading(false);
+    }
+  };
+
+  const getCountryName = (code) => {
+    const countryMap = {
+      '187': 'United States',
+      'us': 'United States',
+      'uk': 'United Kingdom',
+      'ca': 'Canada',
+      'ng': 'Nigeria',
+      'in': 'India',
+      'ph': 'Philippines',
+      'id': 'Indonesia',
+      'pk': 'Pakistan',
+      'bd': 'Bangladesh'
+    };
+    return countryMap[code.toLowerCase()] || code.toUpperCase();
+  };
+
+  const calculatePrice = async () => {
+    if (!selectedService || !selectedCountry || !servicesData) {
+      setEstimatedPrice(null);
+      return;
+    }
+
+    setPriceLoading(true);
+    try {
+      const { provider, data } = servicesData;
+      let basePrice = 0;
+      
+      if (provider === 'smspool') {
+        basePrice = data[selectedCountry]?.[selectedService]?.cost || 0;
+      } else if (provider === 'daisysms' || provider === 'tigersms') {
+        basePrice = parseFloat(data[selectedService]?.[selectedCountry]?.cost || 0);
+      }
+      
+      // Get markup from pricing config
+      const response = await axios.get(`${API}/admin/pricing`, axiosConfig);
+      const markup = response.data[`${provider}_markup`] || 20;
+      
+      const finalPrice = basePrice * (1 + markup / 100);
+      setEstimatedPrice({ base: basePrice, markup, final: finalPrice });
+    } catch (error) {
+      console.error('Failed to calculate price:', error);
+    } finally {
+      setPriceLoading(false);
     }
   };
 
