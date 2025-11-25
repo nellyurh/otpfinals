@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Header, BackgroundTasks
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Header, BackgroundTasks, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -16,6 +16,7 @@ import httpx
 import asyncio
 import hashlib
 import hmac
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -59,7 +60,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    phone: Optional[str] = None
+    phone: str  # NOW REQUIRED
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -70,7 +71,7 @@ class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: EmailStr
     full_name: str
-    phone: Optional[str] = None
+    phone: str  # NOW REQUIRED
     ngn_balance: float = 0.0
     usd_balance: float = 0.0
     is_admin: bool = False
@@ -80,10 +81,10 @@ class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
-    type: str  # deposit_ngn, deposit_usd, conversion, purchase, refund, bill_payment
+    type: str
     amount: float
-    currency: str  # NGN or USD
-    status: str  # pending, completed, failed
+    currency: str
+    status: str
     reference: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -92,24 +93,29 @@ class SMSOrder(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
-    provider: str  # tigersms, daisysms, smspool
+    server: str  # us_server, server1, server2
+    provider: str  # daisysms, smspool, tigersms
     service: str
     country: str
     phone_number: Optional[str] = None
     activation_id: Optional[str] = None
     otp: Optional[str] = None
-    status: str  # pending, active, completed, cancelled, refunded
+    status: str
     cost_usd: float
     provider_cost: float
     markup_percentage: float
     can_cancel: bool = True
+    # DaisySMS optional filters
+    area_code: Optional[str] = None
+    carrier: Optional[str] = None
+    phone_make: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(minutes=8))
 
 class PricingConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    tigersms_markup: float = 20.0  # percentage
+    tigersms_markup: float = 20.0
     daisysms_markup: float = 20.0
     smspool_markup: float = 20.0
     ngn_to_usd_rate: float = 1500.0
@@ -126,19 +132,58 @@ class VirtualAccount(BaseModel):
     reserved_account_id: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Payscribe Models
+class BillPayment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    service_type: str  # airtime, data, electricity, cable, betting
+    provider: str
+    amount: float
+    recipient: str
+    status: str
+    trans_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class StablecoinWallet(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    currency: str  # USDT, USDC, BTC
+    network: str
+    chain: str
+    address: str
+    label: str
+    tracking_id: str
+    status: str = "active"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class VirtualCard(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    card_id: str
+    card_number: str
+    cvv: str
+    expiry: str
+    balance: float
+    status: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============ Request/Response Models ============
 
-class DepositRequest(BaseModel):
-    amount: float
-    currency: str  # NGN or USD
+class PurchaseNumberRequest(BaseModel):
+    server: str  # us_server, server1, server2
+    service: str
+    country: str
+    # Optional DaisySMS filters
+    area_code: Optional[str] = None
+    carrier: Optional[str] = None
+    phone_make: Optional[str] = None
 
 class ConversionRequest(BaseModel):
     amount_ngn: float
-
-class PurchaseNumberRequest(BaseModel):
-    provider: str  # tigersms, daisysms, smspool
-    service: str
-    country: str
 
 class UpdatePricingRequest(BaseModel):
     tigersms_markup: Optional[float] = None
@@ -147,12 +192,27 @@ class UpdatePricingRequest(BaseModel):
     ngn_to_usd_rate: Optional[float] = None
 
 class BillPaymentRequest(BaseModel):
-    service_type: str  # airtime, data, electricity, etc
+    service_type: str
+    provider: str
     amount: float
     recipient: str
     metadata: Optional[Dict[str, Any]] = None
 
-# ============ Auth Functions ============
+class CreateStablecoinWalletRequest(BaseModel):
+    currency: str
+    network: str
+    chain: str
+    label: Optional[str] = "My Wallet"
+
+class UpdatePhoneRequest(BaseModel):
+    phone: str
+
+# ============ Helper Functions ============
+
+def validate_nigerian_phone(phone: str) -> bool:
+    """Validate Nigerian phone number format: 08168617185"""
+    pattern = r'^0[789][01]\d{8}$'
+    return bool(re.match(pattern, phone))
 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -202,7 +262,7 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
             'email': user['email'],
             'name': user['full_name'],
             'phoneNumber': user.get('phone', ''),
-            'bankCode': ['20946', '20897'],  # PalmPay and OPay
+            'bankCode': ['20946', '20897'],
             'businessId': PAYMENTPOINT_BUSINESS_ID
         }
         
@@ -217,7 +277,6 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
             if response.status_code == 200:
                 result = response.json()
                 if result.get('status') == 'success' and result.get('bankAccounts'):
-                    # Store first account (can be extended for multiple)
                     account_data = result['bankAccounts'][0]
                     virtual_account = VirtualAccount(
                         user_id=user['id'],
@@ -241,67 +300,14 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
         logger.error(f"Error creating virtual account: {str(e)}")
         return None
 
-# ============ SMS Provider Functions ============
+# ============ SMS Provider Functions (Updated) ============
 
-async def get_smspool_services():
-    """Get available services from SMS-pool"""
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                'https://api.sms-pool.com/service/list',
-                params={'key': SMSPOOL_API_KEY},
-                timeout=15.0
-            )
-            if response.status_code == 200:
-                return response.json()
-            return None
-    except Exception as e:
-        logger.error(f"SMS-pool services error: {str(e)}")
-        return None
-
-async def get_daisysms_services():
-    """Get available services from DaisySMS"""
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': DAISYSMS_API_KEY, 'action': 'getServices'},
-                timeout=15.0
-            )
-            if response.status_code == 200:
-                return response.json()
-            return None
-    except Exception as e:
-        logger.error(f"DaisySMS services error: {str(e)}")
-        return None
-
-async def get_tigersms_services():
-    """Get available services from TigerSMS"""
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                'https://api.tiger-sms.com/stubs/handler_api.php',
-                params={'api_key': TIGERSMS_API_KEY, 'action': 'getServices'},
-                timeout=15.0
-            )
-            if response.status_code == 200:
-                return response.json()
-            return None
-    except Exception as e:
-        logger.error(f"TigerSMS services error: {str(e)}")
-        return None
-
-async def purchase_number_smspool(service: str, country: str) -> Optional[Dict]:
-    """Purchase a number from SMS-pool"""
+async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optional[Dict]:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 'https://api.sms-pool.com/purchase/sms',
-                params={
-                    'key': SMSPOOL_API_KEY,
-                    'service': service,
-                    'country': country
-                },
+                params={'key': SMSPOOL_API_KEY, 'service': service, 'country': country},
                 timeout=15.0
             )
             if response.status_code == 200:
@@ -311,40 +317,41 @@ async def purchase_number_smspool(service: str, country: str) -> Optional[Dict]:
         logger.error(f"SMS-pool purchase error: {str(e)}")
         return None
 
-async def purchase_number_daisysms(service: str, country: str) -> Optional[Dict]:
-    """Purchase a number from DaisySMS"""
+async def purchase_number_daisysms(service: str, country: str, area_code: Optional[str] = None, 
+                                    carrier: Optional[str] = None, phone_make: Optional[str] = None) -> Optional[Dict]:
     try:
+        params = {
+            'api_key': DAISYSMS_API_KEY,
+            'action': 'getNumber',
+            'service': service,
+            'country': country
+        }
+        if area_code:
+            params['area_code'] = area_code
+        if carrier:
+            params['carrier'] = carrier
+        if phone_make:
+            params['phone_make'] = phone_make
+            
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
-                params={
-                    'api_key': DAISYSMS_API_KEY,
-                    'action': 'getNumber',
-                    'service': service,
-                    'country': country
-                },
+                params=params,
                 timeout=15.0
             )
             if response.status_code == 200:
-                data = response.json()
-                return data
+                return response.json()
             return None
     except Exception as e:
         logger.error(f"DaisySMS purchase error: {str(e)}")
         return None
 
-async def purchase_number_tigersms(service: str, country: str) -> Optional[Dict]:
-    """Purchase a number from TigerSMS"""
+async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Optional[Dict]:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://api.tiger-sms.com/stubs/handler_api.php',
-                params={
-                    'api_key': TIGERSMS_API_KEY,
-                    'action': 'getNumber',
-                    'service': service,
-                    'country': country
-                },
+                params={'api_key': TIGERSMS_API_KEY, 'action': 'getNumber', 'service': service, 'country': country},
                 timeout=15.0
             )
             if response.status_code == 200:
@@ -355,7 +362,6 @@ async def purchase_number_tigersms(service: str, country: str) -> Optional[Dict]
         return None
 
 async def poll_otp_smspool(order_id: str) -> Optional[str]:
-    """Check for OTP from SMS-pool"""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -372,16 +378,11 @@ async def poll_otp_smspool(order_id: str) -> Optional[str]:
         return None
 
 async def poll_otp_daisysms(activation_id: str) -> Optional[str]:
-    """Check for OTP from DaisySMS"""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
-                params={
-                    'api_key': DAISYSMS_API_KEY,
-                    'action': 'getStatus',
-                    'id': activation_id
-                },
+                params={'api_key': DAISYSMS_API_KEY, 'action': 'getStatus', 'id': activation_id},
                 timeout=10.0
             )
             if response.status_code == 200:
@@ -396,16 +397,11 @@ async def poll_otp_daisysms(activation_id: str) -> Optional[str]:
         return None
 
 async def poll_otp_tigersms(activation_id: str) -> Optional[str]:
-    """Check for OTP from TigerSMS"""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://api.tiger-sms.com/stubs/handler_api.php',
-                params={
-                    'api_key': TIGERSMS_API_KEY,
-                    'action': 'getStatus',
-                    'id': activation_id
-                },
+                params={'api_key': TIGERSMS_API_KEY, 'action': 'getStatus', 'id': activation_id},
                 timeout=10.0
             )
             if response.status_code == 200:
@@ -420,7 +416,6 @@ async def poll_otp_tigersms(activation_id: str) -> Optional[str]:
         return None
 
 async def cancel_number_provider(provider: str, activation_id: str) -> bool:
-    """Cancel a number on the provider"""
     try:
         if provider == 'smspool':
             async with httpx.AsyncClient() as client:
@@ -430,46 +425,56 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                     timeout=10.0
                 )
                 return response.status_code == 200
-        
         elif provider == 'daisysms':
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     'https://daisysms.com/stubs/handler_api.php',
-                    params={
-                        'api_key': DAISYSMS_API_KEY,
-                        'action': 'setStatus',
-                        'id': activation_id,
-                        'status': 8  # Cancel status
-                    },
+                    params={'api_key': DAISYSMS_API_KEY, 'action': 'setStatus', 'id': activation_id, 'status': 8},
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
-        
         elif provider == 'tigersms':
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     'https://api.tiger-sms.com/stubs/handler_api.php',
-                    params={
-                        'api_key': TIGERSMS_API_KEY,
-                        'action': 'setStatus',
-                        'id': activation_id,
-                        'status': 8
-                    },
+                    params={'api_key': TIGERSMS_API_KEY, 'action': 'setStatus', 'id': activation_id, 'status': 8},
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
-        
         return False
     except Exception as e:
         logger.error(f"Cancel number error: {str(e)}")
         return False
 
+# ============ Payscribe Functions ============
+
+async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[Dict] = None) -> Optional[Dict]:
+    """Generic Payscribe API request"""
+    try:
+        headers = {
+            'Authorization': f'Bearer {PAYSCRIBE_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        
+        async with httpx.AsyncClient() as client:
+            if method == 'GET':
+                response = await client.get(f'{PAYSCRIBE_BASE_URL}/{endpoint}', headers=headers, timeout=30.0)
+            else:
+                response = await client.post(f'{PAYSCRIBE_BASE_URL}/{endpoint}', json=data, headers=headers, timeout=30.0)
+            
+            if response.status_code == 200:
+                return response.json()
+            logger.error(f"Payscribe error: {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Payscribe request error: {str(e)}")
+        return None
+
 # ============ Background Tasks ============
 
 async def otp_polling_task(order_id: str):
-    """Background task to poll for OTP"""
-    max_duration = 480  # 8 minutes
-    poll_interval = 10  # 10 seconds
+    max_duration = 480
+    poll_interval = 10
     elapsed = 0
     
     while elapsed < max_duration:
@@ -478,7 +483,6 @@ async def otp_polling_task(order_id: str):
             if not order or order['status'] != 'active':
                 break
             
-            # Poll based on provider
             otp = None
             if order['provider'] == 'smspool' and order.get('activation_id'):
                 otp = await poll_otp_smspool(order['activation_id'])
@@ -488,22 +492,14 @@ async def otp_polling_task(order_id: str):
                 otp = await poll_otp_tigersms(order['activation_id'])
             
             if otp:
-                # Update order with OTP
                 await db.sms_orders.update_one(
                     {'id': order_id},
-                    {
-                        '$set': {
-                            'otp': otp,
-                            'status': 'completed',
-                            'can_cancel': False
-                        }
-                    }
+                    {'$set': {'otp': otp, 'status': 'completed', 'can_cancel': False}}
                 )
                 logger.info(f"OTP received for order {order_id}")
                 break
             
-            # Check if 5 minutes passed - allow cancellation
-            if elapsed >= 300:  # 5 minutes
+            if elapsed >= 300:
                 await db.sms_orders.update_one(
                     {'id': order_id},
                     {'$set': {'can_cancel': True}}
@@ -517,7 +513,6 @@ async def otp_polling_task(order_id: str):
             await asyncio.sleep(poll_interval)
             elapsed += poll_interval
     
-    # If timeout, mark as expired
     order = await db.sms_orders.find_one({'id': order_id}, {'_id': 0})
     if order and order['status'] == 'active':
         await db.sms_orders.update_one(
@@ -529,12 +524,14 @@ async def otp_polling_task(order_id: str):
 
 @api_router.post("/auth/register")
 async def register(data: UserRegister):
-    # Check if user exists
+    # Validate phone number
+    if not validate_nigerian_phone(data.phone):
+        raise HTTPException(status_code=400, detail="Invalid phone number format. Use format: 08168617185")
+    
     existing = await db.users.find_one({'email': data.email}, {'_id': 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create user
     user = User(
         email=data.email,
         full_name=data.full_name,
@@ -546,11 +543,8 @@ async def register(data: UserRegister):
     user_dict['created_at'] = user_dict['created_at'].isoformat()
     
     await db.users.insert_one(user_dict)
-    
-    # Create virtual account asynchronously
     asyncio.create_task(create_paymentpoint_virtual_account(user_dict))
     
-    # Create token
     token = create_token(user.id, user.email, user.is_admin)
     
     return {
@@ -559,6 +553,7 @@ async def register(data: UserRegister):
             'id': user.id,
             'email': user.email,
             'full_name': user.full_name,
+            'phone': user.phone,
             'ngn_balance': user.ngn_balance,
             'usd_balance': user.usd_balance,
             'is_admin': user.is_admin
@@ -579,11 +574,30 @@ async def login(data: UserLogin):
             'id': user['id'],
             'email': user['email'],
             'full_name': user['full_name'],
+            'phone': user.get('phone', ''),
             'ngn_balance': user.get('ngn_balance', 0),
             'usd_balance': user.get('usd_balance', 0),
             'is_admin': user.get('is_admin', False)
         }
     }
+
+@api_router.put("/user/update-phone")
+async def update_phone(data: UpdatePhoneRequest, user: dict = Depends(get_current_user)):
+    if not validate_nigerian_phone(data.phone):
+        raise HTTPException(status_code=400, detail="Invalid phone number format. Use format: 08168617185")
+    
+    await db.users.update_one(
+        {'id': user['id']},
+        {'$set': {'phone': data.phone}}
+    )
+    
+    # Create virtual account if doesn't exist
+    va_exists = await db.virtual_accounts.find_one({'user_id': user['id']}, {'_id': 0})
+    if not va_exists:
+        user['phone'] = data.phone
+        asyncio.create_task(create_paymentpoint_virtual_account(user))
+    
+    return {'success': True, 'phone': data.phone}
 
 @api_router.get("/user/profile")
 async def get_profile(user: dict = Depends(get_current_user)):
@@ -591,7 +605,7 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'id': user['id'],
         'email': user['email'],
         'full_name': user['full_name'],
-        'phone': user.get('phone'),
+        'phone': user.get('phone', ''),
         'ngn_balance': user.get('ngn_balance', 0),
         'usd_balance': user.get('usd_balance', 0),
         'is_admin': user.get('is_admin', False)
@@ -604,10 +618,8 @@ async def get_virtual_accounts(user: dict = Depends(get_current_user)):
 
 @api_router.post("/user/convert-ngn-to-usd")
 async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_current_user)):
-    # Get conversion rate
     config = await db.pricing_config.find_one({}, {'_id': 0})
     if not config:
-        # Create default config
         default_config = PricingConfig()
         config_dict = default_config.model_dump()
         config_dict['updated_at'] = config_dict['updated_at'].isoformat()
@@ -617,22 +629,14 @@ async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_c
     rate = config.get('ngn_to_usd_rate', 1500.0)
     usd_amount = data.amount_ngn / rate
     
-    # Check balance
     if user.get('ngn_balance', 0) < data.amount_ngn:
         raise HTTPException(status_code=400, detail="Insufficient NGN balance")
     
-    # Update balances
     await db.users.update_one(
         {'id': user['id']},
-        {
-            '$inc': {
-                'ngn_balance': -data.amount_ngn,
-                'usd_balance': usd_amount
-            }
-        }
+        {'$inc': {'ngn_balance': -data.amount_ngn, 'usd_balance': usd_amount}}
     )
     
-    # Record transaction
     transaction = Transaction(
         user_id=user['id'],
         type='conversion',
@@ -645,26 +649,9 @@ async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_c
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
     
-    return {
-        'success': True,
-        'ngn_deducted': data.amount_ngn,
-        'usd_received': usd_amount,
-        'rate': rate
-    }
+    return {'success': True, 'ngn_deducted': data.amount_ngn, 'usd_received': usd_amount, 'rate': rate}
 
-@api_router.get("/services/list")
-async def get_services(provider: Optional[str] = None, user: dict = Depends(get_current_user)):
-    """Get available services from SMS providers"""
-    services = {}
-    
-    if not provider or provider == 'smspool':
-        services['smspool'] = await get_smspool_services()
-    if not provider or provider == 'daisysms':
-        services['daisysms'] = await get_daisysms_services()
-    if not provider or provider == 'tigersms':
-        services['tigersms'] = await get_tigersms_services()
-    
-    return services
+# ============ SMS Order Routes (Updated) ============
 
 @api_router.post("/orders/purchase")
 async def purchase_number(
@@ -672,7 +659,17 @@ async def purchase_number(
     background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user)
 ):
-    # Get pricing config
+    # Map server to provider
+    server_map = {
+        'us_server': 'daisysms',
+        'server1': 'smspool',
+        'server2': 'tigersms'
+    }
+    
+    provider = server_map.get(data.server)
+    if not provider:
+        raise HTTPException(status_code=400, detail="Invalid server selection")
+    
     config = await db.pricing_config.find_one({}, {'_id': 0})
     if not config:
         default_config = PricingConfig()
@@ -681,47 +678,43 @@ async def purchase_number(
         await db.pricing_config.insert_one(config_dict)
         config = config_dict
     
-    # Get markup for provider
-    markup_key = f'{data.provider}_markup'
+    markup_key = f'{provider}_markup'
     markup = config.get(markup_key, 20.0)
     
-    # Purchase number from provider
     result = None
-    provider_cost = 0.5  # Default, should be from API response
+    provider_cost = 0.5
     
-    if data.provider == 'smspool':
+    if provider == 'smspool':
         result = await purchase_number_smspool(data.service, data.country)
         if result and result.get('success'):
             provider_cost = result.get('price', 0.5)
-    elif data.provider == 'daisysms':
-        result = await purchase_number_daisysms(data.service, data.country)
+    elif provider == 'daisysms':
+        result = await purchase_number_daisysms(
+            data.service, data.country, 
+            data.area_code, data.carrier, data.phone_make
+        )
         if result and 'ACCESS_NUMBER' in str(result):
             provider_cost = 0.5
-    elif data.provider == 'tigersms':
+    elif provider == 'tigersms':
         result = await purchase_number_tigersms(data.service, data.country)
         if result and 'ACCESS_NUMBER' in str(result):
             provider_cost = 0.5
-    else:
-        raise HTTPException(status_code=400, detail="Invalid provider")
     
     if not result:
         raise HTTPException(status_code=400, detail="Failed to purchase number from provider")
     
-    # Calculate final cost with markup
     final_cost = provider_cost * (1 + markup / 100)
     
-    # Check user balance
     if user.get('usd_balance', 0) < final_cost:
         raise HTTPException(status_code=400, detail="Insufficient USD balance")
     
-    # Extract phone number and activation ID
     phone_number = None
     activation_id = None
     
-    if data.provider == 'smspool':
+    if provider == 'smspool':
         phone_number = result.get('number')
         activation_id = result.get('order_id')
-    else:  # daisysms or tigersms
+    else:
         response_text = str(result)
         if 'ACCESS_NUMBER' in response_text:
             parts = response_text.split(':')
@@ -729,10 +722,10 @@ async def purchase_number(
                 activation_id = parts[1]
                 phone_number = parts[2]
     
-    # Create order
     order = SMSOrder(
         user_id=user['id'],
-        provider=data.provider,
+        server=data.server,
+        provider=provider,
         service=data.service,
         country=data.country,
         phone_number=phone_number,
@@ -741,7 +734,10 @@ async def purchase_number(
         cost_usd=final_cost,
         provider_cost=provider_cost,
         markup_percentage=markup,
-        can_cancel=False
+        can_cancel=False,
+        area_code=data.area_code,
+        carrier=data.carrier,
+        phone_make=data.phone_make
     )
     
     order_dict = order.model_dump()
@@ -749,13 +745,8 @@ async def purchase_number(
     order_dict['expires_at'] = order_dict['expires_at'].isoformat()
     await db.sms_orders.insert_one(order_dict)
     
-    # Deduct balance
-    await db.users.update_one(
-        {'id': user['id']},
-        {'$inc': {'usd_balance': -final_cost}}
-    )
+    await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': -final_cost}})
     
-    # Record transaction
     transaction = Transaction(
         user_id=user['id'],
         type='purchase',
@@ -763,19 +754,15 @@ async def purchase_number(
         currency='USD',
         status='completed',
         reference=order.id,
-        metadata={'service': data.service, 'country': data.country, 'provider': data.provider}
+        metadata={'service': data.service, 'country': data.country, 'provider': provider}
     )
     trans_dict = transaction.model_dump()
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
     
-    # Start background OTP polling
     background_tasks.add_task(otp_polling_task, order.id)
     
-    return {
-        'success': True,
-        'order': order_dict
-    }
+    return {'success': True, 'order': order_dict}
 
 @api_router.get("/orders/list")
 async def list_orders(user: dict = Depends(get_current_user)):
@@ -795,7 +782,6 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    # Check if cancellation is allowed
     if order['status'] != 'active' and order['status'] != 'expired':
         raise HTTPException(status_code=400, detail="Order cannot be cancelled")
     
@@ -805,28 +791,15 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     if not order.get('can_cancel', False):
         created_at = datetime.fromisoformat(order['created_at'].replace('Z', '+00:00'))
         elapsed = (datetime.now(timezone.utc) - created_at).total_seconds()
-        if elapsed < 300:  # 5 minutes
+        if elapsed < 300:
             raise HTTPException(status_code=400, detail="Can only cancel after 5 minutes")
     
-    # Cancel on provider
     if order.get('activation_id'):
-        cancelled = await cancel_number_provider(order['provider'], order['activation_id'])
-        if not cancelled:
-            logger.warning(f"Failed to cancel on provider for order {order_id}")
+        await cancel_number_provider(order['provider'], order['activation_id'])
     
-    # Refund user
-    await db.users.update_one(
-        {'id': user['id']},
-        {'$inc': {'usd_balance': order['cost_usd']}}
-    )
+    await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': order['cost_usd']}})
+    await db.sms_orders.update_one({'id': order_id}, {'$set': {'status': 'cancelled'}})
     
-    # Update order status
-    await db.sms_orders.update_one(
-        {'id': order_id},
-        {'$set': {'status': 'cancelled'}}
-    )
-    
-    # Record refund transaction
     transaction = Transaction(
         user_id=user['id'],
         type='refund',
@@ -844,11 +817,122 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.get("/transactions/list")
 async def list_transactions(user: dict = Depends(get_current_user)):
-    transactions = await db.transactions.find(
-        {'user_id': user['id']},
-        {'_id': 0}
-    ).sort('created_at', -1).to_list(100)
+    transactions = await db.transactions.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(100)
     return {'transactions': transactions}
+
+# ============ Payscribe Routes ============
+
+@api_router.get("/payscribe/services")
+async def get_payscribe_services(user: dict = Depends(get_current_user)):
+    """Get available Payscribe services"""
+    services = {
+        'airtime': ['MTN', 'Airtel', 'Glo', '9Mobile'],
+        'data': ['MTN', 'Airtel', 'Glo', '9Mobile'],
+        'electricity': ['EKEDC', 'IKEDC', 'AEDC', 'PHED'],
+        'cable': ['DSTV', 'GOTV', 'Startimes'],
+        'betting': ['Bet9ja', '1xBet', 'Sportybet']
+    }
+    return services
+
+@api_router.get("/payscribe/data-plans")
+async def get_data_plans(network: str, user: dict = Depends(get_current_user)):
+    """Get data plans for a network"""
+    result = await payscribe_request(f'data/lookup?network={network.lower()}')
+    return result or {'status': False, 'message': 'Failed to fetch plans'}
+
+@api_router.post("/payscribe/buy-airtime")
+async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
+    """Purchase airtime"""
+    if user.get('ngn_balance', 0) < request.amount:
+        raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+    
+    data = {
+        'network': request.provider.lower(),
+        'phone': request.recipient,
+        'amount': request.amount,
+        'ref': str(uuid.uuid4())
+    }
+    
+    result = await payscribe_request('airtime/vend', 'POST', data)
+    
+    if result and result.get('status'):
+        await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+        
+        bill_payment = BillPayment(
+            user_id=user['id'],
+            service_type='airtime',
+            provider=request.provider,
+            amount=request.amount,
+            recipient=request.recipient,
+            status='completed',
+            trans_id=result.get('message', {}).get('details', {}).get('trans_id'),
+            metadata=result
+        )
+        bp_dict = bill_payment.model_dump()
+        bp_dict['created_at'] = bp_dict['created_at'].isoformat()
+        await db.bill_payments.insert_one(bp_dict)
+        
+        transaction = Transaction(
+            user_id=user['id'],
+            type='bill_payment',
+            amount=request.amount,
+            currency='NGN',
+            status='completed',
+            reference=bill_payment.id,
+            metadata={'service': 'airtime', 'provider': request.provider}
+        )
+        trans_dict = transaction.model_dump()
+        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+        await db.transactions.insert_one(trans_dict)
+        
+        return {'success': True, 'message': 'Airtime purchase successful', 'details': result}
+    
+    raise HTTPException(status_code=400, detail="Airtime purchase failed")
+
+@api_router.get("/payscribe/stablecoin-currencies")
+async def get_stablecoin_currencies(user: dict = Depends(get_current_user)):
+    """Get available stablecoin currencies and networks"""
+    result = await payscribe_request('stable/addresses/currencies')
+    return result or {'status': False, 'message': 'Failed to fetch currencies'}
+
+@api_router.post("/payscribe/create-stablecoin-wallet")
+async def create_stablecoin_wallet(request: CreateStablecoinWalletRequest, user: dict = Depends(get_current_user)):
+    """Create stablecoin deposit wallet"""
+    data = {
+        'currency': request.currency,
+        'network': request.network,
+        'chain': request.chain,
+        'label': request.label,
+        'customer_id': user['id']
+    }
+    
+    result = await payscribe_request('stable/address/create', 'POST', data)
+    
+    if result and result.get('status'):
+        details = result.get('message', {}).get('details', {})
+        wallet = StablecoinWallet(
+            user_id=user['id'],
+            currency=request.currency,
+            network=request.network,
+            chain=request.chain,
+            address=details.get('address', ''),
+            label=request.label,
+            tracking_id=details.get('tracking_id', ''),
+            status='active'
+        )
+        wallet_dict = wallet.model_dump()
+        wallet_dict['created_at'] = wallet_dict['created_at'].isoformat()
+        await db.stablecoin_wallets.insert_one(wallet_dict)
+        
+        return {'success': True, 'wallet': wallet_dict}
+    
+    raise HTTPException(status_code=400, detail="Failed to create wallet")
+
+@api_router.get("/payscribe/stablecoin-wallets")
+async def get_stablecoin_wallets(user: dict = Depends(get_current_user)):
+    """Get user's stablecoin wallets"""
+    wallets = await db.stablecoin_wallets.find({'user_id': user['id']}, {'_id': 0}).to_list(50)
+    return {'wallets': wallets}
 
 # ============ Admin Routes ============
 
@@ -877,11 +961,7 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
     
-    await db.pricing_config.update_one(
-        {},
-        {'$set': update_fields},
-        upsert=True
-    )
+    await db.pricing_config.update_one({}, {'$set': update_fields}, upsert=True)
     
     return {'success': True, 'updated': update_fields}
 
@@ -891,7 +971,6 @@ async def get_admin_stats(admin: dict = Depends(require_admin)):
     total_orders = await db.sms_orders.count_documents({})
     active_orders = await db.sms_orders.count_documents({'status': 'active'})
     
-    # Calculate total revenue
     pipeline = [
         {'$match': {'type': 'purchase', 'status': 'completed'}},
         {'$group': {'_id': None, 'total': {'$sum': '$amount'}}}
@@ -909,71 +988,54 @@ async def get_admin_stats(admin: dict = Depends(require_admin)):
 # ============ Webhook Routes ============
 
 @api_router.post("/webhooks/paymentpoint")
-async def paymentpoint_webhook(
-    background_tasks: BackgroundTasks,
-    paymentpoint_signature: Optional[str] = Header(None)
-):
-    """Handle PaymentPoint payment notifications"""
-    from fastapi import Request
-    
-    async def process_webhook(request: Request):
-        try:
-            body = await request.body()
+async def paymentpoint_webhook(request: Request, paymentpoint_signature: Optional[str] = Header(None)):
+    try:
+        body = await request.body()
+        calculated_signature = hmac.new(
+            PAYMENTPOINT_SECRET.encode('utf-8'),
+            body,
+            hashlib.sha256
+        ).hexdigest()
+        
+        if paymentpoint_signature and calculated_signature != paymentpoint_signature:
+            logger.warning("Invalid PaymentPoint webhook signature")
+            return {'status': 'error', 'message': 'Invalid signature'}
+        
+        import json
+        data = json.loads(body)
+        
+        if data.get('notification_status') == 'payment_successful':
+            amount = data.get('settlement_amount', 0)
+            customer_email = data.get('customer', {}).get('email')
             
-            # Verify signature
-            calculated_signature = hmac.new(
-                PAYMENTPOINT_SECRET.encode('utf-8'),
-                body,
-                hashlib.sha256
-            ).hexdigest()
-            
-            if paymentpoint_signature and calculated_signature != paymentpoint_signature:
-                logger.warning("Invalid PaymentPoint webhook signature")
-                return {'status': 'error', 'message': 'Invalid signature'}
-            
-            # Parse webhook data
-            import json
-            data = json.loads(body)
-            
-            if data.get('notification_status') == 'payment_successful':
-                amount = data.get('settlement_amount', 0)
-                customer_email = data.get('customer', {}).get('email')
-                
-                if customer_email and amount > 0:
-                    # Find user and credit balance
-                    user = await db.users.find_one({'email': customer_email}, {'_id': 0})
-                    if user:
-                        await db.users.update_one(
-                            {'id': user['id']},
-                            {'$inc': {'ngn_balance': amount}}
-                        )
-                        
-                        # Record transaction
-                        transaction = Transaction(
-                            user_id=user['id'],
-                            type='deposit_ngn',
-                            amount=amount,
-                            currency='NGN',
-                            status='completed',
-                            reference=data.get('transaction_id'),
-                            metadata=data
-                        )
-                        trans_dict = transaction.model_dump()
-                        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
-                        await db.transactions.insert_one(trans_dict)
-                        
-                        logger.info(f"Credited {amount} NGN to user {user['id']}")
-            
-            return {'status': 'success'}
-        except Exception as e:
-            logger.error(f"PaymentPoint webhook error: {str(e)}")
-            return {'status': 'error', 'message': str(e)}
-    
-    from fastapi import Request
-    # This is a workaround to access request in webhook
-    return {'status': 'received'}
+            if customer_email and amount > 0:
+                user = await db.users.find_one({'email': customer_email}, {'_id': 0})
+                if user:
+                    await db.users.update_one(
+                        {'id': user['id']},
+                        {'$inc': {'ngn_balance': amount}}
+                    )
+                    
+                    transaction = Transaction(
+                        user_id=user['id'],
+                        type='deposit_ngn',
+                        amount=amount,
+                        currency='NGN',
+                        status='completed',
+                        reference=data.get('transaction_id'),
+                        metadata=data
+                    )
+                    trans_dict = transaction.model_dump()
+                    trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+                    await db.transactions.insert_one(trans_dict)
+                    
+                    logger.info(f"Credited {amount} NGN to user {user['id']}")
+        
+        return {'status': 'success'}
+    except Exception as e:
+        logger.error(f"PaymentPoint webhook error: {str(e)}")
+        return {'status': 'error', 'message': str(e)}
 
-# Include router
 app.include_router(api_router)
 
 app.add_middleware(
