@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://smsrelay-3.preview.emergentagent.com/api
-- **Frontend**: https://smsrelay-3.preview.emergentagent.com
+- **Backend**: https://otp-relay-1.preview.emergentagent.com/api
+- **Frontend**: https://otp-relay-1.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 
