@@ -441,7 +441,12 @@ const Dashboard = ({ user, setUser }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Server</label>
                     <select
                       value={selectedServer}
-                      onChange={(e) => setSelectedServer(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedServer(e.target.value);
+                        setSelectedService('');
+                        setSelectedCountry('');
+                        fetchServicesForServer(e.target.value);
+                      }}
                       className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
                     >
                       <option value="">Select server</option>
@@ -453,24 +458,40 @@ const Dashboard = ({ user, setUser }) => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Service</label>
-                    <input
-                      type="text"
+                    <select
                       value={selectedService}
                       onChange={(e) => setSelectedService(e.target.value)}
-                      placeholder="e.g., whatsapp, telegram"
-                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
-                    />
+                      disabled={!selectedServer || servicesLoading}
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">
+                        {servicesLoading ? 'Loading services...' : selectedServer ? 'Select service' : 'Select server first'}
+                      </option>
+                      {availableServices.map((service) => (
+                        <option key={service.code} value={service.code}>
+                          {service.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                    <input
-                      type="text"
+                    <select
                       value={selectedCountry}
                       onChange={(e) => setSelectedCountry(e.target.value)}
-                      placeholder="e.g., us, uk, ng"
-                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
-                    />
+                      disabled={!selectedServer || servicesLoading}
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">
+                        {servicesLoading ? 'Loading countries...' : selectedServer ? 'Select country' : 'Select server first'}
+                      </option>
+                      {availableCountries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   
                   {selectedServer === 'us_server' && (
