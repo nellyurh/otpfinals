@@ -781,19 +781,59 @@ async def get_smspool_services(user: dict = Depends(get_current_user), refresh: 
         return {'success': False, 'message': str(e)}
 
 @api_router.get("/services/daisysms")
-async def get_daisysms_services(user: dict = Depends(get_current_user)):
-    """Fetch available services and pricing from DaisySMS"""
+async def get_daisysms_services(user: dict = Depends(get_current_user), refresh: bool = False):
+    """Fetch available services and pricing from DaisySMS with DB caching"""
     try:
+        # Check cache first
+        if not refresh:
+            cached_count = await db.cached_services.count_documents({'provider': 'daisysms'})
+            if cached_count > 0:
+                cached_services = await db.cached_services.find({'provider': 'daisysms'}, {'_id': 0}).to_list(10000)
+                # Restructure for frontend
+                data = {}
+                for service in cached_services:
+                    service_code = service['service_code']
+                    if service_code not in data:
+                        data[service_code] = {}
+                    data[service_code][service['country_code']] = {
+                        'name': service['service_name'],
+                        'cost': str(service['base_price'])
+                    }
+                return {'success': True, 'data': data, 'cached': True}
+        
+        # Fetch from API
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
                 params={'api_key': DAISYSMS_API_KEY, 'action': 'getPricesVerification'},
-                timeout=15.0
+                timeout=30.0
             )
             
             if response.status_code == 200:
                 data = response.json()
-                return {'success': True, 'data': data}
+                
+                # Cache in DB
+                cached_services = []
+                for service_code, countries in data.items():
+                    for country_code, service_info in countries.items():
+                        cached_service = CachedService(
+                            provider='daisysms',
+                            service_code=service_code,
+                            service_name=service_info.get('name', service_code),
+                            country_code=country_code,
+                            country_name=get_country_name(country_code),
+                            base_price=float(service_info.get('cost', 0)),
+                            currency='USD'
+                        )
+                        cached_services.append(cached_service.model_dump())
+                
+                if cached_services:
+                    await db.cached_services.delete_many({'provider': 'daisysms'})
+                    for service in cached_services:
+                        service['last_updated'] = service['last_updated'].isoformat()
+                    await db.cached_services.insert_many(cached_services)
+                
+                return {'success': True, 'data': data, 'cached': False}
             
             return {'success': False, 'message': 'Failed to fetch DaisySMS services'}
     except Exception as e:
