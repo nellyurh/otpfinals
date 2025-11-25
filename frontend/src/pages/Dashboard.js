@@ -439,8 +439,8 @@ const Dashboard = ({ user, setUser }) => {
               );
             })}
             
-            {user.is_admin && (
-              <div className="pt-4 mt-4 border-t">
+            <div className="pt-4 mt-4 border-t space-y-2">
+              {user.is_admin && (
                 <a
                   href="/admin"
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
@@ -451,8 +451,15 @@ const Dashboard = ({ user, setUser }) => {
                   </svg>
                   <span className="font-medium">Admin Panel</span>
                 </a>
-              </div>
-            )}
+              )}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">Logout</span>
+              </button>
+            </div>
           </nav>
         </aside>
 
