@@ -138,8 +138,14 @@ const Dashboard = ({ user, setUser }) => {
           
           for (const serviceCode in data) {
             const serviceData = data[serviceCode];
-            services.push({ code: serviceCode, name: serviceCode });
             
+            // Get service name from first country's data
+            const firstCountryData = Object.values(serviceData)[0];
+            const serviceName = firstCountryData?.name || serviceCode;
+            
+            services.push({ code: serviceCode, name: serviceName });
+            
+            // Extract countries for this service
             for (const countryCode in serviceData) {
               if (!countries.find(c => c.code === countryCode)) {
                 countries.push({ code: countryCode, name: countryCode });
