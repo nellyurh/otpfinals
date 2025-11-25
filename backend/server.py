@@ -193,10 +193,18 @@ class PurchaseNumberRequest(BaseModel):
     server: str  # us_server, server1, server2
     service: str
     country: str
+    payment_currency: str = 'USD'  # USD or NGN
     # Optional DaisySMS filters
     area_code: Optional[str] = None
     carrier: Optional[str] = None
     phone_make: Optional[str] = None
+
+class CalculatePriceRequest(BaseModel):
+    server: str
+    service: str
+    country: str
+    area_code: Optional[str] = None
+    carrier: Optional[str] = None
 
 class ConversionRequest(BaseModel):
     amount_ngn: float
