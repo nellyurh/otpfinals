@@ -323,6 +323,26 @@ const Dashboard = ({ user, setUser }) => {
     }
   };
 
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Cancel this order and get a refund?')) {
+      return;
+    }
+    
+    try {
+      const response = await axios.post(
+        `${API}/orders/${orderId}/cancel`,
+        {},
+        axiosConfig
+      );
+      
+      toast.success(response.data.message);
+      fetchProfile();
+      fetchOrders();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to cancel order');
+    }
+  };
+
   const handleBuyAirtime = async () => {
     if (!billProvider || !billAmount || !billRecipient) {
       toast.error('Fill all fields');
