@@ -1288,19 +1288,37 @@ async def purchase_number(
     if not result:
         raise HTTPException(status_code=400, detail="Failed to purchase number from provider")
     
+    # Parse response
     phone_number = None
     activation_id = None
     
     if provider == 'smspool':
         phone_number = result.get('number')
         activation_id = result.get('order_id')
-    else:
+    elif provider == 'daisysms':
+        response_text = result.get('text', '')
+        if 'ACCESS_NUMBER' in response_text:
+            parts = response_text.split(':')
+            if len(parts) >= 3:
+                activation_id = parts[1]
+                phone_number = parts[2]
+    else:  # tigersms
         response_text = str(result)
         if 'ACCESS_NUMBER' in response_text:
             parts = response_text.split(':')
             if len(parts) >= 3:
                 activation_id = parts[1]
                 phone_number = parts[2]
+    
+    # Deduct from appropriate balance
+    if data.payment_currency == 'NGN':
+        await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -final_price_ngn}})
+        charged_amount = final_price_ngn
+        charged_currency = 'NGN'
+    else:
+        await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': -final_price_usd}})
+        charged_amount = final_price_usd
+        charged_currency = 'USD'
     
     order = SMSOrder(
         user_id=user['id'],
