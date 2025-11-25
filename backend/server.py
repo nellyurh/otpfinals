@@ -719,22 +719,63 @@ async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_c
 # ============ SMS Service Discovery Routes ============
 
 @api_router.get("/services/smspool")
-async def get_smspool_services(user: dict = Depends(get_current_user)):
-    """Fetch available services and countries from SMS-pool"""
+async def get_smspool_services(user: dict = Depends(get_current_user), refresh: bool = False):
+    """Fetch available services and countries from SMS-pool with DB caching"""
     try:
+        # Check cache first (if not forcing refresh)
+        if not refresh:
+            cached_count = await db.cached_services.count_documents({'provider': 'smspool'})
+            if cached_count > 0:
+                cached_services = await db.cached_services.find({'provider': 'smspool'}, {'_id': 0}).to_list(10000)
+                # Restructure for frontend
+                data = {}
+                for service in cached_services:
+                    country = service['country_code']
+                    if country not in data:
+                        data[country] = {}
+                    data[country][service['service_code']] = {
+                        'name': service['service_name'],
+                        'cost': service['base_price']
+                    }
+                return {'success': True, 'data': data, 'cached': True}
+        
+        # Fetch from API
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 'https://api.sms-pool.com/service/retrieve_all',
                 params={'key': SMSPOOL_API_KEY},
-                timeout=15.0
+                timeout=30.0
             )
             
             if response.status_code == 200:
-                # SMS-pool returns data indexed by country code first
                 data = response.json()
-                return {'success': True, 'data': data}
+                
+                # Cache in DB for future use
+                cached_services = []
+                for country_code, services in data.items():
+                    for service_code, service_info in services.items():
+                        cached_service = CachedService(
+                            provider='smspool',
+                            service_code=service_code,
+                            service_name=service_info.get('name', service_code),
+                            country_code=country_code,
+                            country_name=get_country_name(country_code),
+                            base_price=float(service_info.get('cost', 0)),
+                            currency='USD'
+                        )
+                        cached_services.append(cached_service.model_dump())
+                
+                if cached_services:
+                    # Clear old cache
+                    await db.cached_services.delete_many({'provider': 'smspool'})
+                    # Insert new cache
+                    for service in cached_services:
+                        service['last_updated'] = service['last_updated'].isoformat()
+                    await db.cached_services.insert_many(cached_services)
+                
+                return {'success': True, 'data': data, 'cached': False}
             
-            return {'success': False, 'message': 'Failed to fetch SMS-pool services'}
+            return {'success': False, 'message': f'SMS-pool API error: {response.status_code}'}
     except Exception as e:
         logger.error(f"SMS-pool service fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
