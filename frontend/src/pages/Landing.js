@@ -165,7 +165,7 @@ const Landing = ({ setUser }) => {
                   <TabsContent value="login">
                     <form onSubmit={handleLogin} className="space-y-4" data-testid="login-form">
                       <div className="space-y-2">
-                        <Label htmlFor="login-email">Email</Label>
+                        <Label htmlFor="login-email" className="font-bold text-gray-900 dark:text-white uppercase text-xs">Email</Label>
                         <Input
                           id="login-email"
                           data-testid="login-email-input"
@@ -174,12 +174,12 @@ const Landing = ({ setUser }) => {
                           value={loginData.email}
                           onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                           required
-                          className="bg-zinc-900 border-zinc-800"
+                          className="bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white focus:border-blue-500 font-medium"
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="login-password">Password</Label>
+                        <Label htmlFor="login-password" className="font-bold text-gray-900 dark:text-white uppercase text-xs">Password</Label>
                         <Input
                           id="login-password"
                           data-testid="login-password-input"
@@ -188,7 +188,7 @@ const Landing = ({ setUser }) => {
                           value={loginData.password}
                           onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                           required
-                          className="bg-zinc-900 border-zinc-800"
+                          className="bg-white dark:bg-gray-700 border-2 border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white focus:border-blue-500 font-medium"
                         />
                       </div>
                       
@@ -196,7 +196,7 @@ const Landing = ({ setUser }) => {
                         type="submit"
                         data-testid="login-submit-button"
                         disabled={loading}
-                        className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold uppercase tracking-wide border-2 border-blue-600 shadow-lg hover:shadow-xl transition-all"
                       >
                         {loading ? 'Signing in...' : 'Sign In'}
                         <ArrowRight className="w-4 h-4 ml-2" />
