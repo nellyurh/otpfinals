@@ -657,13 +657,14 @@ async def get_smspool_services(user: dict = Depends(get_current_user)):
     """Fetch available services and countries from SMS-pool"""
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                'https://api.sms-pool.com/country/retrieve_all',
+            response = await client.post(
+                'https://api.sms-pool.com/service/retrieve_all',
                 params={'key': SMSPOOL_API_KEY},
                 timeout=15.0
             )
             
             if response.status_code == 200:
+                # SMS-pool returns data indexed by country code first
                 data = response.json()
                 return {'success': True, 'data': data}
             
