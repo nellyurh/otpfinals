@@ -97,44 +97,44 @@ const Landing = ({ setUser }) => {
             </p>
 
             {/* Features */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg">
-                  <Globe className="w-5 h-5 text-emerald-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+              <div className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-xl transition-shadow">
+                <div className="p-3 bg-blue-500 text-white">
+                  <Globe className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Global Coverage</h3>
-                  <p className="text-sm text-zinc-400">Numbers from 150+ countries</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Global Coverage</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Numbers from 150+ countries</p>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg">
-                  <Shield className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-xl transition-shadow">
+                <div className="p-3 bg-purple-500 text-white">
+                  <Shield className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Secure & Private</h3>
-                  <p className="text-sm text-zinc-400">Your data is protected</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Secure & Private</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Your data is protected</p>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg">
-                  <Zap className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-xl transition-shadow">
+                <div className="p-3 bg-green-500 text-white">
+                  <Zap className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Instant Delivery</h3>
-                  <p className="text-sm text-zinc-400">Get OTP in seconds</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Instant Delivery</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Get OTP in seconds</p>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg">
-                  <Wallet className="w-5 h-5 text-emerald-400" />
+              <div className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-xl transition-shadow">
+                <div className="p-3 bg-orange-500 text-white">
+                  <Wallet className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Flexible Payments</h3>
-                  <p className="text-sm text-zinc-400">NGN & USD support</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white">Flexible Payments</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">NGN & USD support</p>
                 </div>
               </div>
             </div>
