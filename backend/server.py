@@ -323,15 +323,14 @@ async def purchase_number_daisysms(service: str, country: str, area_code: Option
         params = {
             'api_key': DAISYSMS_API_KEY,
             'action': 'getNumber',
-            'service': service,
-            'country': country
+            'service': service
         }
         if area_code:
-            params['area_code'] = area_code
+            params['areas'] = area_code
         if carrier:
-            params['carrier'] = carrier
+            params['carriers'] = carrier
         if phone_make:
-            params['phone_make'] = phone_make
+            params['number'] = phone_make
             
         async with httpx.AsyncClient() as client:
             response = await client.get(
