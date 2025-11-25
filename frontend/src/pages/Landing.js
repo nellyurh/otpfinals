@@ -1,10 +1,22 @@
 import { useState } from 'react';
-import { Phone, Shield, Zap, Globe, DollarSign, Clock, CheckCircle2, X } from 'lucide-react';
+import { Phone, Shield, Zap, Globe, DollarSign, Clock, CheckCircle2, X, TrendingUp, Users, Star } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Popular services data
+const popularServices = [
+  { country: 'United States', flag: '🇺🇸', service: 'WhatsApp', orders: '4,776', price: '$0.60' },
+  { country: 'United States', flag: '🇺🇸', service: 'Google', orders: '7,179', price: '$0.35' },
+  { country: 'United States', flag: '🇺🇸', service: 'Telegram', orders: '7,424', price: '$0.46' },
+  { country: 'United States', flag: '🇺🇸', service: 'Instagram', orders: '4,515', price: '$0.05' },
+  { country: 'Nigeria', flag: '🇳🇬', service: 'WhatsApp', orders: '2,340', price: '$0.25' },
+  { country: 'Nigeria', flag: '🇳🇬', service: 'Facebook', orders: '3,120', price: '$0.20' },
+  { country: 'United Kingdom', flag: '🇬🇧', service: 'Telegram', orders: '1,890', price: '$0.55' },
+  { country: 'Canada', flag: '🇨🇦', service: 'Google', orders: '2,560', price: '$0.40' },
+];
 
 const Landing = ({ setUser }) => {
   const [showAuth, setShowAuth] = useState(false);
@@ -73,7 +85,7 @@ const Landing = ({ setUser }) => {
             </div>
             <button
               onClick={() => setShowAuth(true)}
-              className="px-6 py-2.5 rounded-lg font-semibold transition-all"
+              className="px-6 py-2.5 rounded-lg font-semibold transition-all hover:opacity-90"
               style={{ background: '#4169E1', color: 'white' }}
               data-testid="get-started-btn"
             >
@@ -95,18 +107,18 @@ const Landing = ({ setUser }) => {
           </p>
           <div className="flex items-center justify-center gap-4">
             <button
-              onClick={() => setShowAuth(true)}
-              className="px-8 py-3.5 rounded-lg font-bold text-lg transition-all"
+              onClick={() => { setShowAuth(true); setIsLogin(false); }}
+              className="px-8 py-3.5 rounded-lg font-bold text-lg transition-all hover:opacity-90"
               style={{ background: '#4169E1', color: 'white' }}
             >
               Register Now
             </button>
             <button
-              onClick={() => setShowAuth(true)}
-              className="px-8 py-3.5 rounded-lg font-bold text-lg border transition-all"
+              onClick={() => { setShowAuth(true); setIsLogin(true); }}
+              className="px-8 py-3.5 rounded-lg font-bold text-lg border transition-all hover:bg-gray-800"
               style={{ borderColor: '#2d3748', color: 'white', background: 'transparent' }}
             >
-              View Services
+              Login
             </button>
           </div>
         </div>
@@ -115,16 +127,60 @@ const Landing = ({ setUser }) => {
         <div className="mt-16 text-center">
           <p className="text-sm mb-6" style={{ color: '#6b7280' }}>Over a thousand services available for SMS verification</p>
           <div className="flex flex-wrap items-center justify-center gap-8 opacity-50">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Ctext x='10' y='25' fill='white' font-size='16' font-weight='bold'%3EGoogle%3C/text%3E%3C/svg%3E" alt="Google" />
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Ctext x='5' y='25' fill='white' font-size='16' font-weight='bold'%3EFacebook%3C/text%3E%3C/svg%3E" alt="Facebook" />
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Ctext x='5' y='25' fill='white' font-size='16' font-weight='bold'%3EWhatsApp%3C/text%3E%3C/svg%3E" alt="WhatsApp" />
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Ctext x='5' y='25' fill='white' font-size='16' font-weight='bold'%3ETelegram%3C/text%3E%3C/svg%3E" alt="Telegram" />
+            <div className="text-white font-bold text-lg">Google</div>
+            <div className="text-white font-bold text-lg">Facebook</div>
+            <div className="text-white font-bold text-lg">WhatsApp</div>
+            <div className="text-white font-bold text-lg">Telegram</div>
+            <div className="text-white font-bold text-lg">Instagram</div>
+            <div className="text-white font-bold text-lg">Twitter</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Popular Services */}
+      <div className="py-16" style={{ background: '#0a0e12' }}>
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-bold text-center text-white mb-4">Popular Services</h2>
+          <p className="text-center mb-12" style={{ color: '#8b95a5' }}>Most ordered verification numbers</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {popularServices.map((service, index) => (
+              <div
+                key={index}
+                className="p-6 rounded-xl border transition-all hover:-translate-y-1 cursor-pointer"
+                style={{ background: '#1a1f26', borderColor: '#2d3748' }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-3xl">{service.flag}</span>
+                  <div>
+                    <div className="text-sm" style={{ color: '#8b95a5' }}>{service.country}</div>
+                    <div className="font-bold text-white text-lg">{service.service}</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs" style={{ color: '#6b7280' }}>Total Orders</div>
+                    <div className="font-semibold text-white">{service.orders}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold" style={{ color: '#4169E1' }}>{service.price}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="w-full mt-4 py-2 rounded-lg font-semibold transition-all"
+                  style={{ background: '#4169E1', color: 'white' }}
+                >
+                  Order Now
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Features */}
-      <div className="py-20" style={{ background: '#1a1f26' }}>
+      <div className="py-20">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold text-center text-white mb-12">Why Choose SMS Relay?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -141,7 +197,7 @@ const Landing = ({ setUser }) => {
                 <DollarSign className="w-8 h-8" style={{ color: '#10b981' }} />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Low Prices</h3>
-              <p style={{ color: '#8b95a5' }}>Starting from just $0.10 per number</p>
+              <p style={{ color: '#8b95a5' }}>Starting from just $0.05 per number</p>
             </div>
             
             <div className="text-center">
@@ -164,29 +220,30 @@ const Landing = ({ setUser }) => {
       </div>
 
       {/* How It Works */}
-      <div className="py-20">
+      <div className="py-20" style={{ background: '#1a1f26' }}>
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center text-white mb-12">How It Works</h2>
+          <h2 className="text-3xl font-bold text-center text-white mb-4">How It Works</h2>
+          <p className="text-center mb-12" style={{ color: '#8b95a5' }}>Get started in 3 simple steps</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#4169E1', color: 'white' }}>
-                <span className="text-xl font-bold">1</span>
+            <div className="text-center p-8 rounded-xl" style={{ background: '#0f1419', border: '1px solid #2d3748' }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#4169E1', color: 'white' }}>
+                <span className="text-2xl font-bold">1</span>
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Select a Service</h3>
               <p style={{ color: '#8b95a5' }}>Choose the platform you need verification for</p>
             </div>
             
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#4169E1', color: 'white' }}>
-                <span className="text-xl font-bold">2</span>
+            <div className="text-center p-8 rounded-xl" style={{ background: '#0f1419', border: '1px solid #2d3748' }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#4169E1', color: 'white' }}>
+                <span className="text-2xl font-bold">2</span>
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Select Country</h3>
               <p style={{ color: '#8b95a5' }}>Pick the country for your phone number</p>
             </div>
             
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#4169E1', color: 'white' }}>
-                <span className="text-xl font-bold">3</span>
+            <div className="text-center p-8 rounded-xl" style={{ background: '#0f1419', border: '1px solid #2d3748' }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#4169E1', color: 'white' }}>
+                <span className="text-2xl font-bold">3</span>
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Get Your OTP</h3>
               <p style={{ color: '#8b95a5' }}>Receive SMS code instantly</p>
@@ -195,10 +252,37 @@ const Landing = ({ setUser }) => {
         </div>
       </div>
 
+      {/* Stats Section */}
+      <div className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-5xl font-bold" style={{ color: '#4169E1' }}>50K+</div>
+              <p className="text-xl text-white mt-2">Active Users</p>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold" style={{ color: '#10b981' }}>1M+</div>
+              <p className="text-xl text-white mt-2">SMS Delivered</p>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold" style={{ color: '#f59e0b' }}>100+</div>
+              <p className="text-xl text-white mt-2">Countries</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t py-8" style={{ borderColor: '#2d3748', background: '#1a1f26' }}>
+        <div className="container mx-auto px-6 text-center" style={{ color: '#8b95a5' }}>
+          <p>&copy; 2024 SMS Relay. All rights reserved.</p>
+        </div>
+      </footer>
+
       {/* Auth Modal */}
       {showAuth && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
-          <div className="w-full max-w-md rounded-2xl p-8 relative" style={{ background: '#1a1f26' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0, 0, 0, 0.8)' }} onClick={() => setShowAuth(false)}>
+          <div className="w-full max-w-md rounded-2xl p-8 relative" style={{ background: '#1a1f26' }} onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowAuth(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -247,33 +331,35 @@ const Landing = ({ setUser }) => {
               <form onSubmit={handleLogin} data-testid="login-form" className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Email</label>
-                  <Input
+                  <input
                     type="email"
                     placeholder="you@example.com"
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
                     data-testid="login-email-input"
-                    className="input-field"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-blue-500 transition-all"
+                    style={{ background: '#0a0e12', borderColor: '#2d3748', color: 'white' }}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Password</label>
-                  <Input
+                  <input
                     type="password"
                     placeholder="••••••••"
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     required
                     data-testid="login-password-input"
-                    className="input-field"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-blue-500 transition-all"
+                    style={{ background: '#0a0e12', borderColor: '#2d3748', color: 'white' }}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
                   data-testid="login-submit-button"
-                  className="w-full py-3 rounded-lg font-bold transition-all"
+                  className="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90"
                   style={{ background: '#4169E1', color: 'white' }}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
@@ -283,33 +369,35 @@ const Landing = ({ setUser }) => {
               <form onSubmit={handleRegister} data-testid="register-form" className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Full Name</label>
-                  <Input
+                  <input
                     type="text"
                     placeholder="John Doe"
                     value={registerData.full_name}
                     onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })}
                     required
                     data-testid="register-name-input"
-                    className="input-field"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-blue-500 transition-all"
+                    style={{ background: '#0a0e12', borderColor: '#2d3748', color: 'white' }}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Email</label>
-                  <Input
+                  <input
                     type="email"
                     placeholder="you@example.com"
                     value={registerData.email}
                     onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                     required
                     data-testid="register-email-input"
-                    className="input-field"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-blue-500 transition-all"
+                    style={{ background: '#0a0e12', borderColor: '#2d3748', color: 'white' }}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
                     Phone Number <span className="text-red-500">*</span>
                   </label>
-                  <Input
+                  <input
                     type="tel"
                     placeholder="08168617185"
                     pattern="^0[789][01]\d{8}$"
@@ -317,27 +405,29 @@ const Landing = ({ setUser }) => {
                     onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
                     required
                     data-testid="register-phone-input"
-                    className="input-field"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-blue-500 transition-all"
+                    style={{ background: '#0a0e12', borderColor: '#2d3748', color: 'white' }}
                   />
                   <p className="text-xs mt-1" style={{ color: '#6b7280' }}>Format: 08168617185</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Password</label>
-                  <Input
+                  <input
                     type="password"
                     placeholder="••••••••"
                     value={registerData.password}
                     onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                     required
                     data-testid="register-password-input"
-                    className="input-field"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-blue-500 transition-all"
+                    style={{ background: '#0a0e12', borderColor: '#2d3748', color: 'white' }}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
                   data-testid="register-submit-button"
-                  className="w-full py-3 rounded-lg font-bold transition-all"
+                  className="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90"
                   style={{ background: '#4169E1', color: 'white' }}
                 >
                   {loading ? 'Creating account...' : 'Create Account'}
