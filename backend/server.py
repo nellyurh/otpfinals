@@ -498,13 +498,19 @@ async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optio
         logger.error(f"SMS-pool purchase error: {str(e)}")
         return None
 
-async def purchase_number_daisysms(service: str, country: str, area_code: Optional[str] = None, 
+async def purchase_number_daisysms(service: str, max_price: float, area_code: Optional[str] = None, 
                                     carrier: Optional[str] = None, phone_make: Optional[str] = None) -> Optional[Dict]:
+    """Purchase number from DaisySMS with max_price protection"""
     try:
+        # Get API key from config
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
+        
         params = {
-            'api_key': DAISYSMS_API_KEY,
+            'api_key': api_key,
             'action': 'getNumber',
-            'service': service
+            'service': service,
+            'max_price': max_price  # Prevent unexpected price increases
         }
         if area_code:
             params['areas'] = area_code
@@ -520,7 +526,15 @@ async def purchase_number_daisysms(service: str, country: str, area_code: Option
                 timeout=15.0
             )
             if response.status_code == 200:
-                return response.json()
+                result_text = response.text
+                # Get actual price from X-Price header
+                actual_price = response.headers.get('X-Price')
+                
+                return {
+                    'text': result_text,
+                    'actual_price': float(actual_price) if actual_price else None,
+                    'status_code': 200
+                }
             return None
     except Exception as e:
         logger.error(f"DaisySMS purchase error: {str(e)}")
