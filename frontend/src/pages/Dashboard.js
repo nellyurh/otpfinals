@@ -1012,6 +1012,39 @@ const Dashboard = ({ user, setUser }) => {
             </div>
           )}
 
+          {activeSection === 'virtual-cards' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg p-6 border shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Virtual Cards</h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Create New Card */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center hover:border-blue-400 transition-colors cursor-pointer">
+                    <CreditCard className="w-16 h-16 text-gray-400 mb-4" />
+                    <h4 className="text-lg font-semibold text-gray-700 mb-2">Create Virtual Card</h4>
+                    <p className="text-sm text-gray-500 text-center mb-4">
+                      Create a virtual card for online payments
+                    </p>
+                    <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
+                      + Create Card
+                    </button>
+                  </div>
+                  
+                  {/* Coming Soon Message */}
+                  <div className="border rounded-lg p-8 flex flex-col items-center justify-center bg-gray-50">
+                    <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h4 className="text-lg font-semibold text-gray-700 mb-2">Coming Soon</h4>
+                    <p className="text-sm text-gray-500 text-center">
+                      Virtual card creation via Payscribe integration
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeSection === 'history' && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900">Transaction History</h2>
