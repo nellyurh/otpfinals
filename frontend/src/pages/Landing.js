@@ -221,7 +221,7 @@ const Landing = ({ setUser }) => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="register-email\" className=\"font-bold text-gray-900 dark:text-white uppercase text-xs\">Email</Label>
+                        <Label htmlFor="register-email" className="font-bold text-gray-900 dark:text-white uppercase text-xs">Email</Label>
                         <Input
                           id="register-email"
                           data-testid="register-email-input"
