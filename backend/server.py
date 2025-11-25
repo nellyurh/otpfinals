@@ -896,61 +896,84 @@ async def get_smspool_services(user: dict = Depends(get_current_user), refresh: 
         return {'success': False, 'message': str(e)}
 
 @api_router.get("/services/daisysms")
-async def get_daisysms_services(user: dict = Depends(get_current_user), refresh: bool = False):
-    """Fetch available services and pricing from DaisySMS with DB caching"""
+async def get_daisysms_services(user: dict = Depends(get_current_user)):
+    """Get DaisySMS services with static pricing (US only)"""
     try:
-        # Check cache first
-        if not refresh:
-            cached_count = await db.cached_services.count_documents({'provider': 'daisysms'})
-            if cached_count > 0:
-                cached_services = await db.cached_services.find({'provider': 'daisysms'}, {'_id': 0}).to_list(10000)
-                # Restructure for frontend
-                data = {}
-                for service in cached_services:
-                    service_code = service['service_code']
-                    if service_code not in data:
-                        data[service_code] = {}
-                    data[service_code][service['country_code']] = {
-                        'name': service['service_name'],
-                        'cost': str(service['base_price'])
-                    }
-                return {'success': True, 'data': data, 'cached': True}
+        # Get API key from config
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
         
-        # Fetch from API
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': DAISYSMS_API_KEY, 'action': 'getPricesVerification'},
-                timeout=30.0
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Cache in DB
-                cached_services = []
-                for service_code, countries in data.items():
-                    for country_code, service_info in countries.items():
-                        cached_service = CachedService(
-                            provider='daisysms',
-                            service_code=service_code,
-                            service_name=service_info.get('name', service_code),
-                            country_code=country_code,
-                            country_name=get_country_name(country_code),
-                            base_price=float(service_info.get('cost', 0)),
-                            currency='USD'
-                        )
-                        cached_services.append(cached_service.model_dump())
-                
-                if cached_services:
-                    await db.cached_services.delete_many({'provider': 'daisysms'})
-                    for service in cached_services:
-                        service['last_updated'] = service['last_updated'].isoformat()
-                    await db.cached_services.insert_many(cached_services)
-                
-                return {'success': True, 'data': data, 'cached': False}
-            
-            return {'success': False, 'message': 'Failed to fetch DaisySMS services'}
+        # Build static service list with pricing
+        data = {}
+        
+        # Map service codes to display names
+        service_names = {
+            'other': 'Service not listed',
+            'wa': 'WhatsApp',
+            'vi': 'Viber',
+            'oa': 'OpenAI / ChatGPT',
+            'tg': 'Telegram',
+            'ma': 'Yahoo',
+            'go': 'Google / Gmail / Youtube',
+            'fb': 'Facebook',
+            'ig': 'Instagram',
+            'tw': 'Twitter',
+            'li': 'LinkedIn',
+            'ds': 'Discord',
+            'tt': 'TikTok',
+            'ub': 'Uber',
+            'pp': 'PayPal',
+            'vm': 'Venmo',
+            'tn': 'Tinder',
+            'bu': 'Bumble',
+            'ap': 'Apple',
+            'am': 'Amazon / AWS',
+            'cb': 'Coinbase',
+            'sn': 'Snapchat',
+            'ca': 'Cash App',
+            'gv': 'Google Voice',
+            'vk': 'VKontakte',
+            'do': 'DoorDash',
+            'fi': 'Fiverr',
+            'nk': 'Nike',
+            'cr': 'Craigslist',
+            'eb': 'eBay',
+            'hg': 'Hinge',
+            'gr': 'Grindr',
+            'tk': 'Ticketmaster',
+            'tm': 'Temu',
+            'ln': 'LINE messenger',
+            'rd': 'Reddit',
+            'st': 'Steam',
+            'bl': 'Blizzard / Battle.net',
+            'nt': 'Netflix',
+            'ab': 'Airbnb',
+            'tc': 'Twitch',
+            'ch': 'Chime',
+            'rb': 'Robinhood',
+            'wm': 'Walmart',
+            'ci': 'Citi',
+            'wf': 'Wells Fargo',
+            'ba': 'Bank of America',
+            'pn': 'PNC',
+            'ch2': 'Chase',
+            'us': 'USAA'
+        }
+        
+        # Create service entries (US only - country code 187)
+        for service_code, price in DAISYSMS_PRICES.items():
+            service_name = service_names.get(service_code, service_code.upper())
+            data[service_code] = {
+                '187': {
+                    'name': service_name,
+                    'cost': str(price),
+                    'count': 100,  # Placeholder
+                    'ttl': 300  # 5 minutes
+                }
+            }
+        
+        return {'success': True, 'data': data}
+        
     except Exception as e:
         logger.error(f"DaisySMS service fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
