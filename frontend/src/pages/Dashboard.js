@@ -747,6 +747,117 @@ const Dashboard = ({ user, setUser }) => {
                   )}
                 </button>
               </div>
+              
+              {/* Active SMS Orders */}
+              <div className="bg-white rounded-lg p-6 border shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Active SMS Orders</h3>
+                  <button 
+                    onClick={fetchOrders}
+                    className="text-blue-600 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {orders.filter(o => o.status === 'active').length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="text-sm text-red-600 mb-3">
+                      No need to refresh the page to get the code.
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">ID</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Service</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Phone no</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Code</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">Cost</th>
+                            <th className="text-left py-2 px-3 font-medium text-gray-700">TTL</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orders.filter(o => o.status === 'active').map((order) => (
+                            <tr key={order.id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-3 font-mono text-xs">{order.id.substring(0, 8)}</td>
+                              <td className="py-3 px-3">{order.service}</td>
+                              <td className="py-3 px-3 font-mono">{order.phone_number || 'Pending...'}</td>
+                              <td className="py-3 px-3">
+                                {order.otp ? (
+                                  <span className="font-mono font-bold text-green-600 text-lg">{order.otp}</span>
+                                ) : (
+                                  <span className="text-gray-400 flex items-center gap-1">
+                                    <RefreshCw className="w-3 h-3 animate-spin" />
+                                    Waiting...
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3 font-semibold">${order.cost_usd?.toFixed(2)}</td>
+                              <td className="py-3 px-3">
+                                {order.can_cancel ? (
+                                  <button 
+                                    onClick={() => handleCancelOrder(order.id)}
+                                    className="text-red-600 hover:text-red-700 text-xs font-semibold"
+                                  >
+                                    Cancel
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-500 text-xs">Active</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Phone className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">No active SMS numbers</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Recent Activations */}
+              <div className="bg-white rounded-lg p-6 border shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activations</h3>
+                
+                {orders.filter(o => o.status !== 'active').length > 0 ? (
+                  <div className="space-y-2">
+                    {orders.filter(o => o.status !== 'active').slice(0, 5).map((order) => (
+                      <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            order.status === 'completed' ? 'bg-green-100' : 
+                            order.status === 'cancelled' ? 'bg-red-100' : 'bg-gray-100'
+                          }`}>
+                            <Phone className={`w-5 h-5 ${
+                              order.status === 'completed' ? 'text-green-600' : 
+                              order.status === 'cancelled' ? 'text-red-600' : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{order.service}</div>
+                            <div className="text-xs text-gray-500">{order.phone_number}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {getStatusBadge(order.status)}
+                          {order.otp && <div className="text-sm font-mono text-gray-600 mt-1">{order.otp}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Phone className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-500">No recent number activations found</p>
+                    <p className="text-sm text-gray-400 mt-1">Your recent number activations will appear here</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
