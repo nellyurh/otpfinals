@@ -515,59 +515,67 @@ const Dashboard = ({ user, setUser }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Server</label>
-                    <select
-                      value={selectedServer}
-                      onChange={(e) => {
-                        setSelectedServer(e.target.value);
+                    <Select
+                      value={selectedServer ? { value: selectedServer, label: 
+                        selectedServer === 'us_server' ? 'US Server (DaisySMS)' :
+                        selectedServer === 'server1' ? 'Server 1 (SMS-pool)' :
+                        'Server 2 (TigerSMS)'
+                      } : null}
+                      onChange={(option) => {
+                        setSelectedServer(option?.value || '');
                         setSelectedService('');
                         setSelectedCountry('');
-                        fetchServicesForServer(e.target.value);
+                        setSelectedServiceOption(null);
+                        setSelectedCountryOption(null);
+                        setEstimatedPrice(null);
+                        fetchServicesForServer(option?.value || '');
                       }}
-                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="">Select server</option>
-                      <option value="us_server">US Server (DaisySMS)</option>
-                      <option value="server1">Server 1 (SMS-pool)</option>
-                      <option value="server2">Server 2 (TigerSMS)</option>
-                    </select>
+                      options={[
+                        { value: 'us_server', label: 'US Server (DaisySMS)' },
+                        { value: 'server1', label: 'Server 1 (SMS-pool)' },
+                        { value: 'server2', label: 'Server 2 (TigerSMS)' }
+                      ]}
+                      placeholder="Select server"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isClearable
+                    />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Service</label>
-                    <select
-                      value={selectedService}
-                      onChange={(e) => setSelectedService(e.target.value)}
-                      disabled={!selectedServer || servicesLoading}
-                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option value="">
-                        {servicesLoading ? 'Loading services...' : selectedServer ? 'Select service' : 'Select server first'}
-                      </option>
-                      {availableServices.map((service) => (
-                        <option key={service.code} value={service.code}>
-                          {service.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      value={selectedServiceOption}
+                      onChange={(option) => {
+                        setSelectedServiceOption(option);
+                        setSelectedService(option?.value || '');
+                      }}
+                      options={availableServices}
+                      isDisabled={!selectedServer || servicesLoading}
+                      isLoading={servicesLoading}
+                      placeholder={servicesLoading ? 'Loading services...' : selectedServer ? 'Select service' : 'Select server first'}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isClearable
+                    />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                    <select
-                      value={selectedCountry}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
-                      disabled={!selectedServer || servicesLoading}
-                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <option value="">
-                        {servicesLoading ? 'Loading countries...' : selectedServer ? 'Select country' : 'Select server first'}
-                      </option>
-                      {availableCountries.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      value={selectedCountryOption}
+                      onChange={(option) => {
+                        setSelectedCountryOption(option);
+                        setSelectedCountry(option?.value || '');
+                      }}
+                      options={availableCountries}
+                      isDisabled={!selectedServer || servicesLoading}
+                      isLoading={servicesLoading}
+                      placeholder={servicesLoading ? 'Loading countries...' : selectedServer ? 'Select country' : 'Select server first'}
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isClearable
+                    />
                   </div>
                   
                   {selectedServer === 'us_server' && (
