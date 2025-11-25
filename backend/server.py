@@ -119,7 +119,23 @@ class PricingConfig(BaseModel):
     daisysms_markup: float = 20.0
     smspool_markup: float = 20.0
     ngn_to_usd_rate: float = 1500.0
+    rub_to_usd_rate: float = 0.010  # 1 RUB = ~0.01 USD
+    area_code_markup: float = 20.0  # DaisySMS area code markup
+    carrier_markup: float = 20.0    # DaisySMS carrier markup
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CachedService(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    provider: str  # smspool, daisysms, tigersms
+    service_code: str
+    service_name: str
+    country_code: str
+    country_name: str
+    base_price: float
+    currency: str  # USD, RUB
+    available: bool = True
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class VirtualAccount(BaseModel):
     model_config = ConfigDict(extra="ignore")
