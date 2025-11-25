@@ -1298,19 +1298,35 @@ async def purchase_number(
     elif provider == 'daisysms':
         response_text = result.get('text', '')
         if 'ACCESS_NUMBER' in response_text:
+            # Format: ACCESS_NUMBER:activation_id:phone_number
             parts = response_text.split(':')
             if len(parts) >= 3:
-                activation_id = parts[1]
-                phone_number = parts[2]
+                activation_id = parts[1].strip()
+                phone_number = parts[2].strip()
+        else:
+            # Handle error responses
+            if 'MAX_PRICE_EXCEEDED' in response_text:
+                raise HTTPException(status_code=400, detail="Price exceeded maximum. Please try again.")
+            elif 'NO_NUMBERS' in response_text:
+                raise HTTPException(status_code=400, detail="No numbers available for this service.")
+            elif 'TOO_MANY_ACTIVE_RENTALS' in response_text:
+                raise HTTPException(status_code=400, detail="Too many active rentals. Please cancel some first.")
+            elif 'NO_MONEY' in response_text:
+                raise HTTPException(status_code=400, detail="Insufficient provider balance.")
+            else:
+                raise HTTPException(status_code=400, detail=f"Provider error: {response_text}")
     else:  # tigersms
         response_text = str(result)
         if 'ACCESS_NUMBER' in response_text:
             parts = response_text.split(':')
             if len(parts) >= 3:
-                activation_id = parts[1]
-                phone_number = parts[2]
+                activation_id = parts[1].strip()
+                phone_number = parts[2].strip()
     
-    # Deduct from appropriate balance
+    if not activation_id or not phone_number:
+        raise HTTPException(status_code=400, detail="Failed to get phone number from provider")
+    
+    # Deduct from appropriate balance ONCE
     if data.payment_currency == 'NGN':
         await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -final_price_ngn}})
         charged_amount = final_price_ngn
@@ -1319,6 +1335,9 @@ async def purchase_number(
         await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': -final_price_usd}})
         charged_amount = final_price_usd
         charged_currency = 'USD'
+    
+    # Calculate expiry (5 minutes for DaisySMS)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
     
     order = SMSOrder(
         user_id=user['id'],
@@ -1329,10 +1348,10 @@ async def purchase_number(
         phone_number=phone_number,
         activation_id=activation_id,
         status='active',
-        cost_usd=final_cost,
-        provider_cost=provider_cost,
+        cost_usd=final_price_usd,
+        provider_cost=actual_price,
         markup_percentage=markup,
-        can_cancel=False,
+        can_cancel=True,  # Can cancel within 5 minutes
         area_code=data.area_code,
         carrier=data.carrier,
         phone_make=data.phone_make
@@ -1340,23 +1359,25 @@ async def purchase_number(
     
     order_dict = order.model_dump()
     order_dict['created_at'] = order_dict['created_at'].isoformat()
-    order_dict['expires_at'] = order_dict['expires_at'].isoformat()
+    order_dict['expires_at'] = expires_at.isoformat()
     await db.sms_orders.insert_one(order_dict)
     
-    await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': -final_cost}})
-    
+    # Create transaction record
     transaction = Transaction(
         user_id=user['id'],
         type='purchase',
-        amount=final_cost,
-        currency='USD',
+        amount=charged_amount,
+        currency=charged_currency,
         status='completed',
         reference=order.id,
-        metadata={'service': data.service, 'country': data.country, 'provider': provider}
+        metadata={'service': data.service, 'country': data.country, 'provider': provider, 'phone': phone_number}
     )
     trans_dict = transaction.model_dump()
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
+    
+    # Start background OTP polling
+    background_tasks.add_task(poll_otp_daisysms, order.id, activation_id)
     
     background_tasks.add_task(otp_polling_task, order.id)
     
