@@ -4,9 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Phone, Shield, Zap, Globe, Lock, Wallet, ArrowRight } from 'lucide-react';
+import { Phone, Shield, Zap, Globe, Lock, Wallet, ArrowRight, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import ThemeToggle from '../components/ThemeToggle';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
