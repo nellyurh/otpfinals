@@ -841,19 +841,79 @@ async def get_daisysms_services(user: dict = Depends(get_current_user), refresh:
         return {'success': False, 'message': str(e)}
 
 @api_router.get("/services/tigersms")
-async def get_tigersms_services(user: dict = Depends(get_current_user)):
-    """Fetch available services and pricing from TigerSMS"""
+async def get_tigersms_services(user: dict = Depends(get_current_user), refresh: bool = False):
+    """Fetch available services and pricing from TigerSMS (RUB prices) with DB caching"""
     try:
+        # Check cache first
+        if not refresh:
+            cached_count = await db.cached_services.count_documents({'provider': 'tigersms'})
+            if cached_count > 0:
+                cached_services = await db.cached_services.find({'provider': 'tigersms'}, {'_id': 0}).to_list(10000)
+                
+                # Get RUB to USD conversion rate
+                config = await db.pricing_config.find_one({}, {'_id': 0})
+                rub_to_usd = config.get('rub_to_usd_rate', 0.010) if config else 0.010
+                
+                # Restructure for frontend with USD conversion
+                data = {}
+                for service in cached_services:
+                    country = service['country_code']
+                    if country not in data:
+                        data[country] = {}
+                    # Convert RUB to USD
+                    price_usd = service['base_price'] * rub_to_usd
+                    data[country][service['service_code']] = {
+                        'name': service['service_name'],
+                        'cost': str(round(price_usd, 2))
+                    }
+                return {'success': True, 'data': data, 'cached': True}
+        
+        # Fetch from API
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://api.tiger-sms.com/stubs/handler_api.php',
                 params={'api_key': TIGERSMS_API_KEY, 'action': 'getPrices'},
-                timeout=15.0
+                timeout=30.0
             )
             
             if response.status_code == 200:
                 data = response.json()
-                return {'success': True, 'data': data}
+                
+                # Get RUB to USD conversion rate
+                config = await db.pricing_config.find_one({}, {'_id': 0})
+                rub_to_usd = config.get('rub_to_usd_rate', 0.010) if config else 0.010
+                
+                # Cache in DB
+                cached_services = []
+                for country_code, services in data.items():
+                    for service_code, service_info in services.items():
+                        # Store original RUB price
+                        price_rub = float(service_info.get('cost', 0))
+                        cached_service = CachedService(
+                            provider='tigersms',
+                            service_code=service_code,
+                            service_name=service_info.get('name', service_code),
+                            country_code=country_code,
+                            country_name=get_country_name(country_code),
+                            base_price=price_rub,  # Store in RUB
+                            currency='RUB'
+                        )
+                        cached_services.append(cached_service.model_dump())
+                
+                if cached_services:
+                    await db.cached_services.delete_many({'provider': 'tigersms'})
+                    for service in cached_services:
+                        service['last_updated'] = service['last_updated'].isoformat()
+                    await db.cached_services.insert_many(cached_services)
+                
+                # Convert prices to USD for frontend
+                for country_code in data:
+                    for service_code in data[country_code]:
+                        price_rub = float(data[country_code][service_code].get('cost', 0))
+                        data[country_code][service_code]['cost'] = str(round(price_rub * rub_to_usd, 2))
+                        data[country_code][service_code]['cost_rub'] = f"{price_rub} ₽"
+                
+                return {'success': True, 'data': data, 'cached': False}
             
             return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
     except Exception as e:
