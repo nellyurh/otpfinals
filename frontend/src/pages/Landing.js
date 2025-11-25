@@ -61,19 +61,32 @@ const Landing = ({ setUser }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 relative overflow-hidden">
-      <ThemeToggle />
-      
-      {/* Sharp Geometric Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-500 transform rotate-45"></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-purple-500 transform -rotate-12"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-500 transform -translate-x-1/2 -translate-y-1/2 rotate-45"></div>
-      </div>
+    <div className="min-h-screen" style={{ background: '#0f1419' }}>
+      {/* Navigation */}
+      <nav className="border-b" style={{ borderColor: '#2d3748', background: '#1a1f26' }}>
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#4169E1' }}>
+                <Phone className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold text-white">SMS Relay</span>
+            </div>
+            <button
+              onClick={() => setShowAuth(true)}
+              className="px-6 py-2.5 rounded-lg font-semibold transition-all hover:-translate-y-0.5"
+              style={{ background: '#4169E1', color: 'white' }}
+              data-testid="get-started-btn"
+            >
+              Get Started
+            </button>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
-      <div className="relative z-10 container mx-auto px-6 py-12">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+      <div className="container mx-auto px-6 py-20">
+        <div className="text-center max-w-4xl mx-auto fade-in">
           {/* Left Side - Marketing */}
           <div className="flex-1 space-y-8 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white border-2 border-blue-600 shadow-lg">
