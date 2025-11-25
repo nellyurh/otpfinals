@@ -498,6 +498,88 @@ async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optio
         logger.error(f"SMS-pool purchase error: {str(e)}")
         return None
 
+async def poll_otp_daisysms(order_id: str, activation_id: str):
+    """Background task to poll for OTP from DaisySMS"""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
+        
+        # Poll for up to 5 minutes (100 attempts, 3 seconds each)
+        for attempt in range(100):
+            await asyncio.sleep(3)  # Wait 3 seconds between polls
+            
+            # Check if order still exists and is active
+            order = await db.sms_orders.find_one({'id': order_id}, {'_id': 0})
+            if not order or order['status'] != 'active':
+                logger.info(f"Order {order_id} no longer active, stopping poll")
+                break
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    'https://daisysms.com/stubs/handler_api.php',
+                    params={'api_key': api_key, 'action': 'getStatus', 'id': activation_id, 'text': 1},
+                    timeout=10.0
+                )
+                
+                if response.status_code == 200:
+                    result = response.text
+                    
+                    if 'STATUS_OK' in result:
+                        # Got the code! Format: STATUS_OK:12345
+                        parts = result.split(':')
+                        if len(parts) >= 2:
+                            otp_code = parts[1].strip()
+                            full_text = response.headers.get('X-Text', '')
+                            
+                            # Update order with OTP
+                            await db.sms_orders.update_one(
+                                {'id': order_id},
+                                {'$set': {
+                                    'otp': otp_code,
+                                    'sms_text': full_text,
+                                    'status': 'completed',
+                                    'can_cancel': False,
+                                    'received_at': datetime.now(timezone.utc).isoformat()
+                                }}
+                            )
+                            
+                            # Mark as done on DaisySMS
+                            await client.get(
+                                'https://daisysms.com/stubs/handler_api.php',
+                                params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 6},
+                                timeout=10.0
+                            )
+                            
+                            logger.info(f"✓ OTP received for order {order_id}: {otp_code}")
+                            break
+                    
+                    elif 'STATUS_CANCEL' in result:
+                        # Rental was cancelled
+                        await db.sms_orders.update_one(
+                            {'id': order_id},
+                            {'$set': {'status': 'cancelled'}}
+                        )
+                        logger.info(f"Order {order_id} was cancelled")
+                        break
+                    
+                    elif 'NO_ACTIVATION' in result:
+                        logger.error(f"Invalid activation ID for order {order_id}")
+                        break
+                    
+                    # else: STATUS_WAIT_CODE - continue polling
+        
+        # If we exit loop without getting code, mark as expired
+        order = await db.sms_orders.find_one({'id': order_id}, {'_id': 0})
+        if order and order['status'] == 'active':
+            await db.sms_orders.update_one(
+                {'id': order_id},
+                {'$set': {'status': 'expired', 'can_cancel': False}}
+            )
+            logger.info(f"Order {order_id} expired without receiving OTP")
+            
+    except Exception as e:
+        logger.error(f"OTP polling error for order {order_id}: {str(e)}")
+
 async def purchase_number_daisysms(service: str, max_price: float, area_code: Optional[str] = None, 
                                     carrier: Optional[str] = None, phone_make: Optional[str] = None) -> Optional[Dict]:
     """Purchase number from DaisySMS with max_price protection"""
