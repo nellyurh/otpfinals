@@ -115,13 +115,20 @@ class SMSOrder(BaseModel):
 class PricingConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    tigersms_markup: float = 20.0
-    daisysms_markup: float = 20.0
-    smspool_markup: float = 20.0
+    # API Keys
+    daisysms_api_key: str = ""
+    tigersms_api_key: str = ""
+    smspool_api_key: str = ""
+    # Markup percentages
+    tigersms_markup: float = 50.0
+    daisysms_markup: float = 50.0
+    smspool_markup: float = 50.0
+    # Currency conversion
     ngn_to_usd_rate: float = 1500.0
     rub_to_usd_rate: float = 0.010  # 1 RUB = ~0.01 USD
-    area_code_markup: float = 20.0  # DaisySMS area code markup
-    carrier_markup: float = 20.0    # DaisySMS carrier markup
+    # DaisySMS specific markups (from their side)
+    area_code_markup: float = 20.0  # DaisySMS adds 20% for area code
+    carrier_markup: float = 20.0    # DaisySMS adds 20% for carrier
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CachedService(BaseModel):
