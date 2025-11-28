@@ -115,7 +115,7 @@ const NewDashboard = () => {
       if (selectedServer.value === 'us_server' || selectedCountry) {
         try {
           const response = await axios.post(
-            `${API}/orders/calculate-price`,
+            `${API}/api/orders/calculate-price`,
             {
               server: selectedServer.value,
               service: selectedService.value,
