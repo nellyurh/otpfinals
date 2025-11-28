@@ -255,6 +255,17 @@ class CreateStablecoinWalletRequest(BaseModel):
     chain: str
     label: Optional[str] = "My Wallet"
 
+class DataPurchaseRequest(BaseModel):
+    plan_code: str
+    recipient: str
+    ref: Optional[str] = None
+
+class BettingFundRequest(BaseModel):
+    bet_id: str
+    customer_id: str
+    amount: float
+    ref: Optional[str] = None
+
 class UpdatePhoneRequest(BaseModel):
     phone: str
 
