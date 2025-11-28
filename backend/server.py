@@ -85,6 +85,12 @@ class User(BaseModel):
     virtual_bank_code: Optional[str] = None
     reserved_account_id: Optional[str] = None
     
+    # Payscribe Customer & KYC Details
+    payscribe_customer_id: Optional[str] = None
+    tier: int = 1  # 1 = Basic, 2 = Standard, 3 = Premium
+    kyc_status: str = 'pending'  # pending, approved, rejected
+    kyc_submitted_at: Optional[datetime] = None
+    
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Transaction(BaseModel):
