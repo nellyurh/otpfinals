@@ -97,6 +97,9 @@ const NewDashboard = () => {
       items: [
         { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet' },
         { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW' },
+        { id: 'buy-data', icon: Wallet, label: 'Buy Data Bundle' },
+        { id: 'airtime', icon: Phone, label: 'Airtime Top-Up' },
+        { id: 'betting', icon: Gift, label: 'Betting' },
         { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards' }
       ]
     },
