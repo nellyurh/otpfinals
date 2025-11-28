@@ -250,6 +250,33 @@ body {
   color: var(--text-tertiary);
 }
 
+/* Fix for all input and select elements to ensure text is visible */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  color: #111827 !important;
+}
+
+input::placeholder,
+select option[value=""] {
+  color: #9ca3af !important;
+}
+
+select {
+  color: #111827 !important;
+  background-color: white !important;
+}
+
+select option {
+  color: #111827 !important;
+  background-color: white !important;
+}
+
 /* Service Card */
 .service-card {
   background: var(--bg-card);
