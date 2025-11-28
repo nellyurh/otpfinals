@@ -705,7 +705,7 @@ const NewDashboard = () => {
                 Maintenance
               </span>
               <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
-                <Phone className="w-7 h-7 text-green-600" />
+                <Phone className="w-7 h-7 text-[#005E3A]" />
               </div>
               <h4 className="font-bold text-gray-900 mb-1">SMS Verify</h4>
               <p className="text-xs text-gray-500">Virtual numbers</p>
