@@ -62,7 +62,7 @@ const NewDashboard = () => {
 
   const fetchPageToggles = async () => {
     try {
-      const response = await axios.get(`${API}/user/page-toggles`, axiosConfig);
+      const response = await axios.get(`${API}/api/user/page-toggles`, axiosConfig);
       setPageToggles(response.data);
     } catch (error) {
       console.error('Failed to fetch page toggles');
@@ -71,7 +71,7 @@ const NewDashboard = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API}/user/profile`, axiosConfig);
+      const response = await axios.get(`${API}/api/user/profile`, axiosConfig);
       setUser(response.data);
     } catch (error) {
       if (error.response?.status === 401) {
@@ -83,7 +83,7 @@ const NewDashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get(`${API}/orders/list`, axiosConfig);
+      const response = await axios.get(`${API}/api/orders/list`, axiosConfig);
       setOrders(response.data.orders);
     } catch (error) {
       console.error('Failed to fetch orders');
@@ -92,7 +92,7 @@ const NewDashboard = () => {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get(`${API}/transactions/list`, axiosConfig);
+      const response = await axios.get(`${API}/api/transactions/list`, axiosConfig);
       setTransactions(response.data.transactions);
     } catch (error) {
       console.error('Failed to fetch transactions');
