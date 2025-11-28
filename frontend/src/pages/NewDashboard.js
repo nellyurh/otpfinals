@@ -1340,16 +1340,23 @@ const NewDashboard = () => {
   }
 
   function BuyDataSection() {
-    const [network, setNetwork] = useState('');
+    const [network, setNetwork] = useState(null);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [dataPlans, setDataPlans] = useState([]);
     const [loadingPlans, setLoadingPlans] = useState(false);
     const [processing, setProcessing] = useState(false);
 
+    const networkOptions = [
+      { value: 'mtn', label: 'MTN' },
+      { value: 'airtel', label: 'Airtel' },
+      { value: 'glo', label: 'Glo' },
+      { value: '9mobile', label: '9mobile' }
+    ];
+
     useEffect(() => {
       if (network) {
-        fetchDataPlans(network);
+        fetchDataPlans(network.value);
       } else {
         setDataPlans([]);
         setSelectedPlan(null);
@@ -1366,7 +1373,13 @@ const NewDashboard = () => {
         
         if (response.data.status && response.data.message?.details) {
           const plans = response.data.message.details[0]?.plans || [];
-          setDataPlans(plans);
+          setDataPlans(plans.map(plan => ({
+            value: plan.plan_code,
+            label: `${plan.name} - ₦${parseFloat(plan.amount).toLocaleString()}`,
+            amount: plan.amount,
+            plan_code: plan.plan_code,
+            name: plan.name
+          })));
         }
       } catch (error) {
         console.error('Failed to fetch data plans:', error);
@@ -1395,7 +1408,7 @@ const NewDashboard = () => {
 
         if (response.data.success) {
           toast.success('Data bundle purchased successfully!');
-          setNetwork('');
+          setNetwork(null);
           setSelectedPlan(null);
           setPhoneNumber('');
           fetchProfile();
@@ -1419,39 +1432,74 @@ const NewDashboard = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
-              <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+              <Select
                 value={network}
-                onChange={(e) => setNetwork(e.target.value)}
-              >
-                <option value="">Choose network provider</option>
-                <option value="mtn">MTN</option>
-                <option value="airtel">Airtel</option>
-                <option value="glo">Glo</option>
-                <option value="9mobile">9mobile</option>
-              </select>
+                onChange={(option) => {
+                  setNetwork(option);
+                  setSelectedPlan(null);
+                }}
+                options={networkOptions}
+                placeholder="Choose network provider"
+                className="react-select-container"
+                classNamePrefix="react-select"
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '48px',
+                    borderWidth: '2px',
+                    borderColor: '#e5e7eb',
+                    '&:hover': { borderColor: '#005E3A' }
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: '#9ca3af'
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: '#111827'
+                  })
+                }}
+              />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Data Plan</label>
-              <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
-                value={selectedPlan?.plan_code || ''}
-                onChange={(e) => {
-                  const plan = dataPlans.find(p => p.plan_code === e.target.value);
-                  setSelectedPlan(plan);
+              <Select
+                value={selectedPlan}
+                onChange={(option) => setSelectedPlan(option)}
+                options={dataPlans}
+                isDisabled={!network || loadingPlans}
+                isLoading={loadingPlans}
+                placeholder={loadingPlans ? 'Loading plans...' : 'Search for a plan...'}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '48px',
+                    borderWidth: '2px',
+                    borderColor: '#e5e7eb',
+                    '&:hover': { borderColor: '#005E3A' }
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: '#9ca3af'
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: '#111827'
+                  }),
+                  option: (base, state) => ({
+                    ...base,
+                    fontSize: '14px',
+                    padding: '10px 12px'
+                  })
                 }}
-                disabled={!network || loadingPlans}
-              >
-                <option value="">
-                  {loadingPlans ? 'Loading plans...' : 'Select data plan'}
-                </option>
-                {dataPlans.map((plan) => (
-                  <option key={plan.plan_code} value={plan.plan_code}>
-                    {plan.name} - ₦{parseFloat(plan.amount).toLocaleString()}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div>
@@ -1461,7 +1509,7 @@ const NewDashboard = () => {
                 placeholder="08012345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
               />
             </div>
 
