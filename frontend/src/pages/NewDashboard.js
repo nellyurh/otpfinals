@@ -364,7 +364,7 @@ const NewDashboard = () => {
         {/* Server Selection */}
         <div className="bg-white rounded-xl p-6 border shadow-sm">
           <label className="block text-sm font-semibold text-gray-700 mb-3">Select Server</label>
-          <Select
+          <Select menuPortalTarget={document.body}
             value={selectedServer}
             onChange={(option) => {
               setSelectedServer(option);
@@ -408,7 +408,7 @@ const NewDashboard = () => {
               {/* Service Search */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Search Service</label>
-                <Select
+                <Select menuPortalTarget={document.body}
                   value={selectedService}
                   onChange={(option) => setSelectedService(option)}
                   options={availableServices}
@@ -426,7 +426,7 @@ const NewDashboard = () => {
               {selectedServer && selectedServer.value !== 'us_server' && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Select Country</label>
-                  <Select
+                  <Select menuPortalTarget={document.body}
                     value={selectedCountry}
                     onChange={(option) => setSelectedCountry(option)}
                     options={availableCountries}
@@ -1376,7 +1376,7 @@ const NewDashboard = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
-              <Select
+              <Select menuPortalTarget={document.body}
                 value={network}
                 onChange={(option) => {
                   setNetwork(option);
@@ -1393,7 +1393,7 @@ const NewDashboard = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Data Plan</label>
-              <Select
+              <Select menuPortalTarget={document.body}
                 value={selectedPlan}
                 onChange={(option) => setSelectedPlan(option)}
                 options={dataPlans}
@@ -1536,7 +1536,7 @@ const NewDashboard = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
-              <Select
+              <Select menuPortalTarget={document.body}
                 value={network}
                 onChange={(option) => setNetwork(option)}
                 options={networkOptions}
@@ -1709,7 +1709,7 @@ const NewDashboard = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Platform</label>
-              <Select
+              <Select menuPortalTarget={document.body}
                 value={bettingPlatform}
                 onChange={(option) => {
                   setBettingPlatform(option);
