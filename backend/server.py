@@ -1770,52 +1770,41 @@ async def get_data_plans(network: str, user: dict = Depends(get_current_user)):
 
 @api_router.post("/payscribe/buy-airtime")
 async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
-    """Purchase airtime"""
-    if user.get('ngn_balance', 0) < request.amount:
-        raise HTTPException(status_code=400, detail="Insufficient NGN balance")
-    
-    data = {
-        'network': request.provider.lower(),
-        'phone': request.recipient,
-        'amount': request.amount,
-        'ref': str(uuid.uuid4())
-    }
-    
-    result = await payscribe_request('airtime/vend', 'POST', data)
-    
-    if result and result.get('status'):
-        await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+    """Purchase airtime via Payscribe"""
+    try:
+        # Check balance
+        if user.get('ngn_balance', 0) < request.amount:
+            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
         
-        bill_payment = BillPayment(
-            user_id=user['id'],
-            service_type='airtime',
-            provider=request.provider,
-            amount=request.amount,
-            recipient=request.recipient,
-            status='completed',
-            trans_id=result.get('message', {}).get('details', {}).get('trans_id'),
-            metadata=result
-        )
-        bp_dict = bill_payment.model_dump()
-        bp_dict['created_at'] = bp_dict['created_at'].isoformat()
-        await db.bill_payments.insert_one(bp_dict)
+        # Call Payscribe airtime vending
+        result = await vend_airtime(request.provider, request.amount, request.recipient, request.metadata.get('ref') if request.metadata else None)
         
-        transaction = Transaction(
-            user_id=user['id'],
-            type='bill_payment',
-            amount=request.amount,
-            currency='NGN',
-            status='completed',
-            reference=bill_payment.id,
-            metadata={'service': 'airtime', 'provider': request.provider}
-        )
-        trans_dict = transaction.model_dump()
-        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
-        await db.transactions.insert_one(trans_dict)
+        if result and result.get('status'):
+            # Deduct from user balance
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=user['id'],
+                type='bill_payment',
+                amount=request.amount,
+                currency='NGN',
+                status='completed',
+                reference=result.get('message', {}).get('details', {}).get('trans_id'),
+                metadata={'service': 'airtime', 'provider': request.provider, 'recipient': request.recipient}
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+            
+            return {'success': True, 'message': 'Airtime purchase successful', 'details': result}
         
-        return {'success': True, 'message': 'Airtime purchase successful', 'details': result}
-    
-    raise HTTPException(status_code=400, detail="Airtime purchase failed")
+        raise HTTPException(status_code=400, detail=result.get('description') if result else "Airtime purchase failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Airtime purchase error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/payscribe/stablecoin-currencies")
 async def get_stablecoin_currencies(user: dict = Depends(get_current_user)):
