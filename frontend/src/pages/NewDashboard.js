@@ -104,6 +104,66 @@ const NewDashboard = () => {
     navigate('/');
   };
 
+  const fetchServicesForServer = async (serverValue) => {
+    if (!serverValue) {
+      setAvailableServices([]);
+      setAvailableCountries([]);
+      return;
+    }
+
+    setServicesLoading(true);
+    try {
+      const serverMap = {
+        'us_server': 'daisysms',
+        'server1': 'smspool',
+        'server2': 'tigersms'
+      };
+      
+      const provider = serverMap[serverValue];
+      const response = await axios.get(`${API}/services/${provider}`, axiosConfig);
+      
+      if (response.data.success) {
+        const data = response.data.data;
+        
+        if (provider === 'daisysms') {
+          const services = [];
+          for (const serviceCode in data) {
+            const serviceData = data[serviceCode];
+            const firstCountryData = Object.values(serviceData)[0];
+            const serviceName = firstCountryData?.name || serviceCode;
+            services.push({ value: serviceCode, label: serviceName });
+          }
+          setAvailableServices(services);
+          setAvailableCountries([{ value: '187', label: 'United States' }]);
+        } else {
+          // For other providers
+          const services = [];
+          const countries = [];
+          
+          for (const key1 in data) {
+            for (const key2 in data[key1]) {
+              const serviceData = data[key1][key2];
+              if (!services.find(s => s.value === key2)) {
+                services.push({ value: key2, label: serviceData.name || key2 });
+              }
+              if (!countries.find(c => c.value === key1)) {
+                countries.push({ value: key1, label: key1.toUpperCase() });
+              }
+            }
+          }
+          
+          setAvailableServices(services);
+          setAvailableCountries(countries);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      toast.error('Failed to load services');
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
   const allMenuItems = [
     {
       category: 'OVERVIEW',
