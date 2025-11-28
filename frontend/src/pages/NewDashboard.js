@@ -333,7 +333,7 @@ const NewDashboard = () => {
         </header>
 
         {/* Content Area */}
-        <main className="p-2">
+        <main className="px-5 py-6">
           <div className="w-full">
             {activeSection === 'virtual-numbers' && <VirtualNumbersSection />}
             {activeSection === 'fund-wallet' && <FundWalletSection />}
