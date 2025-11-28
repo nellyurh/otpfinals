@@ -50,6 +50,17 @@ body {
   background: var(--border-color);
 
 
+/* Fix blurry react-select text caused by transforms */
+.react-select__menu, 
+.react-select__option,
+.react-select__menu-list {
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  will-change: auto !important;
+}
+
 /* React Select Custom Styles - EXACTLY MATCH SCREENSHOT */
 .react-select-container {
   font-size: 14px;
