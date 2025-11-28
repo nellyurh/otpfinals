@@ -593,40 +593,227 @@ const NewDashboard = () => {
   }
 
   function DashboardOverview() {
+    const getUserInitials = () => {
+      if (!user.email) return 'U';
+      const parts = user.email.split('@')[0].split('.');
+      if (parts.length > 1) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return user.email.slice(0, 2).toUpperCase();
+    };
+
+    const getAccountProgress = () => {
+      const balance = user.ngn_balance + (user.usd_balance * 1500); // Convert USD to NGN approx
+      if (balance < 10000) return { tier: 1, percentage: 33, nextTier: '₦10,000' };
+      if (balance < 50000) return { tier: 2, percentage: 67, nextTier: '₦50,000' };
+      return { tier: 3, percentage: 100, nextTier: 'Max Level' };
+    };
+
+    const progress = getAccountProgress();
+
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-        
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Phone className="w-6 h-6 text-[#1B7560]" />
-              </div>
+        {/* Welcome Card with Balance */}
+        <div className="bg-[#005E3A] text-white rounded-2xl p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-xl font-bold">{getUserInitials()}</span>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{orders.length}</h3>
-            <p className="text-sm text-gray-600">Total Verifications</p>
+            <div>
+              <h2 className="text-2xl font-bold">{user.email?.split('@')[0] || 'User'}</h2>
+              <p className="text-white/80">Welcome back!</p>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Wallet className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900">₦{user.ngn_balance?.toLocaleString()}</h3>
-            <p className="text-sm text-gray-600">NGN Balance</p>
+          <div className="mb-4">
+            <p className="text-white/70 text-sm mb-2">₦ Balance</p>
+            <h1 className="text-5xl font-bold mb-4">₦{(user.ngn_balance || 0).toFixed(2)}</h1>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Receipt className="w-6 h-6 text-purple-600" />
-              </div>
+          <div className="flex items-center justify-between gap-2">
+            <button className="flex-1 bg-white text-[#005E3A] px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+              <Plus className="w-5 h-5" />
+              Add Money
+            </button>
+            <div className="flex gap-2 bg-white/20 rounded-lg p-1">
+              <button className="px-4 py-2 bg-white text-[#005E3A] rounded font-semibold text-sm">NGN</button>
+              <button className="px-4 py-2 text-white rounded font-semibold text-sm hover:bg-white/10">USD</button>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{transactions.length}</h3>
-            <p className="text-sm text-gray-600">Transactions</p>
+          </div>
+        </div>
+
+        {/* Account Progress */}
+        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-6 border border-green-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">Account Progress</h3>
+              <p className="text-sm text-gray-600">Tier {progress.tier} of 3</p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="relative">
+            <div className="h-3 bg-white rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-500"
+                style={{ width: `${progress.percentage}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className={`text-xs font-semibold ${progress.tier >= 1 ? 'text-green-600' : 'text-gray-400'}`}>
+                ● Tier 1
+              </span>
+              <span className={`text-xs font-semibold ${progress.tier >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
+                ● Tier 2
+              </span>
+              <span className={`text-xs font-semibold ${progress.tier >= 3 ? 'text-green-600' : 'text-gray-400'}`}>
+                ● Tier 3
+              </span>
+            </div>
+          </div>
+
+          <button className="mt-4 text-green-700 text-sm font-semibold hover:underline">
+            Upgrade Now ›
+          </button>
+          <p className="text-xs text-gray-500 mt-1">{progress.percentage}%</p>
+        </div>
+
+        {/* Quick Services */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900">Quick Services</h3>
+            <a href="#" className="text-sm text-[#005E3A] font-semibold hover:underline">Explore our services →</a>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Transfer */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">Transfer</h4>
+              <p className="text-xs text-gray-500">Bank Transfer</p>
+            </div>
+
+            {/* SMS Verify */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer relative">
+              <span className="absolute top-3 right-3 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                Maintenance
+              </span>
+              <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
+                <Phone className="w-7 h-7 text-green-600" />
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">SMS Verify</h4>
+              <p className="text-xs text-gray-500">Virtual numbers</p>
+            </div>
+
+            {/* Virtual Cards */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
+                <CreditCard className="w-7 h-7 text-purple-600" />
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">Virtual Cards</h4>
+              <p className="text-xs text-gray-500">Secure payments</p>
+            </div>
+
+            {/* Data Bundle */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">Data Bundle</h4>
+              <p className="text-xs text-gray-500">Buy data</p>
+            </div>
+
+            {/* Airtime */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">Airtime</h4>
+              <p className="text-xs text-gray-500">Top-up</p>
+            </div>
+
+            {/* Refer & Earn */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
+                <Gift className="w-7 h-7 text-pink-600" />
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">Refer & Earn</h4>
+              <p className="text-xs text-gray-500">Get rewards</p>
+            </div>
+
+            {/* W2W */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">W2W</h4>
+              <p className="text-xs text-gray-500">Wallet Transfer</p>
+            </div>
+
+            {/* Betting */}
+            <div className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <h4 className="font-bold text-gray-900 mb-1">Betting</h4>
+              <p className="text-xs text-gray-500">Fund wallets</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Promotional Banners */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          {/* Banner 1 */}
+          <div className="bg-gradient-to-br from-[#005E3A] to-[#007A4D] rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-xl font-bold mb-2">Get Hot Deals</h3>
+              <p className="text-sm mb-4 text-white/80">on Airtime & data</p>
+              <button className="bg-white text-[#005E3A] px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100">
+                Get Now!
+              </button>
+            </div>
+            <div className="absolute right-0 bottom-0 opacity-20">
+              <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Banner 2 */}
+          <div className="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-xl font-bold mb-2">Pay with Ease.</h3>
+              <p className="text-sm mb-4 text-white/90">Spend Globally.</p>
+              <button className="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100">
+                Get started
+              </button>
+            </div>
+          </div>
+
+          {/* Banner 3 */}
+          <div className="bg-gradient-to-br from-[#005E3A] to-[#00A66C] rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="relative z-10">
+              <h3 className="text-xl font-bold mb-2">Need a number?</h3>
+              <p className="text-sm mb-4 text-white/80">Get SMS OTP verification numbers instantly</p>
+              <button className="bg-[#00D68F] text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-[#00B877]">
+                For Just $2
+              </button>
+            </div>
           </div>
         </div>
       </div>
