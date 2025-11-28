@@ -634,8 +634,12 @@ const NewDashboard = () => {
           </div>
 
           <div className="mb-4">
-            <p className="text-white/70 text-sm mb-2">₦ Balance</p>
-            <h1 className="text-5xl font-bold mb-4">₦{(user.ngn_balance || 0).toFixed(2)}</h1>
+            <p className="text-white/70 text-sm mb-2">{dashboardCurrency === 'NGN' ? '₦' : '$'} Balance</p>
+            <h1 className="text-5xl font-bold mb-4">
+              {dashboardCurrency === 'NGN' 
+                ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
+                : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+            </h1>
           </div>
 
           <div className="flex items-center justify-between gap-2">
@@ -644,14 +648,28 @@ const NewDashboard = () => {
               Add Money
             </button>
             <div className="flex gap-2 bg-white/20 rounded-lg p-1">
-              <button className="px-4 py-2 bg-white text-[#005E3A] rounded font-semibold text-sm">NGN</button>
-              <button className="px-4 py-2 text-white rounded font-semibold text-sm hover:bg-white/10">USD</button>
+              <button 
+                onClick={() => setDashboardCurrency('NGN')}
+                className={`px-4 py-2 rounded font-semibold text-sm transition-colors ${
+                  dashboardCurrency === 'NGN' ? 'bg-white text-[#005E3A]' : 'text-white hover:bg-white/10'
+                }`}
+              >
+                NGN
+              </button>
+              <button 
+                onClick={() => setDashboardCurrency('USD')}
+                className={`px-4 py-2 rounded font-semibold text-sm transition-colors ${
+                  dashboardCurrency === 'USD' ? 'bg-white text-[#005E3A]' : 'text-white hover:bg-white/10'
+                }`}
+              >
+                USD
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Account Progress */}
-        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-6 border border-green-100">
+        {/* Account Progress - COMMENTED OUT FOR NOW */}
+        {/* <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-2xl p-6 border border-green-100">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
               <User className="w-6 h-6 text-white" />
@@ -662,7 +680,6 @@ const NewDashboard = () => {
             </div>
           </div>
 
-          {/* Progress Bar */}
           <div className="relative">
             <div className="h-3 bg-white rounded-full overflow-hidden">
               <div 
@@ -687,7 +704,7 @@ const NewDashboard = () => {
             Upgrade Now ›
           </button>
           <p className="text-xs text-gray-500 mt-1">{progress.percentage}%</p>
-        </div>
+        </div> */}
 
         {/* Quick Services */}
         <div>
