@@ -1673,7 +1673,7 @@ const NewDashboard = () => {
                   placeholder="Minimum ₦50"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 />
               </div>
             </div>
@@ -1872,7 +1872,7 @@ const NewDashboard = () => {
                   placeholder="Enter amount"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 />
               </div>
             </div>
