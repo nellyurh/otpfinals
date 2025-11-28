@@ -38,6 +38,7 @@ const NewDashboard = () => {
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const [paymentCurrency, setPaymentCurrency] = useState('USD');
   const [purchaseExpanded, setPurchaseExpanded] = useState(true);
+  const [dashboardCurrency, setDashboardCurrency] = useState('NGN'); // For dashboard balance toggle
   
   // Orders
   const [orders, setOrders] = useState([]);
