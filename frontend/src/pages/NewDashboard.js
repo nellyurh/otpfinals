@@ -1305,9 +1305,72 @@ const NewDashboard = () => {
 
   function BuyDataSection() {
     const [network, setNetwork] = useState('');
-    const [dataType, setDataType] = useState('');
+    const [selectedPlan, setSelectedPlan] = useState(null);
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [amount, setAmount] = useState('');
+    const [dataPlans, setDataPlans] = useState([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
+    const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+      if (network) {
+        fetchDataPlans(network);
+      } else {
+        setDataPlans([]);
+        setSelectedPlan(null);
+      }
+    }, [network]);
+
+    const fetchDataPlans = async (selectedNetwork) => {
+      setLoadingPlans(true);
+      try {
+        const response = await axios.get(
+          `${API}/api/payscribe/data-plans?network=${selectedNetwork}`,
+          axiosConfig
+        );
+        
+        if (response.data.status && response.data.message?.details) {
+          const plans = response.data.message.details[0]?.plans || [];
+          setDataPlans(plans);
+        }
+      } catch (error) {
+        console.error('Failed to fetch data plans:', error);
+        toast.error('Failed to load data plans');
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+
+    const handlePurchaseData = async () => {
+      if (!selectedPlan || !phoneNumber) {
+        toast.error('Please fill all fields');
+        return;
+      }
+
+      setProcessing(true);
+      try {
+        const response = await axios.post(
+          `${API}/api/payscribe/buy-data`,
+          {
+            plan_code: selectedPlan.plan_code,
+            recipient: phoneNumber
+          },
+          axiosConfig
+        );
+
+        if (response.data.success) {
+          toast.success('Data bundle purchased successfully!');
+          setNetwork('');
+          setSelectedPlan(null);
+          setPhoneNumber('');
+          fetchProfile();
+          fetchTransactions();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Purchase failed');
+      } finally {
+        setProcessing(false);
+      }
+    };
 
     return (
       <div className="space-y-6">
@@ -1337,15 +1400,21 @@ const NewDashboard = () => {
               <label className="block text-sm font-semibold text-gray-700 mb-2">Data Plan</label>
               <select 
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
-                value={dataType}
-                onChange={(e) => setDataType(e.target.value)}
+                value={selectedPlan?.plan_code || ''}
+                onChange={(e) => {
+                  const plan = dataPlans.find(p => p.plan_code === e.target.value);
+                  setSelectedPlan(plan);
+                }}
+                disabled={!network || loadingPlans}
               >
-                <option value="">Select data plan</option>
-                <option value="500mb">500MB - ₦200</option>
-                <option value="1gb">1GB - ₦350</option>
-                <option value="2gb">2GB - ₦700</option>
-                <option value="5gb">5GB - ₦1,500</option>
-                <option value="10gb">10GB - ₦2,800</option>
+                <option value="">
+                  {loadingPlans ? 'Loading plans...' : 'Select data plan'}
+                </option>
+                {dataPlans.map((plan) => (
+                  <option key={plan.plan_code} value={plan.plan_code}>
+                    {plan.name} - ₦{parseFloat(plan.amount).toLocaleString()}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -1360,11 +1429,23 @@ const NewDashboard = () => {
               />
             </div>
 
+            {selectedPlan && (
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Total Amount:</span>
+                  <span className="text-2xl font-bold text-[#005E3A]">
+                    ₦{parseFloat(selectedPlan.amount).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <button 
-              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors"
-              disabled={!network || !dataType || !phoneNumber}
+              onClick={handlePurchaseData}
+              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={!network || !selectedPlan || !phoneNumber || processing}
             >
-              Purchase Data Bundle
+              {processing ? 'Processing...' : 'Purchase Data Bundle'}
             </button>
           </div>
         </div>
