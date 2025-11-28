@@ -483,7 +483,8 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
                 timeout=30.0
             )
             
-            if response.status_code == 200:
+            # PaymentPoint returns 201 for successful creation
+            if response.status_code in [200, 201]:
                 result = response.json()
                 if result.get('status') == 'success' and result.get('bankAccounts'):
                     account_data = result['bankAccounts'][0]
@@ -509,7 +510,7 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
                         'bank_name': account_data['bankName']
                     }
             
-            logger.error(f"PaymentPoint error: {response.text}")
+            logger.error(f"PaymentPoint error (status {response.status_code}): {response.text}")
             return None
     except Exception as e:
         logger.error(f"Error creating virtual account: {str(e)}")
