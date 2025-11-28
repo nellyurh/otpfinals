@@ -818,7 +818,7 @@ async def vend_airtime(network: str, amount: float, recipient: str, ref: str = N
         logger.error(f"Error vending airtime: {str(e)}")
         return None
 
-async def get_data_plans(network: str, category: str = None) -> Optional[Dict]:
+async def get_data_plans_service(network: str, category: str = None) -> Optional[Dict]:
     """Get data plans for a network"""
     try:
         endpoint = f'data/lookup?network={network}'
