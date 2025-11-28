@@ -879,10 +879,169 @@ const NewDashboard = () => {
   }
 
   function TransactionsSection() {
+    const [filterType, setFilterType] = useState('all');
+    const [filterCurrency, setFilterCurrency] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [searchText, setSearchText] = useState('');
+
+    // Calculate summary statistics
+    const totalTransactions = transactions.length;
+    const creditTotal = transactions
+      .filter(t => t.type === 'credit')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    const debitTotal = transactions
+      .filter(t => t.type === 'debit')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    const netAmount = creditTotal - debitTotal;
+
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">Transaction History</h2>
-        
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
+            <p className="text-sm text-gray-600">Track your wallet activity</p>
+          </div>
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-xl border shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <h3 className="font-semibold text-gray-900">Filter Transactions</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+            {/* Type Filter */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">Type</label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+              >
+                <option value="all">All Types</option>
+                <option value="credit">Credit</option>
+                <option value="debit">Debit</option>
+              </select>
+            </div>
+
+            {/* Currency Filter */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">Currency</label>
+              <select
+                value={filterCurrency}
+                onChange={(e) => setFilterCurrency(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+              >
+                <option value="all">All Currencies</option>
+                <option value="NGN">NGN</option>
+                <option value="USD">USD</option>
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">Status</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+              >
+                <option value="all">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+
+            {/* From Date */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">From Date</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+                placeholder="dd/mm/yyyy"
+              />
+            </div>
+
+            {/* To Date */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">To Date</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+                placeholder="dd/mm/yyyy"
+              />
+            </div>
+          </div>
+
+          {/* Search */}
+          <div>
+            <label className="block text-sm text-gray-600 mb-2">Search</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Search reference, description..."
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+              />
+              <button className="px-6 py-2 bg-[#005E3A] text-white rounded-lg hover:bg-[#004A2D] transition-colors flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Apply Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Total */}
+          <div className="bg-white rounded-xl border shadow-sm p-6">
+            <p className="text-sm text-gray-600 mb-2">TOTAL</p>
+            <p className="text-3xl font-bold text-gray-900">{totalTransactions}</p>
+            <p className="text-xs text-gray-500 mt-1">0 txns</p>
+          </div>
+
+          {/* Credit */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-sm p-6">
+            <p className="text-sm text-green-800 mb-2">CREDIT</p>
+            <p className="text-3xl font-bold text-green-900">₦{creditTotal.toFixed(2)}</p>
+            <p className="text-xs text-green-700 mt-1">0 txns</p>
+          </div>
+
+          {/* Debit */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-sm p-6">
+            <p className="text-sm text-green-800 mb-2">DEBIT</p>
+            <p className="text-3xl font-bold text-green-900">₦{debitTotal.toFixed(2)}</p>
+            <p className="text-xs text-green-700 mt-1">0 txns</p>
+          </div>
+
+          {/* Net */}
+          <div className="bg-white rounded-xl border shadow-sm p-6">
+            <p className="text-sm text-gray-600 mb-2">NET</p>
+            <p className="text-3xl font-bold text-gray-900">₦{netAmount.toFixed(2)}</p>
+          </div>
+        </div>
+
+        {/* Transactions Table or Empty State */}
         <div className="bg-white rounded-xl border shadow-sm p-6">
           {transactions.length > 0 ? (
             <div className="overflow-x-auto">
@@ -912,9 +1071,18 @@ const NewDashboard = () => {
               </table>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Receipt className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">No transactions yet</p>
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Wallet className="w-10 h-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h3>
+              <p className="text-gray-500 mb-6">Your wallet history will appear here once you start transacting</p>
+              <button 
+                onClick={() => setActiveSection('fund-wallet')}
+                className="px-6 py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors"
+              >
+                Fund Wallet
+              </button>
             </div>
           )}
         </div>
