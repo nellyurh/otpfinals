@@ -129,6 +129,14 @@ class PricingConfig(BaseModel):
     # DaisySMS specific markups (from their side)
     area_code_markup: float = 20.0  # DaisySMS adds 20% for area code
     carrier_markup: float = 20.0    # DaisySMS adds 20% for carrier
+    # Page toggles
+    enable_virtual_numbers: bool = True
+    enable_buy_data: bool = True
+    enable_airtime: bool = True
+    enable_betting: bool = True
+    enable_virtual_cards: bool = True
+    enable_fund_wallet: bool = True
+    enable_referral: bool = True
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CachedService(BaseModel):
