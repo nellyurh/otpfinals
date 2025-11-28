@@ -391,7 +391,7 @@ const NewDashboard = () => {
                 ...base,
                 minHeight: '48px',
                 borderColor: '#e5e7eb',
-                '&:hover': { borderColor: '#1B7560' }
+                '&:hover': { borderColor: '#005E3A' }
               }),
               placeholder: (base) => ({
                 ...base,
@@ -440,7 +440,7 @@ const NewDashboard = () => {
                       minHeight: '48px',
                       borderWidth: '2px',
                       borderColor: '#e5e7eb',
-                      '&:hover': { borderColor: '#1B7560' }
+                      '&:hover': { borderColor: '#005E3A' }
                     }),
                     placeholder: (base) => ({
                       ...base,
@@ -481,7 +481,7 @@ const NewDashboard = () => {
                         minHeight: '48px',
                         borderWidth: '2px',
                         borderColor: '#e5e7eb',
-                        '&:hover': { borderColor: '#1B7560' }
+                        '&:hover': { borderColor: '#005E3A' }
                       }),
                       placeholder: (base) => ({
                         ...base,
