@@ -1544,11 +1544,18 @@ const NewDashboard = () => {
   }
 
   function AirtimeSection() {
-    const [network, setNetwork] = useState('');
+    const [network, setNetwork] = useState(null);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [amount, setAmount] = useState('');
     const [airtimeType, setAirtimeType] = useState('local');
     const [processing, setProcessing] = useState(false);
+
+    const networkOptions = [
+      { value: 'mtn', label: 'MTN' },
+      { value: 'airtel', label: 'Airtel' },
+      { value: 'glo', label: 'Glo' },
+      { value: '9mobile', label: '9mobile' }
+    ];
 
     const handleBuyAirtime = async () => {
       if (!network || !phoneNumber || !amount) {
@@ -1567,7 +1574,7 @@ const NewDashboard = () => {
           `${API}/api/payscribe/buy-airtime`,
           {
             service_type: 'airtime',
-            provider: network,
+            provider: network.value,
             amount: parseFloat(amount),
             recipient: phoneNumber,
             metadata: {}
