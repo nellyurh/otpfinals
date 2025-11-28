@@ -34,7 +34,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={!user ? <Landing setUser={setUser} /> : <Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={user ? <Dashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
+          <Route path="/dashboard" element={user ? <NewDashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
           <Route path="/admin" element={user?.is_admin ? <AdminPanel user={user} setUser={setUser} /> : <Navigate to="/dashboard" />} />
         </Routes>
       </BrowserRouter>
