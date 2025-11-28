@@ -565,6 +565,293 @@ const NewDashboard = () => {
       </div>
     );
   }
+
+  function BuyDataSection() {
+    const [network, setNetwork] = useState('');
+    const [dataType, setDataType] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [amount, setAmount] = useState('');
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Buy Data Bundle</h1>
+          <p className="text-gray-600">Purchase data bundles for all networks</p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 border shadow-sm max-w-2xl mx-auto">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
+              <select 
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                value={network}
+                onChange={(e) => setNetwork(e.target.value)}
+              >
+                <option value="">Choose network provider</option>
+                <option value="mtn">MTN</option>
+                <option value="airtel">Airtel</option>
+                <option value="glo">Glo</option>
+                <option value="9mobile">9mobile</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Data Plan</label>
+              <select 
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                value={dataType}
+                onChange={(e) => setDataType(e.target.value)}
+              >
+                <option value="">Select data plan</option>
+                <option value="500mb">500MB - ₦200</option>
+                <option value="1gb">1GB - ₦350</option>
+                <option value="2gb">2GB - ₦700</option>
+                <option value="5gb">5GB - ₦1,500</option>
+                <option value="10gb">10GB - ₦2,800</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+              <input
+                type="tel"
+                placeholder="08012345678"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+              />
+            </div>
+
+            <button 
+              className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors"
+              disabled={!network || !dataType || !phoneNumber}
+            >
+              Purchase Data Bundle
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-2xl mx-auto">
+          <p className="text-sm text-blue-800">
+            💡 <strong>Note:</strong> Data will be delivered instantly after payment. Make sure the phone number is correct.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  function AirtimeSection() {
+    const [network, setNetwork] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [amount, setAmount] = useState('');
+    const [airtimeType, setAirtimeType] = useState('local');
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Airtime Top-Up</h1>
+          <p className="text-gray-600">Recharge airtime instantly for any network</p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 border shadow-sm max-w-2xl mx-auto">
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setAirtimeType('local')}
+              className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
+                airtimeType === 'local' 
+                  ? 'bg-[#1B7560] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Local Airtime
+            </button>
+            <button
+              onClick={() => setAirtimeType('international')}
+              className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
+                airtimeType === 'international' 
+                  ? 'bg-[#1B7560] text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              International
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {airtimeType === 'local' ? 'Select Network' : 'Select Country'}
+              </label>
+              <select 
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                value={network}
+                onChange={(e) => setNetwork(e.target.value)}
+              >
+                {airtimeType === 'local' ? (
+                  <>
+                    <option value="">Choose network provider</option>
+                    <option value="mtn">MTN</option>
+                    <option value="airtel">Airtel</option>
+                    <option value="glo">Glo</option>
+                    <option value="9mobile">9mobile</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="">Choose country</option>
+                    <option value="us">United States</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="ca">Canada</option>
+                    <option value="gh">Ghana</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+              <input
+                type="tel"
+                placeholder={airtimeType === 'local' ? '08012345678' : '+1234567890'}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
+                  {airtimeType === 'local' ? '₦' : '$'}
+                </span>
+                <input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {airtimeType === 'local' && (
+              <div className="grid grid-cols-4 gap-2">
+                {['100', '200', '500', '1000'].map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => setAmount(preset)}
+                    className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#1B7560] hover:bg-green-50 transition-colors font-semibold text-sm"
+                  >
+                    ₦{preset}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button 
+              className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors"
+              disabled={!network || !phoneNumber || !amount}
+            >
+              Buy Airtime
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 max-w-2xl mx-auto">
+          <p className="text-sm text-green-800">
+            ⚡ <strong>Instant Delivery:</strong> Airtime is delivered within seconds. No delays!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  function BettingSection() {
+    const [bettingPlatform, setBettingPlatform] = useState('');
+    const [userId, setUserId] = useState('');
+    const [amount, setAmount] = useState('');
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Betting Wallet Top-Up</h1>
+          <p className="text-gray-600">Fund your betting account instantly</p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 border shadow-sm max-w-2xl mx-auto">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Select Platform</label>
+              <select 
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                value={bettingPlatform}
+                onChange={(e) => setBettingPlatform(e.target.value)}
+              >
+                <option value="">Choose betting platform</option>
+                <option value="bet9ja">Bet9ja</option>
+                <option value="sportybet">SportyBet</option>
+                <option value="1xbet">1xBet</option>
+                <option value="betking">BetKing</option>
+                <option value="nairabet">NairaBet</option>
+                <option value="betway">Betway</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">User ID / Account Number</label>
+              <input
+                type="text"
+                placeholder="Enter your betting account ID"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₦</span>
+                <input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {['500', '1000', '2000', '5000', '10000', '20000'].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setAmount(preset)}
+                  className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#1B7560] hover:bg-green-50 transition-colors font-semibold text-sm"
+                >
+                  ₦{parseInt(preset).toLocaleString()}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors"
+              disabled={!bettingPlatform || !userId || !amount}
+            >
+              Fund Betting Account
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 max-w-2xl mx-auto">
+          <p className="text-sm text-yellow-800">
+            ⚠️ <strong>Important:</strong> Ensure your User ID is correct. Funds sent to wrong accounts cannot be reversed.
+          </p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default NewDashboard;
