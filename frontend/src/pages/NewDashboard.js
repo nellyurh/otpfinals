@@ -1295,6 +1295,338 @@ const NewDashboard = () => {
     );
   }
 
+  function AccountUpgradeSection() {
+    const [documentType, setDocumentType] = useState('');
+    const [documentNumber, setDocumentNumber] = useState('');
+    const [idDocument, setIdDocument] = useState(null);
+    const [selfie, setSelfie] = useState(null);
+    const [street, setStreet] = useState('');
+    const [apartment, setApartment] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [country, setCountry] = useState('NG');
+    const [dob, setDob] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const userTier = user.tier || 1;
+    const walletBalance = user.ngn_balance + (user.usd_balance * 1500);
+
+    const getTierLimit = (tier) => {
+      if (tier === 1) return 10000;
+      if (tier === 2) return 100000;
+      return 1000000;
+    };
+
+    const handleSubmitKYC = async () => {
+      if (!documentType || !documentNumber || !idDocument || !selfie || !street || !city || !state || !postalCode || !dob) {
+        toast.error('Please fill all required fields');
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const formData = new FormData();
+        formData.append('idDocument', idDocument);
+        formData.append('selfie', selfie);
+
+        // Upload files first (you'd implement file upload endpoint)
+        const uploadRes = await axios.post(`${API}/api/user/upload-kyc-documents`, formData, {
+          ...axiosConfig,
+          headers: {
+            ...axiosConfig.headers,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        // Create Payscribe customer
+        const response = await axios.post(
+          `${API}/api/payscribe/create-customer`,
+          {
+            first_name: user.full_name?.split(' ')[0] || 'User',
+            last_name: user.full_name?.split(' ').slice(1).join(' ') || 'Name',
+            phone: user.phone,
+            email: user.email,
+            dob: dob,
+            country: country,
+            address: {
+              street: street + (apartment ? `, ${apartment}` : ''),
+              city: city,
+              state: state,
+              country: country,
+              postal_code: postalCode
+            },
+            identification_type: documentType,
+            identification_number: documentNumber,
+            photo: uploadRes.data.selfie_url,
+            identity: {
+              type: documentType,
+              number: documentNumber,
+              country: country,
+              image: uploadRes.data.id_document_url
+            }
+          },
+          axiosConfig
+        );
+
+        if (response.data.success) {
+          toast.success('KYC submitted successfully! Review in 1-2 business days.');
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'KYC submission failed');
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#005E3A] to-[#00A66C] text-white rounded-2xl p-6">
+          <h1 className="text-3xl font-bold mb-2">Account Upgrade</h1>
+          <p className="text-white/90">Unlock higher limits and premium features</p>
+        </div>
+
+        {/* Tier Status */}
+        <div className="bg-white rounded-2xl p-6 border shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Current Tier: Tier {userTier}</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Tier 1 */}
+            <div className={`p-4 rounded-xl border-2 ${userTier >= 1 ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                {userTier >= 1 && <Check className="w-5 h-5 text-green-600" />}
+                <h3 className="font-bold">Tier 1: Basic</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">Email verification</p>
+              <p className="text-lg font-bold text-[#005E3A]">₦10,000 limit</p>
+              {userTier >= 1 && <p className="text-xs text-green-600 mt-2">✓ Approved</p>}
+            </div>
+
+            {/* Tier 2 */}
+            <div className={`p-4 rounded-xl border-2 ${userTier >= 2 ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                {userTier >= 2 && <Check className="w-5 h-5 text-green-600" />}
+                <h3 className="font-bold">Tier 2: Standard</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">BVN verification</p>
+              <p className="text-lg font-bold text-[#005E3A]">₦100,000 limit</p>
+              {userTier >= 2 && <p className="text-xs text-green-600 mt-2">✓ Approved</p>}
+            </div>
+
+            {/* Tier 3 */}
+            <div className={`p-4 rounded-xl border-2 ${userTier >= 3 ? 'border-green-500 bg-green-50' : 'border-yellow-400 bg-yellow-50'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                {userTier >= 3 ? <Check className="w-5 h-5 text-green-600" /> : <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /></svg>}
+                <h3 className="font-bold">Tier 3: Premium</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">Full KYC verification</p>
+              <p className="text-lg font-bold text-[#005E3A]">₦1,000,000 limit</p>
+              {userTier < 3 && <p className="text-xs text-yellow-600 mt-2">⚠ Upgrade Required</p>}
+            </div>
+          </div>
+
+          {/* Warning */}
+          {walletBalance >= getTierLimit(userTier) * 0.8 && userTier < 3 && (
+            <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+              <p className="text-sm text-red-800">
+                <strong>⚠️ Important: Wallet Threshold Notice</strong><br/>
+                Your account will be automatically locked if your wallet balance reaches ₦{getTierLimit(userTier).toLocaleString()}. 
+                Please upgrade to Tier 3 to avoid service interruption.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Upgrade Form */}
+        {userTier < 3 && (
+          <div className="bg-white rounded-2xl p-6 border shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Upgrade to Tier 3</h2>
+            <p className="text-gray-600 mb-6">
+              Complete full KYC verification to unlock:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
+              <li>₦1,000,000 wallet limit</li>
+              <li>USDT/USDC stablecoin deposits</li>
+              <li>Virtual card creation</li>
+              <li>Priority support</li>
+            </ul>
+
+            <div className="space-y-4">
+              {/* Document Type */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Document Type</label>
+                  <select
+                    value={documentType}
+                    onChange={(e) => setDocumentType(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  >
+                    <option value="">-- Select Document Type --</option>
+                    <option value="NIN">National ID (NIN)</option>
+                    <option value="BVN">Bank Verification Number (BVN)</option>
+                    <option value="PASSPORT">International Passport</option>
+                    <option value="DRIVERS_LICENSE">Driver's License</option>
+                    <option value="VOTERS_CARD">Voter's Card</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Document Number</label>
+                  <input
+                    type="text"
+                    placeholder="Enter document number"
+                    value={documentNumber}
+                    onChange={(e) => setDocumentNumber(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  />
+                </div>
+              </div>
+
+              {/* Date of Birth */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+                <input
+                  type="date"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                />
+              </div>
+
+              {/* Document Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Upload ID Document</label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={(e) => setIdDocument(e.target.files[0])}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">JPEG, PNG only. Max 4MB</p>
+              </div>
+
+              {/* Selfie Upload */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Selfie</label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={(e) => setSelfie(e.target.files[0])}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Clear photo of your face. JPEG, PNG only. Max 4MB</p>
+              </div>
+
+              {/* Address */}
+              <h3 className="text-lg font-bold text-gray-900 mt-6">Address Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Street Address</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 56, Adeola Odeku, Victoria Island"
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Apartment / Suite (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="Apt 4B"
+                    value={apartment}
+                    onChange={(e) => setApartment(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
+                  <input
+                    type="text"
+                    placeholder="Lagos"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
+                  <input
+                    type="text"
+                    placeholder="Lagos State"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
+                  <input
+                    type="text"
+                    placeholder="100001"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Country</label>
+                  <input
+                    type="text"
+                    value={country}
+                    disabled
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-700"
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleSubmitKYC}
+                disabled={submitting}
+                className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed mt-6"
+              >
+                {submitting ? 'Submitting...' : 'Submit Documents for Review'}
+              </button>
+
+              <p className="text-xs text-gray-500 mt-3 text-center">
+                Your documents will be securely reviewed by our team within 1-2 business days.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Already Tier 3 */}
+        {userTier >= 3 && (
+          <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-8 text-center">
+            <div className="w-20 h-20 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
+              <Check className="w-12 h-12 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">You're All Set!</h3>
+            <p className="text-gray-700 mb-4">Your account is verified with Tier 3 Premium access.</p>
+            <p className="text-lg font-semibold text-[#005E3A]">Wallet Limit: ₦1,000,000</p>
+          </div>
+        )}
+
+        {/* Need Help */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-sm text-blue-900">
+            <strong>Need Help?</strong> Contact support at <a href="mailto:support@blissdigitals.com" className="text-blue-600 hover:underline">support@blissdigitals.com</a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+
   function SupportSection() {
     return (
       <div className="space-y-6">
