@@ -208,6 +208,9 @@ const NewDashboard = () => {
           <div className="max-w-6xl mx-auto">
             {activeSection === 'virtual-numbers' && <VirtualNumbersSection />}
             {activeSection === 'fund-wallet' && <FundWalletSection />}
+            {activeSection === 'buy-data' && <BuyDataSection />}
+            {activeSection === 'airtime' && <AirtimeSection />}
+            {activeSection === 'betting' && <BettingSection />}
             {activeSection === 'transactions' && <TransactionsSection />}
             {activeSection === 'dashboard' && <DashboardOverview />}
             {activeSection === 'sms-history' && <SMSHistorySection />}
