@@ -50,7 +50,7 @@ body {
   background: var(--border-color);
 
 
-/* React Select Custom Styles - GREEN THEME TO MATCH SCREENSHOT */
+/* React Select Custom Styles - EXACTLY MATCH SCREENSHOT */
 .react-select-container {
   font-size: 14px;
 }
@@ -61,7 +61,7 @@ body {
   min-height: 48px !important;
   box-shadow: none !important;
   cursor: pointer !important;
-  background-color: white !important;
+  background-color: #ffffff !important;
 }
 
 .react-select__control:hover {
@@ -69,12 +69,12 @@ body {
 }
 
 .react-select__control--is-focused {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
 
 .react-select__control--is-disabled {
-  background-color: #f3f4f6 !important;
+  background-color: #f9fafb !important;
   cursor: not-allowed !important;
   border-color: #e5e7eb !important;
 }
@@ -84,7 +84,7 @@ body {
 }
 
 .react-select__placeholder {
-  color: #9ca3af !important;
+  color: #d1d5db !important;
   font-weight: 400 !important;
   font-size: 14px !important;
 }
@@ -101,9 +101,11 @@ body {
   padding: 0 !important;
 }
 
+.react-select__input,
 .react-select__input input {
   color: #1f2937 !important;
   font-size: 14px !important;
+  font-weight: 400 !important;
 }
 
 .react-select__menu {
@@ -112,20 +114,22 @@ body {
   border: 1px solid #e5e7eb !important;
   margin-top: 4px !important;
   overflow: hidden !important;
+  background-color: #ffffff !important;
 }
 
 .react-select__menu-list {
   padding: 0 !important;
   max-height: 300px !important;
+  background-color: #ffffff !important;
 }
 
 .react-select__option {
   cursor: pointer !important;
   padding: 12px 16px !important;
   color: #1f2937 !important;
-  font-weight: 400 !important;
+  font-weight: 500 !important;
   font-size: 14px !important;
-  background-color: white !important;
+  background-color: #ffffff !important;
   border-bottom: 1px solid #f3f4f6 !important;
 }
 
@@ -134,13 +138,13 @@ body {
 }
 
 .react-select__option--is-focused {
-  background-color: #ecfdf5 !important;
-  color: #1f2937 !important;
+  background-color: #dbeafe !important;
+  color: #1e3a8a !important;
 }
 
 .react-select__option--is-selected {
-  background-color: #d1fae5 !important;
-  color: #065f46 !important;
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
   font-weight: 600 !important;
 }
 
