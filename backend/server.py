@@ -1862,6 +1862,96 @@ async def get_stablecoin_wallets(user: dict = Depends(get_current_user)):
     wallets = await db.stablecoin_wallets.find({'user_id': user['id']}, {'_id': 0}).to_list(50)
     return {'wallets': wallets}
 
+@api_router.post("/payscribe/buy-data")
+async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_current_user)):
+    """Purchase data bundle via Payscribe"""
+    try:
+        # Validate user has sufficient balance (we'll get amount from plan lookup)
+        result = await purchase_data(request.plan_code, request.recipient, request.ref)
+        
+        if result and result.get('status'):
+            # Deduct from user balance
+            amount = result.get('message', {}).get('details', {}).get('amount', 0)
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -amount}})
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=user['id'],
+                type='bill_payment',
+                amount=amount,
+                currency='NGN',
+                status='completed',
+                reference=result.get('message', {}).get('details', {}).get('trans_id'),
+                metadata={'service': 'data', 'plan_code': request.plan_code}
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+            
+            return {'success': True, 'message': 'Data purchase successful', 'details': result}
+        
+        raise HTTPException(status_code=400, detail="Data purchase failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Data purchase error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/payscribe/betting-providers")
+async def get_betting_providers_list(user: dict = Depends(get_current_user)):
+    """Get list of betting service providers"""
+    result = await get_betting_providers()
+    return result or {'status': False, 'message': 'Failed to fetch providers'}
+
+@api_router.get("/payscribe/validate-bet-account")
+async def validate_betting_account(bet_id: str, customer_id: str, user: dict = Depends(get_current_user)):
+    """Validate betting account"""
+    result = await validate_bet_account(bet_id, customer_id)
+    return result or {'status': False, 'message': 'Validation failed'}
+
+@api_router.post("/payscribe/fund-betting")
+async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(get_current_user)):
+    """Fund betting wallet via Payscribe"""
+    try:
+        # Check balance
+        if user.get('ngn_balance', 0) < request.amount:
+            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+        
+        # Validate account first
+        validation = await validate_bet_account(request.bet_id, request.customer_id)
+        if not validation or not validation.get('status'):
+            raise HTTPException(status_code=400, detail="Invalid betting account")
+        
+        # Fund wallet
+        result = await fund_bet_wallet(request.bet_id, request.customer_id, request.amount, request.ref)
+        
+        if result and result.get('status'):
+            # Deduct from user balance
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=user['id'],
+                type='bill_payment',
+                amount=request.amount,
+                currency='NGN',
+                status='completed',
+                reference=result.get('message', {}).get('details', {}).get('trans_id'),
+                metadata={'service': 'betting', 'bet_id': request.bet_id, 'customer_id': request.customer_id}
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+            
+            return {'success': True, 'message': 'Betting wallet funded successfully', 'details': result}
+        
+        raise HTTPException(status_code=400, detail="Betting wallet funding failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Betting fund error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============ Admin Routes ============
 
 @api_router.get("/admin/pricing")
