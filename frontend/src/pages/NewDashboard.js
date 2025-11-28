@@ -846,33 +846,166 @@ const NewDashboard = () => {
   }
 
   function FundWalletSection() {
+    const [showAccountDetails, setShowAccountDetails] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const copyToClipboard = (text) => {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">Fund Your Wallet</h2>
-        <p className="text-gray-600">Choose your preferred payment method</p>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Fund Your Wallet</h2>
+          <p className="text-sm text-gray-600">Choose your preferred payment method</p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-xl border-2 border-[#005E3A] shadow-sm">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <Wallet className="w-6 h-6 text-[#005E3A]" />
+          {/* NGN Funding Card */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-[#005E3A] rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-[#005E3A] rounded-lg flex items-center justify-center">
+                <Wallet className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Fund with Naira (₦)</h3>
+                <p className="text-xs text-gray-600">Bank Transfer • PalmPay</p>
+              </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2">Fund with Naira (₦)</h3>
-            <p className="text-sm text-gray-600 mb-4">Use your bank account or transfer</p>
-            <button className="w-full py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D]">
-              Fund NGN Wallet
-            </button>
+
+            {user.virtual_account_number ? (
+              <div className="space-y-4">
+                <div className="bg-white rounded-xl p-4 border border-green-200">
+                  <p className="text-xs text-gray-600 mb-2">Account Number</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-2xl font-bold text-[#005E3A] tracking-wider">
+                      {user.virtual_account_number}
+                    </p>
+                    <button
+                      onClick={() => copyToClipboard(user.virtual_account_number)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Copy account number"
+                    >
+                      {copied ? (
+                        <Check className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <Copy className="w-5 h-5 text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border border-green-200">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Account Name</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user.virtual_account_name || 'Loading...'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">Bank Name</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user.virtual_bank_name || 'PalmPay'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-green-100 border border-green-300 rounded-xl p-4">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <div className="text-xs text-green-800">
+                      <p className="font-semibold mb-1">Transfer Instructions:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Send funds from any bank to the account above</li>
+                        <li>Your wallet will be credited automatically</li>
+                        <li>Minimum deposit: ₦100</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full mb-3">
+                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-700 mb-3">Virtual account not created yet</p>
+                <p className="text-xs text-gray-600">Please contact support to set up your account</p>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <CreditCard className="w-6 h-6 text-blue-600" />
+          {/* USD Funding Card */}
+          <div className="bg-white p-6 rounded-2xl border shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Fund with USD ($)</h3>
+                <p className="text-xs text-gray-600">Stablecoins • USDT/USDC</p>
+              </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2">Fund with USD ($)</h3>
-            <p className="text-sm text-gray-600 mb-4">Use stablecoins (USDT/USDC)</p>
-            <button className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
-              Fund USD Wallet
-            </button>
+
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-sm text-blue-900 mb-3">
+                  <strong>Coming Soon!</strong>
+                </p>
+                <p className="text-xs text-blue-800">
+                  Deposit USD using stablecoins (USDT/USDC) directly to your wallet. 
+                  This feature will be available shortly.
+                </p>
+              </div>
+
+              <button 
+                disabled
+                className="w-full py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold cursor-not-allowed"
+              >
+                Coming Soon
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Transaction History Preview */}
+        <div className="bg-white rounded-2xl border shadow-sm p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Deposits</h3>
+          {transactions.filter(t => t.type === 'deposit_ngn').length > 0 ? (
+            <div className="space-y-2">
+              {transactions.filter(t => t.type === 'deposit_ngn').slice(0, 5).map((txn) => (
+                <div key={txn.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+                  <div>
+                    <p className="font-medium text-gray-900">NGN Deposit</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(txn.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-green-600">+₦{txn.amount.toLocaleString()}</p>
+                    <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                      {txn.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                <Receipt className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 text-sm">No deposits yet</p>
+            </div>
+          )}
         </div>
       </div>
     );
