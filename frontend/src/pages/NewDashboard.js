@@ -153,7 +153,7 @@ const NewDashboard = () => {
       };
       
       const provider = serverMap[serverValue];
-      const response = await axios.get(`${API}/services/${provider}`, axiosConfig);
+      const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
       
       if (response.data.success) {
         const data = response.data.data;
