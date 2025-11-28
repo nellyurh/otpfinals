@@ -1383,6 +1383,47 @@ const NewDashboard = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [amount, setAmount] = useState('');
     const [airtimeType, setAirtimeType] = useState('local');
+    const [processing, setProcessing] = useState(false);
+
+    const handleBuyAirtime = async () => {
+      if (!network || !phoneNumber || !amount) {
+        toast.error('Please fill all fields');
+        return;
+      }
+
+      if (parseFloat(amount) < 50) {
+        toast.error('Minimum airtime amount is ₦50');
+        return;
+      }
+
+      setProcessing(true);
+      try {
+        const response = await axios.post(
+          `${API}/api/payscribe/buy-airtime`,
+          {
+            service_type: 'airtime',
+            provider: network,
+            amount: parseFloat(amount),
+            recipient: phoneNumber,
+            metadata: {}
+          },
+          axiosConfig
+        );
+
+        if (response.data.success) {
+          toast.success('Airtime purchased successfully!');
+          setNetwork('');
+          setPhoneNumber('');
+          setAmount('');
+          fetchProfile();
+          fetchTransactions();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Purchase failed');
+      } finally {
+        setProcessing(false);
+      }
+    };
 
     return (
       <div className="space-y-6">
@@ -1464,7 +1505,7 @@ const NewDashboard = () => {
                 </span>
                 <input
                   type="number"
-                  placeholder="Enter amount"
+                  placeholder="Minimum ₦50"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
@@ -1487,10 +1528,11 @@ const NewDashboard = () => {
             )}
 
             <button 
-              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors"
-              disabled={!network || !phoneNumber || !amount}
+              onClick={handleBuyAirtime}
+              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={!network || !phoneNumber || !amount || processing}
             >
-              Buy Airtime
+              {processing ? 'Processing...' : 'Buy Airtime'}
             </button>
           </div>
         </div>
