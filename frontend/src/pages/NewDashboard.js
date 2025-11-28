@@ -154,7 +154,16 @@ const NewDashboard = () => {
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t space-y-2">
+          {user.is_admin && (
+            <a
+              href="/admin"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              <span className="text-sm font-medium">Admin Panel</span>
+            </a>
+          )}
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
