@@ -238,8 +238,15 @@ const NewDashboard = () => {
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-r h-screen sticky top-0 overflow-hidden`}>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-[#1B7560]">SMS Relay</h1>
-          <p className="text-xs text-gray-500 mt-1">Virtual Numbers Platform</p>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-[#005E3A] rounded-lg flex items-center justify-center">
+              <Phone className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">BlissDigitals</h1>
+              <p className="text-xs text-gray-500">Virtual SMS Platform</p>
+            </div>
+          </div>
         </div>
 
         <nav className="px-3 space-y-6">
