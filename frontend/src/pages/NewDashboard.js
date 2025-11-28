@@ -848,11 +848,33 @@ const NewDashboard = () => {
   function FundWalletSection() {
     const [showAccountDetails, setShowAccountDetails] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [generatingAccount, setGeneratingAccount] = useState(false);
 
     const copyToClipboard = (text) => {
       navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleGenerateAccount = async () => {
+      setGeneratingAccount(true);
+      try {
+        const response = await axios.post(
+          `${API}/api/user/generate-virtual-account`,
+          {},
+          axiosConfig
+        );
+
+        if (response.data.success) {
+          toast.success('Virtual account created successfully!');
+          // Refresh user profile to get the new account details
+          await fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to create account');
+      } finally {
+        setGeneratingAccount(false);
+      }
     };
 
     return (
@@ -932,13 +954,27 @@ const NewDashboard = () => {
               </div>
             ) : (
               <div className="text-center py-4">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full mb-3">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <p className="text-sm text-gray-700 mb-3">Virtual account not created yet</p>
-                <p className="text-xs text-gray-600">Please contact support to set up your account</p>
+                <p className="text-sm font-semibold text-gray-900 mb-2">Virtual Account Not Created</p>
+                <p className="text-xs text-gray-600 mb-4">Generate your virtual account to receive NGN deposits</p>
+                <button
+                  onClick={handleGenerateAccount}
+                  disabled={generatingAccount}
+                  className="px-6 py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {generatingAccount ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </span>
+                  ) : (
+                    'Generate Account Now'
+                  )}
+                </button>
               </div>
             )}
           </div>
