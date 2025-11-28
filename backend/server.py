@@ -1029,7 +1029,10 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'is_admin': user.get('is_admin', False),
         'virtual_account_number': user.get('virtual_account_number'),
         'virtual_account_name': user.get('virtual_account_name'),
-        'virtual_bank_name': user.get('virtual_bank_name')
+        'virtual_bank_name': user.get('virtual_bank_name'),
+        'tier': user.get('tier', 1),
+        'kyc_status': user.get('kyc_status', 'pending'),
+        'payscribe_customer_id': user.get('payscribe_customer_id')
     }
 
 @api_router.get("/user/virtual-accounts")
