@@ -448,7 +448,7 @@ async def require_admin(user: dict = Depends(get_current_user)):
 # ============ PaymentPoint Functions ============
 
 async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAccount]:
-    """Create virtual accounts for a user via PaymentPoint"""
+    """Create virtual accounts for a user via PaymentPoint (PalmPay only)"""
     try:
         headers = {
             'Authorization': f'Bearer {PAYMENTPOINT_SECRET}',
@@ -460,7 +460,7 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
             'email': user['email'],
             'name': user['full_name'],
             'phoneNumber': user.get('phone', ''),
-            'bankCode': ['20946', '20897'],
+            'bankCode': ['20946'],  # PalmPay only
             'businessId': PAYMENTPOINT_BUSINESS_ID
         }
         
@@ -476,21 +476,27 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
                 result = response.json()
                 if result.get('status') == 'success' and result.get('bankAccounts'):
                     account_data = result['bankAccounts'][0]
-                    virtual_account = VirtualAccount(
-                        user_id=user['id'],
-                        bank_code=account_data['bankCode'],
-                        account_number=account_data['accountNumber'],
-                        account_name=account_data['accountName'],
-                        bank_name=account_data['bankName'],
-                        reserved_account_id=account_data['Reserved_Account_Id']
+                    customer_data = result.get('customer', {})
+                    
+                    # Update user with virtual account details
+                    await db.users.update_one(
+                        {'id': user['id']},
+                        {'$set': {
+                            'paymentpoint_customer_id': customer_data.get('customer_id'),
+                            'virtual_account_number': account_data['accountNumber'],
+                            'virtual_account_name': account_data['accountName'],
+                            'virtual_bank_name': account_data['bankName'],
+                            'virtual_bank_code': account_data['bankCode'],
+                            'reserved_account_id': account_data['Reserved_Account_Id']
+                        }}
                     )
                     
-                    doc = virtual_account.model_dump()
-                    doc['created_at'] = doc['created_at'].isoformat()
-                    await db.virtual_accounts.insert_one(doc)
-                    
-                    logger.info(f"Virtual account created for user {user['id']}")
-                    return virtual_account
+                    logger.info(f"Virtual account created for user {user['id']}: {account_data['accountNumber']}")
+                    return {
+                        'account_number': account_data['accountNumber'],
+                        'account_name': account_data['accountName'],
+                        'bank_name': account_data['bankName']
+                    }
             
             logger.error(f"PaymentPoint error: {response.text}")
             return None
