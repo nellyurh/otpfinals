@@ -271,16 +271,40 @@ const NewDashboard = () => {
         {/* Server Selection */}
         <div className="bg-white rounded-xl p-6 border shadow-sm">
           <label className="block text-sm font-semibold text-gray-700 mb-3">Select Server</label>
-          <select 
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+          <Select
             value={selectedServer}
-            onChange={(e) => setSelectedServer(e.target.value)}
-          >
-            <option value="">Choose server location</option>
-            <option value="us_server">🇺🇸 United States (DaisySMS)</option>
-            <option value="server1">🌍 International (SMS-Pool)</option>
-            <option value="server2">🌐 Global (TigerSMS)</option>
-          </select>
+            onChange={(option) => {
+              setSelectedServer(option);
+              setSelectedService(null);
+              setSelectedCountry(null);
+              // Fetch services based on server
+            }}
+            options={[
+              { value: 'us_server', label: '🇺🇸 United States Server' },
+              { value: 'server1', label: '🌍 International Server' },
+              { value: 'server2', label: '🌐 Global Server' }
+            ]}
+            placeholder="Choose server location"
+            className="react-select-container"
+            classNamePrefix="react-select"
+            isClearable
+            styles={{
+              control: (base) => ({
+                ...base,
+                minHeight: '48px',
+                borderColor: '#e5e7eb',
+                '&:hover': { borderColor: '#1B7560' }
+              }),
+              placeholder: (base) => ({
+                ...base,
+                color: '#9ca3af'
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: '#111827'
+              })
+            }}
+          />
         </div>
 
         {/* Purchase New Number */}
