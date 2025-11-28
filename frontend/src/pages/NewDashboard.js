@@ -17,6 +17,15 @@ const NewDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [user, setUser] = useState({ email: '', ngn_balance: 0, usd_balance: 0, is_admin: false });
   const [loading, setLoading] = useState(false);
+  const [pageToggles, setPageToggles] = useState({
+    enable_virtual_numbers: true,
+    enable_buy_data: true,
+    enable_airtime: true,
+    enable_betting: true,
+    enable_virtual_cards: true,
+    enable_fund_wallet: true,
+    enable_referral: true
+  });
   
   // Virtual Numbers state
   const [selectedServer, setSelectedServer] = useState('');
