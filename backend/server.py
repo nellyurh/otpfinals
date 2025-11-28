@@ -1746,6 +1746,30 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         config = config_dict
     return config
 
+@api_router.get("/user/page-toggles")
+async def get_page_toggles(user: dict = Depends(get_current_user)):
+    """Get which pages are enabled/disabled"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if not config:
+        return {
+            'enable_virtual_numbers': True,
+            'enable_buy_data': True,
+            'enable_airtime': True,
+            'enable_betting': True,
+            'enable_virtual_cards': True,
+            'enable_fund_wallet': True,
+            'enable_referral': True
+        }
+    return {
+        'enable_virtual_numbers': config.get('enable_virtual_numbers', True),
+        'enable_buy_data': config.get('enable_buy_data', True),
+        'enable_airtime': config.get('enable_airtime', True),
+        'enable_betting': config.get('enable_betting', True),
+        'enable_virtual_cards': config.get('enable_virtual_cards', True),
+        'enable_fund_wallet': config.get('enable_fund_wallet', True),
+        'enable_referral': config.get('enable_referral', True)
+    }
+
 @api_router.put("/admin/pricing")
 async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depends(require_admin)):
     update_fields = {}
