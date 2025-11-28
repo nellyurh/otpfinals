@@ -55,21 +55,23 @@ body {
   font-size: 14px;
 }
 
+/* Override react-select default blue styling with green */
 .react-select__control {
-  border: 1px solid #d1d5db !important;
+  border: 2px solid #e5e7eb !important;
   border-radius: 0.5rem !important;
   min-height: 48px !important;
   box-shadow: none !important;
   cursor: pointer !important;
+  background-color: white !important;
 }
 
 .react-select__control:hover {
-  border-color: #9ca3af !important;
+  border-color: #005E3A !important;
 }
 
 .react-select__control--is-focused {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 1px #3b82f6 !important;
+  border-color: #005E3A !important;
+  box-shadow: 0 0 0 1px #005E3A !important;
 }
 
 .react-select__control--is-disabled {
@@ -83,13 +85,19 @@ body {
 
 .react-select__placeholder {
   color: #9ca3af !important;
+  font-weight: 400 !important;
 }
 
 .react-select__single-value {
   color: #111827 !important;
+  font-weight: 500 !important;
 }
 
 .react-select__input-container {
+  color: #111827 !important;
+}
+
+.react-select__input {
   color: #111827 !important;
 }
 
@@ -110,16 +118,19 @@ body {
   cursor: pointer !important;
   padding: 10px 12px !important;
   margin: 2px 0 !important;
+  color: #111827 !important;
+  font-weight: 400 !important;
 }
 
 .react-select__option--is-focused {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
 }
 
 .react-select__option--is-selected {
-  background-color: #3b82f6 !important;
+  background-color: #005E3A !important;
   color: white !important;
+  font-weight: 600 !important;
 }
 
 .react-select__indicator-separator {
@@ -136,7 +147,7 @@ body {
 }
 
 .react-select__loading-indicator {
-  color: #3b82f6 !important;
+  color: #005E3A !important;
 }
 
   border-radius: 5px;
