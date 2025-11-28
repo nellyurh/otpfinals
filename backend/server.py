@@ -1076,6 +1076,74 @@ async def generate_virtual_account(user: dict = Depends(get_current_user)):
         logger.error(f"Error generating virtual account: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@api_router.post("/user/upload-kyc-documents")
+async def upload_kyc_documents(
+    idDocument: UploadFile = File(...),
+    selfie: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
+    """Upload KYC documents"""
+    try:
+        # Create uploads directory
+        upload_dir = Path("/app/backend/uploads/kyc")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save ID document
+        id_filename = f"{user['id']}_id_{uuid.uuid4()}.{idDocument.filename.split('.')[-1]}"
+        id_path = upload_dir / id_filename
+        with open(id_path, "wb") as buffer:
+            shutil.copyfileobj(idDocument.file, buffer)
+        
+        # Save selfie
+        selfie_filename = f"{user['id']}_selfie_{uuid.uuid4()}.{selfie.filename.split('.')[-1]}"
+        selfie_path = upload_dir / selfie_filename
+        with open(selfie_path, "wb") as buffer:
+            shutil.copyfileobj(selfie.file, buffer)
+        
+        # Return public URLs (you'd serve these via static files or upload to cloud storage)
+        base_url = os.environ.get('BACKEND_URL', 'http://localhost:8001')
+        
+        return {
+            'success': True,
+            'id_document_url': f"{base_url}/uploads/kyc/{id_filename}",
+            'selfie_url': f"{base_url}/uploads/kyc/{selfie_filename}"
+        }
+    except Exception as e:
+        logger.error(f"Error uploading KYC documents: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/payscribe/create-customer")
+async def create_payscribe_customer(request: Dict[str, Any], user: dict = Depends(get_current_user)):
+    """Create Payscribe customer for USDT/USDC and Virtual Cards"""
+    try:
+        # Call Payscribe customer creation
+        result = await payscribe_request('customers/create/full', 'POST', request)
+        
+        if result and result.get('status'):
+            customer_id = result.get('message', {}).get('details', {}).get('customer_id')
+            
+            # Update user with Payscribe customer ID and tier
+            await db.users.update_one(
+                {'id': user['id']},
+                {'$set': {
+                    'payscribe_customer_id': customer_id,
+                    'tier': 3,
+                    'kyc_status': 'approved',
+                    'kyc_submitted_at': datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            logger.info(f"Payscribe customer created for user {user['id']}: {customer_id}")
+            return {'success': True, 'customer_id': customer_id, 'details': result}
+        
+        raise HTTPException(status_code=400, detail="Customer creation failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating Payscribe customer: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/user/convert-ngn-to-usd")
 async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_current_user)):
     config = await db.pricing_config.find_one({}, {'_id': 0})
