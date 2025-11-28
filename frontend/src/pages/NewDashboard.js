@@ -1631,6 +1631,87 @@ const NewDashboard = () => {
     const [bettingPlatform, setBettingPlatform] = useState('');
     const [userId, setUserId] = useState('');
     const [amount, setAmount] = useState('');
+    const [bettingProviders, setBettingProviders] = useState([]);
+    const [validatedAccount, setValidatedAccount] = useState(null);
+    const [validating, setValidating] = useState(false);
+    const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+      fetchBettingProviders();
+    }, []);
+
+    const fetchBettingProviders = async () => {
+      try {
+        const response = await axios.get(`${API}/api/payscribe/betting-providers`, axiosConfig);
+        if (response.data.status && response.data.message?.details) {
+          setBettingProviders(response.data.message.details);
+        }
+      } catch (error) {
+        console.error('Failed to fetch betting providers:', error);
+      }
+    };
+
+    const handleValidateAccount = async () => {
+      if (!bettingPlatform || !userId) {
+        toast.error('Please select platform and enter User ID');
+        return;
+      }
+
+      setValidating(true);
+      try {
+        const response = await axios.get(
+          `${API}/api/payscribe/validate-bet-account?bet_id=${bettingPlatform}&customer_id=${userId}`,
+          axiosConfig
+        );
+
+        if (response.data.status) {
+          setValidatedAccount(response.data.message.details);
+          toast.success(`Account validated: ${response.data.message.details.name}`);
+        } else {
+          toast.error('Account validation failed');
+          setValidatedAccount(null);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Validation failed');
+        setValidatedAccount(null);
+      } finally {
+        setValidating(false);
+      }
+    };
+
+    const handleFundBetting = async () => {
+      if (!validatedAccount || !amount) {
+        toast.error('Please validate account and enter amount');
+        return;
+      }
+
+      setProcessing(true);
+      try {
+        const response = await axios.post(
+          `${API}/api/payscribe/fund-betting`,
+          {
+            bet_id: bettingPlatform,
+            customer_id: userId,
+            amount: parseFloat(amount)
+          },
+          axiosConfig
+        );
+
+        if (response.data.success) {
+          toast.success('Betting wallet funded successfully!');
+          setBettingPlatform('');
+          setUserId('');
+          setAmount('');
+          setValidatedAccount(null);
+          fetchProfile();
+          fetchTransactions();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Funding failed');
+      } finally {
+        setProcessing(false);
+      }
+    };
 
     return (
       <div className="space-y-6">
@@ -1646,28 +1727,57 @@ const NewDashboard = () => {
               <select 
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 value={bettingPlatform}
-                onChange={(e) => setBettingPlatform(e.target.value)}
+                onChange={(e) => {
+                  setBettingPlatform(e.target.value);
+                  setValidatedAccount(null);
+                }}
               >
                 <option value="">Choose betting platform</option>
-                <option value="bet9ja">Bet9ja</option>
-                <option value="sportybet">SportyBet</option>
-                <option value="1xbet">1xBet</option>
-                <option value="betking">BetKing</option>
-                <option value="nairabet">NairaBet</option>
-                <option value="betway">Betway</option>
+                {bettingProviders.map((provider) => (
+                  <option key={provider.id} value={provider.id}>
+                    {provider.title}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">User ID / Account Number</label>
-              <input
-                type="text"
-                placeholder="Enter your betting account ID"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter your betting account ID"
+                  value={userId}
+                  onChange={(e) => {
+                    setUserId(e.target.value);
+                    setValidatedAccount(null);
+                  }}
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                />
+                <button
+                  onClick={handleValidateAccount}
+                  disabled={!bettingPlatform || !userId || validating}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-300"
+                >
+                  {validating ? 'Validating...' : 'Validate'}
+                </button>
+              </div>
             </div>
+
+            {validatedAccount && (
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="font-semibold text-green-900">Account Validated</span>
+                </div>
+                <p className="text-sm text-green-800">
+                  <strong>Name:</strong> {validatedAccount.name}
+                </p>
+                <p className="text-sm text-green-800">
+                  <strong>Account:</strong> {validatedAccount.account}
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
@@ -1696,10 +1806,11 @@ const NewDashboard = () => {
             </div>
 
             <button 
-              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors"
-              disabled={!bettingPlatform || !userId || !amount}
+              onClick={handleFundBetting}
+              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={!bettingPlatform || !userId || !amount || !validatedAccount || processing}
             >
-              Fund Betting Account
+              {processing ? 'Processing...' : 'Fund Betting Account'}
             </button>
           </div>
         </div>
