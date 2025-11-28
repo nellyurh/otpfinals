@@ -506,7 +506,7 @@ const NewDashboard = () => {
                     placeholder="e.g., 212, 305"
                     value={areaCode}
                     onChange={(e) => setAreaCode(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
               )}
@@ -1627,7 +1627,7 @@ const NewDashboard = () => {
                 {airtimeType === 'local' ? 'Select Network' : 'Select Country'}
               </label>
               <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 value={network}
                 onChange={(e) => setNetwork(e.target.value)}
               >
@@ -1658,7 +1658,7 @@ const NewDashboard = () => {
                 placeholder={airtimeType === 'local' ? '08012345678' : '+1234567890'}
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
               />
             </div>
 
@@ -1809,7 +1809,7 @@ const NewDashboard = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Platform</label>
               <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 value={bettingPlatform}
                 onChange={(e) => {
                   setBettingPlatform(e.target.value);
