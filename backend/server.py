@@ -1029,6 +1029,45 @@ async def get_virtual_accounts(user: dict = Depends(get_current_user)):
     accounts = await db.virtual_accounts.find({'user_id': user['id']}, {'_id': 0}).to_list(10)
     return {'accounts': accounts}
 
+@api_router.post("/user/generate-virtual-account")
+async def generate_virtual_account(user: dict = Depends(get_current_user)):
+    """Manually generate PaymentPoint virtual account for user"""
+    try:
+        # Check if user already has virtual account
+        if user.get('virtual_account_number'):
+            return {
+                'success': True,
+                'message': 'Virtual account already exists',
+                'account': {
+                    'account_number': user.get('virtual_account_number'),
+                    'account_name': user.get('virtual_account_name'),
+                    'bank_name': user.get('virtual_bank_name')
+                }
+            }
+        
+        # Create virtual account
+        result = await create_paymentpoint_virtual_account(user)
+        
+        if result:
+            # Fetch updated user
+            updated_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+            return {
+                'success': True,
+                'message': 'Virtual account created successfully',
+                'account': {
+                    'account_number': updated_user.get('virtual_account_number'),
+                    'account_name': updated_user.get('virtual_account_name'),
+                    'bank_name': updated_user.get('virtual_bank_name')
+                }
+            }
+        
+        raise HTTPException(status_code=500, detail="Failed to create virtual account")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating virtual account: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/user/convert-ngn-to-usd")
 async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_current_user)):
     config = await db.pricing_config.find_one({}, {'_id': 0})
