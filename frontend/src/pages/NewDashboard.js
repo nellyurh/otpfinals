@@ -387,22 +387,6 @@ const NewDashboard = () => {
             className="react-select-container"
             classNamePrefix="react-select"
             isClearable
-            styles={{
-              control: (base) => ({
-                ...base,
-                minHeight: '48px',
-                borderColor: '#e5e7eb',
-                '&:hover': { borderColor: '#005E3A' }
-              }),
-              placeholder: (base) => ({
-                ...base,
-                color: '#9ca3af'
-              }),
-              singleValue: (base) => ({
-                ...base,
-                color: '#111827'
-              })
-            }}
           />
         </div>
 
@@ -435,29 +419,6 @@ const NewDashboard = () => {
                   classNamePrefix="react-select"
                   isClearable
                   isSearchable
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      minHeight: '48px',
-                      borderWidth: '2px',
-                      borderColor: '#e5e7eb',
-                      '&:hover': { borderColor: '#005E3A' }
-                    }),
-                    placeholder: (base) => ({
-                      ...base,
-                      color: '#9ca3af',
-                      fontSize: '14px'
-                    }),
-                    singleValue: (base) => ({
-                      ...base,
-                      color: '#111827',
-                      fontSize: '14px'
-                    }),
-                    input: (base) => ({
-                      ...base,
-                      color: '#111827'
-                    })
-                  }}
                 />
               </div>
 
@@ -476,23 +437,6 @@ const NewDashboard = () => {
                     classNamePrefix="react-select"
                     isClearable
                     isSearchable
-                    styles={{
-                      control: (base) => ({
-                        ...base,
-                        minHeight: '48px',
-                        borderWidth: '2px',
-                        borderColor: '#e5e7eb',
-                        '&:hover': { borderColor: '#005E3A' }
-                      }),
-                      placeholder: (base) => ({
-                        ...base,
-                        color: '#9ca3af'
-                      }),
-                      singleValue: (base) => ({
-                        ...base,
-                        color: '#111827'
-                      })
-                    }}
                   />
                 </div>
               )}
@@ -1444,23 +1388,6 @@ const NewDashboard = () => {
                 classNamePrefix="react-select"
                 isClearable
                 isSearchable
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: '48px',
-                    borderWidth: '2px',
-                    borderColor: '#e5e7eb',
-                    '&:hover': { borderColor: '#005E3A' }
-                  }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: '#9ca3af'
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: '#111827'
-                  })
-                }}
               />
             </div>
 
@@ -1477,28 +1404,6 @@ const NewDashboard = () => {
                 classNamePrefix="react-select"
                 isClearable
                 isSearchable
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: '48px',
-                    borderWidth: '2px',
-                    borderColor: '#e5e7eb',
-                    '&:hover': { borderColor: '#005E3A' }
-                  }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: '#9ca3af'
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: '#111827'
-                  }),
-                  option: (base, state) => ({
-                    ...base,
-                    fontSize: '14px',
-                    padding: '10px 12px'
-                  })
-                }}
               />
             </div>
 
@@ -1640,27 +1545,6 @@ const NewDashboard = () => {
                 classNamePrefix="react-select"
                 isClearable
                 isSearchable
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: '48px',
-                    borderWidth: '2px',
-                    borderColor: '#e5e7eb',
-                    '&:hover': { borderColor: '#005E3A' }
-                  }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: '#9ca3af'
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: '#111827'
-                  }),
-                  input: (base) => ({
-                    ...base,
-                    color: '#111827'
-                  })
-                }}
               />
             </div>
 
@@ -1837,27 +1721,6 @@ const NewDashboard = () => {
                 classNamePrefix="react-select"
                 isClearable
                 isSearchable
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: '48px',
-                    borderWidth: '2px',
-                    borderColor: '#e5e7eb',
-                    '&:hover': { borderColor: '#005E3A' }
-                  }),
-                  placeholder: (base) => ({
-                    ...base,
-                    color: '#9ca3af'
-                  }),
-                  singleValue: (base) => ({
-                    ...base,
-                    color: '#111827'
-                  }),
-                  input: (base) => ({
-                    ...base,
-                    color: '#111827'
-                  })
-                }}
               />
             </div>
 
