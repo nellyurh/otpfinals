@@ -907,7 +907,10 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'phone': user.get('phone', ''),
         'ngn_balance': user.get('ngn_balance', 0),
         'usd_balance': user.get('usd_balance', 0),
-        'is_admin': user.get('is_admin', False)
+        'is_admin': user.get('is_admin', False),
+        'virtual_account_number': user.get('virtual_account_number'),
+        'virtual_account_name': user.get('virtual_account_name'),
+        'virtual_bank_name': user.get('virtual_bank_name')
     }
 
 @api_router.get("/user/virtual-accounts")
