@@ -593,12 +593,20 @@ const NewDashboard = () => {
 
   function DashboardOverview() {
     const getUserInitials = () => {
-      if (!user.email) return 'U';
-      const parts = user.email.split('@')[0].split('.');
-      if (parts.length > 1) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
+      if (!user.full_name && !user.email) return 'U';
+      if (user.full_name) {
+        const nameParts = user.full_name.trim().split(' ');
+        if (nameParts.length > 1) {
+          return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+        }
+        return user.full_name.slice(0, 2).toUpperCase();
       }
       return user.email.slice(0, 2).toUpperCase();
+    };
+
+    const getUserDisplayName = () => {
+      if (user.full_name) return user.full_name;
+      return user.email?.split('@')[0] || 'User';
     };
 
     const getAccountProgress = () => {
@@ -619,7 +627,7 @@ const NewDashboard = () => {
               <span className="text-xl font-bold">{getUserInitials()}</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{user.email?.split('@')[0] || 'User'}</h2>
+              <h2 className="text-2xl font-bold">{getUserDisplayName()}</h2>
               <p className="text-white/80">Welcome back!</p>
             </div>
           </div>
