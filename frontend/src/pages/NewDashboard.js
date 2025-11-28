@@ -1725,7 +1725,7 @@ const NewDashboard = () => {
   }
 
   function BettingSection() {
-    const [bettingPlatform, setBettingPlatform] = useState('');
+    const [bettingPlatform, setBettingPlatform] = useState(null);
     const [userId, setUserId] = useState('');
     const [amount, setAmount] = useState('');
     const [bettingProviders, setBettingProviders] = useState([]);
@@ -1741,7 +1741,11 @@ const NewDashboard = () => {
       try {
         const response = await axios.get(`${API}/api/payscribe/betting-providers`, axiosConfig);
         if (response.data.status && response.data.message?.details) {
-          setBettingProviders(response.data.message.details);
+          const providers = response.data.message.details.map(p => ({
+            value: p.id,
+            label: p.title
+          }));
+          setBettingProviders(providers);
         }
       } catch (error) {
         console.error('Failed to fetch betting providers:', error);
@@ -1757,7 +1761,7 @@ const NewDashboard = () => {
       setValidating(true);
       try {
         const response = await axios.get(
-          `${API}/api/payscribe/validate-bet-account?bet_id=${bettingPlatform}&customer_id=${userId}`,
+          `${API}/api/payscribe/validate-bet-account?bet_id=${bettingPlatform.value}&customer_id=${userId}`,
           axiosConfig
         );
 
@@ -1787,7 +1791,7 @@ const NewDashboard = () => {
         const response = await axios.post(
           `${API}/api/payscribe/fund-betting`,
           {
-            bet_id: bettingPlatform,
+            bet_id: bettingPlatform.value,
             customer_id: userId,
             amount: parseFloat(amount)
           },
@@ -1796,7 +1800,7 @@ const NewDashboard = () => {
 
         if (response.data.success) {
           toast.success('Betting wallet funded successfully!');
-          setBettingPlatform('');
+          setBettingPlatform(null);
           setUserId('');
           setAmount('');
           setValidatedAccount(null);
@@ -1821,21 +1825,40 @@ const NewDashboard = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Platform</label>
-              <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+              <Select
                 value={bettingPlatform}
-                onChange={(e) => {
-                  setBettingPlatform(e.target.value);
+                onChange={(option) => {
+                  setBettingPlatform(option);
                   setValidatedAccount(null);
                 }}
-              >
-                <option value="">Choose betting platform</option>
-                {bettingProviders.map((provider) => (
-                  <option key={provider.id} value={provider.id}>
-                    {provider.title}
-                  </option>
-                ))}
-              </select>
+                options={bettingProviders}
+                placeholder="Search for betting platform..."
+                className="react-select-container"
+                classNamePrefix="react-select"
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '48px',
+                    borderWidth: '2px',
+                    borderColor: '#e5e7eb',
+                    '&:hover': { borderColor: '#005E3A' }
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: '#9ca3af'
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: '#111827'
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: '#111827'
+                  })
+                }}
+              />
             </div>
 
             <div>
