@@ -412,7 +412,7 @@ const NewDashboard = () => {
             className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <Plus className={`w-5 h-5 text-[#1B7560] transition-transform ${purchaseExpanded ? 'rotate-45' : ''}`} />
+              <Plus className={`w-5 h-5 text-[#005E3A] transition-transform ${purchaseExpanded ? 'rotate-45' : ''}`} />
               <h3 className="text-lg font-semibold text-gray-900">Purchase New Number</h3>
             </div>
             <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${purchaseExpanded ? 'rotate-180' : ''}`} />
@@ -505,7 +505,7 @@ const NewDashboard = () => {
                     placeholder="e.g., 212, 305"
                     value={areaCode}
                     onChange={(e) => setAreaCode(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                   />
                 </div>
               )}
@@ -515,7 +515,7 @@ const NewDashboard = () => {
                 <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600">Estimated Cost:</span>
-                    <span className="text-2xl font-bold text-[#1B7560]">
+                    <span className="text-2xl font-bold text-[#005E3A]">
                       {paymentCurrency === 'USD' ? `$${estimatedPrice.final_usd?.toFixed(2)}` : `₦${estimatedPrice.final_ngn?.toFixed(2)}`}
                     </span>
                   </div>
@@ -826,13 +826,13 @@ const NewDashboard = () => {
         <p className="text-gray-600">Choose your preferred payment method</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-xl border-2 border-[#1B7560] shadow-sm">
+          <div className="bg-white p-6 rounded-xl border-2 border-[#005E3A] shadow-sm">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <Wallet className="w-6 h-6 text-[#1B7560]" />
+              <Wallet className="w-6 h-6 text-[#005E3A]" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Fund with Naira (₦)</h3>
             <p className="text-sm text-gray-600 mb-4">Use your bank account or transfer</p>
-            <button className="w-full py-3 bg-[#1B7560] text-white rounded-lg font-semibold hover:bg-[#156650]">
+            <button className="w-full py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D]">
               Fund NGN Wallet
             </button>
           </div>
@@ -925,7 +925,7 @@ const NewDashboard = () => {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">NGN Balance</label>
-              <div className="text-2xl font-bold text-[#1B7560]">₦{user.ngn_balance?.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-[#005E3A]">₦{user.ngn_balance?.toLocaleString()}</div>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">USD Balance</label>
@@ -994,7 +994,7 @@ const NewDashboard = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
               <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 value={network}
                 onChange={(e) => setNetwork(e.target.value)}
               >
@@ -1009,7 +1009,7 @@ const NewDashboard = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Data Plan</label>
               <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 value={dataType}
                 onChange={(e) => setDataType(e.target.value)}
               >
@@ -1029,12 +1029,12 @@ const NewDashboard = () => {
                 placeholder="08012345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
               />
             </div>
 
             <button 
-              className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors"
+              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors"
               disabled={!network || !dataType || !phoneNumber}
             >
               Purchase Data Bundle
@@ -1070,7 +1070,7 @@ const NewDashboard = () => {
               onClick={() => setAirtimeType('local')}
               className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
                 airtimeType === 'local' 
-                  ? 'bg-[#1B7560] text-white' 
+                  ? 'bg-[#005E3A] text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -1080,7 +1080,7 @@ const NewDashboard = () => {
               onClick={() => setAirtimeType('international')}
               className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
                 airtimeType === 'international' 
-                  ? 'bg-[#1B7560] text-white' 
+                  ? 'bg-[#005E3A] text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -1094,7 +1094,7 @@ const NewDashboard = () => {
                 {airtimeType === 'local' ? 'Select Network' : 'Select Country'}
               </label>
               <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 value={network}
                 onChange={(e) => setNetwork(e.target.value)}
               >
@@ -1125,7 +1125,7 @@ const NewDashboard = () => {
                 placeholder={airtimeType === 'local' ? '08012345678' : '+1234567890'}
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
               />
             </div>
 
@@ -1140,7 +1140,7 @@ const NewDashboard = () => {
                   placeholder="Enter amount"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 />
               </div>
             </div>
@@ -1151,7 +1151,7 @@ const NewDashboard = () => {
                   <button
                     key={preset}
                     onClick={() => setAmount(preset)}
-                    className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#1B7560] hover:bg-green-50 transition-colors font-semibold text-sm"
+                    className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#005E3A] hover:bg-green-50 transition-colors font-semibold text-sm"
                   >
                     ₦{preset}
                   </button>
@@ -1160,7 +1160,7 @@ const NewDashboard = () => {
             )}
 
             <button 
-              className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors"
+              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors"
               disabled={!network || !phoneNumber || !amount}
             >
               Buy Airtime
@@ -1194,7 +1194,7 @@ const NewDashboard = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Platform</label>
               <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 value={bettingPlatform}
                 onChange={(e) => setBettingPlatform(e.target.value)}
               >
@@ -1215,7 +1215,7 @@ const NewDashboard = () => {
                 placeholder="Enter your betting account ID"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
               />
             </div>
 
@@ -1228,7 +1228,7 @@ const NewDashboard = () => {
                   placeholder="Enter amount"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none"
                 />
               </div>
             </div>
@@ -1238,7 +1238,7 @@ const NewDashboard = () => {
                 <button
                   key={preset}
                   onClick={() => setAmount(preset)}
-                  className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#1B7560] hover:bg-green-50 transition-colors font-semibold text-sm"
+                  className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#005E3A] hover:bg-green-50 transition-colors font-semibold text-sm"
                 >
                   ₦{parseInt(preset).toLocaleString()}
                 </button>
@@ -1246,7 +1246,7 @@ const NewDashboard = () => {
             </div>
 
             <button 
-              className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors"
+              className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors"
               disabled={!bettingPlatform || !userId || !amount}
             >
               Fund Betting Account
