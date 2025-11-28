@@ -75,6 +75,15 @@ class User(BaseModel):
     ngn_balance: float = 0.0
     usd_balance: float = 0.0
     is_admin: bool = False
+    
+    # PaymentPoint Virtual Account Details
+    paymentpoint_customer_id: Optional[str] = None
+    virtual_account_number: Optional[str] = None
+    virtual_account_name: Optional[str] = None
+    virtual_bank_name: Optional[str] = None
+    virtual_bank_code: Optional[str] = None
+    reserved_account_id: Optional[str] = None
+    
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Transaction(BaseModel):
