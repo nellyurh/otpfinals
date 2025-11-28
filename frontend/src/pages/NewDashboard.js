@@ -216,11 +216,21 @@ const NewDashboard = () => {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
               
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#1B7560] text-white rounded-lg font-semibold hover:bg-[#156650]">
-                <Wallet className="w-4 h-4" />
-                ₦ NG {user.ngn_balance?.toLocaleString() || '0.00'}
-                <ChevronDown className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-3 px-4 py-2 bg-white border-2 border-[#1B7560] rounded-lg">
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">NGN Balance</div>
+                  <div className="text-sm font-bold text-[#1B7560]">
+                    ₦{user.ngn_balance?.toLocaleString() || '0.00'}
+                  </div>
+                </div>
+                <div className="w-px h-8 bg-gray-300"></div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">USD Balance</div>
+                  <div className="text-sm font-bold text-blue-600">
+                    ${user.usd_balance?.toLocaleString() || '0.00'}
+                  </div>
+                </div>
+              </div>
               
               <div className="w-10 h-10 rounded-full bg-[#1B7560] flex items-center justify-center text-white font-semibold">
                 {user.email?.charAt(0).toUpperCase()}
