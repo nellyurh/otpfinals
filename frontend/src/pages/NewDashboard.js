@@ -53,10 +53,20 @@ const NewDashboard = () => {
     fetchProfile();
     fetchOrders();
     fetchTransactions();
+    fetchPageToggles();
     
     const interval = setInterval(fetchOrders, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchPageToggles = async () => {
+    try {
+      const response = await axios.get(`${API}/user/page-toggles`, axiosConfig);
+      setPageToggles(response.data);
+    } catch (error) {
+      console.error('Failed to fetch page toggles');
+    }
+  };
 
   const fetchProfile = async () => {
     try {
