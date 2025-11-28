@@ -1684,7 +1684,7 @@ const NewDashboard = () => {
                   <button
                     key={preset}
                     onClick={() => setAmount(preset)}
-                    className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#005E3A] hover:bg-green-50 transition-colors font-semibold text-sm"
+                    className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#005E3A] hover:bg-green-50 transition-colors font-semibold text-sm text-gray-900"
                   >
                     ₦{preset}
                   </button>
