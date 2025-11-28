@@ -523,7 +523,7 @@ const NewDashboard = () => {
               )}
 
               {/* Purchase Button */}
-              <button className="w-full py-4 bg-[#1B7560] text-white rounded-lg font-semibold text-lg hover:bg-[#156650] transition-colors flex items-center justify-center gap-2">
+              <button className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors flex items-center justify-center gap-2">
                 <Phone className="w-5 h-5" />
                 Purchase Number
               </button>
