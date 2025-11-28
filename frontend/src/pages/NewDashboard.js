@@ -1584,7 +1584,7 @@ const NewDashboard = () => {
 
         if (response.data.success) {
           toast.success('Airtime purchased successfully!');
-          setNetwork('');
+          setNetwork(null);
           setPhoneNumber('');
           setAmount('');
           fetchProfile();
@@ -1630,32 +1630,38 @@ const NewDashboard = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {airtimeType === 'local' ? 'Select Network' : 'Select Country'}
-              </label>
-              <select 
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
+              <Select
                 value={network}
-                onChange={(e) => setNetwork(e.target.value)}
-              >
-                {airtimeType === 'local' ? (
-                  <>
-                    <option value="">Choose network provider</option>
-                    <option value="mtn">MTN</option>
-                    <option value="airtel">Airtel</option>
-                    <option value="glo">Glo</option>
-                    <option value="9mobile">9mobile</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="">Choose country</option>
-                    <option value="us">United States</option>
-                    <option value="uk">United Kingdom</option>
-                    <option value="ca">Canada</option>
-                    <option value="gh">Ghana</option>
-                  </>
-                )}
-              </select>
+                onChange={(option) => setNetwork(option)}
+                options={networkOptions}
+                placeholder="Choose network provider"
+                className="react-select-container"
+                classNamePrefix="react-select"
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '48px',
+                    borderWidth: '2px',
+                    borderColor: '#e5e7eb',
+                    '&:hover': { borderColor: '#005E3A' }
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: '#9ca3af'
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: '#111827'
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: '#111827'
+                  })
+                }}
+              />
             </div>
 
             <div>
