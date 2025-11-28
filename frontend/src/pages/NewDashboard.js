@@ -1428,7 +1428,7 @@ const NewDashboard = () => {
           <p className="text-gray-600">Purchase data bundles for all networks</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border shadow-sm max-w-2xl mx-auto">
+        <div className="bg-white rounded-xl p-6 border shadow-sm ">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
@@ -1534,7 +1534,7 @@ const NewDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-2xl mx-auto">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 ">
           <p className="text-sm text-blue-800">
             💡 <strong>Note:</strong> Data will be delivered instantly after payment. Make sure the phone number is correct.
           </p>
@@ -1604,7 +1604,7 @@ const NewDashboard = () => {
           <p className="text-gray-600">Recharge airtime instantly for any network</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border shadow-sm max-w-2xl mx-auto">
+        <div className="bg-white rounded-xl p-6 border shadow-sm ">
           <div className="flex gap-2 mb-6">
             <button
               onClick={() => setAirtimeType('local')}
@@ -1715,7 +1715,7 @@ const NewDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 max-w-2xl mx-auto">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 ">
           <p className="text-sm text-green-800">
             ⚡ <strong>Instant Delivery:</strong> Airtime is delivered within seconds. No delays!
           </p>
@@ -1821,7 +1821,7 @@ const NewDashboard = () => {
           <p className="text-gray-600">Fund your betting account instantly</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border shadow-sm max-w-2xl mx-auto">
+        <div className="bg-white rounded-xl p-6 border shadow-sm ">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Select Platform</label>
@@ -1935,7 +1935,7 @@ const NewDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 max-w-2xl mx-auto">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 ">
           <p className="text-sm text-yellow-800">
             ⚠️ <strong>Important:</strong> Ensure your User ID is correct. Funds sent to wrong accounts cannot be reversed.
           </p>
