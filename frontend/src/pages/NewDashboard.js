@@ -103,7 +103,7 @@ const NewDashboard = () => {
     navigate('/');
   };
 
-  const menuItems = [
+  const allMenuItems = [
     {
       category: 'OVERVIEW',
       items: [
@@ -114,24 +114,30 @@ const NewDashboard = () => {
     {
       category: 'SERVICES',
       items: [
-        { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet' },
-        { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW' },
-        { id: 'buy-data', icon: Wallet, label: 'Buy Data Bundle' },
-        { id: 'airtime', icon: Phone, label: 'Airtime Top-Up' },
-        { id: 'betting', icon: Gift, label: 'Betting' },
-        { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards' }
+        { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
+        { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
+        { id: 'buy-data', icon: Wallet, label: 'Buy Data Bundle', toggle: 'enable_buy_data' },
+        { id: 'airtime', icon: Phone, label: 'Airtime Top-Up', toggle: 'enable_airtime' },
+        { id: 'betting', icon: Gift, label: 'Betting', toggle: 'enable_betting' },
+        { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' }
       ]
     },
     {
       category: 'MANAGEMENT',
       items: [
         { id: 'sms-history', icon: History, label: 'SMS History' },
-        { id: 'referral', icon: Gift, label: 'Referral Program' },
+        { id: 'referral', icon: Gift, label: 'Referral Program', toggle: 'enable_referral' },
         { id: 'profile', icon: UserCircle, label: 'Profile Settings' },
         { id: 'support', icon: MessageSquare, label: 'Support Channels' }
       ]
     }
   ];
+
+  // Filter menu items based on page toggles
+  const menuItems = allMenuItems.map(section => ({
+    ...section,
+    items: section.items.filter(item => !item.toggle || pageToggles[item.toggle])
+  })).filter(section => section.items.length > 0);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
