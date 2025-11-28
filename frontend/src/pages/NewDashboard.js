@@ -380,6 +380,7 @@ const NewDashboard = () => {
             {activeSection === 'transactions' && <TransactionsSection />}
             {activeSection === 'dashboard' && <DashboardOverview />}
             {activeSection === 'sms-history' && <SMSHistorySection />}
+            {activeSection === 'account-upgrade' && <AccountUpgradeSection />}
             {activeSection === 'profile' && <ProfileSection />}
             {activeSection === 'referral' && <ReferralSection />}
             {activeSection === 'support' && <SupportSection />}
