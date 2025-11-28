@@ -554,7 +554,7 @@ const NewDashboard = () => {
                       <td className="py-4 px-4 font-mono text-sm">{order.phone_number}</td>
                       <td className="py-4 px-4">
                         {order.otp ? (
-                          <span className="font-mono text-lg font-bold text-[#1B7560]">{order.otp}</span>
+                          <span className="font-mono text-lg font-bold text-[#005E3A]">{order.otp}</span>
                         ) : (
                           <span className="text-gray-400 flex items-center gap-1">
                             <RefreshCw className="w-4 h-4 animate-spin" />
