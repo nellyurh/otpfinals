@@ -333,8 +333,8 @@ const NewDashboard = () => {
         </header>
 
         {/* Content Area */}
-        <main className="p-8">
-          <div className="max-w-6xl mx-auto">
+        <main className="p-2">
+          <div className="w-full">
             {activeSection === 'virtual-numbers' && <VirtualNumbersSection />}
             {activeSection === 'fund-wallet' && <FundWalletSection />}
             {activeSection === 'buy-data' && <BuyDataSection />}
