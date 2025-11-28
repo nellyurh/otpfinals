@@ -11,6 +11,41 @@ import Select from 'react-select';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Shared Select styles to prevent blurry text and ensure dark, visible text
+const selectStyles = {
+  control: (base) => ({
+    ...base,
+    minHeight: '48px',
+    borderWidth: '2px',
+    borderColor: '#e5e7eb',
+    '&:hover': { borderColor: '#10b981' }
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: '#9ca3af'
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: '#1f2937',
+    fontWeight: '500'
+  }),
+  input: (base) => ({
+    ...base,
+    color: '#1f2937'
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? '#eff6ff' : state.isSelected ? '#dbeafe' : 'white',
+    color: '#1f2937',
+    cursor: 'pointer',
+    fontWeight: state.isSelected ? '600' : '400'
+  })
+};
+
 const NewDashboard = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('virtual-numbers');
