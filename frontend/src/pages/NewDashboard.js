@@ -104,6 +104,39 @@ const NewDashboard = () => {
     navigate('/');
   };
 
+  useEffect(() => {
+    const calculatePrice = async () => {
+      if (!selectedServer || !selectedService) {
+        setEstimatedPrice(null);
+        return;
+      }
+
+      // For US server, we don't need country
+      if (selectedServer.value === 'us_server' || selectedCountry) {
+        try {
+          const response = await axios.post(
+            `${API}/orders/calculate-price`,
+            {
+              server: selectedServer.value,
+              service: selectedService.value,
+              country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value,
+              area_code: areaCode || undefined
+            },
+            axiosConfig
+          );
+          
+          if (response.data.success) {
+            setEstimatedPrice(response.data);
+          }
+        } catch (error) {
+          console.error('Failed to calculate price:', error);
+        }
+      }
+    };
+
+    calculatePrice();
+  }, [selectedServer, selectedService, selectedCountry, areaCode]);
+
   const fetchServicesForServer = async (serverValue) => {
     if (!serverValue) {
       setAvailableServices([]);
