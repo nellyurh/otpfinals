@@ -325,27 +325,92 @@ const NewDashboard = () => {
               {/* Service Search */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Search Service</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="e.g., WhatsApp, Telegram, Google"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Area Code */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Area Code (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g., 212, 305"
-                  value={areaCode}
-                  onChange={(e) => setAreaCode(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                <Select
+                  value={selectedService}
+                  onChange={(option) => setSelectedService(option)}
+                  options={availableServices}
+                  isDisabled={!selectedServer || servicesLoading}
+                  isLoading={servicesLoading}
+                  placeholder="e.g., WhatsApp, Telegram, Google"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  isClearable
+                  isSearchable
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      minHeight: '48px',
+                      borderWidth: '2px',
+                      borderColor: '#e5e7eb',
+                      '&:hover': { borderColor: '#1B7560' }
+                    }),
+                    placeholder: (base) => ({
+                      ...base,
+                      color: '#9ca3af',
+                      fontSize: '14px'
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: '#111827',
+                      fontSize: '14px'
+                    }),
+                    input: (base) => ({
+                      ...base,
+                      color: '#111827'
+                    })
+                  }}
                 />
               </div>
+
+              {/* Country Selection - Only for non-US servers */}
+              {selectedServer && selectedServer.value !== 'us_server' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Select Country</label>
+                  <Select
+                    value={selectedCountry}
+                    onChange={(option) => setSelectedCountry(option)}
+                    options={availableCountries}
+                    isDisabled={!selectedServer || servicesLoading}
+                    isLoading={servicesLoading}
+                    placeholder="Choose country"
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                    isSearchable
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        minHeight: '48px',
+                        borderWidth: '2px',
+                        borderColor: '#e5e7eb',
+                        '&:hover': { borderColor: '#1B7560' }
+                      }),
+                      placeholder: (base) => ({
+                        ...base,
+                        color: '#9ca3af'
+                      }),
+                      singleValue: (base) => ({
+                        ...base,
+                        color: '#111827'
+                      })
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Area Code - Only for US server */}
+              {selectedServer && selectedServer.value === 'us_server' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Area Code (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 212, 305"
+                    value={areaCode}
+                    onChange={(e) => setAreaCode(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#1B7560] focus:outline-none"
+                  />
+                </div>
+              )}
 
               {/* Price Display */}
               {estimatedPrice && (
