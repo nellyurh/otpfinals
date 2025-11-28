@@ -373,9 +373,9 @@ const NewDashboard = () => {
           <div className="w-full">
             {activeSection === 'virtual-numbers' && <VirtualNumbersSection />}
             {activeSection === 'fund-wallet' && <FundWalletSection />}
-            {activeSection === 'buy-data' && <BuyDataSection />}
-            {activeSection === 'airtime' && <AirtimeSection />}
-            {activeSection === 'betting' && <BettingSection />}
+            {activeSection === 'buy-data' && <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
+            {activeSection === 'airtime' && <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
+            {activeSection === 'betting' && <BettingSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
             {activeSection === 'transactions' && <TransactionsSection />}
             {activeSection === 'dashboard' && <DashboardOverview />}
             {activeSection === 'sms-history' && <SMSHistorySection />}
