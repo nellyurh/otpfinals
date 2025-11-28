@@ -337,7 +337,13 @@ const NewDashboard = () => {
               setSelectedServer(option);
               setSelectedService(null);
               setSelectedCountry(null);
-              // Fetch services based on server
+              setEstimatedPrice(null);
+              if (option) {
+                fetchServicesForServer(option.value);
+              } else {
+                setAvailableServices([]);
+                setAvailableCountries([]);
+              }
             }}
             options={[
               { value: 'us_server', label: '🇺🇸 United States Server' },
