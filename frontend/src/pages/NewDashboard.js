@@ -28,11 +28,12 @@ const NewDashboard = () => {
   });
   
   // Virtual Numbers state
-  const [selectedServer, setSelectedServer] = useState('');
-  const [selectedService, setSelectedService] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedServer, setSelectedServer] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(null);
   const [areaCode, setAreaCode] = useState('');
   const [availableServices, setAvailableServices] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState([]);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const [paymentCurrency, setPaymentCurrency] = useState('USD');
