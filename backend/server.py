@@ -769,6 +769,106 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         logger.error(f"Payscribe request error: {str(e)}")
         return None
 
+# ============ Payscribe Services ============
+
+async def create_stablecoin_address(user_id: str, currency: str, network: str, chain: str) -> Optional[Dict]:
+    """Create a stablecoin deposit address for a user"""
+    try:
+        data = {
+            'currency': currency,
+            'network': network,
+            'chain': chain,
+            'label': f"{user_id}_{currency}",
+            'customer_id': user_id
+        }
+        
+        result = await payscribe_request('stable/address/create', 'POST', data)
+        if result and result.get('status'):
+            return result.get('message', {}).get('details')
+        return None
+    except Exception as e:
+        logger.error(f"Error creating stablecoin address: {str(e)}")
+        return None
+
+async def vend_airtime(network: str, amount: float, recipient: str, ref: str = None) -> Optional[Dict]:
+    """Purchase airtime via Payscribe"""
+    try:
+        data = {
+            'network': network.lower(),
+            'amount': amount,
+            'recipient': recipient,
+            'ported': False,
+            'ref': ref or str(uuid.uuid4())
+        }
+        
+        result = await payscribe_request('airtime', 'POST', data)
+        return result
+    except Exception as e:
+        logger.error(f"Error vending airtime: {str(e)}")
+        return None
+
+async def get_data_plans(network: str, category: str = None) -> Optional[Dict]:
+    """Get data plans for a network"""
+    try:
+        endpoint = f'data/lookup?network={network}'
+        if category:
+            endpoint += f'&category={category}'
+        
+        result = await payscribe_request(endpoint, 'GET')
+        return result
+    except Exception as e:
+        logger.error(f"Error fetching data plans: {str(e)}")
+        return None
+
+async def purchase_data(plan_code: str, recipient: str, ref: str = None) -> Optional[Dict]:
+    """Purchase data bundle via Payscribe"""
+    try:
+        data = {
+            'plan_code': plan_code,
+            'recipient': recipient,
+            'ref': ref or str(uuid.uuid4())
+        }
+        
+        result = await payscribe_request('data/vend', 'POST', data)
+        return result
+    except Exception as e:
+        logger.error(f"Error purchasing data: {str(e)}")
+        return None
+
+async def get_betting_providers() -> Optional[Dict]:
+    """Get list of betting service providers"""
+    try:
+        result = await payscribe_request('betting/list', 'GET')
+        return result
+    except Exception as e:
+        logger.error(f"Error fetching betting providers: {str(e)}")
+        return None
+
+async def validate_bet_account(bet_id: str, customer_id: str) -> Optional[Dict]:
+    """Validate betting account before funding"""
+    try:
+        result = await payscribe_request(f'betting/lookup?bet_id={bet_id}&customer_id={customer_id}', 'GET')
+        return result
+    except Exception as e:
+        logger.error(f"Error validating bet account: {str(e)}")
+        return None
+
+async def fund_bet_wallet(bet_id: str, customer_id: str, amount: float, ref: str = None) -> Optional[Dict]:
+    """Fund betting wallet via Payscribe"""
+    try:
+        data = {
+            'bet_id': bet_id,
+            'customer_id': customer_id,
+            'amount': amount,
+            'ref': ref or str(uuid.uuid4())
+        }
+        
+        result = await payscribe_request('betting/fund', 'POST', data)
+        return result
+    except Exception as e:
+        logger.error(f"Error funding bet wallet: {str(e)}")
+        return None
+
 # ============ Background Tasks ============
 
 async def otp_polling_task(order_id: str):
