@@ -3,6 +3,7 @@ import '@/App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
+import NewDashboard from './pages/NewDashboard';
 import AdminPanel from './pages/AdminPanel';
 import { Toaster } from 'sonner';
 
