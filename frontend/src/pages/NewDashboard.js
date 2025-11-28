@@ -311,29 +311,21 @@ const NewDashboard = () => {
             </div>
             
             <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg relative">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <button className="p-2 hover:bg-gray-100 rounded-lg">
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
               </button>
               
-              <div className="flex items-center gap-3 px-4 py-2 bg-white border-2 border-[#1B7560] rounded-lg">
-                <div className="text-right">
-                  <div className="text-xs text-gray-500">NGN Balance</div>
-                  <div className="text-sm font-bold text-[#1B7560]">
-                    ₦{user.ngn_balance?.toLocaleString() || '0.00'}
-                  </div>
-                </div>
-                <div className="w-px h-8 bg-gray-300"></div>
-                <div className="text-right">
-                  <div className="text-xs text-gray-500">USD Balance</div>
-                  <div className="text-sm font-bold text-blue-600">
-                    ${user.usd_balance?.toLocaleString() || '0.00'}
-                  </div>
-                </div>
+              <div className="flex items-center gap-2 bg-[#005E3A] text-white px-4 py-2 rounded-lg">
+                <Wallet className="w-4 h-4" />
+                <span className="font-bold">₦{(user.ngn_balance || 0).toFixed(2)}</span>
+                <div className="w-px h-4 bg-white/30 mx-1"></div>
+                <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
               </div>
               
-              <div className="w-10 h-10 rounded-full bg-[#1B7560] flex items-center justify-center text-white font-semibold">
-                {user.email?.charAt(0).toUpperCase()}
+              <div className="w-10 h-10 rounded-full bg-[#005E3A] flex items-center justify-center text-white font-semibold">
+                {user.email?.slice(0, 2).toUpperCase() || 'NG'}
               </div>
             </div>
           </div>
