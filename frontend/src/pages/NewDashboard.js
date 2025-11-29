@@ -1298,6 +1298,7 @@ const NewDashboard = () => {
   function AccountUpgradeSection() {
     const [documentType, setDocumentType] = useState('');
     const [documentNumber, setDocumentNumber] = useState('');
+    const [bvn, setBvn] = useState('');
     const [idDocument, setIdDocument] = useState(null);
     const [selfie, setSelfie] = useState(null);
     const [street, setStreet] = useState('');
@@ -1319,8 +1320,13 @@ const NewDashboard = () => {
     };
 
     const handleSubmitKYC = async () => {
-      if (!documentType || !documentNumber || !idDocument || !selfie || !street || !city || !state || !postalCode || !dob) {
-        toast.error('Please fill all required fields');
+      if (!documentType || !documentNumber || !bvn || !idDocument || !selfie || !street || !city || !state || !postalCode || !dob) {
+        toast.error('Please fill all required fields including BVN');
+        return;
+      }
+
+      if (bvn.length !== 11) {
+        toast.error('BVN must be 11 digits');
         return;
       }
 
@@ -1330,7 +1336,7 @@ const NewDashboard = () => {
         formData.append('idDocument', idDocument);
         formData.append('selfie', selfie);
 
-        // Upload files first (you'd implement file upload endpoint)
+        // Upload files first
         const uploadRes = await axios.post(`${API}/api/user/upload-kyc-documents`, formData, {
           ...axiosConfig,
           headers: {
@@ -1356,8 +1362,8 @@ const NewDashboard = () => {
               country: country,
               postal_code: postalCode
             },
-            identification_type: documentType,
-            identification_number: documentNumber,
+            identification_type: 'BVN',
+            identification_number: bvn,
             photo: uploadRes.data.selfie_url,
             identity: {
               type: documentType,
