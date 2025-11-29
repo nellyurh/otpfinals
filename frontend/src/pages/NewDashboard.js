@@ -1471,7 +1471,6 @@ const NewDashboard = () => {
                   >
                     <option value="">-- Select Document Type --</option>
                     <option value="NIN">National ID (NIN)</option>
-                    <option value="BVN">Bank Verification Number (BVN)</option>
                     <option value="PASSPORT">International Passport</option>
                     <option value="DRIVERS_LICENSE">Driver's License</option>
                     <option value="VOTERS_CARD">Voter's Card</option>
@@ -1488,6 +1487,22 @@ const NewDashboard = () => {
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
+              </div>
+
+              {/* BVN - REQUIRED */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Bank Verification Number (BVN) <span className="text-red-500">*Required</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter your 11-digit BVN"
+                  value={bvn}
+                  onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                  maxLength={11}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Required for Payscribe customer creation</p>
               </div>
 
               {/* Date of Birth */}
