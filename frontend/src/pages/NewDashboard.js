@@ -751,17 +751,19 @@ const NewDashboard = () => {
 
                     return (
                       <tr key={order.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4 font-medium text-gray-900">{order.service}</td>
-                        <td className="py-4 px-4">
+                        <td className="py-4 px-4 font-medium text-gray-900">{order.service || 'N/A'}</td>
+                        <td className="py-4 px-4 text-gray-900">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm text-gray-900">{order.phone_number}</span>
-                            <button
-                              onClick={() => copyOTP(order.phone_number)}
-                              className="p-1 hover:bg-gray-200 rounded transition-colors"
-                              title="Copy Phone Number"
-                            >
-                              <Copy className="w-4 h-4 text-gray-600" />
-                            </button>
+                            <span className="font-mono text-sm text-gray-900">{order.phone_number || 'N/A'}</span>
+                            {order.phone_number && (
+                              <button
+                                onClick={() => copyOTP(order.phone_number)}
+                                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                title="Copy Phone Number"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </button>
+                            )}
                           </div>
                         </td>
                         <td className="py-4 px-4">
@@ -777,9 +779,9 @@ const NewDashboard = () => {
                               </button>
                             </div>
                           ) : (
-                            <span className="text-gray-400 flex items-center gap-1">
+                            <span className="text-gray-500 flex items-center gap-1">
                               <RefreshCw className="w-4 h-4 animate-spin" />
-                              Waiting...
+                              <span className="text-gray-600">Waiting...</span>
                             </span>
                           )}
                         </td>
@@ -803,7 +805,7 @@ const NewDashboard = () => {
                             </button>
                           )}
                           {!order.otp_code && !canCancel && (
-                            <span className="text-xs text-gray-500">Wait {180 - elapsedSeconds}s</span>
+                            <span className="text-xs text-gray-600">Wait {180 - elapsedSeconds}s</span>
                           )}
                           {order.otp_code && (
                             <span className="text-xs text-green-600 font-semibold">✓ Received</span>
