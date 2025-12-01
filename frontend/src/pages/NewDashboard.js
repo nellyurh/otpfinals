@@ -223,23 +223,33 @@ const NewDashboard = () => {
       };
       
       const provider = serverMap[serverValue];
-      const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
       
-      if (response.data.success) {
-        if (provider === 'daisysms') {
-          // New format with live pricing - convert to NGN
+      if (provider === 'daisysms') {
+        // DaisySMS - US only, fetch services directly
+        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+        if (response.data.success) {
           const services = (response.data.services || []).map(service => ({
             value: service.value,
-            label: service.name, // Just name, price shown on right
+            label: service.name,
             name: service.name,
             price_usd: service.final_price,
-            price_ngn: service.final_price * 1500, // Convert to NGN
+            price_ngn: service.final_price * 1500,
             count: service.count
           }));
           setAvailableServices(services);
           setAvailableCountries([{ value: '187', label: 'United States' }]);
-        } else {
-          // Old format for other providers
+        }
+      } else if (provider === 'smspool') {
+        // SMS-pool - fetch countries first
+        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+        if (response.data.success && response.data.countries) {
+          setAvailableCountries(response.data.countries);
+          setAvailableServices([]); // Services loaded after country selection
+        }
+      } else {
+        // TigerSMS - old format
+        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+        if (response.data.success) {
           const data = response.data.data;
           const services = [];
           const countries = [];
@@ -267,6 +277,32 @@ const NewDashboard = () => {
       setServicesLoading(false);
     }
   };
+
+  // Fetch services when country changes (for SMS-pool)
+  useEffect(() => {
+    const fetchServicesForCountry = async () => {
+      if (selectedServer?.value === 'server1' && selectedCountry) {
+        setServicesLoading(true);
+        try {
+          const response = await axios.get(
+            `${API}/api/services/smspool?country=${selectedCountry.value}`,
+            axiosConfig
+          );
+          
+          if (response.data.success && response.data.services) {
+            setAvailableServices(response.data.services);
+          }
+        } catch (error) {
+          console.error('Failed to fetch services for country:', error);
+          toast.error('Failed to load services');
+        } finally {
+          setServicesLoading(false);
+        }
+      }
+    };
+
+    fetchServicesForCountry();
+  }, [selectedCountry]);
 
   const allMenuItems = [
     {
