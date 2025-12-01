@@ -451,13 +451,106 @@ const NewDashboard = () => {
                   options={availableServices}
                   isDisabled={!selectedServer || servicesLoading}
                   isLoading={servicesLoading}
-                  placeholder="e.g., WhatsApp, Telegram, Google"
+                  placeholder="Search for a service..."
                   className="react-select-container"
                   classNamePrefix="react-select"
                   isClearable
                   isSearchable
                 />
+                {selectedService && selectedService.base_price && (
+                  <p className="text-xs text-gray-600 mt-2">
+                    Base Price: ${selectedService.base_price?.toFixed(2)} → Your Price: ${selectedService.final_price?.toFixed(2)}
+                  </p>
+                )}
               </div>
+
+              {/* Advanced Options Toggle - US Server Only */}
+              {selectedServer && selectedServer.value === 'us_server' && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                    className="w-full flex items-center justify-between px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-blue-900">
+                      {showAdvancedOptions ? '▼' : '▶'} Advanced Options (Carrier, Area Code, Number)
+                    </span>
+                    <span className="text-xs text-blue-700">+35% each</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Advanced Options Fields */}
+              {showAdvancedOptions && selectedServer && selectedServer.value === 'us_server' && (
+                <div className="bg-blue-50 rounded-xl p-4 space-y-4 border-2 border-blue-200">
+                  {/* Carrier Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Carrier (Optional) <span className="text-blue-600">+35%</span>
+                    </label>
+                    <Select 
+                      menuPortalTarget={document.body} 
+                      styles={selectStyles}
+                      value={selectedCarrier}
+                      onChange={(option) => setSelectedCarrier(option)}
+                      options={[
+                        { value: 'tmo', label: 'T-Mobile' },
+                        { value: 'vz', label: 'Verizon' },
+                        { value: 'att', label: 'AT&T' }
+                      ]}
+                      placeholder="Any carrier"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isClearable
+                    />
+                  </div>
+
+                  {/* Area Codes */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Area Codes (Optional) <span className="text-blue-600">+35%</span>
+                    </label>
+                    <Select 
+                      menuPortalTarget={document.body} 
+                      styles={selectStyles}
+                      value={selectedAreaCodes}
+                      onChange={(options) => setSelectedAreaCodes(options || [])}
+                      options={[
+                        { value: '212', label: '212 - New York' },
+                        { value: '718', label: '718 - New York' },
+                        { value: '213', label: '213 - Los Angeles' },
+                        { value: '310', label: '310 - Los Angeles' },
+                        { value: '312', label: '312 - Chicago' },
+                        { value: '773', label: '773 - Chicago' },
+                        { value: '415', label: '415 - San Francisco' },
+                        { value: '305', label: '305 - Miami' },
+                        { value: '713', label: '713 - Houston' },
+                        { value: '202', label: '202 - Washington DC' }
+                      ]}
+                      placeholder="Any area code"
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      isMulti
+                      isClearable
+                    />
+                  </div>
+
+                  {/* Preferred Number */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Preferred Number (Optional) <span className="text-blue-600">+35%</span>
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="e.g., 11112223344"
+                      value={preferredNumber}
+                      onChange={(e) => setPreferredNumber(e.target.value.replace(/\D/g, ''))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Enter full number without +1</p>
+                  </div>
+                </div>
+              )}
 
               {/* Country Selection - Only for non-US servers */}
               {selectedServer && selectedServer.value !== 'us_server' && (
