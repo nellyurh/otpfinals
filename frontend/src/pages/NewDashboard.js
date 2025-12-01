@@ -153,28 +153,29 @@ const NewDashboard = () => {
         return;
       }
 
-      // For DaisySMS (US server), calculate price with advanced options
-      if (selectedServer.value === 'us_server' && selectedService.final_price) {
-        let basePrice = selectedService.final_price;
+      // For DaisySMS (US server), calculate price in NGN with advanced options
+      if (selectedServer.value === 'us_server' && selectedService.price_ngn) {
+        let baseNGN = selectedService.price_ngn;
         let additionalCost = 0;
-        let breakdown = [`Base: $${basePrice.toFixed(2)}`];
+        let breakdown = [`Base: ₦${baseNGN.toFixed(2)}`];
         
         // Add 35% for each advanced option selected
         if (selectedCarrier) {
-          additionalCost += basePrice * 0.35;
-          breakdown.push(`Carrier: +$${(basePrice * 0.35).toFixed(2)}`);
+          additionalCost += baseNGN * 0.35;
+          breakdown.push(`Carrier (${selectedCarrier.label}): +₦${(baseNGN * 0.35).toFixed(2)}`);
         }
         if (selectedAreaCodes && selectedAreaCodes.length > 0) {
-          additionalCost += basePrice * 0.35;
-          breakdown.push(`Area Code: +$${(basePrice * 0.35).toFixed(2)}`);
+          additionalCost += baseNGN * 0.35;
+          const codes = selectedAreaCodes.map(c => c.value).join(', ');
+          breakdown.push(`Area Code (${codes}): +₦${(baseNGN * 0.35).toFixed(2)}`);
         }
         if (preferredNumber) {
-          additionalCost += basePrice * 0.35;
-          breakdown.push(`Preferred Number: +$${(basePrice * 0.35).toFixed(2)}`);
+          additionalCost += baseNGN * 0.35;
+          breakdown.push(`Preferred Number: +₦${(baseNGN * 0.35).toFixed(2)}`);
         }
         
-        const totalUSD = basePrice + additionalCost;
-        const totalNGN = totalUSD * 1500; // Conversion rate
+        const totalNGN = baseNGN + additionalCost;
+        const totalUSD = totalNGN / 1500;
         
         setEstimatedPrice({
           final_usd: totalUSD,
