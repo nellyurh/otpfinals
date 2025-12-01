@@ -428,6 +428,29 @@ const NewDashboard = () => {
   function VirtualNumbersSection() {
     const [, setTick] = useState(0);
 
+    // Service code to full name mapping
+    const serviceNames = {
+      'wa': 'WhatsApp',
+      'tg': 'Telegram',
+      'go': 'Google',
+      'fb': 'Facebook',
+      'ig': 'Instagram',
+      'tw': 'Twitter',
+      'ds': 'Discord',
+      'tt': 'TikTok',
+      'oa': 'OpenAI/ChatGPT',
+      'ub': 'Uber',
+      'pp': 'PayPal',
+      'am': 'Amazon',
+      'cb': 'Coinbase',
+      'sn': 'Snapchat',
+      'ca': 'Cash App'
+    };
+
+    const getServiceName = (code) => {
+      return serviceNames[code] || code.toUpperCase();
+    };
+
     // Update timer every second
     useEffect(() => {
       const interval = setInterval(() => {
