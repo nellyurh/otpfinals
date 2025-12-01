@@ -767,11 +767,11 @@ const NewDashboard = () => {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          {order.otp_code ? (
+                          {order.otp || order.otp_code ? (
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-lg font-bold text-[#005E3A]">{order.otp_code}</span>
+                              <span className="font-mono text-lg font-bold text-[#005E3A]">{order.otp || order.otp_code}</span>
                               <button
-                                onClick={() => copyOTP(order.otp_code)}
+                                onClick={() => copyOTP(order.otp || order.otp_code)}
                                 className="p-1 hover:bg-gray-200 rounded transition-colors"
                                 title="Copy OTP"
                               >
@@ -796,7 +796,7 @@ const NewDashboard = () => {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          {!order.otp_code && canCancel && (
+                          {!(order.otp || order.otp_code) && canCancel && (
                             <button 
                               onClick={() => handleCancelOrder(order.id)}
                               className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-sm font-semibold transition-colors"
@@ -804,10 +804,10 @@ const NewDashboard = () => {
                               Cancel
                             </button>
                           )}
-                          {!order.otp_code && !canCancel && (
+                          {!(order.otp || order.otp_code) && !canCancel && (
                             <span className="text-xs text-gray-600">Wait {180 - elapsedSeconds}s</span>
                           )}
-                          {order.otp_code && (
+                          {(order.otp || order.otp_code) && (
                             <span className="text-xs text-green-600 font-semibold">✓ Received</span>
                           )}
                         </td>
