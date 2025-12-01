@@ -774,12 +774,12 @@ const NewDashboard = () => {
 
                     return (
                       <tr key={order.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4 font-medium text-gray-900">
+                        <td className="py-4 px-4 font-medium !text-gray-900">
                           {getServiceName(order.service)}
                         </td>
-                        <td className="py-4 px-4 text-gray-900">
+                        <td className="py-4 px-4 !text-gray-900">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm text-gray-900">
+                            <span className="font-mono text-sm !text-gray-900">
                               {order.phone_number || 'N/A'}
                             </span>
                             {order.phone_number && (
