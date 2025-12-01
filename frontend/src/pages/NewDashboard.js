@@ -751,10 +751,10 @@ const NewDashboard = () => {
 
                     return (
                       <tr key={order.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4 font-medium text-gray-900">{order.service || 'N/A'}</td>
-                        <td className="py-4 px-4 text-gray-900">
+                        <td className="py-4 px-4 font-medium" style={{color: '#111827'}}>{order.service || 'N/A'}</td>
+                        <td className="py-4 px-4" style={{color: '#111827'}}>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm text-gray-900">{order.phone_number || 'N/A'}</span>
+                            <span className="font-mono text-sm" style={{color: '#111827'}}>{order.phone_number || 'N/A'}</span>
                             {order.phone_number && (
                               <button
                                 onClick={() => copyOTP(order.phone_number)}
