@@ -621,6 +621,14 @@ const NewDashboard = () => {
                       {paymentCurrency === 'USD' ? `$${estimatedPrice.final_usd?.toFixed(2)}` : `₦${estimatedPrice.final_ngn?.toFixed(2)}`}
                     </span>
                   </div>
+                  {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 1 && (
+                    <div className="mt-2 pt-2 border-t border-green-300">
+                      <p className="text-xs text-gray-600 font-semibold mb-1">Price Breakdown:</p>
+                      {estimatedPrice.breakdown.map((item, idx) => (
+                        <p key={idx} className="text-xs text-gray-600">• {item}</p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
