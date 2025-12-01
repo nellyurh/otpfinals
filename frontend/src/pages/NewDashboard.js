@@ -426,6 +426,73 @@ const NewDashboard = () => {
   );
 
   function VirtualNumbersSection() {
+    const handlePurchaseNumber = async () => {
+      if (!selectedService) {
+        toast.error('Please select a service');
+        return;
+      }
+
+      if (user.ngn_balance < estimatedPrice?.final_ngn) {
+        toast.error('Insufficient NGN balance');
+        return;
+      }
+
+      setPurchasing(true);
+      try {
+        const payload = {
+          server: selectedServer.value,
+          service: selectedService.value,
+          country: '187'
+        };
+
+        // Add advanced options if selected
+        if (selectedCarrier) {
+          payload.carrier = selectedCarrier.value;
+        }
+        if (selectedAreaCodes && selectedAreaCodes.length > 0) {
+          payload.area_codes = selectedAreaCodes.map(a => a.value).join(',');
+        }
+        if (preferredNumber) {
+          payload.preferred_number = preferredNumber;
+        }
+
+        const response = await axios.post(`${API}/api/orders/purchase`, payload, axiosConfig);
+
+        if (response.data.success) {
+          toast.success('Number purchased successfully!');
+          setSelectedService(null);
+          setSelectedCarrier(null);
+          setSelectedAreaCodes([]);
+          setPreferredNumber('');
+          setShowAdvancedOptions(false);
+          fetchOrders();
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Purchase failed');
+      } finally {
+        setPurchasing(false);
+      }
+    };
+
+    const handleCancelOrder = async (orderId) => {
+      try {
+        const response = await axios.post(`${API}/api/orders/cancel/${orderId}`, {}, axiosConfig);
+        if (response.data.success) {
+          toast.success('Order cancelled and refunded');
+          fetchOrders();
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Cancel failed');
+      }
+    };
+
+    const copyOTP = (code) => {
+      navigator.clipboard.writeText(code);
+      toast.success('OTP copied to clipboard!');
+    };
+
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
