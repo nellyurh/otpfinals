@@ -510,9 +510,9 @@ const NewDashboard = () => {
 
     const handleCancelOrder = async (orderId) => {
       try {
-        const response = await axios.post(`${API}/api/orders/cancel/${orderId}`, {}, axiosConfig);
+        const response = await axios.post(`${API}/api/orders/${orderId}/cancel`, {}, axiosConfig);
         if (response.data.success) {
-          toast.success('Order cancelled and refunded');
+          toast.success(`Order cancelled and refunded ₦${response.data.refunded?.toFixed(2) || '0.00'}`);
           fetchOrders();
           fetchProfile();
         }
