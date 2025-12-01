@@ -751,8 +751,19 @@ const NewDashboard = () => {
 
                     return (
                       <tr key={order.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4 font-medium">{order.service}</td>
-                        <td className="py-4 px-4 font-mono text-sm">{order.phone_number}</td>
+                        <td className="py-4 px-4 font-medium text-gray-900">{order.service}</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm text-gray-900">{order.phone_number}</span>
+                            <button
+                              onClick={() => copyOTP(order.phone_number)}
+                              className="p-1 hover:bg-gray-200 rounded transition-colors"
+                              title="Copy Phone Number"
+                            >
+                              <Copy className="w-4 h-4 text-gray-600" />
+                            </button>
+                          </div>
+                        </td>
                         <td className="py-4 px-4">
                           {order.otp_code ? (
                             <div className="flex items-center gap-2">
@@ -777,13 +788,13 @@ const NewDashboard = () => {
                             <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full text-center">
                               Active
                             </span>
-                            <span className="text-xs text-gray-500 font-mono">
+                            <span className="text-xs text-gray-600 font-mono">
                               {minutes}:{seconds.toString().padStart(2, '0')} left
                             </span>
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          {canCancel && (
+                          {!order.otp_code && canCancel && (
                             <button 
                               onClick={() => handleCancelOrder(order.id)}
                               className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-sm font-semibold transition-colors"
@@ -791,8 +802,11 @@ const NewDashboard = () => {
                               Cancel
                             </button>
                           )}
-                          {!canCancel && (
-                            <span className="text-xs text-gray-400">Wait {180 - elapsedSeconds}s</span>
+                          {!order.otp_code && !canCancel && (
+                            <span className="text-xs text-gray-500">Wait {180 - elapsedSeconds}s</span>
+                          )}
+                          {order.otp_code && (
+                            <span className="text-xs text-green-600 font-semibold">✓ Received</span>
                           )}
                         </td>
                       </tr>
