@@ -613,30 +613,54 @@ const NewDashboard = () => {
 
           {purchaseExpanded && (
             <div className="p-6 pt-0 space-y-4 border-t">
-              {/* Service Search */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Search Service</label>
-                <Select menuPortalTarget={document.body} styles={selectStyles}
-                  value={selectedService}
-                  onChange={(option) => setSelectedService(option)}
-                  options={availableServices}
-                  isDisabled={!selectedServer || servicesLoading}
-                  isLoading={servicesLoading}
-                  placeholder="Search for a service..."
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  isClearable
-                  isSearchable
-                  formatOptionLabel={(option) => (
-                    <div className="flex items-center justify-between w-full">
-                      <span>{option.label || option.name}</span>
-                      {option.price_ngn && (
-                        <span className="text-gray-600 font-semibold">₦{option.price_ngn.toFixed(2)}</span>
-                      )}
-                    </div>
-                  )}
-                />
-              </div>
+              {/* Country Selection - Show for International & Global servers */}
+              {selectedServer && (selectedServer.value === 'server1' || selectedServer.value === 'server2') && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Select Country</label>
+                  <Select menuPortalTarget={document.body} styles={selectStyles}
+                    value={selectedCountry}
+                    onChange={(option) => {
+                      setSelectedCountry(option);
+                      setSelectedService(null); // Reset service when country changes
+                    }}
+                    options={availableCountries}
+                    isDisabled={!selectedServer || servicesLoading}
+                    isLoading={servicesLoading}
+                    placeholder="Choose country..."
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                    isSearchable
+                  />
+                </div>
+              )}
+
+              {/* Service Search - Show after country is selected (or for US server which doesn't need country) */}
+              {selectedServer && ((selectedServer.value === 'us_server') || (selectedCountry)) && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Search Service</label>
+                  <Select menuPortalTarget={document.body} styles={selectStyles}
+                    value={selectedService}
+                    onChange={(option) => setSelectedService(option)}
+                    options={availableServices}
+                    isDisabled={servicesLoading}
+                    isLoading={servicesLoading}
+                    placeholder={servicesLoading ? "Loading services..." : "Search for a service..."}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                    isSearchable
+                    formatOptionLabel={(option) => (
+                      <div className="flex items-center justify-between w-full">
+                        <span>{option.label || option.name}</span>
+                        {option.price_ngn && (
+                          <span className="text-gray-600 font-semibold">₦{option.price_ngn.toFixed(2)}</span>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
 
               {/* Advanced Options Toggle - US Server Only */}
               {selectedServer && selectedServer.value === 'us_server' && (
