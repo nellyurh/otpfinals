@@ -773,11 +773,15 @@ const NewDashboard = () => {
                     const canCancel = elapsedSeconds >= 180; // 3 mins = 180 seconds
 
                     return (
-                      <tr key={order.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4 font-medium" style={{color: '#111827'}}>{order.service || 'N/A'}</td>
-                        <td className="py-4 px-4" style={{color: '#111827'}}>
+                      <tr key={order.id} className="border-b hover:bg-gray-50" style={{color: '#000000'}}>
+                        <td className="py-4 px-4 font-medium" style={{color: '#000000 !important'}}>
+                          {getServiceName(order.service)}
+                        </td>
+                        <td className="py-4 px-4" style={{color: '#000000 !important'}}>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm" style={{color: '#111827'}}>{order.phone_number || 'N/A'}</span>
+                            <span className="font-mono text-sm" style={{color: '#000000'}}>
+                              {order.phone_number || 'N/A'}
+                            </span>
                             {order.phone_number && (
                               <button
                                 onClick={() => copyOTP(order.phone_number)}
