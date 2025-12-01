@@ -1669,10 +1669,13 @@ async def purchase_number(
             actual_price = result.get('price', base_price_usd)
     elif provider == 'daisysms':
         # Set max_price to prevent unexpected charges
-        max_price = base_price_usd * 1.5  # Allow 50% variance
+        max_price = base_price_usd * 2.0  # Allow price variance
+        area_codes = data.area_codes or data.area_code
+        preferred_num = data.preferred_number or data.phone_make
+        
         result = await purchase_number_daisysms(
             data.service, max_price,
-            data.area_code, data.carrier, data.phone_make
+            area_codes, data.carrier, preferred_num
         )
         if result and result.get('status_code') == 200:
             actual_price = result.get('actual_price', base_price_usd)
