@@ -1248,46 +1248,52 @@ async def get_smspool_services(user: dict = Depends(get_current_user), refresh: 
 
 @api_router.get("/services/daisysms")
 async def get_daisysms_services(user: dict = Depends(get_current_user)):
-    """Get DaisySMS services with static pricing (US only)"""
+    """Get DaisySMS services with LIVE pricing from API"""
     try:
-        # Get API key from config
+        # Get API key and markup from config
         config = await db.pricing_config.find_one({}, {'_id': 0})
         api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
+        markup_percent = config.get('daisysms_markup', 50.0) if config else 50.0
         
-        # Build static service list with pricing
-        data = {}
+        # Fetch live prices from DaisySMS
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://daisysms.com/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getPricesVerification'},
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                prices_data = response.json()
+                
+                # Transform into services with pricing
+                services = []
+                for service_code, countries in prices_data.items():
+                    if '187' in countries:  # USA country code
+                        usa_data = countries['187']
+                        base_price = float(usa_data.get('retail_price', usa_data.get('cost', 1.0)))
+                        
+                        # Apply markup
+                        final_price = base_price * (1 + markup_percent / 100)
+                        
+                        services.append({
+                            'value': service_code,
+                            'label': f"{usa_data.get('name', service_code)} - ${final_price:.2f}",
+                            'name': usa_data.get('name', service_code),
+                            'base_price': base_price,
+                            'final_price': final_price,
+                            'count': usa_data.get('count', 0)
+                        })
+                
+                # Sort by name
+                services.sort(key=lambda x: x['name'])
+                
+                return {'success': True, 'services': services, 'markup_percent': markup_percent}
         
-        # Map service codes to display names
-        service_names = {
-            'other': 'Service not listed',
-            'wa': 'WhatsApp',
-            'vi': 'Viber',
-            'oa': 'OpenAI / ChatGPT',
-            'tg': 'Telegram',
-            'ma': 'Yahoo',
-            'go': 'Google / Gmail / Youtube',
-            'fb': 'Facebook',
-            'ig': 'Instagram',
-            'tw': 'Twitter',
-            'li': 'LinkedIn',
-            'ds': 'Discord',
-            'tt': 'TikTok',
-            'ub': 'Uber',
-            'pp': 'PayPal',
-            'vm': 'Venmo',
-            'tn': 'Tinder',
-            'bu': 'Bumble',
-            'ap': 'Apple',
-            'am': 'Amazon / AWS',
-            'cb': 'Coinbase',
-            'sn': 'Snapchat',
-            'ca': 'Cash App',
-            'gv': 'Google Voice',
-            'vk': 'VKontakte',
-            'do': 'DoorDash',
-            'fi': 'Fiverr',
-            'nk': 'Nike',
-            'cr': 'Craigslist',
+        return {'success': False, 'message': 'Failed to fetch services'}
+    except Exception as e:
+        logger.error(f"Error fetching DaisySMS services: {str(e)}")
+        return {'success': False, 'message': str(e)}
             'eb': 'eBay',
             'hg': 'Hinge',
             'gr': 'Grindr',
