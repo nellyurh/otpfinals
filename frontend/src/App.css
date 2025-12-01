@@ -275,6 +275,16 @@ body {
   color: #4169E1;
 }
 
+/* Fix table text visibility - force dark text */
+table td, table th {
+  color: #111827 !important;
+}
+
+table td span,
+table td div {
+  color: inherit;
+}
+
 /* Input Fields */
 .input-field {
   background: var(--bg-darker);
