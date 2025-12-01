@@ -752,7 +752,7 @@ const NewDashboard = () => {
           
           {orders.filter(o => o.status === 'active').length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-black">
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
@@ -773,19 +773,19 @@ const NewDashboard = () => {
                     const canCancel = elapsedSeconds >= 180; // 3 mins = 180 seconds
 
                     return (
-                      <tr key={order.id} style={{borderBottom: '1px solid #e5e7eb'}}>
-                        <td style={{padding: '16px', fontWeight: '500', color: '#000000'}}>
+                      <tr key={order.id} className="border-b hover:bg-gray-50">
+                        <td className="py-4 px-4 font-medium text-gray-900">
                           {getServiceName(order.service)}
                         </td>
-                        <td style={{padding: '16px', color: '#000000'}}>
-                          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                            <span style={{fontFamily: 'monospace', fontSize: '14px', color: '#000000'}}>
+                        <td className="py-4 px-4 text-gray-900">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm text-gray-900">
                               {order.phone_number || 'N/A'}
                             </span>
                             {order.phone_number && (
                               <button
                                 onClick={() => copyOTP(order.phone_number)}
-                                style={{padding: '4px', cursor: 'pointer', border: 'none', background: 'transparent', borderRadius: '4px'}}
+                                className="p-1 hover:bg-gray-200 rounded transition-colors"
                                 title="Copy Phone Number"
                               >
                                 <Copy className="w-4 h-4 text-gray-600" />
