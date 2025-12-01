@@ -101,3 +101,54 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "CRITICAL ISSUE: Table text rendering as invisible/white despite inline black styles. In Virtual Numbers 'Your Verifications' table and 'SMS History' table, the Service and Phone Number columns appear completely EMPTY/WHITE."
+
+frontend:
+  - task: "Virtual Numbers - Your Verifications Table Text Visibility"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/NewDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that Service and Phone Number columns appear completely empty/white despite inline styles with color: '#000000'. Data exists in database (service='wa', phone_number='16319748936'), API returns correct data, console shows service_text = 'wa', but text is invisible."
+      - working: true
+        agent: "testing"
+        comment: "ISSUE RESOLVED. Root cause: Frontend build was stale. After restarting frontend service with 'sudo supervisorctl restart frontend', the table now correctly displays: Service column shows 'WhatsApp' (properly formatted via getServiceName function), Phone Number shows '18285680962' with proper styling. Computed styles show color: 'rgb(17, 24, 39)' (gray-900), opacity: '1', visibility: 'visible', display: 'block'. Text is clearly visible in screenshots."
+
+  - task: "SMS History Table Text Visibility"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/NewDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported same issue as Your Verifications table - Service and Phone Number columns appear empty/white."
+      - working: true
+        agent: "testing"
+        comment: "ISSUE RESOLVED. After frontend restart, SMS History table correctly displays: Service column shows 'WhatsApp', Phone Number shows '18285680962'. Computed styles show color: 'rgb(17, 24, 39)', opacity: '1', visibility: 'visible'. Both rows in the table are displaying correctly with proper text visibility."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Virtual Numbers - Your Verifications Table Text Visibility"
+    - "SMS History Table Text Visibility"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Completed testing of reported invisible text issue. Root cause identified: stale frontend build. Solution: Restarted frontend service. Both 'Your Verifications' and 'SMS History' tables now display text correctly. Service names are properly formatted (e.g., 'wa' -> 'WhatsApp'), phone numbers are visible, and all styling is applied correctly. Issue is fully resolved."
