@@ -1294,46 +1294,6 @@ async def get_daisysms_services(user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error fetching DaisySMS services: {str(e)}")
         return {'success': False, 'message': str(e)}
-            'eb': 'eBay',
-            'hg': 'Hinge',
-            'gr': 'Grindr',
-            'tk': 'Ticketmaster',
-            'tm': 'Temu',
-            'ln': 'LINE messenger',
-            'rd': 'Reddit',
-            'st': 'Steam',
-            'bl': 'Blizzard / Battle.net',
-            'nt': 'Netflix',
-            'ab': 'Airbnb',
-            'tc': 'Twitch',
-            'ch': 'Chime',
-            'rb': 'Robinhood',
-            'wm': 'Walmart',
-            'ci': 'Citi',
-            'wf': 'Wells Fargo',
-            'ba': 'Bank of America',
-            'pn': 'PNC',
-            'ch2': 'Chase',
-            'us': 'USAA'
-        }
-        
-        # Create service entries (US only - country code 187)
-        for service_code, price in DAISYSMS_PRICES.items():
-            service_name = service_names.get(service_code, service_code.upper())
-            data[service_code] = {
-                '187': {
-                    'name': service_name,
-                    'cost': str(price),
-                    'count': 100,  # Placeholder
-                    'ttl': 300  # 5 minutes
-                }
-            }
-        
-        return {'success': True, 'data': data}
-        
-    except Exception as e:
-        logger.error(f"DaisySMS service fetch error: {str(e)}")
-        return {'success': False, 'message': str(e)}
 
 @api_router.get("/services/tigersms")
 async def get_tigersms_services(user: dict = Depends(get_current_user), refresh: bool = False):
