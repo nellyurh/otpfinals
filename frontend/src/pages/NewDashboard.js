@@ -825,7 +825,7 @@ const NewDashboard = () => {
                         <td className="py-4 px-4">
                           {!(order.otp || order.otp_code) && canCancel && (
                             <button 
-                              onClick={() => handleCancelOrder(order.id)}
+                              onClick={() => handleCancelOrder(order.activation_id || order.id)}
                               className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-sm font-semibold transition-colors"
                             >
                               Cancel
