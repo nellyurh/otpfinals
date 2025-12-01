@@ -224,11 +224,13 @@ class PurchaseNumberRequest(BaseModel):
     server: str  # us_server, server1, server2
     service: str
     country: str
-    payment_currency: str = 'USD'  # USD or NGN
+    payment_currency: str = 'NGN'  # Default to NGN
     # Optional DaisySMS filters
     area_code: Optional[str] = None
+    area_codes: Optional[str] = None  # Comma-separated for frontend
     carrier: Optional[str] = None
     phone_make: Optional[str] = None
+    preferred_number: Optional[str] = None
 
 class CalculatePriceRequest(BaseModel):
     server: str
