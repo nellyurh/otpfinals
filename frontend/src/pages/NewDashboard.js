@@ -751,25 +751,6 @@ const NewDashboard = () => {
                 </div>
               )}
 
-              {/* Country Selection - Only for non-US servers */}
-              {selectedServer && selectedServer.value !== 'us_server' && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Select Country</label>
-                  <Select menuPortalTarget={document.body} styles={selectStyles}
-                    value={selectedCountry}
-                    onChange={(option) => setSelectedCountry(option)}
-                    options={availableCountries}
-                    isDisabled={!selectedServer || servicesLoading}
-                    isLoading={servicesLoading}
-                    placeholder="Choose country"
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    isClearable
-                    isSearchable
-                  />
-                </div>
-              )}
-
               {/* Price Display */}
               {estimatedPrice && (
                 <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
