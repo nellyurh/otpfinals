@@ -730,34 +730,64 @@ const NewDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.filter(o => o.status === 'active').map((order) => (
-                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                      <td className="py-4 px-4 font-medium">{order.service}</td>
-                      <td className="py-4 px-4 font-mono text-sm">{order.phone_number}</td>
-                      <td className="py-4 px-4">
-                        {order.otp ? (
-                          <span className="font-mono text-lg font-bold text-[#005E3A]">{order.otp}</span>
-                        ) : (
-                          <span className="text-gray-400 flex items-center gap-1">
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            Waiting...
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
-                          Active
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        {order.can_cancel && (
-                          <button className="text-red-600 hover:text-red-700 text-sm font-semibold">
-                            Cancel
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {orders.filter(o => o.status === 'active').map((order) => {
+                    const createdAt = new Date(order.created_at);
+                    const now = new Date();
+                    const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+                    const remainingSeconds = Math.max(0, 600 - elapsedSeconds); // 10 mins = 600 seconds
+                    const minutes = Math.floor(remainingSeconds / 60);
+                    const seconds = remainingSeconds % 60;
+                    const canCancel = elapsedSeconds >= 180; // 3 mins = 180 seconds
+
+                    return (
+                      <tr key={order.id} className="border-b hover:bg-gray-50">
+                        <td className="py-4 px-4 font-medium">{order.service}</td>
+                        <td className="py-4 px-4 font-mono text-sm">{order.phone_number}</td>
+                        <td className="py-4 px-4">
+                          {order.otp_code ? (
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-lg font-bold text-[#005E3A]">{order.otp_code}</span>
+                              <button
+                                onClick={() => copyOTP(order.otp_code)}
+                                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                title="Copy OTP"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 flex items-center gap-1">
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Waiting...
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1">
+                            <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full text-center">
+                              Active
+                            </span>
+                            <span className="text-xs text-gray-500 font-mono">
+                              {minutes}:{seconds.toString().padStart(2, '0')} left
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          {canCancel && (
+                            <button 
+                              onClick={() => handleCancelOrder(order.id)}
+                              className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-sm font-semibold transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          {!canCancel && (
+                            <span className="text-xs text-gray-400">Wait {180 - elapsedSeconds}s</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
