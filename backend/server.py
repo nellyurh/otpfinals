@@ -1196,13 +1196,12 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
         markup_percent = config.get('smspool_markup', 50.0) if config else 50.0
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
         
-        # If specific country requested, fetch services for that country with pricing
+        # If specific country requested, return all services with estimated pricing
         if country:
             async with httpx.AsyncClient() as client:
-                # Fetch services with pricing for specific country
+                # Fetch all services
                 response = await client.post(
-                    'https://api.smspool.net/purchase/price',
-                    json={'country': country},
+                    'https://api.smspool.net/service/retrieve_all',
                     headers={'Authorization': f'Bearer {api_key}'},
                     timeout=20.0
                 )
