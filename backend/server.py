@@ -1816,38 +1816,47 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    if order['status'] != 'active' and order['status'] != 'expired':
+    if order['status'] != 'active':
         raise HTTPException(status_code=400, detail="Order cannot be cancelled")
     
-    if order.get('otp'):
+    if order.get('otp_code'):
         raise HTTPException(status_code=400, detail="Cannot cancel - OTP already received")
     
-    if not order.get('can_cancel', False):
-        created_at = datetime.fromisoformat(order['created_at'].replace('Z', '+00:00'))
-        elapsed = (datetime.now(timezone.utc) - created_at).total_seconds()
-        if elapsed < 300:
-            raise HTTPException(status_code=400, detail="Can only cancel after 5 minutes")
+    # Check if 3 minutes have passed
+    created_at = datetime.fromisoformat(order['created_at'].replace('Z', '+00:00'))
+    elapsed = (datetime.now(timezone.utc) - created_at).total_seconds()
+    if elapsed < 180:
+        raise HTTPException(status_code=400, detail=f"Can only cancel after 3 minutes. Wait {int(180 - elapsed)}s more.")
     
+    # Cancel on provider side
     if order.get('activation_id'):
-        await cancel_number_provider(order['provider'], order['activation_id'])
+        try:
+            await cancel_number_provider(order['provider'], order['activation_id'])
+        except Exception as e:
+            logger.error(f"Provider cancel error: {str(e)}")
     
-    await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': order['cost_usd']}})
+    # Refund to NGN balance (we charge in NGN now)
+    refund_ngn = order.get('cost_usd', 0) * 1500  # Convert back to NGN
+    await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
+    
+    # Update order status
     await db.sms_orders.update_one({'id': order_id}, {'$set': {'status': 'cancelled'}})
     
+    # Create refund transaction
     transaction = Transaction(
         user_id=user['id'],
         type='refund',
-        amount=order['cost_usd'],
-        currency='USD',
+        amount=refund_ngn,
+        currency='NGN',
         status='completed',
         reference=order_id,
-        metadata={'reason': 'cancelled'}
+        metadata={'reason': 'user_cancelled', 'elapsed_seconds': int(elapsed)}
     )
     trans_dict = transaction.model_dump()
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
     
-    return {'success': True, 'refunded': order['cost_usd']}
+    return {'success': True, 'refunded': refund_ngn, 'currency': 'NGN'}
 
 @api_router.get("/transactions/list")
 async def list_transactions(user: dict = Depends(get_current_user)):
