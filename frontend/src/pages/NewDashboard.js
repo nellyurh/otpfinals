@@ -198,20 +198,14 @@ const NewDashboard = () => {
       const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
       
       if (response.data.success) {
-        const data = response.data.data;
-        
         if (provider === 'daisysms') {
-          const services = [];
-          for (const serviceCode in data) {
-            const serviceData = data[serviceCode];
-            const firstCountryData = Object.values(serviceData)[0];
-            const serviceName = firstCountryData?.name || serviceCode;
-            services.push({ value: serviceCode, label: serviceName });
-          }
+          // New format with live pricing
+          const services = response.data.services || [];
           setAvailableServices(services);
           setAvailableCountries([{ value: '187', label: 'United States' }]);
         } else {
-          // For other providers
+          // Old format for other providers
+          const data = response.data.data;
           const services = [];
           const countries = [];
           
