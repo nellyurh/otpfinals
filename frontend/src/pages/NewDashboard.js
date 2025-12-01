@@ -613,9 +613,9 @@ const NewDashboard = () => {
               {estimatedPrice && (
                 <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Estimated Cost:</span>
+                    <span className="text-sm text-gray-600">Total Cost:</span>
                     <span className="text-2xl font-bold text-[#005E3A]">
-                      {paymentCurrency === 'USD' ? `$${estimatedPrice.final_usd?.toFixed(2)}` : `₦${estimatedPrice.final_ngn?.toFixed(2)}`}
+                      ₦{estimatedPrice.final_ngn?.toFixed(2)}
                     </span>
                   </div>
                   {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 1 && (
@@ -626,6 +626,9 @@ const NewDashboard = () => {
                       ))}
                     </div>
                   )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Paid from NGN balance only. Convert USD to NGN if needed.
+                  </p>
                 </div>
               )}
 
