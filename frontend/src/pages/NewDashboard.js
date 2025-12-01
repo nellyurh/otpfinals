@@ -1524,13 +1524,77 @@ const NewDashboard = () => {
   }
 
   function SMSHistorySection() {
+    const getServiceName = (code) => {
+      const names = {
+        'wa': 'WhatsApp', 'tg': 'Telegram', 'go': 'Google', 'fb': 'Facebook',
+        'ig': 'Instagram', 'tw': 'Twitter', 'ds': 'Discord', 'tt': 'TikTok'
+      };
+      return names[code] || code.toUpperCase();
+    };
+
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">SMS History</h2>
-        <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
-          <History className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">Your SMS history will appear here</p>
-        </div>
+        
+        {orders.length > 0 ? (
+          <div className="bg-white p-6 rounded-xl border shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{borderBottom: '1px solid #e5e7eb'}}>
+                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Service</th>
+                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Phone Number</th>
+                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Code</th>
+                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Status</th>
+                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} style={{borderBottom: '1px solid #e5e7eb'}}>
+                      <td style={{padding: '16px', fontWeight: '500', color: '#000000'}}>
+                        {getServiceName(order.service)}
+                      </td>
+                      <td style={{padding: '16px', fontFamily: 'monospace', fontSize: '14px', color: '#000000'}}>
+                        {order.phone_number}
+                      </td>
+                      <td style={{padding: '16px', color: '#000000'}}>
+                        {order.otp || order.otp_code ? (
+                          <span style={{fontFamily: 'monospace', fontSize: '18px', fontWeight: 'bold', color: '#005E3A'}}>
+                            {order.otp || order.otp_code}
+                          </span>
+                        ) : (
+                          <span style={{color: '#9ca3af'}}>—</span>
+                        )}
+                      </td>
+                      <td style={{padding: '16px'}}>
+                        <span style={{
+                          padding: '4px 12px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          backgroundColor: order.status === 'active' ? '#dcfce7' : order.status === 'cancelled' ? '#fee2e2' : '#f3f4f6',
+                          color: order.status === 'active' ? '#15803d' : order.status === 'cancelled' ? '#dc2626' : '#6b7280',
+                          borderRadius: '9999px',
+                          display: 'inline-block'
+                        }}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td style={{padding: '16px', fontSize: '14px', color: '#6b7280'}}>
+                        {new Date(order.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
+            <History className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500">Your SMS history will appear here</p>
+          </div>
+        )}
       </div>
     );
   }
