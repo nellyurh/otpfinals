@@ -1207,25 +1207,28 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
                 )
                 
                 if response.status_code == 200:
-                    pricing_data = response.json()
+                    all_services = response.json()
                     services = []
                     
-                    # pricing_data format: {service_id: {name: "WhatsApp", price: 1.5}, ...}
-                    for service_id, service_info in pricing_data.items():
-                        if isinstance(service_info, dict):
-                            base_price_usd = float(service_info.get('price', 0))
-                            if base_price_usd > 0:  # Only show available services
-                                final_price_usd = base_price_usd * (1 + markup_percent / 100)
-                                final_price_ngn = final_price_usd * ngn_rate
-                                
-                                services.append({
-                                    'value': str(service_id),
-                                    'label': service_info.get('name', f'Service {service_id}'),
-                                    'name': service_info.get('name', f'Service {service_id}'),
-                                    'price_usd': final_price_usd,
-                                    'price_ngn': final_price_ngn,
-                                    'base_price': base_price_usd
-                                })
+                    # Use default pricing (SMS-pool pricing is determined at purchase time)
+                    default_price_usd = 1.5  # Estimated $1.50 per service
+                    
+                    for service in all_services:
+                        if isinstance(service, dict):
+                            service_id = service.get('ID')
+                            service_name = service.get('name', f'Service {service_id}')
+                            
+                            final_price_usd = default_price_usd * (1 + markup_percent / 100)
+                            final_price_ngn = final_price_usd * ngn_rate
+                            
+                            services.append({
+                                'value': str(service_id),
+                                'label': service_name,
+                                'name': service_name,
+                                'price_usd': final_price_usd,
+                                'price_ngn': final_price_ngn,
+                                'base_price': default_price_usd
+                            })
                     
                     services.sort(key=lambda x: x['name'])
                     return {'success': True, 'services': services, 'country': country}
