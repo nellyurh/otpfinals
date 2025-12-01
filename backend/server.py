@@ -1196,32 +1196,40 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
         markup_percent = config.get('smspool_markup', 50.0) if config else 50.0
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
         
-        # If specific country requested, return services for that country
+        # If specific country requested, fetch services for that country with pricing
         if country:
-            # Check cache first
-            cached = await db.cached_services.find({
-                'provider': 'smspool',
-                'country_code': country
-            }, {'_id': 0}).to_list(1000)
-            
-            if cached:
-                services = []
-                for svc in cached:
-                    base_price_usd = svc.get('base_price', 0)
-                    final_price_usd = base_price_usd * (1 + markup_percent / 100)
-                    final_price_ngn = final_price_usd * ngn_rate
-                    
-                    services.append({
-                        'value': str(svc['service_code']),
-                        'label': svc['service_name'],
-                        'name': svc['service_name'],
-                        'price_usd': final_price_usd,
-                        'price_ngn': final_price_ngn,
-                        'base_price': base_price_usd
-                    })
+            async with httpx.AsyncClient() as client:
+                # Fetch services with pricing for specific country
+                response = await client.post(
+                    'https://api.smspool.net/purchase/price',
+                    json={'country': country},
+                    headers={'Authorization': f'Bearer {api_key}'},
+                    timeout=20.0
+                )
                 
-                services.sort(key=lambda x: x['name'])
-                return {'success': True, 'services': services, 'country': country}
+                if response.status_code == 200:
+                    pricing_data = response.json()
+                    services = []
+                    
+                    # pricing_data format: {service_id: {name: "WhatsApp", price: 1.5}, ...}
+                    for service_id, service_info in pricing_data.items():
+                        if isinstance(service_info, dict):
+                            base_price_usd = float(service_info.get('price', 0))
+                            if base_price_usd > 0:  # Only show available services
+                                final_price_usd = base_price_usd * (1 + markup_percent / 100)
+                                final_price_ngn = final_price_usd * ngn_rate
+                                
+                                services.append({
+                                    'value': str(service_id),
+                                    'label': service_info.get('name', f'Service {service_id}'),
+                                    'name': service_info.get('name', f'Service {service_id}'),
+                                    'price_usd': final_price_usd,
+                                    'price_ngn': final_price_ngn,
+                                    'base_price': base_price_usd
+                                })
+                    
+                    services.sort(key=lambda x: x['name'])
+                    return {'success': True, 'services': services, 'country': country}
         
         # Return all available countries
         async with httpx.AsyncClient() as client:
