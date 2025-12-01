@@ -1812,14 +1812,21 @@ async def get_order(order_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.post("/orders/{order_id}/cancel")
 async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
-    order = await db.sms_orders.find_one({'id': order_id, 'user_id': user['id']}, {'_id': 0})
+    # order_id here is actually the activation_id from the provider
+    # Find order by activation_id
+    order = await db.sms_orders.find_one({'activation_id': order_id, 'user_id': user['id']}, {'_id': 0})
+    
+    # If not found, try with our internal ID as fallback
+    if not order:
+        order = await db.sms_orders.find_one({'id': order_id, 'user_id': user['id']}, {'_id': 0})
+    
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
     if order['status'] != 'active':
         raise HTTPException(status_code=400, detail="Order cannot be cancelled")
     
-    if order.get('otp_code'):
+    if order.get('otp') or order.get('otp_code'):
         raise HTTPException(status_code=400, detail="Cannot cancel - OTP already received")
     
     # Check if 3 minutes have passed
@@ -1828,19 +1835,21 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     if elapsed < 180:
         raise HTTPException(status_code=400, detail=f"Can only cancel after 3 minutes. Wait {int(180 - elapsed)}s more.")
     
-    # Cancel on provider side
+    # Cancel on provider side using activation_id
     if order.get('activation_id'):
         try:
-            await cancel_number_provider(order['provider'], order['activation_id'])
+            success = await cancel_number_provider(order['provider'], order['activation_id'])
+            if not success:
+                logger.warning(f"Provider cancel failed for order {order['id']}")
         except Exception as e:
             logger.error(f"Provider cancel error: {str(e)}")
     
-    # Refund to NGN balance (we charge in NGN now)
+    # Refund to NGN balance
     refund_ngn = order.get('cost_usd', 0) * 1500  # Convert back to NGN
     await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
     
     # Update order status
-    await db.sms_orders.update_one({'id': order_id}, {'$set': {'status': 'cancelled'}})
+    await db.sms_orders.update_one({'id': order['id']}, {'$set': {'status': 'cancelled'}})
     
     # Create refund transaction
     transaction = Transaction(
@@ -1849,14 +1858,14 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
         amount=refund_ngn,
         currency='NGN',
         status='completed',
-        reference=order_id,
+        reference=order['id'],
         metadata={'reason': 'user_cancelled', 'elapsed_seconds': int(elapsed)}
     )
     trans_dict = transaction.model_dump()
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
     
-    return {'success': True, 'refunded': refund_ngn, 'currency': 'NGN'}
+    return {'success': True, 'message': 'Order cancelled and refunded', 'refund_amount': refund_ngn, 'currency': 'NGN'}
 
 @api_router.get("/transactions/list")
 async def list_transactions(user: dict = Depends(get_current_user)):
