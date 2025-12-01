@@ -75,6 +75,11 @@ const NewDashboard = () => {
   const [paymentCurrency, setPaymentCurrency] = useState('USD');
   const [purchaseExpanded, setPurchaseExpanded] = useState(true);
   const [dashboardCurrency, setDashboardCurrency] = useState('NGN'); // For dashboard balance toggle
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [selectedCarrier, setSelectedCarrier] = useState(null);
+  const [selectedAreaCodes, setSelectedAreaCodes] = useState([]);
+  const [preferredNumber, setPreferredNumber] = useState('');
+  const [purchasing, setPurchasing] = useState(false);
   
   // Orders
   const [orders, setOrders] = useState([]);
