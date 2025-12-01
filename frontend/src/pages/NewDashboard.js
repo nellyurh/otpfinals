@@ -491,12 +491,15 @@ const NewDashboard = () => {
                   classNamePrefix="react-select"
                   isClearable
                   isSearchable
+                  formatOptionLabel={(option) => (
+                    <div className="flex items-center justify-between w-full">
+                      <span>{option.label || option.name}</span>
+                      {option.price_ngn && (
+                        <span className="text-gray-600 font-semibold">₦{option.price_ngn.toFixed(2)}</span>
+                      )}
+                    </div>
+                  )}
                 />
-                {selectedService && selectedService.base_price && (
-                  <p className="text-xs text-gray-600 mt-2">
-                    Base Price: ${selectedService.base_price?.toFixed(2)} → Your Price: ${selectedService.final_price?.toFixed(2)}
-                  </p>
-                )}
               </div>
 
               {/* Advanced Options Toggle - US Server Only */}
