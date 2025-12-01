@@ -1196,41 +1196,44 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
         markup_percent = config.get('smspool_markup', 50.0) if config else 50.0
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
         
-        # If specific country requested, return all services with estimated pricing
+        # If specific country requested, fetch services with REAL pricing
         if country:
             async with httpx.AsyncClient() as client:
-                # Fetch all services
+                # Fetch pricing for the specific country
                 response = await client.post(
-                    'https://api.smspool.net/service/retrieve_all',
+                    'https://api.smspool.net/request/pricing',
+                    data={'country': country},
                     headers={'Authorization': f'Bearer {api_key}'},
                     timeout=20.0
                 )
                 
                 if response.status_code == 200:
-                    all_services = response.json()
+                    pricing_list = response.json()
                     services = []
                     
-                    # Use default pricing (SMS-pool pricing is determined at purchase time)
-                    default_price_usd = 1.5  # Estimated $1.50 per service
-                    
-                    for service in all_services:
-                        if isinstance(service, dict):
-                            service_id = service.get('ID')
-                            service_name = service.get('name', f'Service {service_id}')
+                    # pricing_list format: [{service: 846, service_name: "Snapchat", country: 20, price: "0.02"}, ...]
+                    for item in pricing_list:
+                        if isinstance(item, dict):
+                            service_id = item.get('service')
+                            service_name = item.get('service_name', f'Service {service_id}')
+                            base_price_usd = float(item.get('price', 0))
                             
-                            final_price_usd = default_price_usd * (1 + markup_percent / 100)
-                            final_price_ngn = final_price_usd * ngn_rate
-                            
-                            services.append({
-                                'value': str(service_id),
-                                'label': service_name,
-                                'name': service_name,
-                                'price_usd': final_price_usd,
-                                'price_ngn': final_price_ngn,
-                                'base_price': default_price_usd
-                            })
+                            if base_price_usd > 0:  # Only show services with pricing
+                                final_price_usd = base_price_usd * (1 + markup_percent / 100)
+                                final_price_ngn = final_price_usd * ngn_rate
+                                
+                                services.append({
+                                    'value': str(service_id),
+                                    'label': service_name,
+                                    'name': service_name,
+                                    'price_usd': final_price_usd,
+                                    'price_ngn': final_price_ngn,
+                                    'base_price': base_price_usd,
+                                    'pool': item.get('pool')
+                                })
                     
                     services.sort(key=lambda x: x['name'])
+                    logger.info(f"Loaded {len(services)} SMS-pool services for country {country}")
                     return {'success': True, 'services': services, 'country': country}
         
         # Return all available countries
