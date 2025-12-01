@@ -426,6 +426,16 @@ const NewDashboard = () => {
   );
 
   function VirtualNumbersSection() {
+    const [, setTick] = useState(0);
+
+    // Update timer every second
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setTick(t => t + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }, []);
+
     const handlePurchaseNumber = async () => {
       if (!selectedService) {
         toast.error('Please select a service');
