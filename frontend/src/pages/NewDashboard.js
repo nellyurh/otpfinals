@@ -1539,7 +1539,7 @@ const NewDashboard = () => {
         {orders.length > 0 ? (
           <div className="bg-white p-6 rounded-xl border shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-black">
                 <thead>
                   <tr style={{borderBottom: '1px solid #e5e7eb'}}>
                     <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Service</th>
@@ -1551,36 +1551,32 @@ const NewDashboard = () => {
                 </thead>
                 <tbody>
                   {orders.map((order) => (
-                    <tr key={order.id} style={{borderBottom: '1px solid #e5e7eb'}}>
-                      <td style={{padding: '16px', fontWeight: '500', color: '#000000'}}>
+                    <tr key={order.id} className="border-b hover:bg-gray-50">
+                      <td className="py-4 px-4 font-medium text-gray-900">
                         {getServiceName(order.service)}
                       </td>
-                      <td style={{padding: '16px', fontFamily: 'monospace', fontSize: '14px', color: '#000000'}}>
+                      <td className="py-4 px-4 font-mono text-sm text-gray-900">
                         {order.phone_number}
                       </td>
-                      <td style={{padding: '16px', color: '#000000'}}>
+                      <td className="py-4 px-4 text-gray-900">
                         {order.otp || order.otp_code ? (
-                          <span style={{fontFamily: 'monospace', fontSize: '18px', fontWeight: 'bold', color: '#005E3A'}}>
+                          <span className="font-mono text-lg font-bold text-[#005E3A]">
                             {order.otp || order.otp_code}
                           </span>
                         ) : (
-                          <span style={{color: '#9ca3af'}}>—</span>
+                          <span className="text-gray-400">—</span>
                         )}
                       </td>
-                      <td style={{padding: '16px'}}>
-                        <span style={{
-                          padding: '4px 12px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          backgroundColor: order.status === 'active' ? '#dcfce7' : order.status === 'cancelled' ? '#fee2e2' : '#f3f4f6',
-                          color: order.status === 'active' ? '#15803d' : order.status === 'cancelled' ? '#dc2626' : '#6b7280',
-                          borderRadius: '9999px',
-                          display: 'inline-block'
-                        }}>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                          order.status === 'active' ? 'bg-green-100 text-green-700' :
+                          order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
                           {order.status}
                         </span>
                       </td>
-                      <td style={{padding: '16px', fontSize: '14px', color: '#6b7280'}}>
+                      <td className="py-4 px-4 text-sm text-gray-600">
                         {new Date(order.created_at).toLocaleString()}
                       </td>
                     </tr>
