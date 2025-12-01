@@ -275,6 +275,36 @@ body {
   color: #4169E1;
 }
 
+/* Fix table text visibility - FORCE dark text with highest specificity */
+table td, 
+table th,
+table td *,
+table th * {
+  color: #111827 !important;
+}
+
+table td span.text-gray-400,
+table td span.text-gray-500,
+table td span.text-gray-600 {
+  color: #6b7280 !important;
+}
+
+table td span.text-green-700 {
+  color: #15803d !important;
+}
+
+table td span.text-green-600 {
+  color: #16a34a !important;
+}
+
+table td span.text-red-600 {
+  color: #dc2626 !important;
+}
+
+table td span[class*="text-[#005E3A]"] {
+  color: #005E3A !important;
+}
+
 /* Fix table text visibility - force dark text */
 table td, table th {
   color: #111827 !important;
