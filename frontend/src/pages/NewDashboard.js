@@ -598,20 +598,6 @@ const NewDashboard = () => {
                 </div>
               )}
 
-              {/* Area Code - Only for US server */}
-              {selectedServer && selectedServer.value === 'us_server' && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Area Code (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 212, 305"
-                    value={areaCode}
-                    onChange={(e) => setAreaCode(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
-                  />
-                </div>
-              )}
-
               {/* Price Display */}
               {estimatedPrice && (
                 <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
