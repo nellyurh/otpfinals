@@ -226,8 +226,15 @@ const NewDashboard = () => {
       
       if (response.data.success) {
         if (provider === 'daisysms') {
-          // New format with live pricing
-          const services = response.data.services || [];
+          // New format with live pricing - convert to NGN
+          const services = (response.data.services || []).map(service => ({
+            value: service.value,
+            label: service.name, // Just name, price shown on right
+            name: service.name,
+            price_usd: service.final_price,
+            price_ngn: service.final_price * 1500, // Convert to NGN
+            count: service.count
+          }));
           setAvailableServices(services);
           setAvailableCountries([{ value: '187', label: 'United States' }]);
         } else {
