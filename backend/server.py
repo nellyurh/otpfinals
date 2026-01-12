@@ -2535,6 +2535,12 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['rub_to_usd_rate'] = data.rub_to_usd_rate
     if data.fivesim_coin_per_usd is not None:
         update_fields['fivesim_coin_per_usd'] = data.fivesim_coin_per_usd
+    if data.daisysms_api_key is not None:
+        update_fields['daisysms_api_key'] = data.daisysms_api_key
+    if data.smspool_api_key is not None:
+        update_fields['smspool_api_key'] = data.smspool_api_key
+    if data.fivesim_api_key is not None:
+        update_fields['fivesim_api_key'] = data.fivesim_api_key
     if data.area_code_markup is not None:
         update_fields['area_code_markup'] = data.area_code_markup
     if data.carrier_markup is not None:
