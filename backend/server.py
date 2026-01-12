@@ -994,7 +994,7 @@ async def otp_polling_task(order_id: str):
             if order['provider'] == 'smspool' and order.get('activation_id'):
                 otp = await poll_otp_smspool(order['activation_id'])
             elif order['provider'] == 'daisysms' and order.get('activation_id'):
-                otp = await poll_otp_daisysms(order['activation_id'])
+                otp = await poll_otp_daisysms_simple(order['activation_id'])
             elif order['provider'] == 'tigersms' and order.get('activation_id'):
                 otp = await poll_otp_tigersms(order['activation_id'])
             elif order['provider'] == '5sim' and order.get('activation_id'):
