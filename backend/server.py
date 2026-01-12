@@ -1584,6 +1584,22 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
 
                 result_list = list(services.values())
                 result_list.sort(key=lambda x: x["name"])
+
+                # Cache cheapest base USD price per service/country for purchase endpoint
+                for svc in result_list:
+                    await db.cached_services.update_one(
+                        {
+                            'provider': '5sim',
+                            'service_code': svc['value'],
+                            'country_code': country,
+                        },
+                        {
+                            '$setOnInsert': {'currency': 'USD'},
+                            '$min': {'base_price': svc['base_price_usd']},
+                        },
+                        upsert=True,
+                    )
+
                 return {"success": True, "country": country, "services": result_list}
 
             # No country: return list of countries
