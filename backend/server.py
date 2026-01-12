@@ -575,7 +575,7 @@ async def poll_otp_daisysms(order_id: str, activation_id: str):
     """Background task to poll for OTP from DaisySMS"""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
+        api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
         
         # Poll for up to 5 minutes (100 attempts, 3 seconds each)
         for attempt in range(100):
