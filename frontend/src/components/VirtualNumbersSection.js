@@ -82,6 +82,27 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     ig: 'Instagram',
     tw: 'Twitter',
     ds: 'Discord',
+  const countryFlagMap = {
+    usa: 'https://flagcdn.com/w40/us.png',
+    unitedstates: 'https://flagcdn.com/w40/us.png',
+    nigeria: 'https://flagcdn.com/w40/ng.png',
+    unitedkingdom: 'https://flagcdn.com/w40/gb.png',
+    uk: 'https://flagcdn.com/w40/gb.png',
+    canada: 'https://flagcdn.com/w40/ca.png',
+    india: 'https://flagcdn.com/w40/in.png'
+  };
+
+  const getCountryFlagUrl = (codeOrName) => {
+    if (!codeOrName) return null;
+    const key = String(codeOrName).toLowerCase().replace(/\s+/g, '');
+    if (countryFlagMap[key]) return countryFlagMap[key];
+    // default fallback: try two-letter country codes for smspool short_name
+    if (key.length === 2) {
+      return `https://flagcdn.com/w40/${key}.png`;
+    }
+    return null;
+  };
+
     tt: 'TikTok',
     oa: 'OpenAI/ChatGPT',
     ub: 'Uber',
