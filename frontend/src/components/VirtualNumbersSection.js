@@ -38,10 +38,13 @@ const selectStyles = {
   }),
   option: (base, state) => ({
     ...base,
-    backgroundColor: state.isFocused ? '#eff6ff' : state.isSelected ? '#dbeafe' : 'white',
-    color: '#1f2937',
+    backgroundColor: state.isFocused ? '#f9fafb' : state.isSelected ? '#e5f9f0' : 'white',
+    color: '#111827',
     cursor: 'pointer',
-    fontWeight: state.isSelected ? '600' : '400'
+    fontWeight: state.isSelected ? 700 : 500,
+    fontSize: '0.8rem',
+    borderBottom: '1px solid #f3f4f6',
+    borderRadius: 0
   })
 };
 
