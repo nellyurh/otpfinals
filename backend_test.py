@@ -343,6 +343,202 @@ class SMSRelayAPITester:
         
         return success and 'total_users' in response
 
+    def test_admin_login(self):
+        """Test admin login with existing admin credentials"""
+        admin_login_data = {
+            "email": "admin@smsrelay.com",
+            "password": "admin123"
+        }
+        
+        success, response = self.run_test(
+            "Admin Login",
+            "POST",
+            "auth/login",
+            200,
+            data=admin_login_data
+        )
+        
+        if success and 'token' in response:
+            self.admin_token = response['token']
+            self.admin_user_id = response['user']['id']
+            return True
+        return False
+
+    def test_smspool_countries_fetch(self):
+        """Test SMS-pool countries fetch (no query params)"""
+        if not self.admin_token:
+            self.log_test("SMS-pool Countries Fetch", False, "", "No admin token available")
+            return False
+        
+        success, response = self.run_test(
+            "SMS-pool Countries Fetch",
+            "GET",
+            "services/smspool",
+            200,
+            use_admin=True
+        )
+        
+        if success:
+            # Validate response structure
+            if 'success' in response and response['success'] and 'countries' in response:
+                countries = response['countries']
+                if len(countries) > 0:
+                    # Check first country has required fields
+                    first_country = countries[0]
+                    required_fields = ['value', 'label', 'name', 'region']
+                    if all(field in first_country for field in required_fields):
+                        print(f"   ✓ Found {len(countries)} countries with proper structure")
+                        return True
+                    else:
+                        self.log_test("SMS-pool Countries Validation", False, "", f"Missing required fields in country data: {first_country}")
+                        return False
+                else:
+                    self.log_test("SMS-pool Countries Validation", False, "", "Countries array is empty")
+                    return False
+            else:
+                self.log_test("SMS-pool Countries Validation", False, "", f"Invalid response structure: {response}")
+                return False
+        return False
+
+    def test_smspool_services_pricing(self):
+        """Test SMS-pool services + dynamic pricing fetch for multiple countries"""
+        if not self.admin_token:
+            self.log_test("SMS-pool Services Pricing", False, "", "No admin token available")
+            return False
+        
+        # First get countries to select test countries
+        countries_success, countries_response = self.run_test(
+            "SMS-pool Get Countries for Service Test",
+            "GET",
+            "services/smspool",
+            200,
+            use_admin=True
+        )
+        
+        if not countries_success or 'countries' not in countries_response:
+            self.log_test("SMS-pool Services Pricing", False, "", "Failed to get countries list")
+            return False
+        
+        countries = countries_response['countries']
+        if len(countries) < 2:
+            self.log_test("SMS-pool Services Pricing", False, "", "Not enough countries available for testing")
+            return False
+        
+        # Test with first 2 countries
+        test_countries = countries[:2]
+        all_tests_passed = True
+        different_prices_found = False
+        service_pools_data = {}
+        
+        for country in test_countries:
+            country_id = country['value']
+            country_name = country['name']
+            
+            success, response = self.run_test(
+                f"SMS-pool Services for {country_name} ({country_id})",
+                "GET",
+                f"services/smspool?country={country_id}",
+                200,
+                use_admin=True
+            )
+            
+            if success:
+                # Validate response structure
+                if 'success' in response and response['success'] and 'services' in response:
+                    services = response['services']
+                    if len(services) > 0:
+                        print(f"   ✓ Found {len(services)} services for {country_name}")
+                        
+                        # Validate service structure
+                        for service in services:
+                            required_fields = ['value', 'label', 'name', 'price_usd', 'price_ngn', 'base_price', 'pool']
+                            if not all(field in service for field in required_fields):
+                                self.log_test(f"SMS-pool Service Validation for {country_name}", False, "", f"Missing required fields in service: {service}")
+                                all_tests_passed = False
+                                continue
+                            
+                            # Validate prices are positive
+                            if service['price_usd'] <= 0 or service['price_ngn'] <= 0:
+                                self.log_test(f"SMS-pool Price Validation for {country_name}", False, "", f"Invalid prices: USD={service['price_usd']}, NGN={service['price_ngn']}")
+                                all_tests_passed = False
+                                continue
+                            
+                            # Check for different base prices (dynamic pricing proof)
+                            service_code = service['value']
+                            pool = service.get('pool', 'default')
+                            key = f"{service_code}_{pool}"
+                            
+                            if key not in service_pools_data:
+                                service_pools_data[key] = []
+                            service_pools_data[key].append({
+                                'country': country_name,
+                                'base_price': service['base_price'],
+                                'price_ngn': service['price_ngn'],
+                                'pool': pool
+                            })
+                        
+                        # Check if we have different base prices across services
+                        base_prices = [s['base_price'] for s in services]
+                        if len(set(base_prices)) > 1:
+                            different_prices_found = True
+                            print(f"   ✓ Dynamic pricing confirmed - found {len(set(base_prices))} different base prices")
+                    else:
+                        self.log_test(f"SMS-pool Services for {country_name}", False, "", "Services array is empty")
+                        all_tests_passed = False
+                else:
+                    self.log_test(f"SMS-pool Services for {country_name}", False, "", f"Invalid response structure: {response}")
+                    all_tests_passed = False
+            else:
+                all_tests_passed = False
+        
+        # Check for services appearing in multiple pools with different prices
+        pool_variations_found = False
+        for service_key, data_list in service_pools_data.items():
+            if len(data_list) > 1:
+                prices = [d['base_price'] for d in data_list]
+                ngn_prices = [d['price_ngn'] for d in data_list]
+                if len(set(prices)) > 1 or len(set(ngn_prices)) > 1:
+                    pool_variations_found = True
+                    print(f"   ✓ Pool price variation found for service {service_key}")
+                    break
+        
+        if not different_prices_found:
+            self.log_test("SMS-pool Dynamic Pricing Validation", False, "", "No different base prices found - dynamic pricing not confirmed")
+            all_tests_passed = False
+        
+        return all_tests_passed
+
+    def test_smspool_error_handling(self):
+        """Test SMS-pool error handling with invalid country"""
+        if not self.admin_token:
+            self.log_test("SMS-pool Error Handling", False, "", "No admin token available")
+            return False
+        
+        success, response = self.run_test(
+            "SMS-pool Invalid Country Test",
+            "GET",
+            "services/smspool?country=999999",
+            200,  # Should return 200 but with error or empty services
+            use_admin=True
+        )
+        
+        if success:
+            # Check if it returns proper error structure or empty services
+            if 'success' in response:
+                if response['success'] == False and 'message' in response:
+                    print("   ✓ Proper error response returned")
+                    return True
+                elif response['success'] == True and 'services' in response and len(response['services']) == 0:
+                    print("   ✓ Empty services list returned for invalid country")
+                    return True
+                else:
+                    self.log_test("SMS-pool Error Handling Validation", False, "", f"Unexpected response for invalid country: {response}")
+                    return False
+            else:
+                self.log_test("SMS-pool Error Handling Validation", False, "", f"Invalid response structure: {response}")
+                return False
+        return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print(f"🚀 Starting SMS Relay API Tests")
