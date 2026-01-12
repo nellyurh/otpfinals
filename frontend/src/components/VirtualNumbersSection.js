@@ -518,6 +518,31 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           {option.operators && option.operators.length > 0 && (
                             <span className="text-xs text-gray-400">
                               {option.operators.length} operator{option.operators.length > 1 ? 's' : ''} available
+            {/* 5sim Operator selection (similar to pools) */}
+            {selectedServer?.value === 'server2' && selectedService?.operators && selectedService.operators.length > 0 && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Select Operator
+                </label>
+                <Select
+                  menuPortalTarget={document.body}
+                  styles={selectStyles}
+                  value={selectedOperator}
+                  onChange={(option) => setSelectedOperator(option)}
+                  options={selectedService.operators.map((op) => ({
+                    value: op.name,
+                    label: `${op.name} (₦${op.price_ngn.toFixed(2)})`,
+                    price_ngn: op.price_ngn
+                  }))}
+                  isDisabled={!selectedService}
+                  placeholder="Choose operator (default is cheapest)"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  isClearable
+                />
+              </div>
+            )}
+
                             </span>
                           )}
                         </div>
