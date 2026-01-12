@@ -2011,9 +2011,10 @@ async def purchase_number(
             'Authorization': f'Bearer {FIVESIM_API_KEY}',
             'Accept': 'application/json'
         }
+        operator = data.operator or 'any'
         async with httpx.AsyncClient() as client:
             resp = await client.get(
-                f"{FIVESIM_BASE_URL}/user/buy/activation/{data.country}/any/{data.service}",
+                f"{FIVESIM_BASE_URL}/user/buy/activation/{data.country}/{operator}/{data.service}",
                 headers=headers,
                 timeout=15.0
             )
