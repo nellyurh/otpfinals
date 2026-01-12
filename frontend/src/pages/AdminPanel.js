@@ -240,7 +240,7 @@ const AdminPanel = ({ user, setUser }) => {
               </div>
             </div>
 
-            <div className="border-t border-zinc-800 pt-6">
+            <div className="border-t border-zinc-800 pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 max-w-md">
                 <Label htmlFor="conversion-rate">NGN to USD Conversion Rate</Label>
                 <Input
@@ -254,6 +254,22 @@ const AdminPanel = ({ user, setUser }) => {
                 />
                 <p className="text-xs text-zinc-500">
                   Current rate: ₦{pricing.ngn_to_usd_rate} = $1.00
+                </p>
+              </div>
+
+              <div className="space-y-2 max-w-md">
+                <Label htmlFor="fivesim-coin-rate">5sim Coin per USD</Label>
+                <Input
+                  id="fivesim-coin-rate"
+                  data-testid="fivesim-coin-rate-input"
+                  type="number"
+                  step="0.01"
+                  value={pricing.fivesim_coin_per_usd}
+                  onChange={(e) => setPricing({ ...pricing, fivesim_coin_per_usd: parseFloat(e.target.value) })}
+                  className="bg-zinc-900 border-zinc-800"
+                />
+                <p className="text-xs text-zinc-500">
+                  How many 5sim coins equal $1.00 (default 77.44)
                 </p>
               </div>
             </div>
