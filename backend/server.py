@@ -1807,6 +1807,7 @@ async def purchase_number(
             'id': order.id,
             'phone_number': phone_number,
             'activation_id': activation_id,
+            'provider': provider,
             'service': data.service,
             'country': data.country,
             'status': 'active',
