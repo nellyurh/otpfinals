@@ -1865,8 +1865,22 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
         except Exception as e:
             logger.error(f"Provider cancel error: {str(e)}")
     
-    # Refund to NGN balance
-    refund_ngn = order.get('cost_usd', 0) * 1500  # Convert back to NGN
+    # Refund to NGN balance - use the actual amount charged
+    # Get current NGN rate from config
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+    
+    # Calculate refund based on the actual charged amount
+    # If the order was charged in NGN, refund the full NGN amount
+    # If charged in USD, convert back to NGN at current rate
+    charged_currency = order.get('charged_currency', 'NGN')
+    charged_amount = order.get('charged_amount', 0)
+    
+    if charged_currency == 'NGN':
+        refund_ngn = charged_amount
+    else:
+        refund_ngn = charged_amount * ngn_rate
+    
     await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
     
     # Update order status
