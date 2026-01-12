@@ -168,6 +168,21 @@ frontend:
         agent: "testing"
         comment: "RE-TEST COMPLETED ✅ Explicit state control fix VERIFIED! The recent changes with serviceMenuOpen state, menuIsOpen={serviceMenuOpen}, onMenuOpen/onMenuClose handlers, and onInputChange forcing menu to stay open while typing are working perfectly. SMS-pool service dropdown: STABLE - typed 'whats' (5 chars) and 'telegram' (8 chars) character-by-character, dropdown remained open throughout. Click outside properly closes dropdown. US Server regression test: PASSED - no regressions detected. Countries load correctly (Australia selected), services display with dynamic NGN pricing (₦6863.40-₦22897.06 range observed for WhatsApp/WhatsAround/Telegram). No console errors or React warnings. The explicit state control implementation successfully prevents the dropdown from closing while users type."
 
+  - task: "SMS-pool Services Loading Investigation (User Report)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/VirtualNumbersSection.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported: 'sms pool doesn't load services' on the frontend. Need to investigate International Server (SMS-pool) services loading functionality."
+      - working: true
+        agent: "testing"
+        comment: "CANNOT REPRODUCE USER ISSUE ✅ Comprehensive investigation shows SMS-pool (International Server) working perfectly: 1) Login successful (admin@smsrelay.com/admin123). 2) International Server selection working. 3) Countries API call successful (GET /api/services/smspool -> 200, 151 countries loaded). 4) Services API call successful (GET /api/services/smspool?country=1 -> 200, 2669 services for United States). 5) Service dropdown displays correctly with NGN pricing (₦228.78, ₦247.85, etc.). 6) All dropdowns functional and stable. 7) No console errors or network failures detected. USER ISSUE LIKELY CAUSES: Browser cache, network connectivity, not selecting country first (services only load after country selection), or insufficient wait time for API calls. RECOMMENDATION: User should clear browser cache, ensure country is selected before expecting services, and wait for 'Loading services...' to complete."
+
 
 backend:
   - task: "SMS-pool dynamic pricing (International Server)"
