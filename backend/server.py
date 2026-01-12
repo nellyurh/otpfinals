@@ -234,6 +234,8 @@ class PurchaseNumberRequest(BaseModel):
     carrier: Optional[str] = None
     phone_make: Optional[str] = None
     preferred_number: Optional[str] = None
+    # Optional SMS-pool pool selector
+    pool: Optional[str] = None
 
 class CalculatePriceRequest(BaseModel):
     server: str
@@ -531,11 +533,20 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
 # ============ SMS Provider Functions (Updated) ============
 
 async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optional[Dict]:
+    """Purchase a number from SMS-pool.
+
+    Supports optional `pool` selection so that the frontend can choose
+    a specific pool for the given service/country.
+    """
     try:
+        params = {'key': SMSPOOL_API_KEY, 'service': service, 'country': country}
+        pool = kwargs.get('pool')
+        if pool:
+            params['pool'] = pool
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 'https://api.smspool.net/purchase/sms',
-                params={'key': SMSPOOL_API_KEY, 'service': service, 'country': country},
+                params=params,
                 timeout=15.0
             )
             if response.status_code == 200:
