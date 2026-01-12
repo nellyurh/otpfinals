@@ -241,6 +241,8 @@ class PurchaseNumberRequest(BaseModel):
     preferred_number: Optional[str] = None
     # Optional SMS-pool pool selector
     pool: Optional[str] = None
+    # Optional 5sim operator selector
+    operator: Optional[str] = None
 
 class CalculatePriceRequest(BaseModel):
     server: str
