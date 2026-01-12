@@ -1999,78 +1999,7 @@ async def purchase_number(
         max_price = base_price_usd * 2.0  # Allow price variance
         area_codes = data.area_codes or data.area_code
         preferred_num = data.preferred_number or data.phone_make
-        
-        result = await purchase_number_daisysms(
-            data.service, max_price,
-            area_codes, data.carrier, preferred_num
-        )
-        if result and result.get('status_code') == 200:
-            actual_price = result.get('actual_price', base_price_usd)
-    elif provider == 'tigersms':
-        result = await purchase_number_tigersms(data.service, data.country)
-        if result and 'ACCESS_NUMBER' in str(result):
-            actual_price = base_price_usd
-    elif provider == '5sim':
-        # Use 5sim buy activation API
-        if not FIVESIM_API_KEY:
-            logger.error("FIVESIM_API_KEY not configured")
-            raise HTTPException(status_code=500, detail="5sim API key not configured")
-        headers = {
-            'Authorization': f'Bearer {FIVESIM_API_KEY}',
-            'Accept': 'application/json'
-        }
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{FIVESIM_BASE_URL}/user/buy/activation/{data.country}/any/{data.service}",
-                headers=headers,
-                timeout=15.0
-            )
-        if resp.status_code != 200:
-            text = resp.text
-            logger.error(f"5sim purchase error {resp.status_code}: {text}")
-            if 'no free phones' in text.lower():
-                raise HTTPException(status_code=400, detail="5sim: no free phones for this service/country")
-            if 'not enough user balance' in text.lower():
-                raise HTTPException(status_code=400, detail="5sim account balance is insufficient")
-            raise HTTPException(status_code=400, detail="Failed to purchase number from 5sim")
-        try:
-            result = resp.json()
-        except Exception:
-            raise HTTPException(status_code=400, detail="Unexpected 5sim response")
-        activation_id = str(result.get('id'))
-        phone_number = str(result.get('phone'))
-        # 5sim price is in coins
-        price_coins = float(result.get('price') or 0)
-        coin_rate = float(config.get('fivesim_coin_per_usd', 77.44) or 77.44)
-        actual_price = price_coins / coin_rate
 
-
-    if data.payment_currency == 'NGN':
-        if user.get('ngn_balance', 0) < final_price_ngn:
-            raise HTTPException(status_code=400, detail=f"Insufficient NGN balance. Need ₦{final_price_ngn:.2f}")
-    else:  # USD
-        if user.get('usd_balance', 0) < final_price_usd:
-            raise HTTPException(status_code=400, detail=f"Insufficient USD balance. Need ${final_price_usd:.2f}")
-    
-    # Purchase from provider
-    result = None
-    actual_price = base_price_usd
-    
-    if provider == 'smspool':
-        # For SMS-pool we can optionally pass a specific pool chosen by the user
-        result = await purchase_number_smspool(
-            data.service,
-            data.country,
-            pool=data.pool
-        )
-        if result and result.get('success'):
-            actual_price = result.get('price', base_price_usd)
-    elif provider == 'daisysms':
-        # Set max_price to prevent unexpected charges
-        max_price = base_price_usd * 2.0  # Allow price variance
-        area_codes = data.area_codes or data.area_code
-        preferred_num = data.preferred_number or data.phone_make
-        
         result = await purchase_number_daisysms(
             data.service, max_price,
             area_codes, data.carrier, preferred_num
