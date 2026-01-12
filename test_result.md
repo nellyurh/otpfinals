@@ -149,6 +149,20 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+backend:
+  - task: "SMS-pool dynamic pricing (International Server)"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Implemented /api/services/smspool to call SMS-pool /request/pricing with country, apply smspool_markup and ngn_to_usd_rate from pricing_config, and return per-service NGN pricing. Need backend tests to verify varied prices and frontend tests for International server flow."
+
+
 agent_communication:
   - agent: "testing"
     message: "Completed testing of reported invisible text issue. Root cause identified: stale frontend build. Solution: Restarted frontend service. Both 'Your Verifications' and 'SMS History' tables now display text correctly. Service names are properly formatted (e.g., 'wa' -> 'WhatsApp'), phone numbers are visible, and all styling is applied correctly. Issue is fully resolved."
