@@ -7,122 +7,106 @@ The user wants to build a full-stack OTP (One-Time Password) service platform th
 3.  **Cancellation & Refund:** Users can cancel an order and get a refund if the OTP is not received within a specific time.
 
 **Product Requirements:**
-*   **UI:** The user has provided multiple screenshots of a platform called BlissDigitals and requires an identical design, including a green theme, specific layout, and all featured pages.
+*   **UI:** The user has provided multiple screenshots of a platform called BlissDigitals and requires an identical design, including a green theme, specific layout, and all featured pages. A separate design was provided for the admin panel based on a Loveping app.
 *   **Authentication:** JWT-based email/password authentication.
-*   **SMS Providers:** Integrate with TigerSMS, DaisySMS, and SMS-pool, hiding the provider names from the end-user (e.g., US Server).
+*   **SMS Providers:** Integrate with DaisySMS (US Server), SMS-pool (International Server), and TigerSMS (Global Server).
+*   **Dynamic Pricing:** Service prices must be fetched live from providers, have a percentage markup added from the admin panel, and be displayed to the user in NGN.
 *   **Payments & Wallet:**
-    *   Users have dual balances (NGN and USD).
-    *   **PaymentPoint Integration:** For NGN deposits.
-    *   **Payscribe Integration:** For USD stablecoin deposits (USDT/USDC), bill payments (Data, Airtime, Betting), and virtual cards.
+    *   Users have dual balances (NGN and USD). SMS purchases use NGN balance only.
+    *   **PaymentPoint Integration:** For NGN deposits via dedicated virtual bank accounts.
+    *   **Payscribe Integration:** For USD stablecoin deposits (USDT/USDC), bill payments (Data, Airtime, Betting), and virtual cards. This requires a full KYC (customer creation) process.
 *   **Admin Panel:** Must allow managing price markups, API keys for providers, and toggling the visibility of frontend pages.
-*   **Functionality:** Dropdowns must be searchable, and selected values must remain visible. Prices must be displayed to the user before they click purchase, including the calculated markup.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a FastAPI backend and a React frontend. A major UI overhaul has just been completed.
+The application is a full-stack platform with a FastAPI backend and a heavily modified React frontend.
 
 -   **Backend ():**
-    -   Handles user authentication (registration/login).
-    -   Complete, working end-to-end integration for **DaisySMS**, including number purchase, OTP polling, cancellation, and refunds.
-    -   Dynamic pricing engine that calculates costs based on provider price + a percentage markup stored in the database.
-    -   Currency conversion support (RUB to USD, NGN to USD) for calculating prices.
-    -   Database caching for provider services and countries to improve performance.
-    -   Admin endpoints to manage pricing markups, API keys, and feature toggles for frontend pages.
-    -   All provider API keys are stored in the database and configurable via the admin panel.
+    -   Handles user authentication, profile management, and a dual-currency wallet (NGN/USD).
+    -   **DaisySMS:** Fully integrated with live dynamic pricing, advanced purchase options (carrier, area code), and a complete purchase/poll/cancel/refund flow.
+    -   **SMS-pool:** Partially integrated. Fetches countries and a list of services, but pricing is not dynamic (uses a default value). Purchase/cancel logic is not yet connected.
+    -   **PaymentPoint:** Integrated for NGN deposits. Automatically creates a PalmPay virtual account for new users and handles deposit notifications via a webhook.
+    -   **Payscribe:** Backend endpoints and services are implemented for Airtime, Data, and Betting bill payments. A full customer creation (KYC) endpoint, including document upload, has also been implemented to support virtual cards and crypto deposits.
+    -   **Admin:** All endpoints for managing pricing, API keys, and page toggles are functional.
 
--   **Frontend:**
-    -   The UI has been completely rewritten into a new  file to **identically match** the BlissDigitals screenshots provided by the user. The old  is now deprecated.
-    -   The new dashboard features a green-themed sidebar, a header displaying both NGN and USD balances, and a content area for various services.
-    -   The Virtual Numbers (Receive SMS) page is fully functional for the DaisySMS provider, featuring searchable  dropdowns that correctly display placeholders and selected values.
-    -   A dynamic price display shows the user the final cost (in both NGN and USD) before purchase.
-    -   Placeholder pages for Buy Data, Airtime Top-up, Fund Wallet, Virtual Cards, etc., have been created to match the design.
-    -   An admin panel link is visible for admin users, allowing access to page management and pricing configuration.
+-   **Frontend ():**
+    -   The UI has been completely overhauled to precisely match the user's BlissDigitals screenshots. All text visibility, color contrast, and layout issues have been fixed.
+    -   **Critical Bug Fix:** The persistent issue of input fields auto-clearing has been **permanently resolved** by refactoring the stateful bill payment components (, , ) into a separate  file.
+    -   **Dropdowns:** All dropdowns now use  and are styled to match the user's screenshots (searchable, green theme, dark text, no blurriness).
+    -   **Virtual Numbers Page:**
+        -   DaisySMS (US Server) is fully functional with dynamic NGN pricing and advanced options.
+        -   SMS-pool (International Server) correctly implements the Server -> Country -> Service selection flow.
+        -   The Your Verifications table now correctly displays active and historical orders with visible black text, timers, and working cancel/copy buttons.
+    -   **Bill Payments:** Airtime, Data, and Betting pages are fully functional and connected to the backend.
+    -   **KYC:** A complete Account Upgrade page with a tier system and a detailed form (including BVN) has been built to support Payscribe customer creation.
+    -   **Admin Panel:** A new, separate  has been created, styled to match the user's Loveping design reference.
 
 **Last working item**:
--   **Last item agent was working:** The agent just finished a complete redesign of the dashboard UI to identically match the BlissDigitals platform design from screenshots provided by the user. This included fixing issues with searchable dropdowns (), ensuring selected values and placeholders are visible, adding a dual-currency balance display (NGN & USD), and creating placeholder sections for all other required services (Data, Airtime, etc.).
+-   **Last item agent was working:** The agent was tasked with fixing the pricing for SMS-pool (International Server). The current implementation fetches all services but assigns the same default price to every service. The user provided new documentation showing the correct  endpoint should be used to get dynamic prices.
 -   **Status:** 
--   **Agent Testing Done:** Y (via screenshots confirming the new UI, dropdown functionality, and dual balance display)
--   **Which testing method agent to use?**  (To perform a thorough review of the new  component, verify all interactions, and ensure no regressions were introduced during the massive UI rewrite).
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** backend testing agent
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** SMS-pool and TigerSMS integrations are incomplete or not working. (P0)
--   **Issue 2:** UI beautification and adjustments are still pending based on user feedback. The core structure is there, but finer details may need polish. (P1)
--   **Issue 3:** The old  file is causing build errors and confusion. (P1)
+-   **Issue 1:** SMS-pool pricing is incorrect. (P0)
 
 Issues Detail:
--   **Issue 1: SMS-pool & TigerSMS Integration**
-    -   **Attempted fixes:** The agent created backend endpoints and caching logic. However, the SMS-pool API consistently returned an empty/invalid response, blocking further progress. The TigerSMS flow has not been tested end-to-end.
+-   **Issue 1: SMS-pool pricing is incorrect.**
+    -   **Attempted fixes:** The agent modified the  endpoint to use a default price after failing to get prices from an incorrect endpoint.
     -   **Next debug checklist:**
-        1.  Verify the SMS-pool API key in the database is correct. If it is, inform the user that the API provider may be having issues or the key is invalid.
-        2.  Implement and test the full purchase-poll-cancel-refund loop for TigerSMS, ensuring the RUB -> USD -> NGN currency conversion works correctly.
-        3.  Integrate the working TigerSMS and (once fixed) SMS-pool data into the  frontend service/country dropdowns.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a core business requirement. The platform needs to support all three specified SMS providers.
-    -   **Status:**  (on SMS-pool API response).
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** None.
-
--   **Issue 2: UI Beautification**
-    -   **Attempted fixes:** A massive UI overhaul was just completed.
-    -   **Next debug checklist:** Await user feedback on the new BlissDigitals design and make specific adjustments as requested.
-    -   **Why fix this issue and what will be achieved with the fix?** The user is highly focused on the UI/UX, and achieving the desired look is critical for project success.
-    -   **Status:** 
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** frontend
-    -   **Blocked on other issue:** None.
-
--   **Issue 3: Deprecated Dashboard file**
-    -   **Attempted fixes:** The agent identified that the old  was causing a build error (duplicate function declaration) and fixed it, but the file remains.
-    -   **Next debug checklist:**
-        1.  Delete the file .
-        2.  Ensure the application still builds and runs correctly, with all routes pointing to .
-    -   **Why fix this issue and what will be achieved with the fix?** To clean up the codebase, prevent future build errors, and eliminate confusion for future development.
+        1.  Modify the  endpoint in .
+        2.  Instead of using a default price, call the  endpoint. This endpoint might need to be called with the  ID to get all prices for that country.
+        3.  Merge the returned pricing data with the service list ().
+        4.  Apply the admin markup and convert the final price to NGN.
+        5.  Test the backend endpoint directly with  to ensure it returns a list of services with varied NGN prices.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a core requirement. The International Server is unusable until it shows correct, dynamic pricing for its services.
     -   **Status:** 
     -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** frontend
-    -   **Blocked on other issue:** None.
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   **Task 1: Implement Functionality for Placeholder Pages (P0)**
-    -   **Where to resume:**  and .
-    -   **What will be achieved with this?** A fully functional platform beyond just SMS verification. This involves:
-        1.  **Fund Wallet:** Implement PaymentPoint (NGN) and Payscribe (USD stablecoin) integrations.
-        2.  **Bill Payments:** Implement Payscribe APIs for Buy Data, Airtime Top-Up, and Betting.
-        3.  **Virtual Cards:** Implement the Payscribe virtual card issuance feature.
-        4.  **History/Transactions:** Connect the Transactions and SMS History pages to backend endpoints to display user activity.
-    -   **Status:**  (UI shells are built, backend logic is needed).
+-   **Task 1: Complete SMS-pool (International Server) Integration (P0)**
+    -   **Where to resume:** . The pricing logic needs to be fixed as described in Issue 1 above. After the backend is fixed, the frontend purchase flow for SMS-pool needs to be connected and tested.
+    -   **What will be achieved with this?** A fully functional International Server where users can select a country, see dynamically priced services, and purchase a number.
+    -   **Status:** 
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** Requires starting the integration work for PaymentPoint and Payscribe.
+    -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   **P0:** Begin Payscribe integration for all bill payment services.
-    *   **P0:** Begin PaymentPoint integration for NGN deposits.
-    *   **P1:** Implement the Referral Program page functionality.
-    *   **P1:** Implement the Profile Settings page functionality (e.g., password change).
+    *   **P1:** Implement TigerSMS (Global Server) integration. This is the last remaining SMS provider.
+    *   **P2:** Implement Virtual Card creation using the Payscribe customer creation flow. This requires gating the feature behind KYC completion.
+    *   **P3:** Implement USDT/USDC deposits using the Payscribe customer creation flow and gating it behind KYC.
+    *   **P4:** Implement the Referral Program page functionality.
+    *   **P5:** Implement the Profile Settings page functionality (e.g., password change).
 *   **Future Tasks:**
-    *   **P2:** Re-implement the dark mode toggle, which was lost during UI rewrites.
+    *   **P6:** Re-implement the dark mode toggle, which was lost during the UI redesign.
 
 **Completed work in this session**
--   **MAJOR UI Redesign:** Replaced the entire dashboard with a new  component that identically matches the BlissDigitals design provided by the user.
--   **DaisySMS End-to-End Flow:** Implemented and fixed the complete purchase, OTP polling, cancellation, and refund logic.
--   **Dynamic Pricing & Currency:** Backend now handles dynamic markups (set to 150%) and currency conversions correctly.
--   **Searchable Dropdowns:** Fixed dropdown UI using  to be searchable and to correctly display placeholders and selected values.
--   **Admin Page Toggles:** Implemented a backend and frontend system to allow an admin to enable/disable service pages (e.g., Buy Data, Airtime).
--   **Balance & Admin Access:** Successfully added balance to the admin user for testing and fixed all access issues to the Admin Panel.
--   **Backend Refinements:** Stored provider API keys in the database, fixed numerous bugs related to ObjectId serialization, balance deduction, and refunds.
+- **Critical Frontend Architecture & Bug Fixes:**
+  - Resolved persistent auto-clearing of input fields by refactoring bill payment sections into .
+  - Fixed all dropdown UI issues (blurriness, invisible text) by implementing  with  and custom global CSS.
+  - Corrected all text contrast issues (e.g., white text on white backgrounds) across the entire application, especially in tables.
+- **Feature Implementation & UI Overhaul:**
+  - Redesigned the main user dashboard and created a brand new Admin Panel () to precisely match user-provided screenshots.
+  - Implemented the full backend and frontend for Payscribe bill payments (Airtime, Data, Betting).
+  - Built the complete KYC/Account Upgrade page and backend for Payscribe customer creation.
+  - **DaisySMS:** Enhanced with live dynamic pricing, advanced purchase options, and a fully styled service dropdown.
+  - **SMS-pool:** Implemented the Server -> Country -> Service selection flow on the frontend.
+  - Implemented a fully functional cancel/refund flow for active orders.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Dark mode toggle.** This was an original requirement that was implemented and then lost during the multiple UI rewrites. It has not been added to the latest BlissDigitals design.
+-   **Issue 1: Dark mode toggle.** This was an original requirement that was lost during the multiple UI rewrites. It has not been added to the latest BlissDigitals design.
     -   **Debug checklist:** Await user confirmation if this is still desired. If so, create a dark theme variant for the new  styles.
     -   **Why to solve this issue and what will be achieved with this?** Fulfills an original user requirement.
     -   **Should Test frontend/backend/both after fix:** frontend
     -   **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
--   None.
+- None.
 
 **Code Architecture**
 
@@ -131,72 +115,87 @@ Issues Detail:
 *   **Backend:** FastAPI, Pydantic, Motor (MongoDB)
 *   **Frontend:** React, TailwindCSS, 
 *   **Database:** MongoDB
-*   **APIs:** PaymentPoint, Payscribe, SMS-pool, TigerSMS, DaisySMS
+*   **Architecture:** The frontend was refactored to extract nested stateful components into their own file () to prevent state-reset issues on re-renders. This is a critical pattern to follow.
 
 **key DB schema**
 -   **users:** 
 -   **orders:** 
--   **transactions:** 
--   **services:**  (For caching)
--   **pricing_configs:** 
--   **page_toggles:** 
 
 **changes in tech stack**
--   Added  and  to the frontend stack.
+- No new dependencies, but a significant change in React component architecture to solve state management issues.
 
-**All files**
--   : The monolithic FastAPI backend. It has grown significantly and now handles all business logic, including authentication, the complete OTP lifecycle for DaisySMS, pricing calculations, DB caching, and all admin panel functions.
--   : The new, active dashboard component built from scratch to match the user's BlissDigitals design. It contains the layout and UI for all user-facing features.
--   : The main React router, updated to route  to the new  component.
--   : The old, deprecated dashboard. It is no longer used but is causing build errors and should be deleted.
--   : The frontend for the admin panel, which now includes controls for page visibility toggles.
+**All files of reference**
+*   : The monolithic backend containing all logic. It has been heavily modified for live pricing, KYC, and new bill payment services.
+*   : The main user-facing component. It has been refactored and now imports bill payment sections.
+*   : **CRITICAL FILE.** This new file contains the , , and . It was created to solve the auto-clearing input bug.
+*   : **NEW.** The completely redesigned, dark-themed admin panel.
+*   : Contains crucial custom global styles for  to fix all visual and rendering bugs.
+*   : Deprecated. Should be deleted.
 
 **Areas that need refactoring**:
--   : This file is now over 1500 lines long and handles everything. It urgently needs to be broken down into a more modular structure (e.g., using FastAPI's  to split logic into , , , etc.).
--   : This file is deprecated and should be deleted to prevent build issues and developer confusion.
+*   : Urgently needs to be broken down into a modular structure using FastAPI's  (e.g., , , etc.) to improve maintainability.
+*   : Other sections like  and  are still nested inside. Extracting them into their own components would further improve stability.
+*   : This file is deprecated and should be deleted.
 
 **key api endpoints**
--   : Purchase a number.
--   : Poll for an OTP.
--   : Cancel an active order for a refund.
--   : Get a price quote for a service, including markups.
--   : Get services for a provider (from DB cache).
--   : Get/Set pricing markups, conversion rates, and API keys.
--   : Get/Set which dashboard pages are visible.
+*   : Fetches services with live prices from DaisySMS.
+*   : Fetches countries and services from SMS-pool (needs pricing fix).
+*   : Creates a Payscribe customer for KYC.
+*   : Handles file uploads for KYC documents.
+*   : Cancels an order using the provider's ID and refunds the user.
+*   
+*   
+*   
 
 **Critical Info for New Agent**
--   **UI IS PARAMOUNT:** The user is extremely specific about the UI. Adhere strictly to the BlissDigitals screenshots provided. Do not improvise on the design. The current implementation in  is the source of truth.
--   **USE :** All frontend work must happen in . The old  is deprecated and should be deleted as a first step to avoid confusion and build errors.
--   **DaisySMS is the reference:** The full purchase-poll-cancel flow is correctly implemented for DaisySMS. Use its implementation in  as a template for fixing TigerSMS and SMS-pool.
--   **SMS-pool is BLOCKED:** The SMS-pool API is not returning data. Verify the API key from the DB ( collection) and then test the endpoint again. If it still fails, you will need to inform the user.
--   **Propose Backend Refactor:** The  file is unmanageably large. After the next successful feature delivery, you should propose a refactoring task to break it into smaller, more organized modules.
+-   **Component Stability:** The most critical fix in this session was extracting stateful components (, etc.) out of the main  to solve input fields from auto-clearing. **ANY new stateful sections MUST follow this pattern.** Do not define them inside another component.
+-   **Dropdown Styling:** All dropdowns must use . The custom styling is in  and  prop is required to prevent visual bugs.
+-   **SMS-pool Pricing Fix:** Your immediate task is to fix the pricing for the International Server (SMS-pool). You must use the  endpoint as documented by the user to fetch real prices for the selected country.
+-   **Server Naming:**  = DaisySMS,  = SMS-pool (International),  = TigerSMS (Global, not implemented).
 
-**documents created in this job**
--   None.
+**documents and test reports created in this job**
+- None.
 
-**Last 5 User Messages and any pending user messages**
-1.  **User (message 364):** lets add this start working no quetsions i will review it after your dont i want identical design for all - User provided more screenshots and confirmed they want an exact copy of the BlissDigitals design without deviation. (COMPLETED)
-2.  **User (message 399):** like i said every contnet in those images are to be follow airtime data and betting pages are missing and aslo ad the ability to turn on and off pages from the admin too - User requested the missing pages from the design and the admin feature to toggle them. (COMPLETED)
-3.  **User (message 428):** i need this exact dasgboard the only difference should be the adding of our dollar balance, all the drop downs the initail or hint text need to be visible and when we selext anything they all the to be visible too for the serer make sure you don add anything like the providers...all service drop downs sould be searcheable - User reiterated the need for an exact design match, with specific fixes for dropdowns (searchable, visible text) and adding a USD balance display. (COMPLETED)
-4.  **User (message not shown, inferred from agent):** User reports issues with dashboard.
-5.  **User (message 358):** i have a new inspiration for the user dashboard - User provides the first screenshots of the new BlissDigitals design, initiating the major UI overhaul.
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** Fix SMS-pool (International Server) pricing; all prices are the same. Provided documentation for the correct  endpoint. (PENDING)
+2.  **Agent:** Acknowledged the issue and plan to fix it.
+3.  **User:** Services should load after country selection on the International server, and prices should be on the right like DaisySMS. (COMPLETED)
+4.  **Agent:** Implemented the requested UI flow for SMS-pool.
+5.  **User:** Cancelled orders should be removed from the active list. (COMPLETED)
+6.  **Agent:** Cancelled orders and refunded money.
+7.  **User:** Pointed out that after purchasing a number, it disappears, text is white, and cancel says Not Found. Provided documentation for the cancel API. (COMPLETED)
+8.  **Agent:** Fixed text color, cancel logic, and implemented SMS history page.
+9.  **User:** Complained about text contrast issues (white on white, black on dark). (COMPLETED)
+10. **Agent:** Fixed text contrast issues across the entire application.
 
 **Project Health Check:**
--   **Broken:**
-    -   SMS-pool and TigerSMS integrations are non-functional.
-    -   All bill payment, virtual card, and deposit features are only UI placeholders with no backend logic.
--   **Mocked:** The  contains multiple mocked pages (Buy Data, Airtime Top-up, Fund Wallet, etc.) that look correct but have no functionality.
+*   **Broken:**
+    *   SMS-pool integration shows incorrect (default) pricing for services.
+    *   TigerSMS integration is non-existent.
+*   **Mocked:**
+    *   Virtual Card functionality is UI only.
+    *   USDT/USDC deposit functionality is UI only.
+
+**3rd Party Integrations**
+*   **DaisySMS** (OTP Service)
+*   **SMS-pool** (OTP Service)
+*   **TigerSMS** (OTP Service - Pending)
+*   **PaymentPoint** (NGN Payments) - requires User API Key
+*   **Payscribe** (Bill Payments, Stablecoin, Virtual Cards) - requires User API Key
 
 **Testing status**
--   **Testing agent used after significant changes:** NO (A full frontend test is highly recommended after the massive UI rewrite).
--   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Testing agent used after significant changes:** YES (used by troubleshoot agent to identify a rendering issue, which was fixed by a frontend restart).
+-   **Troubleshoot agent used after agent stuck in loop:** YES (used to confirm the correct architectural fix for auto-clearing inputs).
 -   **Test files created:** None
--   **Known regressions:** The dark mode toggle feature was lost during the latest UI rewrite.
+-   **Known regressions:** The dark mode toggle feature remains unimplemented after being lost in UI rewrites.
 
 **Credentials to test flow:**
--   **Admin user:**  / 
--   The user has a balance of **₦50,000** and **00**.
+*   **Admin user:**  / 
+*   **Payscribe API Key:** 
+*   **PaymentPoint Business ID:** 
+*   **PaymentPoint API Key:** 
+*   **PaymentPoint Secret Key:** 
 
 **What agent forgot to execute**
--   The agent has not re-implemented the dark mode toggle, an original requirement that was lost across multiple UI rewrites.
--   The agent fixed a build error in the deprecated  but did not delete the file, leaving a source of potential confusion and future errors.</analysis>
+*   The agent did not delete the old, deprecated  file after creating .
+*   The agent did not confirm if the original  file (mentioned as deprecated in the first handoff) was ever deleted.</analysis>
