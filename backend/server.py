@@ -1828,7 +1828,33 @@ async def purchase_number(
 
 @api_router.get("/orders/list")
 async def list_orders(user: dict = Depends(get_current_user)):
-    orders = await db.sms_orders.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(100)
+    """Return only the fields needed for the UI to render orders.
+
+    This avoids exposing internal pricing/markup/provider_cost data in
+    client-side responses while still allowing the dashboard to work.
+    """
+    projection = {
+        '_id': 0,
+        'id': 1,
+        'activation_id': 1,
+        'server': 1,
+        'provider': 1,
+        'service': 1,
+        'country': 1,
+        'phone_number': 1,
+        'otp': 1,
+        'otp_code': 1,
+        'status': 1,
+        'created_at': 1,
+        'expires_at': 1,
+        'can_cancel': 1,
+    }
+    orders = (
+        await db.sms_orders
+        .find({'user_id': user['id']}, projection)
+        .sort('created_at', -1)
+        .to_list(100)
+    )
     return {'orders': orders}
 
 @api_router.get("/orders/{order_id}")
