@@ -459,55 +459,93 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
             {/* Service Search - Show after country is selected (or for US server which doesn't need country) */}
             {selectedServer && ((selectedServer.value === 'us_server') || selectedCountry) && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Search Service
-                </label>
-                <Select
-                  menuPortalTarget={document.body}
-                  styles={selectStyles}
-                  value={selectedService}
-                  onMenuOpen={() => setServiceMenuOpen(true)}
-                  onMenuClose={() => setServiceMenuOpen(false)}
-                  onInputChange={(value, { action }) => {
-                    // Only keep menu open while typing, avoid closing on blur
-                    if (action === 'input-change' && !serviceMenuOpen) {
-                      setServiceMenuOpen(true);
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Search Service
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={selectStyles}
+                    value={selectedService}
+                    onMenuOpen={() => setServiceMenuOpen(true)}
+                    onMenuClose={() => setServiceMenuOpen(false)}
+                    onInputChange={(value, { action }) => {
+                      // Only keep menu open while typing, avoid closing on blur
+                      if (action === 'input-change' && !serviceMenuOpen) {
+                        setServiceMenuOpen(true);
+                      }
+                    }}
+                    menuIsOpen={serviceMenuOpen}
+                    onChange={(option) => {
+                      setSelectedService(option);
+                      setSelectedPool(null);
+                    }}
+                    options={availableServices}
+                    isDisabled={servicesLoading}
+                    isLoading={servicesLoading}
+                    placeholder={
+                      servicesLoading ? 'Loading services...' : 'Search for a service...'
                     }
-                  }}
-                  menuIsOpen={serviceMenuOpen}
-                  onChange={(option) => {
-                    setSelectedService(option);
-                    setSelectedPool(null);
-                  }}
-                  options={availableServices}
-                  isDisabled={servicesLoading}
-                  isLoading={servicesLoading}
-                  placeholder={
-                    servicesLoading ? 'Loading services...' : 'Search for a service...'
-                  }
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  isClearable
-                  isSearchable
-                  formatOptionLabel={(option) => (
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex flex-col">
-                        <span>{option.label || option.name}</span>
-                        {option.pools && option.pools.length > 0 && (
-                          <span className="text-xs text-gray-400">
-                            {option.pools.length} pool{option.pools.length > 1 ? 's' : ''} available
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                    isSearchable
+                    formatOptionLabel={(option) => (
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col">
+                          <span>{option.label || option.name}</span>
+                          {option.pools && option.pools.length > 0 && (
+                            <span className="text-xs text-gray-400">
+                              {option.pools.length} pool{option.pools.length > 1 ? 's' : ''} available
+                            </span>
+                          )}
+                        </div>
+                        {option.price_ngn && (
+                          <span className="text-gray-600 font-semibold">
+                            ₦{option.price_ngn.toFixed(2)}
                           </span>
                         )}
                       </div>
-                      {option.price_ngn && (
-                        <span className="text-gray-600 font-semibold">
-                          ₦{option.price_ngn.toFixed(2)}
-                        </span>
-                      )}
+                    )}
+                  />
+                </div>
+
+                {/* SMS-pool: allow user to pick a specific pool for the selected service */}
+                {selectedServer.value === 'server1' && selectedService && selectedService.pools &&
+                  selectedService.pools.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Select Pool (optional)
+                      </label>
+                      <Select
+                        menuPortalTarget={document.body}
+                        styles={selectStyles}
+                        value={selectedPool && {
+                          value: selectedPool.id,
+                          label: `${selectedPool.name} - ₦${selectedPool.price_ngn.toFixed(2)}`
+                        }}
+                        onChange={(option) => {
+                          if (!option) {
+                            setSelectedPool(null);
+                            return;
+                          }
+                          const poolObj = selectedService.pools.find(
+                            (p) => String(p.id) === String(option.value)
+                          ) || null;
+                          setSelectedPool(poolObj);
+                        }}
+                        options={selectedService.pools.map((p) => ({
+                          value: p.id,
+                          label: `${p.name} - ₦${p.price_ngn.toFixed(2)}`
+                        }))}
+                        placeholder="Cheapest pool (default)"
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        isClearable
+                      />
                     </div>
                   )}
-                />
               </div>
             )}
 
