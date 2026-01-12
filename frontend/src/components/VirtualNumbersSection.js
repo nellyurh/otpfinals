@@ -301,6 +301,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value
       };
 
+      // For SMS-pool, include selected pool (if any)
+      if (selectedServer.value === 'server1' && selectedPool) {
+        payload.pool = selectedPool.id;
+      }
+
       // Add advanced options if selected (DaisySMS only)
       if (selectedCarrier) {
         payload.carrier = selectedCarrier.value;
