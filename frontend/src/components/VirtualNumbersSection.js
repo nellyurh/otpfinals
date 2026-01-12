@@ -58,6 +58,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const [selectedPool, setSelectedPool] = useState(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [selectedOperator, setSelectedOperator] = useState(null);
+
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [selectedAreaCodes, setSelectedAreaCodes] = useState([]);
   const [preferredNumber, setPreferredNumber] = useState('');
