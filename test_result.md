@@ -182,20 +182,22 @@ backend:
     implemented: true
     working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
         comment: "Updated otp_polling_task to poll for up to 10 minutes, allow cancel after 5 minutes, and auto-cancel with refund if no OTP. Switched /orders/purchase to use otp_polling_task for all providers. Need tests for purchase, cancel, and auto-timeout flows."
-
       - working: false
         agent: "main"
         comment: "Implemented /api/services/smspool to call SMS-pool /request/pricing with country, apply smspool_markup and ngn_to_usd_rate from pricing_config, and return per-service NGN pricing. Need backend tests to verify varied prices and frontend tests for International server flow."
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED ✅ All SMS-pool dynamic pricing requirements verified: 1) Countries fetch: 151 countries returned with proper structure (value, label, name, region). 2) Services + pricing: Tested 3 countries (US, UK, Netherlands) with 6,456 total services. All services have required fields (value, label, name, price_usd, price_ngn, base_price, pool). 3) Dynamic pricing CONFIRMED: Found 67 unique base prices in US, 43 in UK, 48 in Netherlands - proving dynamic pricing is working. 4) Multiple pools confirmed: Services appear in pools 7,12,13,14,16,17. 5) Cross-country variations: Same services have different prices across countries. 6) Error handling: Invalid country (999999) properly returns empty services list. Price calculations verified: price_ngn ≈ price_usd * ngn_rate * (1 + markup/100). All authentication working with admin@smsrelay.com credentials."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL BUGS FOUND in SMS order lifecycle testing: 1) DUPLICATE CANCEL ENDPOINTS: Lines 1572 and 1879 both define /orders/{order_id}/cancel. First endpoint (used by FastAPI) only searches by internal ID and has NO 3-minute rule. Second endpoint (never reached) has proper activation_id lookup and 3-minute rule. 2) SMS-POOL PURCHASE BROKEN: /api/services/smspool fetches live data but /api/orders/purchase expects cached data in database, causing 404 'Service not found' errors. 3) 10-MINUTE POLLING VERIFIED: otp_polling_task correctly implemented with max_duration=600s, poll_interval=10s, can_cancel=True after 300s, auto-cancel with refund after 600s. DaisySMS orders created successfully with proper ID/activation_id storage. URGENT: Fix duplicate endpoints and SMS-pool caching inconsistency."
 
 
 agent_communication:
