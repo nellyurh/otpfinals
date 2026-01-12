@@ -1499,6 +1499,10 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
                 country_options.sort(key=lambda x: x['name'])
                 
                 return {'success': True, 'countries': country_options}
+    except Exception as e:
+        logger.error(f"SMS-pool service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
 
 
 @api_router.get("/services/5sim")
