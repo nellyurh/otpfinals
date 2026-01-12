@@ -891,6 +891,11 @@ class SMSRelayAPITester:
         self.test_smspool_services_pricing()
         self.test_smspool_error_handling()
         
+        # NEW: SMS Order Lifecycle with 10-minute Rules (MAIN FOCUS)
+        print("\n🔄 SMS Order Lifecycle with 10-minute Rules Tests")
+        self.test_sms_order_lifecycle_10min_rules()
+        self.test_order_polling_task_verification()
+        
         # Admin Tests
         print("\n🔧 Admin Tests")
         self.test_admin_pricing_get()
