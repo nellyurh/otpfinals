@@ -1774,7 +1774,12 @@ async def purchase_number(
     actual_price = base_price_usd
     
     if provider == 'smspool':
-        result = await purchase_number_smspool(data.service, data.country)
+        # For SMS-pool we can optionally pass a specific pool chosen by the user
+        result = await purchase_number_smspool(
+            data.service,
+            data.country,
+            pool=data.pool
+        )
         if result and result.get('success'):
             actual_price = result.get('price', base_price_usd)
     elif provider == 'daisysms':
