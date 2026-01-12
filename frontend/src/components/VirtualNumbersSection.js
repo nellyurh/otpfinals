@@ -108,7 +108,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       const serverMap = {
         us_server: 'daisysms',
         server1: 'smspool',
-        server2: 'tigersms'
+        server2: '5sim'
       };
 
       const provider = serverMap[serverValue];
