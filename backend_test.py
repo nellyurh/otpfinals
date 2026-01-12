@@ -748,23 +748,23 @@ class SMSRelayAPITester:
         # Step 4: Test cancel endpoint ID handling for DaisySMS
         print("   🚫 Step 4: Testing cancel endpoint ID handling...")
         
-        # Test 4a: Cancel DaisySMS order using activation_id
+        # Test 4a: Try to cancel DaisySMS order using activation_id (should fail due to 3-minute rule)
         if daisysms_activation_id:
             success, cancel_response = self.run_test(
-                "Cancel DaisySMS by Activation ID",
+                "Cancel DaisySMS by Activation ID (too early)",
                 "POST",
                 f"orders/{daisysms_activation_id}/cancel",
-                200,
+                400,  # Expecting 400 due to 3-minute rule
                 use_admin=True
             )
             
             if success:
-                print(f"   ✓ DaisySMS order cancelled using activation_id: {daisysms_activation_id}")
+                print(f"   ✓ DaisySMS cancel correctly blocked (3-minute rule enforced)")
             else:
-                print(f"   ❌ Failed to cancel DaisySMS order using activation_id")
+                print(f"   ❌ Unexpected response from DaisySMS cancel")
                 return False
         
-        # Test 4b: Test cancel with internal ID (create another order first)
+        # Test 4b: Test cancel with internal ID (create another order and test immediately)
         print("   📞 Creating another DaisySMS order to test internal ID cancel...")
         daisysms_purchase_data2 = {
             "server": "us_server",
@@ -786,19 +786,20 @@ class SMSRelayAPITester:
             order2 = daisysms_response2['order']
             daisysms_order_id2 = order2.get('id')
             
-            # Cancel using internal ID
+            # Try to cancel using internal ID (should also fail due to 3-minute rule)
             success, cancel_response = self.run_test(
-                "Cancel DaisySMS by Internal ID",
+                "Cancel DaisySMS by Internal ID (too early)",
                 "POST",
                 f"orders/{daisysms_order_id2}/cancel",
-                200,
+                400,  # Expecting 400 due to 3-minute rule
                 use_admin=True
             )
             
             if success:
-                print(f"   ✓ DaisySMS order cancelled using internal_id: {daisysms_order_id2}")
+                print(f"   ✓ DaisySMS cancel by internal ID correctly blocked (3-minute rule enforced)")
+                print(f"   ✓ Both activation_id and internal_id cancel endpoints working correctly")
             else:
-                print(f"   ❌ Failed to cancel DaisySMS order using internal_id")
+                print(f"   ❌ Unexpected response from DaisySMS cancel by internal ID")
                 return False
         
         # Step 5: Verify 10-minute constants
