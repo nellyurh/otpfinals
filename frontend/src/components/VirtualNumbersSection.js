@@ -10,19 +10,23 @@ const API = process.env.REACT_APP_BACKEND_URL;
 const selectStyles = {
   control: (base) => ({
     ...base,
-    minHeight: '48px',
+    minHeight: '44px',
     borderWidth: '2px',
     borderColor: '#e5e7eb',
+    borderRadius: 9999,
     '&:hover': { borderColor: '#10b981' }
   }),
   placeholder: (base) => ({
     ...base,
-    color: '#9ca3af'
+    color: '#9ca3af',
+    fontSize: '0.8rem',
+    fontWeight: 500
   }),
   singleValue: (base) => ({
     ...base,
     color: '#1f2937',
-    fontWeight: '500'
+    fontWeight: 600,
+    fontSize: '0.85rem'
   }),
   input: (base) => ({
     ...base,
