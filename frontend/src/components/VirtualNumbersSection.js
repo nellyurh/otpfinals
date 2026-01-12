@@ -595,7 +595,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           )}
                         </div>
                         {option.price_ngn && (
-                          <span className="text-gray-600 font-semibold">
+                          <span className="text-gray-700 font-semibold text-xs">
                             ₦{option.price_ngn.toFixed(2)}
                           </span>
                         )}
