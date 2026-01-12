@@ -1897,6 +1897,7 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
         logger.info(f"Direct refund calculation: charged_amount={charged_amount}, charged_currency={charged_currency}, refund_ngn={refund_ngn}")
     
     logger.info(f"Updating user {user['id']} balance by +{refund_ngn} NGN")
+    logger.info(f"Order user_id: {order.get('user_id')}, Current user_id: {user['id']}")
     result = await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
     logger.info(f"Balance update result: matched_count={result.matched_count}, modified_count={result.modified_count}")
     
