@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, TrendingUp, Users, ShoppingCart, DollarSign, Settings, Save } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Users, ShoppingCart, DollarSign, Settings, Save, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
