@@ -1794,6 +1794,29 @@ async def purchase_number(
                 base_price_usd = 1.00
         
         # Add 35% for each advanced option (our markup)
+    elif provider == '5sim':
+        # Use 5sim buy activation API
+        if not FIVESIM_API_KEY:
+            logger.error("FIVESIM_API_KEY not configured")
+            raise HTTPException(status_code=500, detail="5sim API key not configured")
+        headers = {
+            'Authorization': f'Bearer {FIVESIM_API_KEY}',
+            'Accept': 'application/json'
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{FIVESIM_BASE_URL}/user/buy/activation/{data.country}/any/{data.service}",
+                headers=headers,
+                timeout=15.0
+            )
+        if resp.status_code != 200:
+            logger.error(f"5sim purchase error {resp.status_code}: {resp.text}")
+            raise HTTPException(status_code=400, detail="Failed to purchase number from 5sim")
+        result = resp.json()
+        activation_id = str(result.get('id'))
+        phone_number = str(result.get('phone'))
+        actual_price = float(result.get('price') or base_price_usd)
+
         if data.area_code or (hasattr(data, 'area_codes') and data.area_codes):
             base_price_usd = base_price_usd * 1.35
         if data.carrier:
