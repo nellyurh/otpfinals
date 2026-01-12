@@ -1259,18 +1259,19 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
                 if response.status_code == 200:
                     pricing_list = response.json()
                     services = []
-                    
-                    # pricing_list format: [{service: 846, service_name: "Snapchat", country: 20, price: "0.02"}, ...]
+
+                    # pricing_list format: [{service: 846, service_name: "Snapchat", country: 20, price: "0.02", pool: 7}, ...]
                     for item in pricing_list:
                         if isinstance(item, dict):
                             service_id = item.get('service')
                             service_name = item.get('service_name', f'Service {service_id}')
                             base_price_usd = float(item.get('price', 0))
-                            
+
                             if base_price_usd > 0:  # Only show services with pricing
+                                # Apply our markup and convert to NGN
                                 final_price_usd = base_price_usd * (1 + markup_percent / 100)
                                 final_price_ngn = final_price_usd * ngn_rate
-                                
+
                                 services.append({
                                     'value': str(service_id),
                                     'label': service_name,
@@ -1280,7 +1281,25 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
                                     'base_price': base_price_usd,
                                     'pool': item.get('pool')
                                 })
-                    
+
+                                # Cache the **cheapest** base price per service/country in USD
+                                await db.cached_services.update_one(
+                                    {
+                                        'provider': 'smspool',
+                                        'service_code': str(service_id),
+                                        'country_code': str(country)
+                                    },
+                                    {
+                                        '$setOnInsert': {
+                                            'currency': 'USD'
+                                        },
+                                        '$min': {
+                                            'base_price': base_price_usd
+                                        }
+                                    },
+                                    upsert=True
+                                )
+
                     services.sort(key=lambda x: x['name'])
                     logger.info(f"Loaded {len(services)} SMS-pool services for country {country}")
                     return {'success': True, 'services': services, 'country': country}
@@ -1731,8 +1750,8 @@ async def purchase_number(
         charged_amount = final_price_usd
         charged_currency = 'USD'
     
-    # Calculate expiry (5 minutes for DaisySMS)
-    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
+    # Calculate expiry (10 minutes total lifetime for all providers)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
     
     order = SMSOrder(
         user_id=user['id'],
