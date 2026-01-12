@@ -703,6 +703,47 @@ async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Opti
                 return response.json()
             return None
     except Exception as e:
+
+async def poll_otp_5sim(order_id: str) -> Optional[str]:
+    """Poll 5sim for OTP using order ID."""
+    if not FIVESIM_API_KEY:
+        logger.error("FIVESIM_API_KEY not configured")
+        return None
+    try:
+        headers = {
+            'Authorization': f'Bearer {FIVESIM_API_KEY}',
+            'Accept': 'application/json'
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{FIVESIM_BASE_URL}/user/orders",
+                headers=headers,
+                params={"category": "activation", "limit": 50},
+                timeout=10.0
+            )
+            if resp.status_code != 200:
+                logger.error(f"5sim status error {resp.status_code}: {resp.text}")
+                return None
+            data = resp.json()
+            orders = data.get('Data') or data
+            for o in orders:
+                if str(o.get('id')) == str(order_id):
+                    sms_list = o.get('sms') or []
+                    if sms_list:
+                        sms = sms_list[0]
+                        code = sms.get('code')
+                        if not code:
+                            import re
+                            text = sms.get('text') or ''
+                            m = re.search(r"\b(\d{4,8})\b", text)
+                            if m:
+                                code = m.group(1)
+                        return code
+            return None
+    except Exception as e:
+        logger.error(f"5sim OTP poll error: {str(e)}")
+        return None
+
         logger.error(f"TigerSMS purchase error: {str(e)}")
         return None
 
