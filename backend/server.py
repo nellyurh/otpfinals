@@ -762,7 +762,7 @@ async def poll_otp_smspool(order_id: str) -> Optional[str]:
         logger.error(f"SMS-pool OTP poll error: {str(e)}")
         return None
 
-async def poll_otp_daisysms(activation_id: str) -> Optional[str]:
+async def poll_otp_daisysms_simple(activation_id: str) -> Optional[str]:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
