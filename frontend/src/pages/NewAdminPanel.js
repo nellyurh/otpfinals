@@ -10,6 +10,32 @@ import { useNavigate } from 'react-router-dom';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Helper component for API key fields
+function ApiKeyField({ label, value, onChange }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-300 mb-2">{label}</label>
+      <div className="relative">
+        <input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-4 py-3 pr-10 bg-gray-800 border-2 border-gray-700 rounded-lg focus:border-[#00a86b] focus:outline-none text-white text-sm"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible(!visible)}
+          className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-200"
+        >
+          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+      <p className="text-xs text-gray-500 mt-1">Stored securely in backend config.</p>
+    </div>
+  );
+}
+
 const NewAdminPanel = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
