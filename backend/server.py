@@ -121,6 +121,9 @@ class SMSOrder(BaseModel):
     provider_cost: float
     markup_percentage: float
     can_cancel: bool = True
+    # Charged amount tracking
+    charged_amount: Optional[float] = None
+    charged_currency: Optional[str] = None
     # DaisySMS optional filters
     area_code: Optional[str] = None
     carrier: Optional[str] = None
