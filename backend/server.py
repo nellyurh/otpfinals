@@ -1825,11 +1825,9 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     if order.get('otp') or order.get('otp_code'):
         raise HTTPException(status_code=400, detail="Cannot cancel - OTP already received")
     
-    # Check if 3 minutes have passed
+    # Calculate elapsed time (for logging/analytics)
     created_at = datetime.fromisoformat(order['created_at'].replace('Z', '+00:00'))
     elapsed = (datetime.now(timezone.utc) - created_at).total_seconds()
-    if elapsed < 180:
-        raise HTTPException(status_code=400, detail=f"Can only cancel after 3 minutes. Wait {int(180 - elapsed)}s more.")
     
     # Cancel on provider side using activation_id
     if order.get('activation_id'):

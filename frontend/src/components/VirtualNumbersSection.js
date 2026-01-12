@@ -636,10 +636,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     const createdAt = new Date(order.created_at);
                     const now = new Date();
                     const elapsedSeconds = Math.floor((now - createdAt) / 1000);
-                    const remainingSeconds = Math.max(0, 600 - elapsedSeconds); // 10 mins
+                    const remainingSeconds = Math.max(0, 600 - elapsedSeconds); // 10 mins total lifetime
                     const minutes = Math.floor(remainingSeconds / 60);
                     const seconds = remainingSeconds % 60;
-                    const canCancel = elapsedSeconds >= 180; // 3 mins
+                    const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
 
                     return (
                       <tr key={order.id} className="border-b hover:bg-gray-50">
