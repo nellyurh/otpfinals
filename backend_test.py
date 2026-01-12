@@ -425,18 +425,17 @@ class SMSRelayAPITester:
             self.log_test("SMS-pool Services Pricing", False, "", "Not enough countries available for testing")
             return False
         
-        # Try to find popular countries that likely have services (US, UK, Canada, etc.)
-        popular_country_names = ['United States', 'United Kingdom', 'Canada', 'Germany', 'France', 'Australia', 'Netherlands']
+        # Test with specific country IDs that are known to have services
+        # Country 1 had 2669 services in the logs, let's test with that and a few others
+        test_country_ids = ['1', '2', '3']  # These are likely to have services
         test_countries = []
         
-        # First try to find popular countries
+        # Find countries by ID
         for country in countries:
-            if any(pop_name.lower() in country['name'].lower() for pop_name in popular_country_names):
+            if country['value'] in test_country_ids:
                 test_countries.append(country)
-                if len(test_countries) >= 3:  # Test with 3 popular countries
-                    break
         
-        # If we don't have enough popular countries, use first available ones
+        # If we don't find the specific IDs, use first few countries
         if len(test_countries) < 2:
             test_countries = countries[:3]
         
@@ -444,6 +443,7 @@ class SMSRelayAPITester:
         different_prices_found = False
         service_pools_data = {}
         countries_with_services = 0
+        total_services_found = 0
         
         for country in test_countries:
             country_id = country['value']
@@ -463,10 +463,14 @@ class SMSRelayAPITester:
                     services = response['services']
                     if len(services) > 0:
                         countries_with_services += 1
+                        total_services_found += len(services)
                         print(f"   ✓ Found {len(services)} services for {country_name}")
                         
+                        # Sample a few services for validation (don't check all to avoid spam)
+                        sample_services = services[:min(10, len(services))]
+                        
                         # Validate service structure
-                        for service in services:
+                        for service in sample_services:
                             required_fields = ['value', 'label', 'name', 'price_usd', 'price_ngn', 'base_price', 'pool']
                             if not all(field in service for field in required_fields):
                                 self.log_test(f"SMS-pool Service Validation for {country_name}", False, "", f"Missing required fields in service: {service}")
@@ -484,8 +488,23 @@ class SMSRelayAPITester:
                             expected_ngn = service['price_usd'] * 1500  # Approximate NGN rate
                             if abs(service['price_ngn'] - expected_ngn) / expected_ngn > 0.5:  # Allow 50% variance
                                 print(f"   ⚠️  Price calculation seems off for {service['name']}: USD={service['price_usd']}, NGN={service['price_ngn']}, Expected~{expected_ngn}")
-                            
-                            # Check for different base prices (dynamic pricing proof)
+                        
+                        # Check for different base prices across services in this country
+                        base_prices = [s['base_price'] for s in services]
+                        unique_base_prices = set(base_prices)
+                        if len(unique_base_prices) > 1:
+                            different_prices_found = True
+                            print(f"   ✓ Dynamic pricing confirmed - found {len(unique_base_prices)} different base prices in {country_name}")
+                            print(f"     Sample prices: {list(unique_base_prices)[:5]}")
+                        
+                        # Check for different pools
+                        pools = [s.get('pool', 'default') for s in services]
+                        unique_pools = set(pools)
+                        if len(unique_pools) > 1:
+                            print(f"   ✓ Multiple pools found: {unique_pools}")
+                        
+                        # Store service data for cross-country comparison
+                        for service in services[:5]:  # Sample first 5 services
                             service_code = service['value']
                             pool = service.get('pool', 'default')
                             key = f"{service_code}_{pool}"
@@ -498,12 +517,6 @@ class SMSRelayAPITester:
                                 'price_ngn': service['price_ngn'],
                                 'pool': pool
                             })
-                        
-                        # Check if we have different base prices across services in this country
-                        base_prices = [s['base_price'] for s in services]
-                        if len(set(base_prices)) > 1:
-                            different_prices_found = True
-                            print(f"   ✓ Dynamic pricing confirmed - found {len(set(base_prices))} different base prices in {country_name}")
                     else:
                         print(f"   ⚠️  No services available for {country_name}")
                 else:
@@ -512,29 +525,31 @@ class SMSRelayAPITester:
             else:
                 all_tests_passed = False
         
-        # Check for services appearing in multiple pools with different prices
-        pool_variations_found = False
+        # Check for services appearing in multiple countries with different prices
+        cross_country_variations = 0
         for service_key, data_list in service_pools_data.items():
             if len(data_list) > 1:
                 prices = [d['base_price'] for d in data_list]
                 ngn_prices = [d['price_ngn'] for d in data_list]
                 if len(set(prices)) > 1 or len(set(ngn_prices)) > 1:
-                    pool_variations_found = True
-                    print(f"   ✓ Pool price variation found for service {service_key}")
-                    break
+                    cross_country_variations += 1
+                    if cross_country_variations <= 3:  # Show first 3 examples
+                        print(f"   ✓ Cross-country price variation found for service {service_key}")
         
         # Summary of findings
         print(f"   📊 Summary: {countries_with_services}/{len(test_countries)} countries have services")
+        print(f"   📊 Total services found: {total_services_found}")
+        print(f"   📊 Cross-country variations: {cross_country_variations}")
         
         if countries_with_services == 0:
             self.log_test("SMS-pool Services Availability", False, "", "No countries returned services - API may be down or no services available")
             return False
         
         if not different_prices_found and countries_with_services > 0:
-            # This might be expected if all services have the same base price
-            print("   ℹ️  No different base prices found within countries - this may be normal")
+            self.log_test("SMS-pool Dynamic Pricing Validation", False, "", "No different base prices found within countries - dynamic pricing not confirmed")
+            return False
         
-        return all_tests_passed and countries_with_services > 0
+        return all_tests_passed and countries_with_services > 0 and different_prices_found
 
     def test_smspool_error_handling(self):
         """Test SMS-pool error handling with invalid country"""
