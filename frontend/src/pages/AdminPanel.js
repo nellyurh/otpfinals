@@ -80,7 +80,7 @@ const AdminPanel = ({ user, setUser }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950/20 to-slate-950">
       {/* Header */}
       <div className="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
@@ -96,7 +96,7 @@ const AdminPanel = ({ user, setUser }) => {
                 Back
               </Button>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg">
                   <Settings className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -106,7 +106,7 @@ const AdminPanel = ({ user, setUser }) => {
               </div>
             </div>
             
-            <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/30">
+            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
               Administrator
             </Badge>
           </div>
