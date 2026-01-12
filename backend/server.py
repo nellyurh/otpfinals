@@ -685,7 +685,7 @@ async def poll_otp_smspool(order_id: str) -> Optional[str]:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                'https://api.sms-pool.com/sms/check',
+                'https://api.smspool.net/sms/check',
                 params={'key': SMSPOOL_API_KEY, 'orderid': order_id},
                 timeout=10.0
             )
