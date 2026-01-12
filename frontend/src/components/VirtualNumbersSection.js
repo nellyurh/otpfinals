@@ -735,12 +735,26 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
             {/* Price Display */}
             {estimatedPrice && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 space-y-2">
+              <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-white border border-green-200 rounded-2xl p-4 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600">Total Cost:</span>
-                  <span className="text-2xl font-bold text-[#005E3A]">
-                    ₦{estimatedPrice.final_ngn?.toFixed(2)}
-                  </span>
+                  <div>
+                    <span className="block text-xs font-semibold text-emerald-700 uppercase tracking-wide">
+                      Total Cost
+                    </span>
+                    <span className="block text-[10px] text-gray-500">
+                      Includes all markups and fees
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-2xl font-extrabold text-[#005E3A] leading-tight">
+                      ₦{estimatedPrice.final_ngn?.toFixed(2)}
+                    </span>
+                    {estimatedPrice.final_usd && (
+                      <span className="block text-xs text-gray-500">
+                        ≈ ${estimatedPrice.final_usd.toFixed(2)} USD
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Show selected pool for SMS-pool when chosen */}
