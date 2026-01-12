@@ -136,21 +136,20 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           setAvailableServices([]); // Services loaded after country selection
         }
       } else {
-        // TigerSMS - old format (placeholder until 5sim is implemented)
+        // 5sim Global server - use unified services endpoint for now
         const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
-        if (response.data.success) {
+        if (response.data.success && response.data.data) {
           const data = response.data.data;
           const services = [];
           const countries = [];
 
-          for (const key1 in data) {
-            for (const key2 in data[key1]) {
-              const serviceData = data[key1][key2];
-              if (!services.find((s) => s.value === key2)) {
-                services.push({ value: key2, label: serviceData.name || key2 });
-              }
-              if (!countries.find((c) => c.value === key1)) {
-                countries.push({ value: key1, label: key1.toUpperCase() });
+          for (const countryCode in data) {
+            countries.push({ value: countryCode, label: countryCode.toUpperCase() });
+            const servicesForCountry = data[countryCode];
+            for (const serviceCode in servicesForCountry) {
+              const s = servicesForCountry[serviceCode];
+              if (!services.find((svc) => svc.value === serviceCode)) {
+                services.push({ value: serviceCode, label: s.name || serviceCode });
               }
             }
           }
