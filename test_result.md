@@ -149,6 +149,20 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+frontend:
+  - task: "Virtual Numbers - SMS-pool dropdown stability while typing"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/VirtualNumbersSection.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Extracted VirtualNumbersSection to its own component and wired SMS-pool dynamic pricing. Need automated UI test to confirm dropdown remains open and responsive while typing in search and country fields."
+
+
 backend:
   - task: "SMS-pool dynamic pricing (International Server)"
     implemented: true
