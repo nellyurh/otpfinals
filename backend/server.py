@@ -1920,7 +1920,7 @@ async def purchase_number(
                     base_price_usd = 1.00  # Fallback
             else:
                 base_price_usd = 1.00
-        
+
         # Add 35% for each advanced option (our markup)
         if data.area_code or (hasattr(data, 'area_codes') and data.area_codes):
             base_price_usd = base_price_usd * 1.35
@@ -1928,23 +1928,35 @@ async def purchase_number(
             base_price_usd = base_price_usd * 1.35
         if data.phone_make or (hasattr(data, 'preferred_number') and data.preferred_number):
             base_price_usd = base_price_usd * 1.35
+    elif provider == '5sim':
+        # For 5sim, use cached base USD price from services endpoint
+        cached_service = await db.cached_services.find_one({
+            'provider': '5sim',
+            'service_code': data.service,
+            'country_code': data.country
+        }, {'_id': 0})
+        if not cached_service:
+            raise HTTPException(status_code=404, detail="5sim service not found for country")
+        base_price_usd = float(cached_service.get('base_price', 0) or 0)
+        if base_price_usd <= 0:
+            raise HTTPException(status_code=400, detail="Invalid 5sim base price")
     else:
-        # Get from cached services
+        # Get from cached services (non-5sim providers)
         cached_service = await db.cached_services.find_one({
             'provider': provider,
             'service_code': data.service,
             'country_code': data.country
         }, {'_id': 0})
-        
+
         if not cached_service:
             raise HTTPException(status_code=404, detail="Service not found")
-        
+
         base_price_usd = cached_service['base_price']
         if cached_service['currency'] == 'RUB':
             base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
-    
+
     # Apply our markup (default 50%)
-    markup = config.get(f'{provider}_markup', 50.0)
+    markup = config.get(f'{provider}_markup', 50.0) if provider != '5sim' else config.get('tigersms_markup', 50.0)
     final_price_usd = base_price_usd * (1 + markup / 100)
     
     # Convert to NGN if needed
