@@ -1500,6 +1500,104 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
                 
                 return {'success': True, 'countries': country_options}
         
+
+@api_router.get("/services/5sim")
+async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(get_current_user)):
+    """Get 5sim countries or services/operators for Global Server.
+
+    - If no country is provided: return list of available countries.
+    - If country is provided: return services with operators (similar to pools).
+    """
+    try:
+        config = await db.pricing_config.find_one({}, {"_id": 0})
+        if not config:
+            default_config = PricingConfig()
+            cfg = default_config.model_dump()
+            cfg["updated_at"] = cfg["updated_at"].isoformat()
+            await db.pricing_config.insert_one(cfg)
+            config = cfg
+
+        coin_rate = float(config.get("fivesim_coin_per_usd", 77.44) or 77.44)
+        markup = float(config.get("tigersms_markup", 50.0) or 50.0)  # reuse markup
+
+        async with httpx.AsyncClient() as client:
+            if country:
+                # Fetch prices for specific country
+                resp = await client.get(
+                    f"{FIVESIM_BASE_URL}/guest/prices",
+                    params={"country": country},
+                    timeout=20.0,
+                )
+                if resp.status_code != 200:
+                    logger.error(f"5sim prices error {resp.status_code}: {resp.text}")
+                    return {"success": False, "message": "Failed to fetch 5sim services"}
+
+                data = resp.json() or {}
+                country_block = data.get(country) or {}
+                services: Dict[str, Dict[str, Any]] = {}
+
+                # Structure: country -> product -> operator -> {cost, count, rate}
+                for product, operators in country_block.items():
+                    for operator_name, info in operators.items():
+                        try:
+                            base_cost_coins = float(info.get("cost", 0) or 0)
+                        except Exception:
+                            base_cost_coins = 0.0
+                        if base_cost_coins <= 0:
+                            continue
+
+                        base_price_usd = base_cost_coins / coin_rate
+                        final_price_usd = base_price_usd * (1 + markup / 100)
+
+                        key = product
+                        if key not in services:
+                            service_label = product.upper()
+                            services[key] = {
+                                "value": key,
+                                "label": service_label,
+                                "name": service_label,
+                                "price_usd": final_price_usd,
+                                "price_ngn": final_price_usd * config.get("ngn_to_usd_rate", 1500.0),
+                                "base_price_usd": base_price_usd,
+                                "operators": [],
+                            }
+                        svc = services[key]
+                        # track cheapest price
+                        if final_price_usd < svc["price_usd"]:
+                            svc["price_usd"] = final_price_usd
+                            svc["price_ngn"] = final_price_usd * config.get("ngn_to_usd_rate", 1500.0)
+                            svc["base_price_usd"] = base_price_usd
+
+                        svc["operators"].append(
+                            {
+                                "name": operator_name,
+                                "base_cost_coins": base_cost_coins,
+                                "base_price_usd": base_price_usd,
+                                "price_usd": final_price_usd,
+                                "price_ngn": final_price_usd * config.get("ngn_to_usd_rate", 1500.0),
+                            }
+                        )
+
+                result_list = list(services.values())
+                result_list.sort(key=lambda x: x["name"])
+                return {"success": True, "country": country, "services": result_list}
+
+            # No country: return list of countries
+            resp = await client.get(f"{FIVESIM_BASE_URL}/guest/prices", timeout=20.0)
+            if resp.status_code != 200:
+                logger.error(f"5sim prices error {resp.status_code}: {resp.text}")
+                return {"success": False, "message": "Failed to fetch 5sim countries"}
+
+            data = resp.json() or {}
+            countries = [
+                {"value": code, "label": code.upper(), "name": code.upper()} for code in data.keys()
+            ]
+            countries.sort(key=lambda x: x["name"])
+            return {"success": True, "countries": countries}
+    except Exception as e:
+        logger.error(f"5sim services fetch error: {str(e)}")
+        return {"success": False, "message": str(e)}
+
         return {'success': False, 'message': 'Failed to fetch countries'}
     except Exception as e:
         logger.error(f"SMS-pool service fetch error: {str(e)}")
