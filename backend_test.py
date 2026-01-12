@@ -2025,12 +2025,23 @@ class SMSRelayAPITester:
         admin_success = self.test_admin_login()
         
         if admin_success:
-            # MAIN FOCUS: SMS-pool Buy + Cancel Flow Test (Review Request)
-            print("\n🎯 MAIN TEST: SMS-pool Buy + Cancel Flow (International Server)")
+            # MAIN FOCUS: 5sim Integration Tests (Review Request)
+            print("\n🎯 MAIN TEST: 5sim (Global Server) Integration")
+            self.test_5sim_countries_fetch()
+            self.test_5sim_services_pricing()
+            self.test_5sim_purchase_flow()
+            self.test_5sim_order_lifecycle()
+            
+            # Regression Tests
+            print("\n🔄 REGRESSION TESTS: DaisySMS and SMS-pool")
+            self.test_regression_daisysms_smspool()
+            
+            # SECONDARY: SMS-pool Buy + Cancel Flow Test
+            print("\n🎯 SECONDARY TEST: SMS-pool Buy + Cancel Flow (International Server)")
             self.test_smspool_buy_cancel_flow_comprehensive()
             
-            # SECONDARY: DaisySMS Buy → Cancel Flow Test
-            print("\n🎯 SECONDARY TEST: DaisySMS Buy → Cancel Flow")
+            # TERTIARY: DaisySMS Buy → Cancel Flow Test
+            print("\n🎯 TERTIARY TEST: DaisySMS Buy → Cancel Flow")
             self.test_daisysms_buy_cancel_flow_comprehensive()
         else:
             print("❌ Admin login failed - skipping main tests")
