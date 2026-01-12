@@ -1649,8 +1649,8 @@ async def get_unified_services(user: dict = Depends(get_current_user)):
                     'countries': []
                 },
                 'server2': {
-                    'name': 'Server 2 (TigerSMS)',
-                    'provider': 'tigersms',
+                    'name': 'Global Server (5sim)',
+                    'provider': '5sim',
                     'markup': config.get('tigersms_markup', 20.0),
                     'services': [],
                     'countries': []
