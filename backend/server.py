@@ -1672,7 +1672,7 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         server_map = {
             'us_server': 'daisysms',
             'server1': 'smspool',
-            'server2': 'tigersms'
+            'server2': '5sim'
         }
         
         provider = server_map.get(data.server)
@@ -1759,7 +1759,7 @@ async def purchase_number(
     server_map = {
         'us_server': 'daisysms',
         'server1': 'smspool',
-        'server2': 'tigersms'
+        'server2': '5sim'
     }
     
     provider = server_map.get(data.server)
