@@ -305,7 +305,7 @@ function ApiKeyField({ label, value, onChange }) {
                 onClick={handleUpdatePricing}
                 disabled={loading}
                 data-testid="save-pricing-button"
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {loading ? 'Saving...' : 'Save Changes'}
