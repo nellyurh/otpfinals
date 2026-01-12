@@ -282,7 +282,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         }
       } else if (selectedServer.value === 'server2' && selectedService && selectedCountry) {
         // For 5sim, backend already returns NGN price per service/operator
-        const baseNGN = selectedService.price_ngn || 0;
+        const baseNGN = selectedOperator?.price_ngn || selectedService.price_ngn || 0;
         setEstimatedPrice({
           final_usd: selectedService.price_usd || null,
           final_ngn: baseNGN,
