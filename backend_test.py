@@ -549,7 +549,10 @@ class SMSRelayAPITester:
         print("\n📋 Authentication Tests")
         self.test_user_registration()
         self.test_user_login()
-        self.test_admin_user_creation()
+        
+        # Admin Authentication
+        print("\n🔐 Admin Authentication Tests")
+        self.test_admin_login()
         
         # User Profile Tests
         print("\n👤 User Profile Tests")
@@ -566,6 +569,12 @@ class SMSRelayAPITester:
         self.test_purchase_number()
         self.test_orders_list()
         self.test_transactions_list()
+        
+        # SMS-pool Dynamic Pricing Tests (Main Focus)
+        print("\n🌍 SMS-pool Dynamic Pricing Tests")
+        self.test_smspool_countries_fetch()
+        self.test_smspool_services_pricing()
+        self.test_smspool_error_handling()
         
         # Admin Tests
         print("\n🔧 Admin Tests")
