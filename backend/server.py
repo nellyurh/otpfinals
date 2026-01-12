@@ -2494,7 +2494,13 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         config_dict['updated_at'] = config_dict['updated_at'].isoformat()
         await db.pricing_config.insert_one(config_dict)
         config = config_dict
-    return config
+
+    # Never expose raw provider API keys in admin GET (security)
+    config_sanitized = dict(config)
+    for key in ['daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key']:
+        if key in config_sanitized:
+            config_sanitized[key] = '********'  # masked in GET; editable via PUT
+    return config_sanitized
 
 @api_router.get("/user/page-toggles")
 async def get_page_toggles(user: dict = Depends(get_current_user)):
