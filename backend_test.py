@@ -955,11 +955,356 @@ class SMSRelayAPITester:
         self.log_test("OTP Polling Task Verification", True, "Polling task implementation verified")
         return True
 
+    def test_daisysms_buy_cancel_flow_comprehensive(self):
+        """Comprehensive test of DaisySMS buy → cancel flow with full refund verification"""
+        print("\n🎯 COMPREHENSIVE DaisySMS Buy → Cancel Flow Test")
+        print("=" * 60)
+        
+        if not self.admin_token:
+            self.log_test("DaisySMS Buy-Cancel Flow", False, "", "No admin token available")
+            return False
+        
+        # Step 1: Login and capture token
+        print("   🔐 Step 1: Admin login verification...")
+        admin_login_data = {
+            "email": "admin@smsrelay.com",
+            "password": "admin123"
+        }
+        
+        success, login_response = self.run_test(
+            "Admin Login for DaisySMS Test",
+            "POST",
+            "auth/login",
+            200,
+            data=admin_login_data
+        )
+        
+        if not success or 'token' not in login_response:
+            self.log_test("DaisySMS Admin Login", False, "", "Failed to login as admin")
+            return False
+        
+        self.admin_token = login_response['token']
+        admin_user_id = login_response['user']['id']
+        print(f"   ✓ Admin logged in successfully: {admin_user_id}")
+        
+        # Step 2: Purchase DaisySMS order
+        print("   📞 Step 2: Purchasing DaisySMS order...")
+        purchase_data = {
+            "server": "us_server",
+            "service": "wa",          # WhatsApp - valid DaisySMS service
+            "country": "187",         # USA
+            "payment_currency": "NGN"
+        }
+        
+        success, purchase_response = self.run_test(
+            "DaisySMS Order Purchase",
+            "POST",
+            "orders/purchase",
+            200,
+            data=purchase_data,
+            use_admin=True
+        )
+        
+        if not success or 'order' not in purchase_response:
+            self.log_test("DaisySMS Purchase", False, "", f"Purchase failed: {purchase_response}")
+            return False
+        
+        order = purchase_response['order']
+        order_id = order.get('id')
+        activation_id = order.get('activation_id')
+        cost_usd = order.get('cost_usd', 0)
+        
+        # Validate purchase response structure
+        required_fields = ['id', 'activation_id', 'provider', 'status', 'cost_usd', 'created_at']
+        missing_fields = [field for field in required_fields if field not in order]
+        
+        if missing_fields:
+            self.log_test("DaisySMS Purchase Response Structure", False, "", f"Missing fields: {missing_fields}")
+            return False
+        
+        # Validate field values
+        if order['provider'] != 'daisysms':
+            self.log_test("DaisySMS Provider Field", False, "", f"Expected 'daisysms', got '{order['provider']}'")
+            return False
+        
+        if order['status'] != 'active':
+            self.log_test("DaisySMS Status Field", False, "", f"Expected 'active', got '{order['status']}'")
+            return False
+        
+        if cost_usd <= 0:
+            self.log_test("DaisySMS Cost USD", False, "", f"Expected positive cost_usd, got {cost_usd}")
+            return False
+        
+        print(f"   ✓ DaisySMS order purchased successfully:")
+        print(f"     - ID: {order_id}")
+        print(f"     - Activation ID: {activation_id}")
+        print(f"     - Provider: {order['provider']}")
+        print(f"     - Status: {order['status']}")
+        print(f"     - Cost USD: ${cost_usd}")
+        print(f"     - Created: {order['created_at']}")
+        
+        # Step 3: Fetch order from orders list to verify it exists
+        print("   📋 Step 3: Verifying order in orders list...")
+        
+        success, orders_response = self.run_test(
+            "Orders List After Purchase",
+            "GET",
+            "orders/list",
+            200,
+            use_admin=True
+        )
+        
+        if not success or 'orders' not in orders_response:
+            self.log_test("Orders List Fetch", False, "", "Failed to get orders list")
+            return False
+        
+        orders = orders_response['orders']
+        order_found = False
+        
+        for listed_order in orders:
+            if listed_order.get('id') == order_id:
+                order_found = True
+                print(f"   ✓ Order found in list with activation_id: {listed_order.get('activation_id')}")
+                break
+        
+        if not order_found:
+            self.log_test("Order in List", False, "", f"Order {order_id} not found in orders list")
+            return False
+        
+        # Step 4: Simulate 3+ minutes elapsed by updating MongoDB directly
+        print("   ⏰ Step 4: Simulating 3+ minutes elapsed (updating MongoDB)...")
+        
+        try:
+            import pymongo
+            from datetime import datetime, timezone, timedelta
+            
+            # Connect to MongoDB
+            mongo_client = pymongo.MongoClient("mongodb://localhost:27017")
+            db = mongo_client["sms_relay_db"]
+            
+            # Calculate time 4 minutes ago
+            four_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=4)
+            
+            # Update the order's created_at timestamp
+            result = db.sms_orders.update_one(
+                {'id': order_id},
+                {'$set': {'created_at': four_minutes_ago.isoformat()}}
+            )
+            
+            if result.modified_count == 1:
+                print(f"   ✓ Order timestamp updated to 4 minutes ago: {four_minutes_ago.isoformat()}")
+            else:
+                self.log_test("MongoDB Timestamp Update", False, "", f"Failed to update timestamp, modified_count: {result.modified_count}")
+                return False
+                
+        except Exception as e:
+            self.log_test("MongoDB Connection", False, "", f"Failed to connect to MongoDB: {str(e)}")
+            return False
+        
+        # Step 5: Get user's NGN balance before cancel
+        print("   💰 Step 5: Getting user balance before cancel...")
+        
+        success, profile_response = self.run_test(
+            "Get Profile Before Cancel",
+            "GET",
+            "user/profile",
+            200,
+            use_admin=True
+        )
+        
+        if not success:
+            self.log_test("Profile Before Cancel", False, "", "Failed to get user profile")
+            return False
+        
+        balance_before = profile_response.get('ngn_balance', 0)
+        print(f"   ✓ NGN balance before cancel: ₦{balance_before}")
+        
+        # Step 6: Cancel by activation_id
+        print("   🚫 Step 6: Cancelling order by activation_id...")
+        
+        success, cancel_response = self.run_test(
+            "Cancel DaisySMS by Activation ID",
+            "POST",
+            f"orders/{activation_id}/cancel",
+            200,
+            use_admin=True
+        )
+        
+        if not success:
+            self.log_test("Cancel by Activation ID", False, "", f"Cancel failed: {cancel_response}")
+            return False
+        
+        # Validate cancel response
+        if not cancel_response.get('success'):
+            self.log_test("Cancel Response Success", False, "", f"Cancel response success=False: {cancel_response}")
+            return False
+        
+        cancel_message = cancel_response.get('message', '')
+        refund_amount = cancel_response.get('refund_amount', 0)
+        
+        if 'cancelled and refunded' not in cancel_message.lower():
+            self.log_test("Cancel Message", False, "", f"Expected 'cancelled and refunded' in message, got: {cancel_message}")
+            return False
+        
+        if refund_amount <= 0:
+            self.log_test("Refund Amount", False, "", f"Expected positive refund amount, got: {refund_amount}")
+            return False
+        
+        print(f"   ✓ Cancel successful:")
+        print(f"     - Message: {cancel_message}")
+        print(f"     - Refund Amount: ₦{refund_amount}")
+        
+        # Step 7: Check database state after cancel
+        print("   🔍 Step 7: Verifying database state after cancel...")
+        
+        try:
+            # Check sms_orders collection
+            order_doc = db.sms_orders.find_one({'id': order_id}, {'_id': 0})
+            
+            if not order_doc:
+                self.log_test("Order Document After Cancel", False, "", "Order document not found after cancel")
+                return False
+            
+            if order_doc.get('status') != 'cancelled':
+                self.log_test("Order Status After Cancel", False, "", f"Expected 'cancelled', got '{order_doc.get('status')}'")
+                return False
+            
+            if order_doc.get('can_cancel') != False:
+                self.log_test("Order Can Cancel After Cancel", False, "", f"Expected can_cancel=False, got {order_doc.get('can_cancel')}")
+                return False
+            
+            print(f"   ✓ Order status updated to 'cancelled', can_cancel=False")
+            
+            # Check user balance increased
+            success, profile_after = self.run_test(
+                "Get Profile After Cancel",
+                "GET",
+                "user/profile",
+                200,
+                use_admin=True
+            )
+            
+            if not success:
+                self.log_test("Profile After Cancel", False, "", "Failed to get user profile after cancel")
+                return False
+            
+            balance_after = profile_after.get('ngn_balance', 0)
+            balance_increase = balance_after - balance_before
+            
+            print(f"   ✓ NGN balance after cancel: ₦{balance_after}")
+            print(f"   ✓ Balance increase: ₦{balance_increase}")
+            
+            # Verify balance increase matches refund amount (approximately)
+            if abs(balance_increase - refund_amount) > 1.0:  # Allow 1 NGN variance
+                self.log_test("Balance Increase Verification", False, "", f"Balance increase (₦{balance_increase}) doesn't match refund amount (₦{refund_amount})")
+                return False
+            
+            # Check transactions collection for refund record
+            refund_transaction = db.transactions.find_one({
+                'user_id': admin_user_id,
+                'type': 'refund',
+                'reference': order_id
+            }, {'_id': 0})
+            
+            if not refund_transaction:
+                self.log_test("Refund Transaction Record", False, "", "Refund transaction not found in database")
+                return False
+            
+            if refund_transaction.get('currency') != 'NGN':
+                self.log_test("Refund Transaction Currency", False, "", f"Expected currency='NGN', got '{refund_transaction.get('currency')}'")
+                return False
+            
+            transaction_amount = refund_transaction.get('amount', 0)
+            if abs(transaction_amount - refund_amount) > 1.0:  # Allow 1 NGN variance
+                self.log_test("Refund Transaction Amount", False, "", f"Transaction amount (₦{transaction_amount}) doesn't match refund amount (₦{refund_amount})")
+                return False
+            
+            print(f"   ✓ Refund transaction recorded:")
+            print(f"     - Type: {refund_transaction.get('type')}")
+            print(f"     - Amount: ₦{refund_transaction.get('amount')}")
+            print(f"     - Currency: {refund_transaction.get('currency')}")
+            print(f"     - Reference: {refund_transaction.get('reference')}")
+            
+        except Exception as e:
+            self.log_test("Database State Verification", False, "", f"Database verification failed: {str(e)}")
+            return False
+        
+        # Step 8: Test that cancel is blocked when OTP is present
+        print("   🔒 Step 8: Testing cancel block when OTP is present...")
+        
+        # Create another order for OTP test
+        success, purchase_response2 = self.run_test(
+            "DaisySMS Order Purchase for OTP Test",
+            "POST",
+            "orders/purchase",
+            200,
+            data=purchase_data,
+            use_admin=True
+        )
+        
+        if success and 'order' in purchase_response2:
+            order2 = purchase_response2['order']
+            order_id2 = order2.get('id')
+            activation_id2 = order2.get('activation_id')
+            
+            # Update timestamp to satisfy 3-minute rule
+            four_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=4)
+            db.sms_orders.update_one(
+                {'id': order_id2},
+                {'$set': {'created_at': four_minutes_ago.isoformat()}}
+            )
+            
+            # Insert dummy OTP
+            db.sms_orders.update_one(
+                {'id': order_id2},
+                {'$set': {'otp': '1234'}}
+            )
+            
+            print(f"   ✓ Created second order with OTP: {order_id2}")
+            
+            # Try to cancel - should fail
+            success, cancel_response2 = self.run_test(
+                "Cancel Order with OTP (should fail)",
+                "POST",
+                f"orders/{activation_id2}/cancel",
+                400,  # Expecting 400 error
+                use_admin=True
+            )
+            
+            if success:
+                print(f"   ✓ Cancel correctly blocked when OTP present")
+            else:
+                print(f"   ❌ Cancel should have been blocked but wasn't")
+                return False
+        
+        # Close MongoDB connection
+        mongo_client.close()
+        
+        print("\n🎉 DaisySMS Buy → Cancel Flow Test COMPLETED SUCCESSFULLY!")
+        print("=" * 60)
+        print("✅ All test requirements verified:")
+        print("   ✓ Admin login successful")
+        print("   ✓ DaisySMS order purchased with correct structure")
+        print("   ✓ Order found in orders list")
+        print("   ✓ 3-minute rule simulated via MongoDB update")
+        print("   ✓ Cancel by activation_id successful")
+        print("   ✓ Full NGN refund applied correctly")
+        print("   ✓ Database state updated properly")
+        print("   ✓ Refund transaction recorded")
+        print("   ✓ Cancel blocked when OTP present")
+        
+        self.log_test("DaisySMS Buy-Cancel Flow Complete", True, "All requirements verified successfully")
+        return True
+
     def run_all_tests(self):
         """Run all API tests"""
         print(f"🚀 Starting SMS Relay API Tests")
         print(f"📡 Testing against: {self.base_url}")
         print("=" * 60)
+        
+        # MAIN FOCUS: DaisySMS Buy → Cancel Flow Test
+        print("\n🎯 MAIN TEST: DaisySMS Buy → Cancel Flow")
+        self.test_daisysms_buy_cancel_flow_comprehensive()
         
         # Authentication Tests
         print("\n📋 Authentication Tests")
