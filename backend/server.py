@@ -1776,6 +1776,8 @@ async def purchase_number(
         provider_cost=actual_price,
         markup_percentage=markup,
         can_cancel=True,  # Can cancel within 5 minutes
+        charged_amount=charged_amount,
+        charged_currency=charged_currency,
         area_code=data.area_code,
         carrier=data.carrier,
         phone_make=data.phone_make
