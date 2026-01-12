@@ -436,6 +436,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   menuPortalTarget={document.body}
                   styles={selectStyles}
                   value={selectedService}
+                  onMenuOpen={() => setServiceMenuOpen(true)}
+                  onMenuClose={() => setServiceMenuOpen(false)}
+                  onInputChange={(value, { action }) => {
+                    // Only keep menu open while typing, avoid closing on blur
+                    if (action === 'input-change' && !serviceMenuOpen) {
+                      setServiceMenuOpen(true);
+                    }
+                  }}
+                  menuIsOpen={serviceMenuOpen}
                   onChange={(option) => setSelectedService(option)}
                   options={availableServices}
                   isDisabled={servicesLoading}
