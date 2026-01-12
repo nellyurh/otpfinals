@@ -592,15 +592,28 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
             {/* Price Display */}
             {estimatedPrice && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 space-y-2">
+                <div className="flex items-center justify-between mb-1">
                   <span className="text-sm text-gray-600">Total Cost:</span>
                   <span className="text-2xl font-bold text-[#005E3A]">
                     ₦{estimatedPrice.final_ngn?.toFixed(2)}
                   </span>
                 </div>
-                {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 1 && (
-                  <div className="mt-2 pt-2 border-t border-green-300">
+
+                {/* Show selected pool for SMS-pool when chosen */}
+                {selectedServer?.value === 'server1' && selectedService && selectedService.pools && (
+                  <div className="flex items-center justify-between text-xs text-gray-600">
+                    <span>Pool:</span>
+                    <span className="font-semibold">
+                      {selectedPool
+                        ? `${selectedPool.name} (₦${selectedPool.price_ngn.toFixed(2)})`
+                        : 'Cheapest available'}
+                    </span>
+                  </div>
+                )}
+
+                {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 0 && (
+                  <div className="mt-1 pt-2 border-t border-green-300">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Price Breakdown:</p>
                     {estimatedPrice.breakdown.map((item, idx) => (
                       <p key={idx} className="text-xs text-gray-600">
