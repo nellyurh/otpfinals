@@ -1697,8 +1697,12 @@ class SMSRelayAPITester:
         print(f"📡 Testing against: {self.base_url}")
         print("=" * 60)
         
-        # MAIN FOCUS: DaisySMS Buy → Cancel Flow Test
-        print("\n🎯 MAIN TEST: DaisySMS Buy → Cancel Flow")
+        # MAIN FOCUS: SMS-pool Buy + Cancel Flow Test (Review Request)
+        print("\n🎯 MAIN TEST: SMS-pool Buy + Cancel Flow (International Server)")
+        self.test_smspool_buy_cancel_flow_comprehensive()
+        
+        # SECONDARY: DaisySMS Buy → Cancel Flow Test
+        print("\n🎯 SECONDARY TEST: DaisySMS Buy → Cancel Flow")
         self.test_daisysms_buy_cancel_flow_comprehensive()
         
         # Authentication Tests
