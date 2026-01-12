@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://sms-gateway-16.preview.emergentagent.com/api
-- **Frontend**: https://sms-gateway-16.preview.emergentagent.com
+- **Backend**: https://smsrelay-6.preview.emergentagent.com/api
+- **Frontend**: https://smsrelay-6.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 

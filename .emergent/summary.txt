@@ -1,106 +1,110 @@
 <analysis>**original_problem_statement:**
-The user wants to build a full-stack OTP (One-Time Password) service platform that acts as an intermediary between users and three SMS service providers: TigerSMS, DaisySMS, and SMS-pool.
+The user wants to build a full-stack OTP (One-Time Password) service platform that acts as an intermediary between users and three SMS service providers. The current providers are DaisySMS, SMS-pool, and 5sim (which is replacing the originally planned TigerSMS).
 
 **Business Flow:**
-1.  **Number Purchase:** Users select a server (provider), country, and service to get a temporary phone number. The platform checks the user's wallet balance, deducts the cost (including a configurable markup), and provides the number.
-2.  **OTP Fetching:** The platform polls the provider's API to retrieve the OTP for the purchased number and displays it to the user.
-3.  **Cancellation & Refund:** Users can cancel an order and get a refund if the OTP is not received within a specific time.
+1.  **Number Purchase:** Users select a server (provider), country, service, and for SMS-pool, a specific pool. The platform checks the user's NGN wallet balance, deducts the cost (including a configurable markup), and provides the number.
+2.  **OTP Fetching:** The platform polls the provider's API for 10 minutes to retrieve the OTP and displays it to the user.
+3.  **Cancellation & Refund:** Orders have a 10-minute lifetime. If an OTP is not received, the user can cancel the order for a full refund. If the timer expires without an OTP, the order is auto-cancelled, and a full refund is issued. Cancellation is blocked once an OTP is received.
 
 **Product Requirements:**
-*   **UI:** The user has provided multiple screenshots of a platform called BlissDigitals and requires an identical design, including a green theme, specific layout, and all featured pages. A separate design was provided for the admin panel based on a Loveping app.
+*   **UI:** A platform with a design identical to a BlissDigitals reference, now rebranded to UltraCloud Sms.
 *   **Authentication:** JWT-based email/password authentication.
-*   **SMS Providers:** Integrate with DaisySMS (US Server), SMS-pool (International Server), and TigerSMS (Global Server).
-*   **Dynamic Pricing:** Service prices must be fetched live from providers, have a percentage markup added from the admin panel, and be displayed to the user in NGN.
-*   **Payments & Wallet:**
-    *   Users have dual balances (NGN and USD). SMS purchases use NGN balance only.
-    *   **PaymentPoint Integration:** For NGN deposits via dedicated virtual bank accounts.
-    *   **Payscribe Integration:** For USD stablecoin deposits (USDT/USDC), bill payments (Data, Airtime, Betting), and virtual cards. This requires a full KYC (customer creation) process.
-*   **Admin Panel:** Must allow managing price markups, API keys for providers, and toggling the visibility of frontend pages.
+*   **SMS Providers:** DaisySMS (US), SMS-pool (International), and 5sim (Global).
+*   **Dynamic Pricing:** Live prices fetched from providers, with an admin-configurable markup, displayed in NGN.
+*   **Payments & Wallet:** Dual NGN/USD wallets. Integrations with PaymentPoint (NGN bank deposits) and Payscribe (USD stablecoin deposits, bill payments, KYC).
+*   **Database Migration:** The application must be structured to allow for the migration of user data from an existing MariaDB/MySQL database. A migration script and mapping document have been created.
+*   **Admin Panel:** A functional panel for managing price markups and API keys.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack platform with a FastAPI backend and a heavily modified React frontend.
+The application is a full-stack platform with a FastAPI backend and a React frontend using MongoDB.
 
 -   **Backend ():**
-    -   Handles user authentication, profile management, and a dual-currency wallet (NGN/USD).
-    -   **DaisySMS:** Fully integrated with live dynamic pricing, advanced purchase options (carrier, area code), and a complete purchase/poll/cancel/refund flow.
-    -   **SMS-pool:** Partially integrated. Fetches countries and a list of services, but pricing is not dynamic (uses a default value). Purchase/cancel logic is not yet connected.
-    -   **PaymentPoint:** Integrated for NGN deposits. Automatically creates a PalmPay virtual account for new users and handles deposit notifications via a webhook.
-    -   **Payscribe:** Backend endpoints and services are implemented for Airtime, Data, and Betting bill payments. A full customer creation (KYC) endpoint, including document upload, has also been implemented to support virtual cards and crypto deposits.
-    -   **Admin:** All endpoints for managing pricing, API keys, and page toggles are functional.
+    -   Handles user authentication and a dual-currency wallet (NGN/USD).
+    -   **DaisySMS:** Fully integrated with a complete buy-poll-cancel-refund lifecycle.
+    -   **SMS-pool:** Fully integrated. It fetches services with live pricing from multiple provider APIs. Users can select a specific pool, and the purchase is made from that pool.
+    -   **Order Lifecycle:** A standardized 10-minute polling task () with auto-cancellation and full refund logic is implemented for all providers. The cancel endpoint () is unified to accept both internal and provider-side IDs.
+    -   **API Privacy:** The  endpoint now returns a minimal set of fields to avoid exposing sensitive pricing data in the browser.
+    -   **Payment Integrations:** PaymentPoint is functional for NGN deposits. Payscribe endpoints for bill pay and KYC exist.
+    -   **Database Migration:** A Python script () and a mapping document exist to facilitate migrating data from the user's old MySQL database.
 
--   **Frontend ():**
-    -   The UI has been completely overhauled to precisely match the user's BlissDigitals screenshots. All text visibility, color contrast, and layout issues have been fixed.
-    -   **Critical Bug Fix:** The persistent issue of input fields auto-clearing has been **permanently resolved** by refactoring the stateful bill payment components (, , ) into a separate  file.
-    -   **Dropdowns:** All dropdowns now use  and are styled to match the user's screenshots (searchable, green theme, dark text, no blurriness).
-    -   **Virtual Numbers Page:**
-        -   DaisySMS (US Server) is fully functional with dynamic NGN pricing and advanced options.
-        -   SMS-pool (International Server) correctly implements the Server -> Country -> Service selection flow.
-        -   The Your Verifications table now correctly displays active and historical orders with visible black text, timers, and working cancel/copy buttons.
-    -   **Bill Payments:** Airtime, Data, and Betting pages are fully functional and connected to the backend.
-    -   **KYC:** A complete Account Upgrade page with a tier system and a detailed form (including BVN) has been built to support Payscribe customer creation.
-    -   **Admin Panel:** A new, separate  has been created, styled to match the user's Loveping design reference.
+-   **Frontend ( & ):**
+    -   The UI has been updated to show UltraCloud Sms as the brand name.
+    -   **SMS-pool UI:** The International Server flow now includes a dropdown for users to select a specific service **pool**. The Total Cost card updates dynamically based on the selected service and pool.
+    -   **Stability:** The  has been extracted into its own component file, resolving previously reported dropdown stability issues.
+    -   **Admin Panel:** The redesigned  is functional.
 
 **Last working item**:
--   **Last item agent was working:** The agent was tasked with fixing the pricing for SMS-pool (International Server). The current implementation fetches all services but assigns the same default price to every service. The user provided new documentation showing the correct  endpoint should be used to get dynamic prices.
+-   **Last item agent was working:** The agent received user confirmation to start integrating **5sim** for the Global Server and to remove a specific verification order. The agent successfully called the  to get the 5sim integration plan and was about to begin implementation.
 -   **Status:** 
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** backend testing agent
+-   **Which testing method agent to use?** both (backend and frontend testing agents for the 5sim feature).
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** SMS-pool pricing is incorrect. (P0)
+-   **Issue 1:** Integrate 5sim as the Global Server (). (P0)
+-   **Issue 2:** Remove a specific verification order. (P1)
 
 Issues Detail:
--   **Issue 1: SMS-pool pricing is incorrect.**
-    -   **Attempted fixes:** The agent modified the  endpoint to use a default price after failing to get prices from an incorrect endpoint.
+-   **Issue 1: Integrate 5sim as the Global Server ().**
+    -   **Attempted fixes:** The agent has successfully retrieved the integration playbook for 5sim from the  subagent. No code has been written yet.
     -   **Next debug checklist:**
-        1.  Modify the  endpoint in .
-        2.  Instead of using a default price, call the  endpoint. This endpoint might need to be called with the  ID to get all prices for that country.
-        3.  Merge the returned pricing data with the service list ().
-        4.  Apply the admin markup and convert the final price to NGN.
-        5.  Test the backend endpoint directly with  to ensure it returns a list of services with varied NGN prices.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a core requirement. The International Server is unusable until it shows correct, dynamic pricing for its services.
+        1.  In , add a configuration for the 5sim API key (to be provided by the user).
+        2.  Follow the 5sim integration playbook to implement new functions: , , , and .
+        3.  In the main  and  functions, add logic to handle the  provider.
+        4.  Update the  to point  to the  provider.
+        5.  On the frontend (), ensure the Global Server option correctly fetches and displays countries/services from the new 5sim backend endpoint.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the final core SMS provider integration required by the user.
     -   **Status:** 
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** None
+    -   **Blocked on other issue:** None. Requires 5sim API key from the user.
+
+-   **Issue 2: Remove a specific verification order.**
+    -   **Attempted fixes:** The agent tried to run a  command but it failed due to missing / environment variables in the shell.
+    -   **Next debug checklist:**
+        1.  Source the backend environment variables: .
+        2.  Execute a  command to connect to the database.
+        3.  Run  to remove the specific order requested by the user. Note: The user mentioned service 1106, this needs to be confirmed as the correct field and value to identify the document.
+    -   **Why fix this issue and what will be achieved with the fix?** Fulfills a direct data cleanup request from the user.
+    -   **Status:** 
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** N/A
+    -   **Blocked on other issue:** None.
 
 **In progress Task List**:
--   **Task 1: Complete SMS-pool (International Server) Integration (P0)**
-    -   **Where to resume:** . The pricing logic needs to be fixed as described in Issue 1 above. After the backend is fixed, the frontend purchase flow for SMS-pool needs to be connected and tested.
-    -   **What will be achieved with this?** A fully functional International Server where users can select a country, see dynamically priced services, and purchase a number.
-    -   **Status:** 
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None
+-   None. The 5sim integration is tracked as a pending issue.
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   **P1:** Implement TigerSMS (Global Server) integration. This is the last remaining SMS provider.
-    *   **P2:** Implement Virtual Card creation using the Payscribe customer creation flow. This requires gating the feature behind KYC completion.
-    *   **P3:** Implement USDT/USDC deposits using the Payscribe customer creation flow and gating it behind KYC.
-    *   **P4:** Implement the Referral Program page functionality.
-    *   **P5:** Implement the Profile Settings page functionality (e.g., password change).
+    *   **P1:** Implement Virtual Card creation using the Payscribe customer creation flow. This requires gating the feature behind KYC completion.
+    *   **P2:** Implement USDT/USDC deposits using the Payscribe customer creation flow and gating it behind KYC.
+    *   **P3:** Implement the Referral Program page functionality.
+    *   **P4:** Implement the Profile Settings page functionality (e.g., password change).
 *   **Future Tasks:**
-    *   **P6:** Re-implement the dark mode toggle, which was lost during the UI redesign.
+    *   **P5:** Re-implement the dark mode toggle.
+    *   **P6:** Refactor the monolithic  into a modular structure using FastAPI's .
+    *   **P7:** Delete deprecated files like .
 
 **Completed work in this session**
-- **Critical Frontend Architecture & Bug Fixes:**
-  - Resolved persistent auto-clearing of input fields by refactoring bill payment sections into .
-  - Fixed all dropdown UI issues (blurriness, invisible text) by implementing  with  and custom global CSS.
-  - Corrected all text contrast issues (e.g., white text on white backgrounds) across the entire application, especially in tables.
-- **Feature Implementation & UI Overhaul:**
-  - Redesigned the main user dashboard and created a brand new Admin Panel () to precisely match user-provided screenshots.
-  - Implemented the full backend and frontend for Payscribe bill payments (Airtime, Data, Betting).
-  - Built the complete KYC/Account Upgrade page and backend for Payscribe customer creation.
-  - **DaisySMS:** Enhanced with live dynamic pricing, advanced purchase options, and a fully styled service dropdown.
-  - **SMS-pool:** Implemented the Server -> Country -> Service selection flow on the frontend.
-  - Implemented a fully functional cancel/refund flow for active orders.
+- **SMS-pool Full Integration:**
+  - Implemented logic to combine , , and  APIs for a complete and accurate service list.
+  - Added a Select Pool dropdown in the frontend for the International Server, allowing users to choose a specific provider pool.
+  - The Total Cost UI card now updates dynamically based on the selected service and pool.
+- **Order Lifecycle Standardization:**
+  - Implemented a universal 10-minute order lifetime with automatic cancellation and full refunds for all providers.
+  - The manual cancel button is now available at any time before an OTP is received (removed the 3-minute wait).
+  - Fixed order not found errors by unifying the cancel endpoint to accept both internal and provider IDs.
+- **API and UI Enhancements:**
+  - Hardened the  endpoint to prevent leaking sensitive pricing data to the frontend.
+  - Updated the application's branding in the header from BlissDigitals to UltraCloud Sms.
+- **Database Migration Support:**
+  - Created a Python script and a mapping document () to help the user migrate their existing MySQL database to MongoDB.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Dark mode toggle.** This was an original requirement that was lost during the multiple UI rewrites. It has not been added to the latest BlissDigitals design.
-    -   **Debug checklist:** Await user confirmation if this is still desired. If so, create a dark theme variant for the new  styles.
+-   **Issue 1: Dark mode toggle.** This was an original requirement that was lost during the UI redesign.
+    -   **Debug checklist:** Await user confirmation if this is still desired. If so, create a dark theme variant for the new styles.
     -   **Why to solve this issue and what will be achieved with this?** Fulfills an original user requirement.
     -   **Should Test frontend/backend/both after fix:** frontend
     -   **Is recurring issue?** Y
@@ -112,66 +116,63 @@ Issues Detail:
 
 
 **Key Technical Concepts**
-*   **Backend:** FastAPI, Pydantic, Motor (MongoDB)
+*   **Backend:** FastAPI, Pydantic, Motor (MongoDB), Background Tasks
 *   **Frontend:** React, TailwindCSS, 
 *   **Database:** MongoDB
-*   **Architecture:** The frontend was refactored to extract nested stateful components into their own file () to prevent state-reset issues on re-renders. This is a critical pattern to follow.
+*   **Architecture:** Stateful UI sections are extracted into separate components (, ) to ensure stability and prevent re-render bugs.
 
 **key DB schema**
+-   **sms_orders:** 
 -   **users:** 
--   **orders:** 
+-   **transactions:** 
+-   **cached_services:** 
 
 **changes in tech stack**
-- No new dependencies, but a significant change in React component architecture to solve state management issues.
+- No changes.
 
 **All files of reference**
-*   : The monolithic backend containing all logic. It has been heavily modified for live pricing, KYC, and new bill payment services.
-*   : The main user-facing component. It has been refactored and now imports bill payment sections.
-*   : **CRITICAL FILE.** This new file contains the , , and . It was created to solve the auto-clearing input bug.
-*   : **NEW.** The completely redesigned, dark-themed admin panel.
-*   : Contains crucial custom global styles for  to fix all visual and rendering bugs.
-*   : Deprecated. Should be deleted.
+*   : The main backend file, heavily modified to support the SMS-pool pool selection, standardized order lifecycle, and limited API responses. It is the target for the upcoming 5sim integration.
+*   : Contains the complete UI logic for purchasing numbers, including the new Select Pool dropdown for the International Server.
+*   : The main dashboard component. Header brand name was updated here.
+*   : New script to help user migrate their legacy database.
+*   The integration playbook for **5sim** is in the previous agent's tool history and is critical for the next task.
 
 **Areas that need refactoring**:
-*   : Urgently needs to be broken down into a modular structure using FastAPI's  (e.g., , , etc.) to improve maintainability.
-*   : Other sections like  and  are still nested inside. Extracting them into their own components would further improve stability.
-*   : This file is deprecated and should be deleted.
+*    is a monolithic file that should be broken down into smaller, modular routers (, , etc.).
+*    is deprecated and should be deleted to avoid confusion.
 
 **key api endpoints**
-*   : Fetches services with live prices from DaisySMS.
-*   : Fetches countries and services from SMS-pool (needs pricing fix).
-*   : Creates a Payscribe customer for KYC.
-*   : Handles file uploads for KYC documents.
-*   : Cancels an order using the provider's ID and refunds the user.
-*   
-*   
-*   
+*   : Aggregates three SMS-pool APIs (, , ) to build a complete service list with pools.
+*   : Accepts an optional  parameter for SMS-pool orders.
+*   : Returns a minimal set of fields for orders to enhance privacy.
+*   : Handles cancellation and full refunds for all providers.
 
 **Critical Info for New Agent**
--   **Component Stability:** The most critical fix in this session was extracting stateful components (, etc.) out of the main  to solve input fields from auto-clearing. **ANY new stateful sections MUST follow this pattern.** Do not define them inside another component.
--   **Dropdown Styling:** All dropdowns must use . The custom styling is in  and  prop is required to prevent visual bugs.
--   **SMS-pool Pricing Fix:** Your immediate task is to fix the pricing for the International Server (SMS-pool). You must use the  endpoint as documented by the user to fetch real prices for the selected country.
--   **Server Naming:**  = DaisySMS,  = SMS-pool (International),  = TigerSMS (Global, not implemented).
+- Your **highest priority (P0)** is to integrate **5sim** for the Global Server (). You have the integration playbook from the previous agent's turn. You will need to ask the user for their 5sim API key.
+- Your second priority **(P1)** is to remove a specific order from the database. The user requested to remove that verification that caring service 1106. You need to connect to the MongoDB and run a  command on the  collection. Be sure to source the  file first.
+- The component extraction pattern (e.g., ) is the established solution for UI stability issues. Follow this pattern if new stateful UI sections are added.
+- The user is very detail-oriented. Ensure all business logic (10-min timers, full refunds, pool selection) is respected.
 
 **documents and test reports created in this job**
-- None.
+- 
+- 
+- The  response for **5sim** is in the last agent's message history and is essential for the next task.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Fix SMS-pool (International Server) pricing; all prices are the same. Provided documentation for the correct  endpoint. (PENDING)
-2.  **Agent:** Acknowledged the issue and plan to fix it.
-3.  **User:** Services should load after country selection on the International server, and prices should be on the right like DaisySMS. (COMPLETED)
-4.  **Agent:** Implemented the requested UI flow for SMS-pool.
-5.  **User:** Cancelled orders should be removed from the active list. (COMPLETED)
-6.  **Agent:** Cancelled orders and refunded money.
-7.  **User:** Pointed out that after purchasing a number, it disappears, text is white, and cancel says Not Found. Provided documentation for the cancel API. (COMPLETED)
-8.  **Agent:** Fixed text color, cancel logic, and implemented SMS history page.
-9.  **User:** Complained about text contrast issues (white on white, black on dark). (COMPLETED)
-10. **Agent:** Fixed text contrast issues across the entire application.
+1.  **User:** Let's move to 5sim and remove the verification with service 1106. (PENDING)
+2.  **Agent:** Acknowledged the request and started work.
+3.  **User:** Users must have the ability to select a pool. (COMPLETED)
+4.  **Agent:** Implemented pool selection UI and backend logic for SMS-pool.
+5.  **User:** Provided a screenshot showing UI issues: BlissDigitals branding, no pools, and no total cost for SMS-pool. (COMPLETED)
+6.  **Agent:** Addressed the UI issues.
+7.  **User:** Provided SMS-pool documentation and re-stated the services list is empty. Also raised privacy concerns about exposing provider data. (COMPLETED)
+8.  **Agent:** Implemented the correct multi-API flow for SMS-pool services and hardened the  endpoint.
+9.  **User:** test daisysms buy to cancel and see. (COMPLETED)
+10. **Agent:** Ran a full backend test of the DaisySMS buy-to-cancel flow and confirmed it works with full refunds.
 
 **Project Health Check:**
 *   **Broken:**
-    *   SMS-pool integration shows incorrect (default) pricing for services.
-    *   TigerSMS integration is non-existent.
+    *   The Global Server () is not functional. It needs to be integrated with 5sim.
 *   **Mocked:**
     *   Virtual Card functionality is UI only.
     *   USDT/USDC deposit functionality is UI only.
@@ -179,15 +180,15 @@ Issues Detail:
 **3rd Party Integrations**
 *   **DaisySMS** (OTP Service)
 *   **SMS-pool** (OTP Service)
-*   **TigerSMS** (OTP Service - Pending)
 *   **PaymentPoint** (NGN Payments) - requires User API Key
 *   **Payscribe** (Bill Payments, Stablecoin, Virtual Cards) - requires User API Key
+*   **5sim** (OTP Service - **Pending Integration**) - will require User API Key
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (used by troubleshoot agent to identify a rendering issue, which was fixed by a frontend restart).
--   **Troubleshoot agent used after agent stuck in loop:** YES (used to confirm the correct architectural fix for auto-clearing inputs).
+-   **Testing agent used after significant changes:** YES (used to test DaisySMS cancellation, SMS-pool service loading, and UI stability).
+-   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** None
--   **Known regressions:** The dark mode toggle feature remains unimplemented after being lost in UI rewrites.
+-   **Known regressions:** The dark mode toggle feature remains unimplemented.
 
 **Credentials to test flow:**
 *   **Admin user:**  / 
@@ -197,5 +198,4 @@ Issues Detail:
 *   **PaymentPoint Secret Key:** 
 
 **What agent forgot to execute**
-*   The agent did not delete the old, deprecated  file after creating .
-*   The agent did not confirm if the original  file (mentioned as deprecated in the first handoff) was ever deleted.</analysis>
+*   The agent has not deleted the old, deprecated  file.</analysis>
