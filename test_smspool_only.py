@@ -388,6 +388,9 @@ class SMSPoolTester:
         # Step 11: Verify user balance increased
         print("   💰 Step 11: Verifying user balance increased...")
         
+        # Add a small delay to ensure database consistency
+        time.sleep(1)
+        
         success, profile_after = self.run_test(
             "Get Profile After Cancel",
             "GET",
