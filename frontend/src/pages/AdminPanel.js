@@ -344,4 +344,30 @@ const AdminPanel = ({ user, setUser }) => {
   );
 };
 
+
+function ApiKeyField({ label, value, onChange }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="space-y-1">
+      <Label className="block text-sm font-semibold text-zinc-300">{label}</Label>
+      <div className="relative">
+        <Input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="bg-zinc-900 border-zinc-800 pr-10 text-sm"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible(!visible)}
+          className="absolute inset-y-0 right-0 px-3 flex items-center text-zinc-500 hover:text-zinc-200"
+        >
+          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+      <p className="text-[10px] text-zinc-500">Stored securely in backend config.</p>
+    </div>
+  );
+}
+
 export default AdminPanel;
