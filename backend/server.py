@@ -1628,7 +1628,7 @@ async def get_daisysms_services(user: dict = Depends(get_current_user)):
     try:
         # Get API key and markup from config
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
+        api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
         markup_percent = config.get('daisysms_markup', 50.0) if config else 50.0
         
         # Fetch live prices from DaisySMS
