@@ -893,16 +893,24 @@ async def fund_bet_wallet(bet_id: str, customer_id: str, amount: float, ref: str
 # ============ Background Tasks ============
 
 async def otp_polling_task(order_id: str):
-    max_duration = 480
+    """Generic OTP polling for all providers with 10-minute lifetime.
+
+    Behaviour:
+    - Poll provider for up to 10 minutes (600s).
+    - After 5 minutes, allow user cancellation (can_cancel = True).
+    - If OTP arrives: mark order completed and disable cancel.
+    - If no OTP by 10 minutes: auto-cancel with refund and mark order cancelled.
+    """
+    max_duration = 600  # 10 minutes total lifetime
     poll_interval = 10
     elapsed = 0
-    
+
     while elapsed < max_duration:
         try:
             order = await db.sms_orders.find_one({'id': order_id}, {'_id': 0})
             if not order or order['status'] != 'active':
                 break
-            
+
             otp = None
             if order['provider'] == 'smspool' and order.get('activation_id'):
                 otp = await poll_otp_smspool(order['activation_id'])
@@ -910,7 +918,7 @@ async def otp_polling_task(order_id: str):
                 otp = await poll_otp_daisysms(order['activation_id'])
             elif order['provider'] == 'tigersms' and order.get('activation_id'):
                 otp = await poll_otp_tigersms(order['activation_id'])
-            
+
             if otp:
                 await db.sms_orders.update_one(
                     {'id': order_id},
@@ -918,27 +926,68 @@ async def otp_polling_task(order_id: str):
                 )
                 logger.info(f"OTP received for order {order_id}")
                 break
-            
-            if elapsed >= 300:
+
+            # After 5 minutes, allow manual cancellation from UI
+            if elapsed >= 300 and not order.get('can_cancel'):
                 await db.sms_orders.update_one(
                     {'id': order_id},
                     {'$set': {'can_cancel': True}}
                 )
-            
+
             await asyncio.sleep(poll_interval)
             elapsed += poll_interval
-            
+
         except Exception as e:
             logger.error(f"OTP polling error for order {order_id}: {str(e)}")
             await asyncio.sleep(poll_interval)
             elapsed += poll_interval
-    
+
+    # After max_duration, if still active and no OTP, auto-cancel and refund
     order = await db.sms_orders.find_one({'id': order_id}, {'_id': 0})
-    if order and order['status'] == 'active':
-        await db.sms_orders.update_one(
-            {'id': order_id},
-            {'$set': {'status': 'expired', 'can_cancel': True}}
-        )
+    if order and order['status'] == 'active' and not (order.get('otp') or order.get('otp_code')):
+        try:
+            # Best-effort cancel with provider
+            if order.get('activation_id'):
+                try:
+                    success = await cancel_number_provider(order['provider'], order['activation_id'])
+                    if not success:
+                        logger.warning(f"Provider auto-cancel failed for order {order_id}")
+                except Exception as e:
+                    logger.error(f"Provider auto-cancel error for order {order_id}: {str(e)}")
+
+            # Refund NGN based on stored cost_usd and current FX rate
+            config = await db.pricing_config.find_one({}, {'_id': 0})
+            ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+            refund_ngn = float(order.get('cost_usd', 0) or 0) * ngn_rate
+
+            if refund_ngn > 0:
+                await db.users.update_one({'id': order['user_id']}, {'$inc': {'ngn_balance': refund_ngn}})
+
+                # Record refund transaction
+                transaction = Transaction(
+                    user_id=order['user_id'],
+                    type='refund',
+                    amount=refund_ngn,
+                    currency='NGN',
+                    status='completed',
+                    reference=order_id,
+                    metadata={
+                        'reason': 'auto_timeout_cancel',
+                        'service': order.get('service'),
+                        'provider': order.get('provider')
+                    }
+                )
+                trans_dict = transaction.model_dump()
+                trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+                await db.transactions.insert_one(trans_dict)
+
+            await db.sms_orders.update_one(
+                {'id': order_id},
+                {'$set': {'status': 'cancelled', 'can_cancel': False}}
+            )
+            logger.info(f"Order {order_id} auto-cancelled after timeout")
+        except Exception as e:
+            logger.error(f"Auto-cancel refund error for order {order_id}: {str(e)}")
 
 # ============ API Routes ============
 
