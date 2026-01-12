@@ -464,7 +464,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     }
                   }}
                   menuIsOpen={serviceMenuOpen}
-                  onChange={(option) => setSelectedService(option)}
+                  onChange={(option) => {
+                    setSelectedService(option);
+                    setSelectedPool(null);
+                  }}
                   options={availableServices}
                   isDisabled={servicesLoading}
                   isLoading={servicesLoading}
