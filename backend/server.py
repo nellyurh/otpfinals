@@ -50,6 +50,8 @@ PAYSCRIBE_BASE_URL = 'https://api.payscribe.ng/api/v1'
 SMSPOOL_API_KEY = os.environ.get('SMSPOOL_API_KEY', 'ZNrdIWUS06ftzyb7ALO9XVWsfNhKmJT6')
 DAISYSMS_API_KEY = os.environ.get('DAISYSMS_API_KEY', 'eOIwvtJezbjbhLh7vz948uWMHgfELv')
 TIGERSMS_API_KEY = os.environ.get('TIGERSMS_API_KEY', 'mZGp2NQJswCEVaSISSUy0IHT1lwSrOVO')
+FIVESIM_BASE_URL = 'https://5sim.net/v1'
+
 FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 
