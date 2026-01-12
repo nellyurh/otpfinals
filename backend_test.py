@@ -88,7 +88,7 @@ class SMSRelayAPITester:
             "email": f"test_user_{int(time.time())}@example.com",
             "password": "TestPass123!",
             "full_name": "Test User",
-            "phone": "+2348012345678"
+            "phone": "08012345678"  # Fixed Nigerian phone format
         }
         
         success, response = self.run_test(
@@ -111,7 +111,8 @@ class SMSRelayAPITester:
         test_user_data = {
             "email": f"login_test_{int(time.time())}@example.com",
             "password": "TestPass123!",
-            "full_name": "Login Test User"
+            "full_name": "Login Test User",
+            "phone": "08087654321"  # Added required phone field
         }
         
         # Register user
