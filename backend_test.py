@@ -759,17 +759,25 @@ class SMSRelayAPITester:
         
         orders = orders_response['orders']
         
-        # Find our orders
+        # Find our orders and validate full structure
         daisysms_found = False
         smspool_found = False
         
         for order in orders:
             if order.get('id') == daisysms_order_id:
                 daisysms_found = True
-                print(f"   ✓ DaisySMS order found in list: {order}")
+                # Validate provider field from orders list
+                if order.get('provider') != 'daisysms':
+                    self.log_test("DaisySMS Order Provider in List", False, "", f"Expected 'daisysms', got '{order.get('provider')}'")
+                    return False
+                print(f"   ✓ DaisySMS order found in list with correct provider: {order}")
             elif order.get('id') == smspool_order_id:
                 smspool_found = True
-                print(f"   ✓ SMS-pool order found in list: {order}")
+                # Validate provider field from orders list
+                if order.get('provider') != 'smspool':
+                    self.log_test("SMS-pool Order Provider in List", False, "", f"Expected 'smspool', got '{order.get('provider')}'")
+                    return False
+                print(f"   ✓ SMS-pool order found in list with correct provider: {order}")
         
         if not daisysms_found:
             self.log_test("DaisySMS Order in List", False, "", f"DaisySMS order {daisysms_order_id} not found in orders list")
