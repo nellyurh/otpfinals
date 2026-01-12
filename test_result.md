@@ -182,6 +182,18 @@ backend:
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED ✅ All SMS-pool dynamic pricing requirements verified: 1) Countries fetch: 151 countries returned with proper structure (value, label, name, region). 2) Services + pricing: Tested 3 countries (US, UK, Netherlands) with 6,456 total services. All services have required fields (value, label, name, price_usd, price_ngn, base_price, pool). 3) Dynamic pricing CONFIRMED: Found 67 unique base prices in US, 43 in UK, 48 in Netherlands - proving dynamic pricing is working. 4) Multiple pools confirmed: Services appear in pools 7,12,13,14,16,17. 5) Cross-country variations: Same services have different prices across countries. 6) Error handling: Invalid country (999999) properly returns empty services list. Price calculations verified: price_ngn ≈ price_usd * ngn_rate * (1 + markup/100). All authentication working with admin@smsrelay.com credentials."
 
+  - task: "SMS-pool Buy + Cancel Flow (International Server) after caching fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "SMS-POOL BUY + CANCEL FLOW TEST COMPLETED SUCCESSFULLY ✅ All review request requirements verified: 1) Admin login successful (admin@smsrelay.com/admin123). 2) SMS-pool countries fetched (151 countries). 3) Services with pricing fetched for United States (2669 services). 4) cached_services populated in database with provider='smspool', service_code, country_code, base_price. 5) Price calculation successful (₦228.78 for service 1106). 6) SMS-pool order purchased successfully with correct structure (id, activation_id, provider='smspool', phone_number). 7) Order verified in /api/orders/list with provider='smspool', status='active'. 8) Cancel by activation_id successful via POST /api/orders/{activation_id}/cancel. 9) Full NGN refund applied correctly (₦228.78). 10) Order status updated to 'cancelled'. 11) User balance correctly restored (net change ₦0.0). 12) Edge case: Cancel blocked for already cancelled order (400 error). FIXED ISSUES: 1) SMS-pool API URL corrected from api.sms-pool.com to api.smspool.net. 2) Phone number type conversion (integer to string). 3) Purchase response structure updated to include provider field. 4) Refund calculation fixed to use actual charged amount with proper fallback logic."
+
   - task: "DaisySMS Buy → Cancel Flow with Full Refund"
     implemented: true
     working: true
