@@ -178,6 +178,18 @@ backend:
     priority: "high"
     needs_retesting: false
     status_history:
+  - task: "OTP lifetime & auto-cancel (10 minutes) + generic polling"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Updated otp_polling_task to poll for up to 10 minutes, allow cancel after 5 minutes, and auto-cancel with refund if no OTP. Switched /orders/purchase to use otp_polling_task for all providers. Need tests for purchase, cancel, and auto-timeout flows."
+
       - working: false
         agent: "main"
         comment: "Implemented /api/services/smspool to call SMS-pool /request/pricing with country, apply smspool_markup and ngn_to_usd_rate from pricing_config, and return per-service NGN pricing. Need backend tests to verify varied prices and frontend tests for International server flow."
