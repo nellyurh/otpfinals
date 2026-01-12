@@ -2022,7 +2022,40 @@ async def purchase_number(
         result = await purchase_number_tigersms(data.service, data.country)
         if result and 'ACCESS_NUMBER' in str(result):
             actual_price = base_price_usd
-    
+    elif provider == '5sim':
+        # Use 5sim buy activation API
+        if not FIVESIM_API_KEY:
+            logger.error("FIVESIM_API_KEY not configured")
+            raise HTTPException(status_code=500, detail="5sim API key not configured")
+        headers = {
+            'Authorization': f'Bearer {FIVESIM_API_KEY}',
+            'Accept': 'application/json'
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{FIVESIM_BASE_URL}/user/buy/activation/{data.country}/any/{data.service}",
+                headers=headers,
+                timeout=15.0
+            )
+        if resp.status_code != 200:
+            text = resp.text
+            logger.error(f"5sim purchase error {resp.status_code}: {text}")
+            if 'no free phones' in text.lower():
+                raise HTTPException(status_code=400, detail="5sim: no free phones for this service/country")
+            if 'not enough user balance' in text.lower():
+                raise HTTPException(status_code=400, detail="5sim account balance is insufficient")
+            raise HTTPException(status_code=400, detail="Failed to purchase number from 5sim")
+        try:
+            result = resp.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Unexpected 5sim response")
+        activation_id = str(result.get('id'))
+        phone_number = str(result.get('phone'))
+        # 5sim price is in coins
+        price_coins = float(result.get('price') or 0)
+        coin_rate = float(config.get('fivesim_coin_per_usd', 77.44) or 77.44)
+        actual_price = price_coins / coin_rate
+
     if not result:
         raise HTTPException(status_code=400, detail="Failed to purchase number from provider")
     
