@@ -198,6 +198,18 @@ frontend:
         agent: "testing"
         comment: "COMPREHENSIVE UI TESTING COMPLETED ✅ All review request requirements verified: 1) Server dropdown: ✅ Pill-like controls with emojis (🇺🇸 US, 🌍 International, 🌐 Global), proper dividers, 5sim name hidden. 2) Country dropdowns with flags: ✅ 85 flag icons displayed correctly using flagcdn.com URLs for International/Global servers, small bold text with dividers. 3) Service dropdown pricing: ✅ 1185 services loaded with NGN pricing display (₦2516.58 etc.), 1185 pool indicators showing availability for SMS-pool. 4) Total Cost card: ✅ Gradient background with rounded corners and shadow, 'Total Cost' label with 'Includes all markups and fees' subtext, large NGN amount display, price breakdown section with proper border. 5) Your Verifications table: ✅ Section found with proper styling structure. 6) Regression testing: ✅ All three servers (US, International, Global) functional, dropdowns stable while typing, purchase button responsive to selections. Minor: Table headers not visible in empty verifications table (cosmetic only, no active orders to display). All major UI styling requirements successfully implemented and working as specified."
 
+  - task: "AdminPanel UI - New Design Implementation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPanel.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "ADMIN PANEL UI TESTING COMPLETED ✅ Comprehensive review request verification successful: 1) Login with admin@smsrelay.com/admin123 ✅ working perfectly. 2) Navigation to /admin ✅ successful. 3) Layout & theming ✅ PERFECT: Left sidebar white background, logo box (U) in emerald, menu items present, main area white top bar, 'Back to app' button left, Admin badge right in green, light theme with emerald accents (no purple/orange). 4) Stats/header section ✅ PERFECT: Large green gradient card with greeting 'Hello, Nelson Urhie 👋', Total Users (36), Active Orders (0), Total Revenue ($57327.54), three KPI cards (Total Orders: 33, NGN to USD: ₦1550 = $1, 5sim Coin per USD: 77.44). 5) Pricing & FX Configuration ✅ PERFECT: All markup fields present (SMS-pool: 23%, DaisySMS: 22%, TigerSMS: 25%), NGN to USD Rate (1550), 5sim Coin per USD field (77.44) VISIBLE AND EDITABLE, Save Changes button (green), Reset button working. 6) Provider API Keys ✅ PERFECT: All three API key fields present (DaisySMS, SMS-pool, 5sim), eye/eye-off toggle functionality working correctly (password ↔ text). 7) Environment & Activity ✅ PERFECT: Recent Activity card with platform metrics, Environment card with PaymentPoint (Active-green), Payscribe (Pending-amber), OTP Polling (Active-green). 8) Regression test ✅ PASSED: 'Back to app' button returns to dashboard without errors. ALL REQUIREMENTS MET PERFECTLY - ADMIN PANEL READY FOR PRODUCTION."
+
 
 backend:
   - task: "SMS-pool dynamic pricing (International Server)"
