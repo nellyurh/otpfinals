@@ -176,6 +176,26 @@ const AdminPanel = ({ user, setUser }) => {
             <CardDescription>Set markup percentages and conversion rates</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Provider API Keys */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+              <ApiKeyField
+                label="DaisySMS API Key"
+                value={pricing.daisysms_api_key}
+                onChange={(val) => setPricing({ ...pricing, daisysms_api_key: val })}
+              />
+              <ApiKeyField
+                label="SMS-pool API Key"
+                value={pricing.smspool_api_key}
+                onChange={(val) => setPricing({ ...pricing, smspool_api_key: val })}
+              />
+              <ApiKeyField
+                label="5sim API Key"
+                value={pricing.fivesim_api_key}
+                onChange={(val) => setPricing({ ...pricing, fivesim_api_key: val })}
+              />
+            </div>
+
+            {/* Markups & FX */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="smspool-markup">SMS-pool Markup (%)</Label>
