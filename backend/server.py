@@ -149,6 +149,7 @@ class PricingConfig(BaseModel):
     # Currency conversion
     ngn_to_usd_rate: float = 1500.0
     rub_to_usd_rate: float = 0.010  # 1 RUB = ~0.01 USD
+    fivesim_coin_per_usd: float = 77.44  # 1 USD = 77.44 5sim coins (editable in admin)
     # DaisySMS specific markups (from their side)
     area_code_markup: float = 20.0  # DaisySMS adds 20% for area code
     carrier_markup: float = 20.0    # DaisySMS adds 20% for carrier
