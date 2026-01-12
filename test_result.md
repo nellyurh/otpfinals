@@ -143,8 +143,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Virtual Numbers - Your Verifications Table Text Visibility"
-    - "SMS History Table Text Visibility"
+    - "5sim (Global Server) Integration - Countries Endpoint"
+    - "5sim (Global Server) Integration - Services Endpoint for USA"
+    - "5sim (Global Server) Integration - Purchase Flow"
+    - "5sim (Global Server) Integration - Orders List and Polling"
+    - "Regression Testing - DaisySMS and SMS-pool Unaffected"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
