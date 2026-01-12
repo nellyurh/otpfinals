@@ -1697,22 +1697,25 @@ class SMSRelayAPITester:
         print(f"📡 Testing against: {self.base_url}")
         print("=" * 60)
         
-        # MAIN FOCUS: SMS-pool Buy + Cancel Flow Test (Review Request)
-        print("\n🎯 MAIN TEST: SMS-pool Buy + Cancel Flow (International Server)")
-        self.test_smspool_buy_cancel_flow_comprehensive()
+        # First ensure admin login
+        print("\n🔐 Admin Authentication Setup")
+        admin_success = self.test_admin_login()
         
-        # SECONDARY: DaisySMS Buy → Cancel Flow Test
-        print("\n🎯 SECONDARY TEST: DaisySMS Buy → Cancel Flow")
-        self.test_daisysms_buy_cancel_flow_comprehensive()
+        if admin_success:
+            # MAIN FOCUS: SMS-pool Buy + Cancel Flow Test (Review Request)
+            print("\n🎯 MAIN TEST: SMS-pool Buy + Cancel Flow (International Server)")
+            self.test_smspool_buy_cancel_flow_comprehensive()
+            
+            # SECONDARY: DaisySMS Buy → Cancel Flow Test
+            print("\n🎯 SECONDARY TEST: DaisySMS Buy → Cancel Flow")
+            self.test_daisysms_buy_cancel_flow_comprehensive()
+        else:
+            print("❌ Admin login failed - skipping main tests")
         
         # Authentication Tests
         print("\n📋 Authentication Tests")
         self.test_user_registration()
         self.test_user_login()
-        
-        # Admin Authentication
-        print("\n🔐 Admin Authentication Tests")
-        self.test_admin_login()
         
         # User Profile Tests
         print("\n👤 User Profile Tests")
@@ -1732,20 +1735,23 @@ class SMSRelayAPITester:
         
         # SMS-pool Dynamic Pricing Tests (Main Focus)
         print("\n🌍 SMS-pool Dynamic Pricing Tests")
-        self.test_smspool_countries_fetch()
-        self.test_smspool_services_pricing()
-        self.test_smspool_error_handling()
+        if self.admin_token:
+            self.test_smspool_countries_fetch()
+            self.test_smspool_services_pricing()
+            self.test_smspool_error_handling()
         
         # NEW: SMS Order Lifecycle with 10-minute Rules (MAIN FOCUS)
         print("\n🔄 SMS Order Lifecycle with 10-minute Rules Tests")
-        self.test_sms_order_lifecycle_10min_rules()
+        if self.admin_token:
+            self.test_sms_order_lifecycle_10min_rules()
         self.test_order_polling_task_verification()
         
         # Admin Tests
         print("\n🔧 Admin Tests")
-        self.test_admin_pricing_get()
-        self.test_admin_pricing_update()
-        self.test_admin_stats()
+        if self.admin_token:
+            self.test_admin_pricing_get()
+            self.test_admin_pricing_update()
+            self.test_admin_stats()
         
         # Print Results
         print("\n" + "=" * 60)
