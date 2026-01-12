@@ -82,6 +82,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     ig: 'Instagram',
     tw: 'Twitter',
     ds: 'Discord',
+    tt: 'TikTok',
+    oa: 'OpenAI/ChatGPT',
+    ub: 'Uber',
+    pp: 'PayPal',
+    am: 'Amazon',
+    cb: 'Coinbase',
+    sn: 'Snapchat',
+    ca: 'Cash App'
+  };
+
   const countryFlagMap = {
     usa: 'https://flagcdn.com/w40/us.png',
     unitedstates: 'https://flagcdn.com/w40/us.png',
@@ -101,16 +111,6 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       return `https://flagcdn.com/w40/${key}.png`;
     }
     return null;
-  };
-
-    tt: 'TikTok',
-    oa: 'OpenAI/ChatGPT',
-    ub: 'Uber',
-    pp: 'PayPal',
-    am: 'Amazon',
-    cb: 'Coinbase',
-    sn: 'Snapchat',
-    ca: 'Cash App'
   };
 
   const getServiceName = (code) => {
