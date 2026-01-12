@@ -169,6 +169,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   // Fetch services when country changes (for SMS-pool)
   useEffect(() => {
     const fetchServicesForCountry = async () => {
+      // For SMS-pool (International server), services should reload ONLY
+      // when the selected country actually changes.
       if (selectedServer?.value === 'server1' && selectedCountry) {
         setServicesLoading(true);
         try {
@@ -190,7 +192,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     };
 
     fetchServicesForCountry();
-  }, [selectedServer, selectedCountry, axiosConfig]);
+    // IMPORTANT: Depend ONLY on selectedCountry and selectedServer so
+    // services reload when country/server changes, not on every parent re-render.
+  }, [selectedServer, selectedCountry]);
 
   // Calculate estimated price when selection changes
   useEffect(() => {
