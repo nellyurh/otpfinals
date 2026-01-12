@@ -258,6 +258,7 @@ class UpdatePricingRequest(BaseModel):
     smspool_markup: Optional[float] = None
     ngn_to_usd_rate: Optional[float] = None
     rub_to_usd_rate: Optional[float] = None
+    fivesim_coin_per_usd: Optional[float] = None
     area_code_markup: Optional[float] = None
     carrier_markup: Optional[float] = None
 
