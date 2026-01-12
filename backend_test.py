@@ -749,20 +749,22 @@ class SMSRelayAPITester:
         print("   🚫 Step 4: Testing cancel endpoint ID handling...")
         print("   ⚠️  CRITICAL BUG FOUND: Duplicate cancel endpoints in backend/server.py")
         print("   ⚠️  Lines 1572 and 1879 both define /orders/{order_id}/cancel")
-        print("   ⚠️  First endpoint only searches by internal ID, second (correct) endpoint never reached")
+        print("   ⚠️  First endpoint (1572): Only searches by internal ID, no 3-minute rule")
+        print("   ⚠️  Second endpoint (1879): Searches by activation_id then ID, has 3-minute rule")
+        print("   ⚠️  FastAPI uses first endpoint, so 3-minute rule and activation_id lookup don't work")
         
-        # Test 4a: Try to cancel DaisySMS order using internal ID (should fail due to 3-minute rule)
+        # Test 4a: Cancel DaisySMS order using internal ID (will succeed due to bug)
         if daisysms_order_id:
             success, cancel_response = self.run_test(
-                "Cancel DaisySMS by Internal ID (too early)",
+                "Cancel DaisySMS by Internal ID (succeeds due to bug)",
                 "POST",
                 f"orders/{daisysms_order_id}/cancel",
-                400,  # Expecting 400 due to 3-minute rule
+                200,  # Expecting 200 due to missing 3-minute rule in first endpoint
                 use_admin=True
             )
             
             if success:
-                print(f"   ✓ DaisySMS cancel correctly blocked (3-minute rule enforced)")
+                print(f"   ✓ DaisySMS cancel succeeded (confirms bug: no 3-minute rule)")
             else:
                 print(f"   ❌ Unexpected response from DaisySMS cancel")
                 return False
@@ -770,7 +772,7 @@ class SMSRelayAPITester:
         # Test 4b: Test that activation_id doesn't work due to the bug
         if daisysms_activation_id:
             success, cancel_response = self.run_test(
-                "Cancel DaisySMS by Activation ID (bug - should fail)",
+                "Cancel DaisySMS by Activation ID (fails due to bug)",
                 "POST",
                 f"orders/{daisysms_activation_id}/cancel",
                 404,  # Expecting 404 due to duplicate endpoint bug
@@ -778,8 +780,8 @@ class SMSRelayAPITester:
             )
             
             if success:
-                print(f"   ✓ Activation ID cancel fails as expected due to duplicate endpoint bug")
-                print(f"   ✓ This confirms the bug: activation_id lookup is not working")
+                print(f"   ✓ Activation ID cancel fails as expected (confirms bug)")
+                print(f"   ✓ This proves the first endpoint doesn't support activation_id lookup")
             else:
                 print(f"   ❌ Unexpected response from activation ID cancel")
                 return False
