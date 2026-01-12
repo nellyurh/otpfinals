@@ -1569,77 +1569,7 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
 
 # ============ Order Management Routes ============
 
-@api_router.post("/orders/{order_id}/cancel")
-async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
-    """Cancel an active order and get refund"""
-    order = await db.sms_orders.find_one({'id': order_id, 'user_id': user['id']}, {'_id': 0})
-    
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    if order['status'] != 'active':
-        raise HTTPException(status_code=400, detail="Can only cancel active orders")
-    
-    if not order.get('can_cancel', False):
-        raise HTTPException(status_code=400, detail="This order cannot be cancelled")
-    
-    # Cancel on provider side
-    provider = order['provider']
-    activation_id = order['activation_id']
-    
-    if provider == 'daisysms':
-        config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('daisysms_api_key', DAISYSMS_API_KEY) if config else DAISYSMS_API_KEY
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 8},
-                timeout=10.0
-            )
-            
-            if response.status_code == 200 and 'ACCESS_CANCEL' in response.text:
-                # Refund to user
-                cost_usd = order.get('cost_usd', 0)
-                config = await db.pricing_config.find_one({}, {'_id': 0})
-                ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
-                
-                # Find original transaction to know which currency was used
-                transaction = await db.transactions.find_one({'reference': order_id}, {'_id': 0})
-                if transaction and transaction.get('currency') == 'NGN':
-                    refund_amount = transaction.get('amount', cost_usd * ngn_rate)
-                    await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_amount}})
-                    refund_currency = 'NGN'
-                else:
-                    refund_amount = cost_usd
-                    await db.users.update_one({'id': user['id']}, {'$inc': {'usd_balance': refund_amount}})
-                    refund_currency = 'USD'
-                
-                # Update order status
-                await db.sms_orders.update_one(
-                    {'id': order_id},
-                    {'$set': {'status': 'cancelled', 'can_cancel': False}}
-                )
-                
-                # Create refund transaction
-                refund_trans = Transaction(
-                    user_id=user['id'],
-                    type='refund',
-                    amount=refund_amount,
-                    currency=refund_currency,
-                    status='completed',
-                    reference=order_id,
-                    metadata={'reason': 'Order cancelled', 'original_service': order['service']}
-                )
-                refund_dict = refund_trans.model_dump()
-                refund_dict['created_at'] = refund_dict['created_at'].isoformat()
-                await db.transactions.insert_one(refund_dict)
-                
-                return {'success': True, 'message': 'Order cancelled and refunded', 'refund_amount': refund_amount, 'currency': refund_currency}
-            
-            raise HTTPException(status_code=400, detail="Failed to cancel with provider")
-    
-    raise HTTPException(status_code=400, detail="Cancel not implemented for this provider")
+# (Consolidated cancel route is defined later around line 1830)
 
 # ============ SMS Order Routes (Updated) ============
 
