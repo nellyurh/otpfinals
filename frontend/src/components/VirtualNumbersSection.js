@@ -235,9 +235,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           breakdown
         });
       } else if (selectedServer.value === 'server1' && selectedService.price_ngn) {
-        // SMS-pool (International server): use the aggregated cheapest NGN price
-        const baseNGN = selectedService.price_ngn;
-        const breakdown = [`Base (cheapest pool): ₦${baseNGN.toFixed(2)}`];
+        // SMS-pool (International server): allow user to select a specific pool.
+        let poolToUse = null;
+        if (selectedService.pools && selectedService.pools.length > 0) {
+          // If a specific pool is selected, use that; otherwise default to the
+          // cheapest pool (already reflected in price_ngn on the service).
+          poolToUse = selectedPool || null;
+        }
+
+        const baseNGN = poolToUse?.price_ngn || selectedService.price_ngn;
+        const breakdown = [`Base (selected pool): ₦${baseNGN.toFixed(2)}`];
 
         if (selectedService.pools && selectedService.pools.length > 0) {
           breakdown.push(`Pools available: ${selectedService.pools.length}`);
