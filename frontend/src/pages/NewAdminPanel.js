@@ -369,40 +369,6 @@ function PricingTab({ pricing, setPricing, handleSavePricing, saving }) {
     );
   }
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">NGN to USD Rate</label>
-            <input
-              type="number"
-              value={pricing.ngn_to_usd_rate}
-              onChange={(e) => setPricing({...pricing, ngn_to_usd_rate: parseFloat(e.target.value)})}
-              className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:border-[#00a86b] focus:outline-none text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">5sim Coin per USD</label>
-            <input
-              type="number"
-              value={pricing.fivesim_coin_per_usd}
-              onChange={(e) => setPricing({ ...pricing, fivesim_coin_per_usd: parseFloat(e.target.value) })}
-              className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:border-[#00a86b] focus:outline-none text-white"
-            />
-          </div>
-        </div>
-
-        <button
-          onClick={handleSavePricing}
-          disabled={saving}
-          className="mt-6 px-6 py-3 bg-[#00a86b] text-white rounded-lg font-semibold hover:bg-[#008f5a] transition-colors disabled:bg-gray-700 flex items-center gap-2"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function PageVisibilityTab({ pageToggles, handleTogglePage }) {
   const pages = [
     { key: 'enable_virtual_numbers', label: 'Virtual Numbers' },
