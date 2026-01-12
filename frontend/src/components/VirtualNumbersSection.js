@@ -259,7 +259,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           final_ngn: baseNGN,
           breakdown
         });
-      } else if (selectedCountry) {
+      } else if (selectedCountry && selectedServer.value !== 'server2') {
+        // For DaisySMS and SMS-pool, use backend price calculator
         try {
           const response = await axios.post(
             `${API}/api/orders/calculate-price`,
@@ -277,6 +278,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         } catch (error) {
           console.error('Failed to calculate price:', error);
         }
+      } else if (selectedServer.value === 'server2' && selectedService && selectedCountry) {
+        // For 5sim, backend already returns NGN price per service/operator
+        const baseNGN = selectedService.price_ngn || 0;
+        setEstimatedPrice({
+          final_usd: selectedService.price_usd || null,
+          final_ngn: baseNGN,
+          breakdown: [`Base: ₦${baseNGN.toFixed(2)}`],
+        });
       }
     };
 
