@@ -1258,61 +1258,135 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
         # If specific country requested, fetch services with REAL pricing
         if country:
             async with httpx.AsyncClient() as client:
-                # Fetch pricing for the specific country
-                response = await client.post(
+                # 1) Fetch raw pricing entries (service + pool + price)
+                pricing_resp = await client.post(
                     'https://api.smspool.net/request/pricing',
                     data={'country': country},
                     headers={'Authorization': f'Bearer {api_key}'},
                     timeout=20.0
                 )
-                
-                if response.status_code == 200:
-                    pricing_list = response.json()
-                    services = []
 
-                    # pricing_list format: [{service: 846, service_name: "Snapchat", country: 20, price: "0.02", pool: 7}, ...]
-                    for item in pricing_list:
-                        if isinstance(item, dict):
-                            service_id = item.get('service')
-                            service_name = item.get('service_name', f'Service {service_id}')
-                            base_price_usd = float(item.get('price', 0))
+                # 2) Fetch full service list so we can map IDs -> names (per country)
+                services_resp = await client.post(
+                    'https://api.smspool.net/service/retrieve_all',
+                    data={'country': country},
+                    headers={'Authorization': f'Bearer {api_key}'},
+                    timeout=20.0
+                )
 
-                            if base_price_usd > 0:  # Only show services with pricing
-                                # Apply our markup and convert to NGN
-                                final_price_usd = base_price_usd * (1 + markup_percent / 100)
-                                final_price_ngn = final_price_usd * ngn_rate
+                # 3) Fetch pool list so we can expose pools per service (metadata only)
+                pools_resp = await client.post(
+                    'https://api.smspool.net/pool/retrieve_all',
+                    headers={'Authorization': f'Bearer {api_key}'},
+                    timeout=20.0
+                )
 
-                                services.append({
-                                    'value': str(service_id),
-                                    'label': service_name,
-                                    'name': service_name,
-                                    'price_usd': final_price_usd,
-                                    'price_ngn': final_price_ngn,
-                                    'base_price': base_price_usd,
-                                    'pool': item.get('pool')
-                                })
+                if pricing_resp.status_code == 200:
+                    pricing_list = pricing_resp.json() or []
+                else:
+                    pricing_list = []
 
-                                # Cache the **cheapest** base price per service/country in USD
-                                await db.cached_services.update_one(
-                                    {
-                                        'provider': 'smspool',
-                                        'service_code': str(service_id),
-                                        'country_code': str(country)
-                                    },
-                                    {
-                                        '$setOnInsert': {
-                                            'currency': 'USD'
-                                        },
-                                        '$min': {
-                                            'base_price': base_price_usd
-                                        }
-                                    },
-                                    upsert=True
-                                )
+                # Build service ID -> name map (from service/retrieve_all)
+                services_map: Dict[str, str] = {}
+                if services_resp.status_code == 200:
+                    try:
+                        raw_services = services_resp.json() or []
+                        for s in raw_services:
+                            if isinstance(s, dict):
+                                sid = str(s.get('ID') or s.get('id') or '')
+                                name = s.get('name') or f'Service {sid}'
+                                if sid:
+                                    services_map[sid] = name
+                    except Exception as e:
+                        logger.error(f"Failed to parse SMS-pool service list: {str(e)}")
 
-                    services.sort(key=lambda x: x['name'])
-                    logger.info(f"Loaded {len(services)} SMS-pool services for country {country}")
-                    return {'success': True, 'services': services, 'country': country}
+                # Build pool metadata map (ID -> name/label)
+                pools_map: Dict[str, str] = {}
+                if pools_resp.status_code == 200:
+                    try:
+                        raw_pools = pools_resp.json() or []
+                        for p in raw_pools:
+                            if isinstance(p, dict):
+                                pid = str(p.get('id') or p.get('ID') or p.get('pool') or '')
+                                if pid:
+                                    pools_map[pid] = p.get('name') or p.get('label') or f'Pool {pid}'
+                    except Exception as e:
+                        logger.error(f"Failed to parse SMS-pool pool list: {str(e)}")
+
+                # Aggregate pricing per service, with all pools and a visible price
+                aggregated: Dict[str, Dict[str, Any]] = {}
+
+                # pricing_list format: [{service: 846, service_name: "Snapchat", country: 20, price: "0.02", pool: 7}, ...]
+                for item in pricing_list:
+                    if isinstance(item, dict):
+                        service_id_raw = item.get('service')
+                        if service_id_raw is None:
+                            continue
+                        service_id = str(service_id_raw)
+                        base_price_usd = float(item.get('price', 0) or 0)
+                        if base_price_usd <= 0:
+                            continue
+
+                        pool_id_raw = item.get('pool')
+                        pool_id = str(pool_id_raw) if pool_id_raw is not None else None
+
+                        # Apply our markup and convert to NGN
+                        final_price_usd = base_price_usd * (1 + markup_percent / 100)
+                        final_price_ngn = final_price_usd * ngn_rate
+
+                        # Initialize container for this service
+                        if service_id not in aggregated:
+                            service_name = services_map.get(service_id) or item.get(
+                                'service_name', f'Service {service_id}'
+                            )
+                            aggregated[service_id] = {
+                                'value': service_id,
+                                'label': service_name,
+                                'name': service_name,
+                                'price_usd': final_price_usd,
+                                'price_ngn': final_price_ngn,
+                                'base_price': base_price_usd,
+                                'pools': []  # will be filled below
+                            }
+                        # Track cheapest overall price for display
+                        svc = aggregated[service_id]
+                        if final_price_ngn < svc['price_ngn']:
+                            svc['price_ngn'] = final_price_ngn
+                            svc['price_usd'] = final_price_usd
+                            svc['base_price'] = base_price_usd
+
+                        # Attach this pool entry
+                        if pool_id:
+                            svc['pools'].append({
+                                'id': pool_id,
+                                'name': pools_map.get(pool_id, f'Pool {pool_id}'),
+                                'base_price': base_price_usd,
+                                'price_usd': final_price_usd,
+                                'price_ngn': final_price_ngn
+                            })
+
+                        # Cache the **cheapest** base price per service/country in USD
+                        await db.cached_services.update_one(
+                            {
+                                'provider': 'smspool',
+                                'service_code': service_id,
+                                'country_code': str(country)
+                            },
+                            {
+                                '$setOnInsert': {
+                                    'currency': 'USD'
+                                },
+                                '$min': {
+                                    'base_price': base_price_usd
+                                }
+                            },
+                            upsert=True
+                        )
+
+                services = list(aggregated.values())
+                services.sort(key=lambda x: x['name'])
+                logger.info(f"Loaded {len(services)} SMS-pool services for country {country}")
+                return {'success': True, 'services': services, 'country': country}
         
         # Return all available countries
         async with httpx.AsyncClient() as client:
