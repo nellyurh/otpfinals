@@ -348,6 +348,16 @@ function PricingTab({ pricing, setPricing, handleSavePricing, saving }) {
               className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:border-[#00a86b] focus:outline-none text-white"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">5sim Coin per USD</label>
+            <input
+              type="number"
+              value={pricing.fivesim_coin_per_usd}
+              onChange={(e) => setPricing({ ...pricing, fivesim_coin_per_usd: parseFloat(e.target.value) })}
+              className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:border-[#00a86b] focus:outline-none text-white"
+            />
+          </div>
         </div>
 
         <button
