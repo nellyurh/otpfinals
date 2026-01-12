@@ -113,33 +113,44 @@ class SMSPoolTester:
         
         print(f"   ✅ Found {len(countries)} countries")
         
-        # Step 3: Pick a small country and get services with pricing
-        print("   📱 Step 3: Getting services for test country...")
+        # Step 3: Pick a country with services and get services with pricing
+        print("   📱 Step 3: Finding country with services...")
         
-        # Use first country as test country
-        test_country = countries[0]
+        # Try multiple countries until we find one with services
+        test_country = None
+        services = []
+        
+        # Try first few countries
+        for country in countries[:10]:
+            country_id = country['value']
+            country_name = country['name']
+            
+            print(f"   📍 Trying country: {country_name} (ID: {country_id})")
+            
+            success, services_response = self.run_test(
+                f"SMS-pool Services for {country_name}",
+                "GET",
+                f"services/smspool?country={country_id}",
+                200
+            )
+            
+            if success and services_response.get('success') and 'services' in services_response:
+                services = services_response['services']
+                if len(services) > 0:
+                    test_country = country
+                    print(f"   ✅ Found {len(services)} services for {country_name}")
+                    break
+                else:
+                    print(f"   ⚠️  No services available for {country_name}, trying next...")
+            else:
+                print(f"   ❌ Failed to get services for {country_name}: {services_response}")
+        
+        if not test_country or len(services) == 0:
+            print("❌ No countries with available services found")
+            return False
+        
         country_id = test_country['value']
         country_name = test_country['name']
-        
-        print(f"   📍 Using country: {country_name} (ID: {country_id})")
-        
-        success, services_response = self.run_test(
-            f"SMS-pool Services for {country_name}",
-            "GET",
-            f"services/smspool?country={country_id}",
-            200
-        )
-        
-        if not success or not services_response.get('success') or 'services' not in services_response:
-            print(f"❌ Failed to get services: {services_response}")
-            return False
-        
-        services = services_response['services']
-        if len(services) == 0:
-            print(f"❌ No services available for {country_name}")
-            return False
-        
-        print(f"   ✅ Found {len(services)} services for {country_name}")
         
         # Validate service structure
         test_service = services[0]
