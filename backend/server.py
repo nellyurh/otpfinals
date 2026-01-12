@@ -1888,13 +1888,17 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
         markup_percent = order.get('markup_percentage', 50.0)
         final_price_usd = cost_usd * (1 + markup_percent / 100)
         refund_ngn = final_price_usd * ngn_rate
+        logger.info(f"Fallback refund calculation: cost_usd={cost_usd}, markup={markup_percent}%, final_usd={final_price_usd}, refund_ngn={refund_ngn}")
     else:
         if charged_currency == 'NGN':
             refund_ngn = charged_amount
         else:
             refund_ngn = charged_amount * ngn_rate
+        logger.info(f"Direct refund calculation: charged_amount={charged_amount}, charged_currency={charged_currency}, refund_ngn={refund_ngn}")
     
-    await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
+    logger.info(f"Updating user {user['id']} balance by +{refund_ngn} NGN")
+    result = await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
+    logger.info(f"Balance update result: matched_count={result.matched_count}, modified_count={result.modified_count}")
     
     # Update order status
     await db.sms_orders.update_one({'id': order['id']}, {'$set': {'status': 'cancelled'}})
