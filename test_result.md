@@ -152,15 +152,18 @@ test_plan:
 backend:
   - task: "SMS-pool dynamic pricing (International Server)"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
         comment: "Implemented /api/services/smspool to call SMS-pool /request/pricing with country, apply smspool_markup and ngn_to_usd_rate from pricing_config, and return per-service NGN pricing. Need backend tests to verify varied prices and frontend tests for International server flow."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED ✅ All SMS-pool dynamic pricing requirements verified: 1) Countries fetch: 151 countries returned with proper structure (value, label, name, region). 2) Services + pricing: Tested 3 countries (US, UK, Netherlands) with 6,456 total services. All services have required fields (value, label, name, price_usd, price_ngn, base_price, pool). 3) Dynamic pricing CONFIRMED: Found 67 unique base prices in US, 43 in UK, 48 in Netherlands - proving dynamic pricing is working. 4) Multiple pools confirmed: Services appear in pools 7,12,13,14,16,17. 5) Cross-country variations: Same services have different prices across countries. 6) Error handling: Invalid country (999999) properly returns empty services list. Price calculations verified: price_ngn ≈ price_usd * ngn_rate * (1 + markup/100). All authentication working with admin@smsrelay.com credentials."
 
 
 agent_communication:
