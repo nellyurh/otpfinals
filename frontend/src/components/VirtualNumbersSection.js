@@ -312,6 +312,21 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     }
   };
 
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const response = await axios.post(`${API}/api/orders/${orderId}/cancel`, {}, axiosConfig);
+      if (response.data.success) {
+        const refunded = response.data.refunded?.toFixed(2) || '0.00';
+        toast.success(`Order cancelled and refunded ₦${refunded}`);
+        fetchOrders();
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.detail || 'Cancel failed');
+    }
+  };
+
   const copyToClipboard = (text, message = 'Copied to clipboard!') => {
     if (!text) return;
     navigator.clipboard.writeText(text);
