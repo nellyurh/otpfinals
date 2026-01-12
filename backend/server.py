@@ -1898,8 +1898,19 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     
     logger.info(f"Updating user {user['id']} balance by +{refund_ngn} NGN")
     logger.info(f"Order user_id: {order.get('user_id')}, Current user_id: {user['id']}")
+    
+    # Check balance before update
+    user_before = await db.users.find_one({'id': user['id']}, {'_id': 0})
+    balance_before = user_before.get('ngn_balance', 0) if user_before else 0
+    logger.info(f"Balance before update: {balance_before}")
+    
     result = await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
     logger.info(f"Balance update result: matched_count={result.matched_count}, modified_count={result.modified_count}")
+    
+    # Check balance after update
+    user_after = await db.users.find_one({'id': user['id']}, {'_id': 0})
+    balance_after = user_after.get('ngn_balance', 0) if user_after else 0
+    logger.info(f"Balance after update: {balance_after}, Expected: {balance_before + refund_ngn}")
     
     # Update order status
     await db.sms_orders.update_one({'id': order['id']}, {'$set': {'status': 'cancelled'}})
