@@ -233,6 +233,20 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           final_ngn: totalNGN,
           breakdown
         });
+      } else if (selectedServer.value === 'server1' && selectedService.price_ngn) {
+        // SMS-pool (International server): use the aggregated cheapest NGN price
+        const baseNGN = selectedService.price_ngn;
+        const breakdown = [`Base (cheapest pool): ₦${baseNGN.toFixed(2)}`];
+
+        if (selectedService.pools && selectedService.pools.length > 0) {
+          breakdown.push(`Pools available: ${selectedService.pools.length}`);
+        }
+
+        setEstimatedPrice({
+          final_usd: null,
+          final_ngn: baseNGN,
+          breakdown
+        });
       } else if (selectedCountry) {
         try {
           const response = await axios.post(
@@ -462,7 +476,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   isSearchable
                   formatOptionLabel={(option) => (
                     <div className="flex items-center justify-between w-full">
-                      <span>{option.label || option.name}</span>
+                      <div className="flex flex-col">
+                        <span>{option.label || option.name}</span>
+                        {option.pools && option.pools.length > 0 && (
+                          <span className="text-xs text-gray-400">
+                            {option.pools.length} pool{option.pools.length > 1 ? 's' : ''} available
+                          </span>
+                        )}
+                      </div>
                       {option.price_ngn && (
                         <span className="text-gray-600 font-semibold">
                           ₦{option.price_ngn.toFixed(2)}
