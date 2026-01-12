@@ -255,9 +255,6 @@ const AdminPanel = ({ user, setUser }) => {
                 <p className="text-xs text-zinc-500">
                   Current rate: ₦{pricing.ngn_to_usd_rate} = $1.00
                 </p>
-            </div>
-
-
               </div>
 
               <div className="space-y-2 max-w-md">
