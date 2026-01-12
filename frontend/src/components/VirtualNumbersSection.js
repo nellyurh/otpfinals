@@ -494,6 +494,21 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       setSelectedService(null); // Reset service when country changes
                     }}
                     options={availableCountries}
+                    formatOptionLabel={(option) => {
+                      const flagUrl = getCountryFlagUrl(option.value || option.short_name || option.label);
+                      return (
+                        <div className="flex items-center gap-2">
+                          {flagUrl && (
+                            <img
+                              src={flagUrl}
+                              alt={option.label}
+                              className="w-5 h-5 rounded-full border border-gray-200 object-cover"
+                            />
+                          )}
+                          <span className="text-xs font-semibold text-gray-800">{option.label}</span>
+                        </div>
+                      );
+                    }}
                     isDisabled={!selectedServer || servicesLoading}
                     isLoading={servicesLoading}
                     placeholder="Choose country..."
