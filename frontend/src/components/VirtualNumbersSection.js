@@ -328,6 +328,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         payload.pool = selectedPool.id;
       }
 
+      // For 5sim, include selected operator (if any)
+      if (selectedServer.value === 'server2' && selectedOperator) {
+        payload.operator = selectedOperator.value;
+      }
+
       // Add advanced options if selected (DaisySMS only)
       if (selectedCarrier) {
         payload.carrier = selectedCarrier.value;
