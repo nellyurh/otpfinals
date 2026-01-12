@@ -136,26 +136,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           setAvailableServices([]); // Services loaded after country selection
         }
       } else {
-        // 5sim Global server - use unified services endpoint for now
-        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
-        if (response.data.success && response.data.data) {
-          const data = response.data.data;
-          const services = [];
-          const countries = [];
-
-          for (const countryCode in data) {
-            countries.push({ value: countryCode, label: countryCode.toUpperCase() });
-            const servicesForCountry = data[countryCode];
-            for (const serviceCode in servicesForCountry) {
-              const s = servicesForCountry[serviceCode];
-              if (!services.find((svc) => svc.value === serviceCode)) {
-                services.push({ value: serviceCode, label: s.name || serviceCode });
-              }
-            }
-          }
-
-          setAvailableServices(services);
-          setAvailableCountries(countries);
+        // 5sim Global server - first load countries via /services/5sim
+        const response = await axios.get(`${API}/api/services/5sim`, axiosConfig);
+        if (response.data.success && response.data.countries) {
+          setAvailableCountries(response.data.countries);
+          setAvailableServices([]);
         }
       }
     } catch (error) {
