@@ -53,7 +53,6 @@ TIGERSMS_API_KEY = os.environ.get('TIGERSMS_API_KEY', 'mZGp2NQJswCEVaSISSUy0IHT1
 FIVESIM_BASE_URL = 'https://5sim.net/v1'
 
 FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
-FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 
 # Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -140,8 +139,9 @@ class PricingConfig(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     # API Keys
     daisysms_api_key: str = ""
-    tigersms_api_key: str = ""
+    tigersmsms_api_key: str = ""
     smspool_api_key: str = ""
+    fivesim_api_key: str = ""
     # Markup percentages
     tigersms_markup: float = 50.0
     daisysms_markup: float = 50.0
