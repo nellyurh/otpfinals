@@ -515,6 +515,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                               {option.pools.length} pool{option.pools.length > 1 ? 's' : ''} available
                             </span>
                           )}
+                          {option.operators && option.operators.length > 0 && (
+                            <span className="text-xs text-gray-400">
+                              {option.operators.length} operator{option.operators.length > 1 ? 's' : ''} available
+                            </span>
+                          )}
                         </div>
                         {option.price_ngn && (
                           <span className="text-gray-600 font-semibold">
