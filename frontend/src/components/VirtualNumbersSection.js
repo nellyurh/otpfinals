@@ -770,13 +770,18 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 )}
 
                 {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 0 && (
-                  <div className="mt-1 pt-2 border-t border-green-300">
-                    <p className="text-xs text-gray-600 font-semibold mb-1">Price Breakdown:</p>
-                    {estimatedPrice.breakdown.map((item, idx) => (
-                      <p key={idx} className="text-xs text-gray-600">
-                        • {item}
-                      </p>
-                    ))}
+                  <div className="mt-2 pt-2 border-t border-green-200">
+                    <p className="text-[11px] text-gray-600 font-semibold mb-1">Price breakdown</p>
+                    <div className="space-y-1">
+                      {estimatedPrice.breakdown.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-[11px] text-gray-600"
+                        >
+                          <span className="truncate max-w-[70%]">• {item}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <p className="text-xs text-gray-500 mt-2">
