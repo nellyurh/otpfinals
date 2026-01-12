@@ -1841,8 +1841,8 @@ async def purchase_number(
     trans_dict['created_at'] = trans_dict['created_at'].isoformat()
     await db.transactions.insert_one(trans_dict)
     
-    # Start background OTP polling (only once!)
-    background_tasks.add_task(poll_otp_daisysms, order.id, activation_id)
+    # Start background OTP polling (generic for all providers)
+    background_tasks.add_task(otp_polling_task, order.id)
     
     # Return order data without MongoDB _id
     return {
