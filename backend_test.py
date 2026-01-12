@@ -658,7 +658,17 @@ class SMSRelayAPITester:
             self.log_test("SMS-pool Countries Available", False, "", "No countries available")
             return False
         
-        test_country = countries[0]  # Use first country
+        # Use US (country 1) which we know has services from previous tests
+        test_country = None
+        for country in countries:
+            if country['value'] == '1':  # US
+                test_country = country
+                break
+        
+        if not test_country:
+            # Fallback to first country
+            test_country = countries[0]
+        
         country_id = test_country['value']
         country_name = test_country['name']
         
