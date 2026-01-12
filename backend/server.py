@@ -537,7 +537,14 @@ async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optio
             )
             if response.status_code == 200:
                 return response.json()
-            return None
+            else:
+                # Log the actual error response
+                try:
+                    error_data = response.json()
+                    logger.error(f"SMS-pool purchase failed (status {response.status_code}): {error_data}")
+                except:
+                    logger.error(f"SMS-pool purchase failed (status {response.status_code}): {response.text}")
+                return None
     except Exception as e:
         logger.error(f"SMS-pool purchase error: {str(e)}")
         return None
