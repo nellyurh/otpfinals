@@ -443,7 +443,15 @@ const NewDashboard = () => {
         {/* Content Area */}
         <main className="px-5 py-6">
           <div className="w-full">
-            {activeSection === 'virtual-numbers' && <VirtualNumbersSection />}
+            {activeSection === 'virtual-numbers' && (
+              <VirtualNumbersSection
+                user={user}
+                orders={orders}
+                axiosConfig={axiosConfig}
+                fetchOrders={fetchOrders}
+                fetchProfile={fetchProfile}
+              />
+            )}
             {activeSection === 'fund-wallet' && <FundWalletSection />}
             {activeSection === 'buy-data' && <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
             {activeSection === 'airtime' && <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
