@@ -1878,13 +1878,21 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     # Calculate refund based on the actual charged amount
     # If the order was charged in NGN, refund the full NGN amount
     # If charged in USD, convert back to NGN at current rate
-    charged_currency = order.get('charged_currency', 'NGN')
-    charged_amount = order.get('charged_amount', 0)
+    charged_currency = order.get('charged_currency')
+    charged_amount = order.get('charged_amount')
     
-    if charged_currency == 'NGN':
-        refund_ngn = charged_amount
+    # Fallback for orders created before charged_amount/charged_currency were added
+    if charged_amount is None or charged_currency is None:
+        # Use cost_usd and convert to NGN with markup
+        cost_usd = order.get('cost_usd', 0)
+        markup_percent = order.get('markup_percentage', 50.0)
+        final_price_usd = cost_usd * (1 + markup_percent / 100)
+        refund_ngn = final_price_usd * ngn_rate
     else:
-        refund_ngn = charged_amount * ngn_rate
+        if charged_currency == 'NGN':
+            refund_ngn = charged_amount
+        else:
+            refund_ngn = charged_amount * ngn_rate
     
     await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': refund_ngn}})
     
