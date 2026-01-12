@@ -20,7 +20,11 @@ const AdminPanel = ({ user, setUser }) => {
     tigersms_markup: 20,
     daisysms_markup: 20,
     smspool_markup: 20,
-    ngn_to_usd_rate: 1500
+    ngn_to_usd_rate: 1500,
+    fivesim_coin_per_usd: 77.44,
+    daisysms_api_key: '',
+    smspool_api_key: '',
+    fivesim_api_key: ''
   });
 
   const token = localStorage.getItem('token');
@@ -49,12 +53,14 @@ const AdminPanel = ({ user, setUser }) => {
   const fetchPricing = async () => {
     try {
       const response = await axios.get(`${API}/admin/pricing`, axiosConfig);
-      setPricing({
+      setPricing((prev) => ({
+        ...prev,
         tigersms_markup: response.data.tigersms_markup,
         daisysms_markup: response.data.daisysms_markup,
         smspool_markup: response.data.smspool_markup,
-        ngn_to_usd_rate: response.data.ngn_to_usd_rate
-      });
+        ngn_to_usd_rate: response.data.ngn_to_usd_rate,
+        fivesim_coin_per_usd: response.data.fivesim_coin_per_usd ?? prev.fivesim_coin_per_usd
+      }));
     } catch (error) {
       console.error('Failed to fetch pricing');
     }
