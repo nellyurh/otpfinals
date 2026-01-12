@@ -1963,24 +1963,6 @@ async def purchase_number(
     ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
     final_price_ngn = final_price_usd * ngn_rate
     
-    # Check balance based on payment currency
-    elif provider == '5sim':
-        # For 5sim, use cached base USD price from services endpoint
-        cached_service = await db.cached_services.find_one({
-            'provider': '5sim',
-            'service_code': data.service,
-            'country_code': data.country
-        }, {'_id': 0})
-        if not cached_service:
-            raise HTTPException(status_code=404, detail="5sim service not found for country")
-        base_price_usd = float(cached_service.get('base_price', 0) or 0)
-        if base_price_usd <= 0:
-            raise HTTPException(status_code=400, detail="Invalid 5sim base price")
-    
-    # Apply our markup (default 50%)
-    markup = config.get(f'{provider}_markup', 50.0) if provider != '5sim' else config.get('tigersms_markup', 50.0)
-    final_price_usd = base_price_usd * (1 + markup / 100)
-    
     # Convert to NGN if needed
     ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
     final_price_ngn = final_price_usd * ngn_rate
