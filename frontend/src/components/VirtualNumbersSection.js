@@ -418,7 +418,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           options={[
             { value: 'us_server', label: '🇺🇸 United States Server' },
             { value: 'server1', label: '🌍 International Server' },
-            { value: 'server2', label: '🌐 Global Server (5sim)' }
+            { value: 'server2', label: '🌐 Global Server' }
           ]}
           placeholder="Choose server location"
           className="react-select-container"
