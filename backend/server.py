@@ -531,7 +531,7 @@ async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optio
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                'https://api.sms-pool.com/purchase/sms',
+                'https://api.smspool.net/purchase/sms',
                 params={'key': SMSPOOL_API_KEY, 'service': service, 'country': country},
                 timeout=15.0
             )
