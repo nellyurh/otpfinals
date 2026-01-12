@@ -5,7 +5,7 @@ import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import NewDashboard from './pages/NewDashboard';
 import AdminPanel from './pages/AdminPanel';
-import NewAdminPanel from './pages/NewAdminPanel';
+// import NewAdminPanel from './pages/NewAdminPanel';
 import { Toaster } from 'sonner';
 
 function App() {
