@@ -773,6 +773,21 @@ async def poll_otp_daisysms(activation_id: str) -> Optional[str]:
             )
             if response.status_code == 200:
                 text = response.text
+        elif provider == '5sim':
+            if not FIVESIM_API_KEY:
+                logger.error("FIVESIM_API_KEY not configured for cancel")
+                return False
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    f"{FIVESIM_BASE_URL}/user/cancel/{activation_id}",
+                    headers={
+                        'Authorization': f'Bearer {FIVESIM_API_KEY}',
+                        'Accept': 'application/json'
+                    },
+                    timeout=10.0
+                )
+                return resp.status_code == 200
+
                 if 'STATUS_OK' in text:
                     parts = text.split(':')
                     if len(parts) > 1:
