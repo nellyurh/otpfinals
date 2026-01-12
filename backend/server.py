@@ -1962,10 +1962,6 @@ async def purchase_number(
     # Convert to NGN if needed
     ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
     final_price_ngn = final_price_usd * ngn_rate
-    
-    # Convert to NGN if needed
-    ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
-    final_price_ngn = final_price_usd * ngn_rate
 
     # Check balance based on payment currency
     if data.payment_currency == 'NGN':
