@@ -685,7 +685,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           </div>
                         </td>
                         <td className="py-4 px-4 text-xs text-gray-600">
-                          {/* Cancel UI handled in parent cancel endpoint; for now countdown only */}
+                          {!(order.otp || order.otp_code) && canCancel && (
+                            <button
+                              onClick={() =>
+                                handleCancelOrder(order.activation_id || order.id)
+                              }
+                              className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-sm font-semibold transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          )}
                           {!(order.otp || order.otp_code) && !canCancel && (
                             <span>Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
                           )}
