@@ -1714,7 +1714,7 @@ async def purchase_number(
     activation_id = None
     
     if provider == 'smspool':
-        phone_number = result.get('number')
+        phone_number = str(result.get('number', ''))
         activation_id = result.get('order_id')
     elif provider == 'daisysms':
         response_text = result.get('text', '')
