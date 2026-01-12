@@ -224,11 +224,11 @@ class SMSPoolTester:
             print(f"❌ Price calculation failed: {calc_response}")
             return False
         
-        if not calc_response.get('success') or calc_response.get('final_ngn', 0) <= 0:
+        if not calc_response.get('success') or calc_response.get('final_price_ngn', 0) <= 0:
             print(f"❌ Invalid price calculation: {calc_response}")
             return False
         
-        final_ngn = calc_response['final_ngn']
+        final_ngn = calc_response['final_price_ngn']
         print(f"   ✅ Price calculated: ₦{final_ngn}")
         
         # Step 6: Get user balance before purchase
