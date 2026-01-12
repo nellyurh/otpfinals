@@ -1598,11 +1598,6 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
         logger.error(f"5sim services fetch error: {str(e)}")
         return {"success": False, "message": str(e)}
 
-        return {'success': False, 'message': 'Failed to fetch countries'}
-    except Exception as e:
-        logger.error(f"SMS-pool service fetch error: {str(e)}")
-        return {'success': False, 'message': str(e)}
-
 @api_router.get("/services/daisysms")
 async def get_daisysms_services(user: dict = Depends(get_current_user)):
     """Get DaisySMS services with LIVE pricing from API"""
