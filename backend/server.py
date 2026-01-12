@@ -740,7 +740,7 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
         if provider == 'smspool':
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    'https://api.sms-pool.com/request/cancel',
+                    'https://api.smspool.net/request/cancel',
                     params={'key': SMSPOOL_API_KEY, 'orderid': activation_id},
                     timeout=10.0
                 )
