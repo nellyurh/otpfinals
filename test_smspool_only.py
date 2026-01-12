@@ -385,7 +385,7 @@ class SMSPoolTester:
                     print(f"   ✅ Order status updated to 'cancelled'")
                     break
         
-        # Step 11: Verify user balance increased
+        # Step 11: Verify user balance increased (should be back to pre-purchase level)
         print("   💰 Step 11: Verifying user balance increased...")
         
         # Add a small delay to ensure database consistency
@@ -403,11 +403,14 @@ class SMSPoolTester:
             balance_increase = balance_after - balance_before
             
             print(f"   ✅ NGN balance after cancel: ₦{balance_after}")
-            print(f"   ✅ Balance increase: ₦{balance_increase}")
+            print(f"   ✅ Balance change from start: ₦{balance_increase}")
             
-            # Verify balance increase matches refund amount (approximately)
-            if abs(balance_increase - refund_amount) > 1.0:  # Allow 1 NGN variance
-                print(f"❌ Balance increase (₦{balance_increase}) doesn't match refund amount (₦{refund_amount})")
+            # The balance should be approximately back to the original level
+            # Allow for small differences due to floating point precision
+            if abs(balance_increase) < 1.0:  # Allow 1 NGN variance
+                print(f"   ✅ Balance correctly restored (net change: ₦{balance_increase})")
+            else:
+                print(f"   ❌ Unexpected balance change: ₦{balance_increase}")
                 return False
         
         # Step 12: Test edge case - try cancelling again
