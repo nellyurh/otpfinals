@@ -703,6 +703,8 @@ async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Opti
                 return response.json()
             return None
     except Exception as e:
+        logger.error(f"TigerSMS purchase error: {str(e)}")
+        return None
 
 async def poll_otp_5sim(order_id: str) -> Optional[str]:
     """Poll 5sim for OTP using order ID."""
@@ -742,9 +744,6 @@ async def poll_otp_5sim(order_id: str) -> Optional[str]:
             return None
     except Exception as e:
         logger.error(f"5sim OTP poll error: {str(e)}")
-        return None
-
-        logger.error(f"TigerSMS purchase error: {str(e)}")
         return None
 
 async def poll_otp_smspool(order_id: str) -> Optional[str]:
