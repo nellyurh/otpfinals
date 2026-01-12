@@ -338,6 +338,10 @@ function PricingTab({ pricing, setPricing, handleSavePricing, saving }) {
               className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-lg focus:border-[#00a86b] focus:outline-none text-white"
             />
           </div>
+        </div>
+      </div>
+    );
+  }
 
 function ApiKeyField({ label, value, onChange }) {
   const [visible, setVisible] = useState(false);
