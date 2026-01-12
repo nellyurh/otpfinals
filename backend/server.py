@@ -826,6 +826,20 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
+        elif provider == '5sim':
+            if not FIVESIM_API_KEY:
+                logger.error("FIVESIM_API_KEY not configured for cancel")
+                return False
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    f"{FIVESIM_BASE_URL}/user/cancel/{activation_id}",
+                    headers={
+                        'Authorization': f'Bearer {FIVESIM_API_KEY}',
+                        'Accept': 'application/json'
+                    },
+                    timeout=10.0
+                )
+                return resp.status_code == 200
         return False
     except Exception as e:
         logger.error(f"Cancel number error: {str(e)}")
