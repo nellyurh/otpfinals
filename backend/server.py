@@ -1913,7 +1913,7 @@ async def purchase_number(
         async with httpx.AsyncClient() as client:
             price_response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': config.get('daisysms_api_key', DAISYSMS_API_KEY), 'action': 'getPricesVerification'},
+                params={'api_key': (config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY), 'action': 'getPricesVerification'},
                 timeout=10.0
             )
             if price_response.status_code == 200:
