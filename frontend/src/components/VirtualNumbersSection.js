@@ -332,6 +332,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     selectedCarrier,
     selectedAreaCodes,
     preferredNumber,
+    promoCode,
     axiosConfig
   ]);
 
