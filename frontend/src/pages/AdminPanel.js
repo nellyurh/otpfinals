@@ -244,9 +244,19 @@ const AdminPanel = ({ user, setUser }) => {
               <KpiCard
                 title="NGN to USD"
                 value={`₦${pricing.ngn_to_usd_rate} = $1`}
+                icon={DollarSign}
+                accent="text-sky-600 bg-sky-50"
+              />
+              <KpiCard
+                title="5sim Coin per USD"
+                value={pricing.fivesim_coin_per_usd}
+                icon={Wallet}
+                accent="text-amber-600 bg-amber-50"
+              />
+            </section>
 
-                {/* Money flow metrics (primary currency NGN) */}
-                <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+            {/* Money flow metrics (primary currency NGN) */}
+            <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
                   <KpiCard
                     title="Total Deposits (period)"
                     value={
