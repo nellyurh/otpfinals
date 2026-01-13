@@ -544,11 +544,6 @@ def _plisio_verify_hash(payload: dict) -> bool:
     except Exception:
         return False
 
-    'ns': 1.00,  # Netspend
-    'fr': 1.00,  # Frost Bank
-    'ey': 0.80   # EverBank
-}
-
 # ============ Helper Functions ============
 
 async def _create_transaction_notification(user_id: str, title: str, message: str, metadata: Optional[dict] = None):
