@@ -25,6 +25,7 @@ import {
   Save,
   Eye,
   EyeOff,
+  Receipt,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
