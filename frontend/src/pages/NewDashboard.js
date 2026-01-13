@@ -456,10 +456,7 @@ const NewDashboard = () => {
         {/* Top Bar */}
         <header className="bg-white border-b px-8 py-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Welcome back!</h2>
-              <p className="text-sm text-gray-600">Manage your SMS verifications</p>
-            </div>
+            <div />
             
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-gray-100 rounded-lg">
