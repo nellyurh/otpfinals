@@ -251,6 +251,70 @@ const AdminPanel = ({ user, setUser }) => {
               />
             </section>
 
+            {/* Simple activity snapshot (placeholder instead of real chart) */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="border border-slate-200 shadow-sm bg-white">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">Recent Activity</CardTitle>
+                  <CardDescription className="text-xs">
+                    High level view of today&rsquo;s platform metrics.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-xs space-y-2 text-slate-600">
+                    <li>
+                      • Total users: <span className="font-semibold text-slate-900">{stats?.total_users || 0}</span>
+                    </li>
+                    <li>
+                      • Active orders:{' '}
+                      <span className="font-semibold text-slate-900">{stats?.active_orders || 0}</span>
+                    </li>
+                    <li>
+                      • Total orders:{' '}
+                      <span className="font-semibold text-slate-900">{stats?.total_orders || 0}</span>
+                    </li>
+                    <li>
+                      • Revenue (USD):{' '}
+                      <span className="font-semibold text-slate-900">
+                        ${stats?.total_revenue_usd?.toFixed(2) || '0.00'}
+                      </span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-slate-200 shadow-sm bg-white">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">Environment</CardTitle>
+                  <CardDescription className="text-xs">
+                    Quick glance at payment integrations and OTP polling.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-xs">
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg">
+                    <span className="text-slate-600">PaymentPoint (NGN)</span>
+                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">
+                      Active
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg">
+                    <span className="text-slate-600">Payscribe (USD)</span>
+                    <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[11px]">
+                      Pending
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg">
+                    <span className="text-slate-600">OTP Polling</span>
+                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">
+                      Active
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+              </>
+            )}
+
             {/* Provider & pricing configuration */}
             {activeSection === 'settings' && (
               <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
