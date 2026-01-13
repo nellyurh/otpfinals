@@ -2615,6 +2615,28 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
     config = await db.pricing_config.find_one({}, {'_id': 0})
     if not config:
         default_config = PricingConfig()
+
+@api_router.get("/public/branding")
+async def get_public_branding():
+    """Public branding used by landing page (no auth)."""
+    config = await db.pricing_config.find_one({}, {"_id": 0})
+    if not config:
+        default_config = PricingConfig()
+        cfg = default_config.model_dump()
+        cfg["updated_at"] = cfg["updated_at"].isoformat()
+        await db.pricing_config.insert_one(cfg)
+        config = cfg
+
+    return {
+        "brand_name": config.get("brand_name", "UltraCloud Sms"),
+        "primary_color_hex": config.get("primary_color_hex", "#059669"),
+        "landing_hero_title": config.get("landing_hero_title", "Cheapest and Fastest\nOnline SMS Verification"),
+        "landing_hero_subtitle": config.get(
+            "landing_hero_subtitle",
+            "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
+        ),
+    }
+
         config_dict = default_config.model_dump()
         config_dict['updated_at'] = config_dict['updated_at'].isoformat()
         await db.pricing_config.insert_one(config_dict)
