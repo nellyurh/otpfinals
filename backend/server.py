@@ -2395,19 +2395,19 @@ async def purchase_number(
 
     # Start background OTP polling (generic for all providers)
     background_tasks.add_task(otp_polling_task, order.id)
-    
-    # Return order data without MongoDB _id
-    return {
-        'success': True, 
-        'order': {
-            'id': order.id,
+
     await _create_transaction_notification(
         user['id'],
         'OTP purchase',
         f"You purchased a number for {data.service.upper()} ({provider}).",
         metadata={'reference': order.id, 'type': 'purchase', 'provider': provider},
     )
-
+    
+    # Return order data without MongoDB _id
+    return {
+        'success': True, 
+        'order': {
+            'id': order.id,
             'phone_number': phone_number,
             'activation_id': activation_id,
             'provider': provider,
