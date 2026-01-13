@@ -521,18 +521,18 @@ const NewDashboard = () => {
               )
             )}
 
-            {activeSection === 'fund-wallet' && (isPageEnabled('fund-wallet') ? <FundWalletSection /> : <MaintenanceSection title="Fund Wallet" />)}
-            {activeSection === 'buy-data' && (isPageEnabled('buy-data') ? <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : <MaintenanceSection title="Buy Data Bundle" />)}
-            {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : <MaintenanceSection title="Airtime Top-Up" />)}
-            {activeSection === 'betting' && (isPageEnabled('betting') ? <BettingSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : <MaintenanceSection title="Betting" />)}
-            {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : <MaintenanceSection title="Transactions" />)}
-            {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : <MaintenanceSection title="Dashboard" />)}
-            {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : <MaintenanceSection title="SMS History" />)}
-            {activeSection === 'account-upgrade' && (isPageEnabled('account-upgrade') ? <AccountUpgradeSection /> : <MaintenanceSection title="Account Upgrade" />)}
-            {activeSection === 'profile' && (isPageEnabled('profile') ? <ProfileSection /> : <MaintenanceSection title="Profile Settings" />)}
-            {activeSection === 'referral' && (isPageEnabled('referral') ? <ReferralSection /> : <MaintenanceSection title="Referral Program" />)}
-            {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : <MaintenanceSection title="Support Channels" />)}
-            {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection /> : <MaintenanceSection title="Virtual Cards" />)}
+            {activeSection === 'fund-wallet' && (isPageEnabled('fund-wallet') ? <FundWalletSection /> : maintenanceContent("Fund Wallet"))}
+            {activeSection === 'buy-data' && (isPageEnabled('buy-data') ? <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Buy Data Bundle"))}
+            {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Airtime Top-Up"))}
+            {activeSection === 'betting' && (isPageEnabled('betting') ? <BettingSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Betting"))}
+            {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : maintenanceContent("Transactions"))}
+            {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : maintenanceContent("Dashboard"))}
+            {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : maintenanceContent("SMS History"))}
+            {activeSection === 'account-upgrade' && (isPageEnabled('account-upgrade') ? <AccountUpgradeSection /> : maintenanceContent("Account Upgrade"))}
+            {activeSection === 'profile' && (isPageEnabled('profile') ? <ProfileSection /> : maintenanceContent("Profile Settings"))}
+            {activeSection === 'referral' && (isPageEnabled('referral') ? <ReferralSection /> : maintenanceContent("Referral Program"))}
+            {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : maintenanceContent("Support Channels"))}
+            {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection /> : maintenanceContent("Virtual Cards"))}
           </div>
         </main>
       </div>
