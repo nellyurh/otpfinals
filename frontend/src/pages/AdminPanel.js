@@ -167,6 +167,30 @@ const AdminPanel = ({ user, setUser }) => {
         smspool_api_key: response.data.smspool_api_key || '',
         fivesim_api_key: response.data.fivesim_api_key || '',
       }));
+
+      setBranding({
+        brand_name: response.data.brand_name || 'UltraCloud Sms',
+        landing_hero_title: response.data.landing_hero_title || 'Cheapest and Fastest\nOnline SMS Verification',
+        landing_hero_subtitle:
+          response.data.landing_hero_subtitle ||
+          'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
+      });
+
+      setPageToggles({
+        enable_dashboard: response.data.enable_dashboard !== false,
+        enable_transactions: response.data.enable_transactions !== false,
+        enable_fund_wallet: response.data.enable_fund_wallet !== false,
+        enable_virtual_numbers: response.data.enable_virtual_numbers !== false,
+        enable_buy_data: response.data.enable_buy_data !== false,
+        enable_airtime: response.data.enable_airtime !== false,
+        enable_betting: response.data.enable_betting !== false,
+        enable_virtual_cards: response.data.enable_virtual_cards !== false,
+        enable_sms_history: response.data.enable_sms_history !== false,
+        enable_account_upgrade: response.data.enable_account_upgrade !== false,
+        enable_referral: response.data.enable_referral !== false,
+        enable_profile: response.data.enable_profile !== false,
+        enable_support: response.data.enable_support !== false,
+      });
     } catch (error) {
       console.error('Failed to fetch pricing');
     }
