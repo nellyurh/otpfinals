@@ -2470,6 +2470,8 @@ async def get_payscribe_services(user: dict = Depends(get_current_user)):
 @api_router.get("/payscribe/data-plans")
 async def get_data_plans_endpoint(network: str, category: str = None, user: dict = Depends(get_current_user)):
     """Get data plans for a network"""
+    result = await get_data_plans_service(network.lower(), category)
+    return result or {'status': False, 'message': 'Failed to fetch plans'}
 
 # ============ Promo Codes (Admin) ============
 
