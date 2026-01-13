@@ -2722,14 +2722,7 @@ async def get_login_popups(user: dict = Depends(get_current_user)):
     items = [p for p in popups if p.get('id') not in dismissed_ids]
     return {'success': True, 'popups': items[:3]}
 
-async def list_transactions(user: dict = Depends(get_current_user)):
-    transactions = await db.transactions.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(100)
-    return {'transactions': transactions}
-
 # ============ Payscribe Routes ============
-@api_router.get("/transactions/list")
-
-
 @api_router.get("/payscribe/services")
 async def get_payscribe_services(user: dict = Depends(get_current_user)):
     """Get available Payscribe services"""
