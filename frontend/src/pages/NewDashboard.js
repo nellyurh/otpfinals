@@ -414,7 +414,7 @@ const NewDashboard = () => {
               <Phone className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">UltraCloud Sms</h1>
+              <h1 className="text-xl font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</h1>
               <p className="text-xs text-gray-500">Virtual SMS Platform</p>
             </div>
           </div>
