@@ -641,16 +641,45 @@ const AdminPanel = ({ user, setUser }) => {
             )}
 
             {activeSection === 'users' && (
-              <section className="grid grid-cols-1 gap-6">
+              <section className="grid grid-cols-1 gap-6 mt-4">
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-semibold">Users Snapshot</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Users</CardTitle>
                     <CardDescription className="text-xs">
-                      This page can later show detailed user lists and filters.
+                      Latest registered users (limited to 100).
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="text-xs text-slate-600">
-                    <p>Basic metrics are already summarized on the dashboard above.</p>
+                    {!users && <p>Loading users…</p>}
+                    {users && users.length === 0 && <p>No users yet.</p>}
+                    {users && users.length > 0 && (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-left text-[11px]">
+                          <thead className="border-b border-slate-200 bg-slate-50">
+                            <tr>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Email</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Full Name</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">NGN Balance</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">USD Balance</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Created At</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {users.map((u) => (
+                              <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="px-2 py-1 whitespace-nowrap">{u.email}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">{u.full_name || '-'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">₦{(u.ngn_balance || 0).toLocaleString()}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">${(u.usd_balance || 0).toLocaleString()}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {u.created_at ? new Date(u.created_at).toLocaleString() : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </section>
