@@ -103,7 +103,7 @@ const Landing = ({ setUser }) => {
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: branding.primary_color_hex || '#059669' }}>
                 <Phone className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-white">SMS Relay</span>
+              <span className="text-2xl font-bold text-white">{branding.brand_name || 'UltraCloud Sms'}</span>
             </div>
             <button
               onClick={() => setShowAuth(true)}
