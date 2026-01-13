@@ -2905,9 +2905,6 @@ async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_curr
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
             await db.transactions.insert_one(trans_dict)
-            
-            return {'success': True, 'message': 'Airtime purchase successful', 'details': result}
-        
 
             await _create_transaction_notification(
                 user['id'],
@@ -2915,6 +2912,8 @@ async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_curr
                 f"Airtime purchase of ₦{request.amount:,.2f} completed.",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'airtime'},
             )
+            
+            return {'success': True, 'message': 'Airtime purchase successful', 'details': result}
 
         raise HTTPException(status_code=400, detail=result.get('description') if result else "Airtime purchase failed")
     except HTTPException:
