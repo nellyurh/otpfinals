@@ -1228,6 +1228,11 @@ async def login(data: UserLogin):
     user = await db.users.find_one({'email': data.email}, {'_id': 0})
     if not user or not verify_password(data.password, user['password_hash']):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if user.get('is_blocked'):
+        raise HTTPException(status_code=403, detail="Account blocked")
+    if user.get('is_suspended'):
+        raise HTTPException(status_code=403, detail="Account suspended")
     
     token = create_token(user['id'], user['email'], user.get('is_admin', False))
     
