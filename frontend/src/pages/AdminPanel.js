@@ -118,6 +118,17 @@ const AdminPanel = ({ user, setUser }) => {
     }
     fetchPricing();
     fetchUsers();
+  const [providerBalances, setProviderBalances] = useState(null);
+
+  const fetchProviderBalances = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/provider-balances`, axiosConfig);
+      if (resp.data.success) setProviderBalances(resp.data.balances);
+    } catch (e) {
+      console.error('Failed to fetch provider balances');
+    }
+  };
+
     fetchPromoCodes();
     fetchProviderBalances();
   }, []);
