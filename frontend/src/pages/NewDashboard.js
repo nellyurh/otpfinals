@@ -1147,6 +1147,28 @@ const NewDashboard = () => {
                     <span>Creating deposit...</span>
                   </>
                 ) : (
+                      <button
+                        onClick={async () => {
+                          if (!currentDeposit) return;
+                          try {
+                            await axios.post(
+                              `${API}/api/crypto/plisio/cancel/${currentDeposit.id}`,
+                              {},
+                              axiosConfig
+                            );
+                            setCurrentDeposit(null);
+                            setCryptoCountdown(null);
+                            toast.success('Deposit cancelled. You can generate a new one any time.');
+                          } catch (e) {
+                            toast.error(e.response?.data?.detail || 'Failed to cancel deposit');
+                          }
+                        }}
+                        disabled={checkingStatus || currentDeposit?.status === 'paid'}
+                        className="w-full mt-1 flex items-center justify-center gap-2 px-4 py-2 border border-red-300 rounded-lg text-sm font-semibold text-red-700 hover:bg-red-50 disabled:bg-gray-100 disabled:text-gray-400"
+                      >
+                        Cancel deposit
+                      </button>
+
                   <span>Generate Crypto Deposit</span>
                 )}
               </button>
