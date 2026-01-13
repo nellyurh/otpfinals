@@ -2489,28 +2489,6 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============ Admin Routes ============
-
-@api_router.get("/admin/users")
-async def admin_list_users(admin: dict = Depends(require_admin)):
-    """List users for admin view (basic snapshot)."""
-    users_cursor = db.users.find({}, {
-        "_id": 0,
-        "id": 1,
-        "email": 1,
-        "full_name": 1,
-        "ngn_balance": 1,
-        "usd_balance": 1,
-        "created_at": 1,
-    }).sort("created_at", -1).limit(100)
-    users = await users_cursor.to_list(100)
-    return {"success": True, "users": users}
-
-@api_router.get("/admin/top-services")
-async def admin_top_services(
-    admin: dict = Depends(require_admin),
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-):
     """Return top OTP services by sales volume for the selected period."""
     now = datetime.now(timezone.utc)
     if end_date:
@@ -2574,28 +2552,6 @@ async def admin_top_services(
     }
 
 # ============ Admin Routes ============
-
-@api_router.get("/admin/users")
-async def admin_list_users(admin: dict = Depends(require_admin)):
-    """List users for admin view (basic snapshot)."""
-    users_cursor = db.users.find({}, {
-        "_id": 0,
-        "id": 1,
-        "email": 1,
-        "full_name": 1,
-        "ngn_balance": 1,
-        "usd_balance": 1,
-        "created_at": 1,
-    }).sort("created_at", -1).limit(100)
-    users = await users_cursor.to_list(100)
-    return {"success": True, "users": users}
-
-@api_router.get("/admin/top-services")
-async def admin_top_services(
-    admin: dict = Depends(require_admin),
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-):
     """Return top OTP services by sales volume for the selected period."""
     now = datetime.now(timezone.utc)
     if end_date:
