@@ -2788,6 +2788,33 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
+
+class AdminUpdateUserRequest(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    ngn_balance: Optional[float] = None
+    usd_balance: Optional[float] = None
+    is_admin: Optional[bool] = None
+    is_suspended: Optional[bool] = None
+    is_blocked: Optional[bool] = None
+
+@api_router.put("/admin/users/{user_id}")
+async def admin_update_user(user_id: str, data: AdminUpdateUserRequest, admin: dict = Depends(require_admin)):
+    update_fields = {}
+    for key in ['full_name', 'email', 'ngn_balance', 'usd_balance', 'is_admin', 'is_suspended', 'is_blocked']:
+        val = getattr(data, key)
+        if val is not None:
+            update_fields[key] = val
+
+    if not update_fields:
+        return {"success": True}
+
+    await db.users.update_one({'id': user_id}, {'$set': update_fields})
+    user = await db.users.find_one({'id': user_id}, {'_id': 0, 'password_hash': 0})
+    if not user:
+        raise HTTPException(status_code=404, detail='User not found')
+    return {"success": True, "user": user}
+
                 amount=request.amount,
                 currency='NGN',
                 status='completed',
