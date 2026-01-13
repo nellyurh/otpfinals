@@ -235,6 +235,53 @@ const AdminPanel = ({ user, setUser }) => {
         expires_at: ''
       });
       fetchPromoCodes();
+
+  const openUserEditor = (u) => {
+    setSelectedUser(u);
+    setEditUser({
+      full_name: u.full_name || '',
+      email: u.email || '',
+      ngn_balance: u.ngn_balance || 0,
+      usd_balance: u.usd_balance || 0,
+      is_admin: !!u.is_admin,
+      is_suspended: !!u.is_suspended,
+      is_blocked: !!u.is_blocked,
+    });
+  };
+
+  const saveUserEdits = async () => {
+    try {
+      if (!selectedUser) return;
+      await axios.put(`${API}/admin/users/${selectedUser.id}`,
+        {
+          full_name: editUser.full_name,
+          email: editUser.email,
+          ngn_balance: parseFloat(editUser.ngn_balance) || 0,
+          usd_balance: parseFloat(editUser.usd_balance) || 0,
+          is_admin: !!editUser.is_admin,
+          is_suspended: !!editUser.is_suspended,
+          is_blocked: !!editUser.is_blocked,
+        },
+        axiosConfig
+      );
+      toast.success('User updated');
+      setSelectedUser(null);
+      setEditUser(null);
+      fetchUsers();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to update user');
+    }
+  };
+
+  const quickToggleUser = async (u, key) => {
+    try {
+      await axios.put(`${API}/admin/users/${u.id}`, { [key]: !u[key] }, axiosConfig);
+      fetchUsers();
+    } catch (e) {
+      toast.error('Failed to update user');
+    }
+  };
+
     } catch (e) {
       toast.error(e.response?.data?.detail || 'Failed to create promo');
     }
