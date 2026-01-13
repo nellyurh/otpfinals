@@ -191,6 +191,44 @@ const AdminPanel = ({ user, setUser }) => {
         enable_profile: response.data.enable_profile !== false,
         enable_support: response.data.enable_support !== false,
       });
+
+  const handleCreatePromo = async () => {
+    try {
+      const payload = {
+        ...newPromo,
+        code: newPromo.code?.trim(),
+        discount_value: parseFloat(newPromo.discount_value) || 0,
+        max_total_uses: newPromo.max_total_uses === '' ? null : parseInt(newPromo.max_total_uses, 10),
+        expires_at: newPromo.expires_at ? new Date(newPromo.expires_at).toISOString() : null,
+      };
+      await axios.post(`${API}/admin/promo-codes`, payload, axiosConfig);
+      toast.success('Promo code created');
+      setNewPromo({
+        code: '',
+        description: '',
+        discount_type: 'percent',
+        discount_value: 10,
+        currency: 'NGN',
+        active: true,
+        max_total_uses: 100,
+        one_time_per_user: true,
+        expires_at: ''
+      });
+      fetchPromoCodes();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to create promo');
+    }
+  };
+
+  const togglePromoActive = async (promo) => {
+    try {
+      await axios.put(`${API}/admin/promo-codes/${promo.id}`, { active: !promo.active }, axiosConfig);
+      fetchPromoCodes();
+    } catch (e) {
+      toast.error('Failed to update promo');
+    }
+  };
+
     } catch (error) {
       console.error('Failed to fetch pricing');
     }
