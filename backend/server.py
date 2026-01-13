@@ -224,11 +224,11 @@ class PricingConfig(BaseModel):
     primary_color_hex: str = "#059669"  # emerald-600
 
     # Manual coin->USD rates (admin editable) for volatile coins
-    btc_usd_rate: float = 0.0
-    eth_usd_rate: float = 0.0
-    ltc_usd_rate: float = 0.0
-    doge_usd_rate: float = 0.0
-    bnb_usd_rate: float = 0.0
+    btc_usd_rate: float = 1420.0
+    eth_usd_rate: float = 1420.0
+    ltc_usd_rate: float = 1420.0
+    doge_usd_rate: float = 1420.0
+    bnb_usd_rate: float = 1420.0
 
     # Page toggles (admin controlled)
     enable_dashboard: bool = True
