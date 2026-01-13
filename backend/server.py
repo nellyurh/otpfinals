@@ -96,6 +96,32 @@ class User(BaseModel):
     
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class PromoCode(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str
+    description: Optional[str] = None
+    discount_type: str  # 'percent' | 'fixed_ngn' | 'fixed_usd'
+    discount_value: float
+    currency: Optional[str] = None  # for fixed discounts
+    active: bool = True
+    max_total_uses: Optional[int] = None
+    one_time_per_user: bool = True
+    expires_at: Optional[str] = None  # ISO string
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PromoRedemption(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    promo_id: str
+    code: str
+    user_id: str
+    order_id: Optional[str] = None
+    amount_discounted: float = 0.0
+    currency: str = 'NGN'
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
