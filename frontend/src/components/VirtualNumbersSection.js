@@ -302,7 +302,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               server: selectedServer.value,
               service: selectedService.value,
               country: selectedCountry?.value,
-              promo_code: promoCode || undefined
+              promo_code: promoCode || undefined,
+              area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+              carrier: selectedCarrier?.value,
             },
             axiosConfig
           );
