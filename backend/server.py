@@ -1378,6 +1378,9 @@ async def get_virtual_accounts(user: dict = Depends(get_current_user)):
 async def generate_virtual_account(user: dict = Depends(get_current_user)):
     """Manually generate PaymentPoint virtual account for user"""
     try:
+        # Block suspended users from generating new funding accounts
+        if user.get('is_suspended'):
+            raise HTTPException(status_code=403, detail="Account suspended")
         # Check if user already has virtual account
         if user.get('virtual_account_number'):
             return {
@@ -2152,6 +2155,9 @@ async def purchase_number(
     background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user)
 ):
+    # Block suspended users from creating new orders
+    if user.get('is_suspended'):
+        raise HTTPException(status_code=403, detail="Account suspended")
     # Map server to provider
     server_map = {
         'us_server': 'daisysms',
@@ -2892,6 +2898,9 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
 @api_router.post('/crypto/plisio/create-invoice')
 async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_user)):
     """Create a Plisio invoice and return address/QR fields for UI."""
+    # Block suspended users from funding wallet via crypto
+    if user.get('is_suspended'):
+        raise HTTPException(status_code=403, detail="Account suspended")
     amount_usd = float(payload.get('amount_usd') or 0)
     currency = (payload.get('currency') or 'USDT').upper()
 
