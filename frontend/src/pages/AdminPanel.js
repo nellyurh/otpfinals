@@ -105,6 +105,15 @@ const AdminPanel = ({ user, setUser }) => {
     fetchTopServices();
   }, [periodPreset, customRange.start, customRange.end]);
 
+  const fetchPromoCodes = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/promo-codes`, axiosConfig);
+      if (resp.data.success) setPromoCodes(resp.data.promos || []);
+    } catch (e) {
+      console.error('Failed to fetch promo codes');
+    }
+  };
+
   const fetchStats = async () => {
     try {
       const params = {};
@@ -126,16 +135,6 @@ const AdminPanel = ({ user, setUser }) => {
           d.setDate(d.getDate() - 7);
           start = d;
         } else if (periodPreset === '30d') {
-
-  const fetchPromoCodes = async () => {
-    try {
-      const resp = await axios.get(`${API}/admin/promo-codes`, axiosConfig);
-      if (resp.data.success) setPromoCodes(resp.data.promos || []);
-    } catch (e) {
-      console.error('Failed to fetch promo codes');
-    }
-  };
-
           const d = new Date(now);
           d.setDate(d.getDate() - 30);
           start = d;
