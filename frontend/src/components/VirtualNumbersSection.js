@@ -92,15 +92,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     ca: 'Cash App'
   };
 
-  const countryFlagMap = {
-    usa: 'https://flagcdn.com/w40/us.png',
-    unitedstates: 'https://flagcdn.com/w40/us.png',
-    nigeria: 'https://flagcdn.com/w40/ng.png',
-    unitedkingdom: 'https://flagcdn.com/w40/gb.png',
-    uk: 'https://flagcdn.com/w40/gb.png',
-    canada: 'https://flagcdn.com/w40/ca.png',
-    india: 'https://flagcdn.com/w40/in.png'
-  };
+ 
 
   const getCountryFlagUrl = (countryValue) => {
     if (!countryValue) return null;
