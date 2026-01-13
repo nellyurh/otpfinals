@@ -156,8 +156,18 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'settings'}
               onClick={() => setActiveSection('settings')}
             />
-            <SidebarItem icon={Settings} label="Providers" disabled />
-            <SidebarItem icon={Users} label="Users" disabled />
+            <SidebarItem
+              icon={Settings}
+              label="Providers"
+              active={activeSection === 'providers'}
+              onClick={() => setActiveSection('providers')}
+            />
+            <SidebarItem
+              icon={Users}
+              label="Users"
+              active={activeSection === 'users'}
+              onClick={() => setActiveSection('users')}
+            />
           </nav>
 
           <div className="border-t border-slate-200 px-4 py-3 text-[11px] text-slate-500">
@@ -622,10 +632,11 @@ const AdminPanel = ({ user, setUser }) => {
   );
 };
 
-const SidebarItem = ({ icon: Icon, label, active, disabled }) => (
+const SidebarItem = ({ icon: Icon, label, active, disabled, onClick }) => (
   <button
     type="button"
     disabled={disabled}
+    onClick={onClick}
     className={`w-full flex items-center gap-2 px-3 py-2 rounded-full text-left text-xs font-medium transition 
       ${disabled ? 'text-slate-300 cursor-not-allowed' : active ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-100'}`}
   >
