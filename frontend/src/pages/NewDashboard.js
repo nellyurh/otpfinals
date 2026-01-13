@@ -55,13 +55,19 @@ const NewDashboard = () => {
   const [user, setUser] = useState({ email: '', full_name: '', ngn_balance: 0, usd_balance: 0, is_admin: false });
   const [loading, setLoading] = useState(false);
   const [pageToggles, setPageToggles] = useState({
+    enable_dashboard: true,
+    enable_transactions: true,
+    enable_fund_wallet: true,
     enable_virtual_numbers: true,
     enable_buy_data: true,
     enable_airtime: true,
     enable_betting: true,
     enable_virtual_cards: true,
-    enable_fund_wallet: true,
-    enable_referral: true
+    enable_sms_history: true,
+    enable_account_upgrade: true,
+    enable_referral: true,
+    enable_profile: true,
+    enable_support: true
   });
   
   // Virtual Numbers state
@@ -337,10 +343,9 @@ const NewDashboard = () => {
   ];
 
   // Filter menu items based on page toggles
-  const menuItems = allMenuItems.map(section => ({
-    ...section,
-    items: section.items.filter(item => !item.toggle || pageToggles[item.toggle])
-  })).filter(section => section.items.length > 0);
+  // NOTE: you requested: keep pages visible but show maintenance if OFF.
+  // So we do NOT filter them out; we only use toggles to block content/actions.
+  const menuItems = allMenuItems;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
