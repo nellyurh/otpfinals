@@ -1800,6 +1800,74 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
                 
                 if cached_services:
                     await db.cached_services.delete_many({'provider': 'tigersms'})
+
+async def _apply_promo_discount(
+    *,
+    promo_code: Optional[str],
+    user_id: str,
+    final_price_ngn: float,
+    final_price_usd: float,
+    ngn_to_usd_rate: float,
+):
+    """Returns (discount_ngn, discount_usd, promo_doc_or_none)."""
+    if not promo_code:
+        return 0.0, 0.0, None
+
+    code_norm = promo_code.strip().upper()
+    promo = await db.promo_codes.find_one({"code": code_norm, "active": True}, {"_id": 0})
+    if not promo:
+        raise HTTPException(status_code=400, detail="Invalid promo code")
+
+    expires_at = promo.get('expires_at')
+    if expires_at:
+        try:
+            exp = datetime.fromisoformat(expires_at)
+            if not exp.tzinfo:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > exp:
+                raise HTTPException(status_code=400, detail="Promo code expired")
+        except HTTPException:
+            raise
+        except Exception:
+            # if malformed expiry, treat as expired to be safe
+            raise HTTPException(status_code=400, detail="Promo code expired")
+
+    max_total = promo.get('max_total_uses')
+    if max_total is not None:
+        used = await db.promo_redemptions.count_documents({"promo_id": promo['id']})
+        if used >= int(max_total):
+            raise HTTPException(status_code=400, detail="Promo code usage limit reached")
+
+    if promo.get('one_time_per_user', True):
+        prior = await db.promo_redemptions.find_one({"promo_id": promo['id'], "user_id": user_id}, {"_id": 0})
+        if prior:
+            raise HTTPException(status_code=400, detail="Promo code already used")
+
+    dtype = promo.get('discount_type')
+    dval = float(promo.get('discount_value') or 0)
+
+    discount_ngn = 0.0
+    discount_usd = 0.0
+
+    if dtype == 'percent':
+        pct = max(0.0, min(100.0, dval))
+        discount_ngn = final_price_ngn * (pct / 100.0)
+        discount_usd = final_price_usd * (pct / 100.0)
+    elif dtype == 'fixed_ngn':
+        discount_ngn = max(0.0, dval)
+        discount_usd = discount_ngn / (ngn_to_usd_rate or 1500.0)
+    elif dtype == 'fixed_usd':
+        discount_usd = max(0.0, dval)
+        discount_ngn = discount_usd * (ngn_to_usd_rate or 1500.0)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid promo configuration")
+
+    # Ensure no negative final price
+    discount_ngn = min(discount_ngn, final_price_ngn)
+    discount_usd = min(discount_usd, final_price_usd)
+
+    return float(discount_ngn), float(discount_usd), promo
+
                     for service in cached_services:
                         service['last_updated'] = service['last_updated'].isoformat()
                     await db.cached_services.insert_many(cached_services)
