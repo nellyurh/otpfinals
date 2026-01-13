@@ -580,7 +580,7 @@ const NewDashboard = () => {
             </div>
             <div>
               <h2 className="text-2xl font-bold">{getUserDisplayName()}</h2>
-              <p className="text-white/80">Welcome back!</p>
+              <p className="text-white/80">{branding.brand_name || 'UltraCloud Sms'}</p>
             </div>
           </div>
 
