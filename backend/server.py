@@ -2960,6 +2960,11 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'plisio_status': (data.get('status') or 'new').lower(),
         'created_at': datetime.now(timezone.utc).isoformat(),
         'expires_at': expires_at_iso,
+        # Flatten a few commonly used fields for easy frontend display
+        'address': data.get('wallet_hash') or data.get('address'),
+        'amount_crypto': data.get('amount') or data.get('amount_to_pay'),
+        'qr': data.get('qr_code') or data.get('qr'),
+        'invoice_url': data.get('invoice_url'),
         'raw': data,
     }
     await db.crypto_invoices.insert_one(invoice_doc)
