@@ -94,6 +94,7 @@ const NewDashboard = () => {
   const [currentDeposit, setCurrentDeposit] = useState(null);
   const [creatingDeposit, setCreatingDeposit] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(false);
+  const [cryptoCountdown, setCryptoCountdown] = useState(null);
 
   // Public branding (used for brand text + primary green accents)
   const [branding, setBranding] = useState({
