@@ -8,6 +8,18 @@ import {
   LayoutDashboard,
   Settings,
   Wallet,
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+
   Users,
   TrendingUp,
   ArrowLeft,
