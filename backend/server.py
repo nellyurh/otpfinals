@@ -2887,6 +2887,11 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
             if r.status_code == 200:
                 balances['5sim'] = r.json()
             else:
+                balances['5sim'] = {'status_code': r.status_code}
+        except Exception:
+            balances['5sim'] = {'error': 'failed'}
+
+    return {'success': True, 'balances': balances}
 
 # ============ Crypto Deposits (Plisio) ============
 
