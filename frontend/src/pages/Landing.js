@@ -131,7 +131,8 @@ const Landing = ({ setUser }) => {
               ))}
           </h1>
           <p className="text-xl mb-8" style={{ color: '#8b95a5' }}>
-            Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers.
+            {branding.landing_hero_subtitle ||
+              "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters"}
           </p>
           <div className="flex items-center justify-center gap-4">
             <button
