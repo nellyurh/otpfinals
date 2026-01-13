@@ -244,6 +244,74 @@ const AdminPanel = ({ user, setUser }) => {
               <KpiCard
                 title="NGN to USD"
                 value={`₦${pricing.ngn_to_usd_rate} = $1`}
+
+                {/* Money flow metrics (primary currency NGN) */}
+                <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+                  <KpiCard
+                    title="Total Deposits (period)"
+                    value={
+                      stats && stats.money_flow
+                        ? `₦${Math.round(stats.money_flow.total_deposits_ngn || 0).toLocaleString()}`
+                        : '₦0'
+                    }
+                    icon={Wallet}
+                    accent="text-emerald-700 bg-emerald-50"
+                  />
+                  <KpiCard
+                    title="Total Sales (OTP spend)"
+                    value={
+                      stats && stats.money_flow
+                        ? `₦${Math.round(
+                            (stats.money_flow.total_sales_usd || 0) * (pricing.ngn_to_usd_rate || 1500)
+                          ).toLocaleString()}`
+                        : '₦0'
+                    }
+                    icon={TrendingUp}
+                    accent="text-sky-700 bg-sky-50"
+                  />
+                  <KpiCard
+                    title="Gross Profit (Sales – API)"
+                    value={
+                      stats && stats.money_flow
+                        ? `₦${Math.round(
+                            (stats.money_flow.gross_profit_usd || 0) * (pricing.ngn_to_usd_rate || 1500)
+                          ).toLocaleString()}`
+                        : '₦0'
+                    }
+                    icon={DollarSign}
+                    accent="text-amber-700 bg-amber-50"
+                  />
+                  <KpiCard
+                    title="Float Added (Deposits – Sales)"
+                    value={
+                      stats && stats.money_flow
+                        ? `₦${Math.round(
+                            (stats.money_flow.float_added_usd || 0) * (pricing.ngn_to_usd_rate || 1500)
+                          ).toLocaleString()}`
+                        : '₦0'
+                    }
+                    icon={Wallet}
+                    accent="text-indigo-700 bg-indigo-50"
+                  />
+                  <KpiCard
+                    title="Net Profit (est.)"
+                    value={
+                      stats && stats.money_flow
+                        ? (() => {
+                            const ngnRate = pricing.ngn_to_usd_rate || 1500;
+                            const depositsNgn = stats.money_flow.total_deposits_ngn || 0;
+                            const apiCostNgn = (stats.money_flow.api_cost_usd || 0) * ngnRate;
+                            const ads = parseFloat(adsSpend || '0') || 0;
+                            const net = depositsNgn - apiCostNgn - ads;
+                            return `₦${Math.round(net).toLocaleString()}`;
+                          })()
+                        : '₦0'
+                    }
+                    icon={DollarSign}
+                    accent="text-rose-700 bg-rose-50"
+                  />
+                </section>
+
                 icon={DollarSign}
                 accent="text-sky-600 bg-sky-50"
               />
