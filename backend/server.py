@@ -149,15 +149,11 @@ class Transaction(BaseModel):
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
 class SMSOrder(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
-
-class ProviderBalanceResponse(BaseModel):
-    success: bool
-    balances: Dict[str, Any]
-
     server: str  # us_server, server1, server2
     provider: str  # daisysms, smspool, tigersms
     service: str
@@ -165,6 +161,8 @@ class ProviderBalanceResponse(BaseModel):
     phone_number: Optional[str] = None
     activation_id: Optional[str] = None
     otp: Optional[str] = None
+    otp_code: Optional[str] = None
+    sms_text: Optional[str] = None
     status: str
     cost_usd: float
     provider_cost: float
@@ -176,6 +174,16 @@ class ProviderBalanceResponse(BaseModel):
     # DaisySMS optional filters
     area_code: Optional[str] = None
     carrier: Optional[str] = None
+    phone_make: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+
+
+class ProviderBalanceResponse(BaseModel):
+    success: bool
+    balances: Dict[str, Any]
+
+
 class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -187,6 +195,7 @@ class Notification(BaseModel):
     created_by: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
 class NotificationReceipt(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -196,9 +205,6 @@ class NotificationReceipt(BaseModel):
     dismissed_at: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-    phone_make: Optional[str] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    expires_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(minutes=8))
 
 class PricingConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
