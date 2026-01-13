@@ -320,6 +320,58 @@ const AdminPanel = ({ user, setUser }) => {
                 value={pricing.fivesim_coin_per_usd}
                 icon={Wallet}
                 accent="text-amber-600 bg-amber-50"
+                {/* Ads performance inputs */}
+                <section className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <Card className="border border-slate-200 shadow-sm bg-white">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold">Ads Spend (manual)</CardTitle>
+                      <CardDescription className="text-xs">
+                        Enter your ad spend for this period to compute net profit.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-xs">
+                      <Label className="text-[11px] font-semibold text-slate-600">Ads Spend (₦)</Label>
+                      <Input
+                        type="number"
+                        value={adsSpend}
+                        onChange={(e) => setAdsSpend(e.target.value)}
+                        className="h-8 text-xs bg-slate-50 border-slate-200"
+                      />
+                      <p className="text-[10px] text-slate-500">
+                        Net profit = Deposits – API cost – Ads.
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-slate-200 shadow-sm bg-white">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold">Float Added</CardTitle>
+                      <CardDescription className="text-xs">Deposits not yet spent on OTPs.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-xs space-y-1">
+                      <p>
+                        High float = safe buffer.
+                        <br />Low float = liquidity risk.
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border border-slate-200 shadow-sm bg-white">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold">Decision Notes</CardTitle>
+                      <CardDescription className="text-xs">
+                        Quick rules of thumb for scaling or pausing.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-[11px] text-slate-600 space-y-1">
+                      <p>• If deposits &lt; ad spend → ads are failing.</p>
+                      <p>• If deposits &gt; ad spend → you&rsquo;re alive.</p>
+                      <p>• If gross profit negative → pricing is wrong.</p>
+                      <p>• If net profit negative → stop ads or adjust prices.</p>
+                    </CardContent>
+                  </Card>
+                </section>
+
               />
             </section>
 
