@@ -150,8 +150,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin panel regression: /admin load, tab switching, Users list, Top services, date range presets + custom"
-  stuck_tasks: []
+    - "UltraCloud SMS Frontend Testing - Login, Fund Wallet, Virtual Numbers"
+  stuck_tasks:
+    - "UltraCloud SMS Frontend Testing - Login, Fund Wallet, Virtual Numbers"
   test_all: false
   test_priority: "high_first"
 
