@@ -2409,7 +2409,12 @@ async def purchase_number(
     )
     
     order_dict = order.model_dump()
-    order_dict['created_at'] = order_dict['created_at'].isoformat()
+    # created_at may not always be present depending on Pydantic model state; ensure it exists
+    created_at_val = order_dict.get('created_at')
+    if isinstance(created_at_val, datetime):
+        order_dict['created_at'] = created_at_val.isoformat()
+    else:
+        order_dict['created_at'] = datetime.now(timezone.utc).isoformat()
     order_dict['expires_at'] = expires_at.isoformat()
     await db.sms_orders.insert_one(order_dict)
     
