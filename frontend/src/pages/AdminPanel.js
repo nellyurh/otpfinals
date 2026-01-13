@@ -288,12 +288,7 @@ const AdminPanel = ({ user, setUser }) => {
                 icon={DollarSign}
                 accent="text-sky-600 bg-sky-50"
               />
-              <KpiCard
-                title="5sim Coin per USD"
-                value={pricing.fivesim_coin_per_usd}
-                icon={Wallet}
-                accent="text-amber-600 bg-amber-50"
-              />
+              {/* 5sim Coin per USD moved to Settings > Pricing */}
             </section>
 
             {/* Money flow metrics (primary currency NGN) */}
