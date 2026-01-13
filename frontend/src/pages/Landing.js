@@ -121,8 +121,14 @@ const Landing = ({ setUser }) => {
       <div className="container mx-auto px-6 py-20">
         <div className="text-center max-w-4xl mx-auto fade-in">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            Cheapest and Fastest <br/>
-            <span style={{ color: '#4169E1' }}>Online SMS Verification</span>
+            {String(branding.landing_hero_title || 'Cheapest and Fastest\nOnline SMS Verification')
+              .split('\n')
+              .map((line, idx) => (
+                <span key={idx}>
+                  {idx === 0 ? line : <span style={{ color: branding.primary_color_hex || '#059669' }}>{line}</span>}
+                  <br />
+                </span>
+              ))}
           </h1>
           <p className="text-xl mb-8" style={{ color: '#8b95a5' }}>
             Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers.
