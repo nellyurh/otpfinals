@@ -1231,6 +1231,8 @@ const AdminPanel = ({ user, setUser }) => {
                               <th className="px-2 py-1 font-semibold text-slate-600">NGN Balance</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">USD Balance</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">Created At</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Status</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
