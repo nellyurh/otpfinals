@@ -332,6 +332,13 @@ class UpdatePricingRequest(BaseModel):
     landing_hero_title: Optional[str] = None
     landing_hero_subtitle: Optional[str] = None
 
+    # Manual coin->USD rates
+    btc_usd_rate: Optional[float] = None
+    eth_usd_rate: Optional[float] = None
+    ltc_usd_rate: Optional[float] = None
+    doge_usd_rate: Optional[float] = None
+    bnb_usd_rate: Optional[float] = None
+
     # Page toggles
     enable_dashboard: Optional[bool] = None
     enable_transactions: Optional[bool] = None
