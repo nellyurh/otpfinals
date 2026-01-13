@@ -505,6 +505,41 @@ DAISYSMS_PRICES = {
     'bm2': 0.80,  # BMO Alto
     'va': 0.80,  # Varo
     'g1': 0.80,  # Golden1
+
+async def _plisio_request(method: str, endpoint: str, params: dict):
+    if not PLISIO_SECRET_KEY:
+        raise HTTPException(status_code=500, detail='Plisio not configured')
+    url = f"{PLISIO_BASE_URL}{endpoint}"
+    q = dict(params or {})
+    q['api_key'] = PLISIO_SECRET_KEY
+
+    async with httpx.AsyncClient(timeout=30.0) as client_http:
+        if method.upper() == 'GET':
+            r = await client_http.get(url, params=q)
+        else:
+            r = await client_http.post(url, data=q)
+
+    try:
+        return r.json()
+    except Exception:
+        return {'status': 'error', 'data': None, 'raw': r.text, 'http_status': r.status_code}
+
+
+def _plisio_verify_hash(payload: dict) -> bool:
+    """Best-effort verify_hash check (Plisio style)."""
+    try:
+        verify_hash = payload.get('verify_hash')
+        if not verify_hash or not PLISIO_SECRET_KEY:
+            return False
+        p = dict(payload)
+        p.pop('verify_hash', None)
+        # sort keys and serialize like PHP
+        serialized = phpserialize.dumps({k: str(p[k]).encode('utf-8') for k in sorted(p.keys())}, charset='utf-8')
+        digest = hmac.new(PLISIO_SECRET_KEY.encode('utf-8'), serialized, hashlib.sha1).hexdigest()
+        return digest == verify_hash
+    except Exception:
+        return False
+
     'ns': 1.00,  # Netspend
     'fr': 1.00,  # Frost Bank
     'ey': 0.80   # EverBank
