@@ -148,6 +148,11 @@ class SMSOrder(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
+
+class ProviderBalanceResponse(BaseModel):
+    success: bool
+    balances: Dict[str, Any]
+
     server: str  # us_server, server1, server2
     provider: str  # daisysms, smspool, tigersms
     service: str
