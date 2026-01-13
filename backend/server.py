@@ -2902,6 +2902,10 @@ async def get_admin_stats(
     gross_profit_usd = total_sales_usd - api_cost_usd
     float_added_usd = total_deposits_usd - total_sales_usd
 
+    # ================= Additional metrics for ads, users & risk =================
+
+    # (see block above for calculations)
+
     # All-time revenue (for backward compatibility)
     revenue_result = await db.transactions.aggregate([
         {'$match': {'type': 'purchase', 'status': 'completed'}},
