@@ -2629,26 +2629,38 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
 
 @api_router.get("/user/page-toggles")
 async def get_page_toggles(user: dict = Depends(get_current_user)):
-    """Get which pages are enabled/disabled"""
+    """Get which pages are enabled/disabled (controls user dashboard availability)."""
     config = await db.pricing_config.find_one({}, {'_id': 0})
     if not config:
         return {
+            'enable_dashboard': True,
+            'enable_transactions': True,
+            'enable_fund_wallet': True,
             'enable_virtual_numbers': True,
             'enable_buy_data': True,
             'enable_airtime': True,
             'enable_betting': True,
             'enable_virtual_cards': True,
-            'enable_fund_wallet': True,
-            'enable_referral': True
+            'enable_sms_history': True,
+            'enable_account_upgrade': True,
+            'enable_referral': True,
+            'enable_profile': True,
+            'enable_support': True,
         }
     return {
+        'enable_dashboard': config.get('enable_dashboard', True),
+        'enable_transactions': config.get('enable_transactions', True),
+        'enable_fund_wallet': config.get('enable_fund_wallet', True),
         'enable_virtual_numbers': config.get('enable_virtual_numbers', True),
         'enable_buy_data': config.get('enable_buy_data', True),
         'enable_airtime': config.get('enable_airtime', True),
         'enable_betting': config.get('enable_betting', True),
         'enable_virtual_cards': config.get('enable_virtual_cards', True),
-        'enable_fund_wallet': config.get('enable_fund_wallet', True),
-        'enable_referral': config.get('enable_referral', True)
+        'enable_sms_history': config.get('enable_sms_history', True),
+        'enable_account_upgrade': config.get('enable_account_upgrade', True),
+        'enable_referral': config.get('enable_referral', True),
+        'enable_profile': config.get('enable_profile', True),
+        'enable_support': config.get('enable_support', True),
     }
 
 @api_router.put("/admin/pricing")
