@@ -2931,7 +2931,10 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
     # Block suspended users from funding wallet via crypto
     if user.get('is_suspended'):
         raise HTTPException(status_code=403, detail="Account suspended")
+
     amount_usd = float(payload.get('amount_usd') or 0)
+    if amount_usd < 5.1:
+        raise HTTPException(status_code=400, detail='Minimum crypto deposit is $5.10')
     currency = (payload.get('currency') or 'USDT').upper()
 
     if amount_usd <= 0:

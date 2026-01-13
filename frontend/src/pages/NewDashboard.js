@@ -197,12 +197,18 @@ const NewDashboard = () => {
       return;
     }
 
+    const amt = parseFloat(cryptoAmountUsd);
+    if (Number.isNaN(amt) || amt < 5.1) {
+      toast.error('Minimum crypto deposit is $5.10');
+      return;
+    }
+
     setCreatingDeposit(true);
     try {
       const response = await axios.post(
         `${API}/api/crypto/plisio/create-invoice`,
         {
-          amount_usd: parseFloat(cryptoAmountUsd),
+          amount_usd: amt,
           currency: cryptoCurrency
         },
         axiosConfig
