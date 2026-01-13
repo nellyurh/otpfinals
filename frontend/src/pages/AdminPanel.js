@@ -102,6 +102,46 @@ const AdminPanel = ({ user, setUser }) => {
         tigersms_markup: response.data.tigersms_markup,
         daisysms_markup: response.data.daisysms_markup,
         smspool_markup: response.data.smspool_markup,
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/users`, axiosConfig);
+      if (response.data.success) {
+        setUsers(response.data.users || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users');
+    }
+  };
+
+  const fetchTopServices = async () => {
+    try {
+      const params: any = {};
+      const now = new Date();
+      let start: Date | null = null;
+      if (periodPreset === '1d') {
+        start = new Date(now);
+        start.setDate(start.getDate() - 1);
+      } else if (periodPreset === '7d') {
+        start = new Date(now);
+        start.setDate(start.getDate() - 7);
+      } else if (periodPreset === '30d') {
+        start = new Date(now);
+        start.setDate(start.getDate() - 30);
+      }
+      if (start) {
+        params.start_date = start.toISOString();
+        params.end_date = now.toISOString();
+      }
+      const response = await axios.get(`${API}/admin/top-services`, { ...axiosConfig, params });
+      if (response.data.success) {
+        setTopServices(response.data.services || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch top services');
+    }
+  };
+
+
         ngn_to_usd_rate: response.data.ngn_to_usd_rate,
         fivesim_coin_per_usd: response.data.fivesim_coin_per_usd ?? prev.fivesim_coin_per_usd,
       }));
