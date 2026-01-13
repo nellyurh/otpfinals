@@ -2488,6 +2488,90 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
         logger.error(f"Betting fund error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.get("/admin/users")
+async def admin_list_users(admin: dict = Depends(require_admin)):
+    """List users for admin view (basic snapshot)."""
+    users_cursor = db.users.find({}, {
+        "_id": 0,
+        "id": 1,
+        "email": 1,
+        "full_name": 1,
+        "ngn_balance": 1,
+        "usd_balance": 1,
+        "created_at": 1,
+    }).sort("created_at", -1).limit(100)
+    users = await users_cursor.to_list(100)
+    return {"success": True, "users": users}
+
+@api_router.get("/admin/top-services")
+async def admin_top_services(
+    admin: dict = Depends(require_admin),
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+):
+    """Return top OTP services by sales volume for the selected period."""
+    now = datetime.now(timezone.utc)
+    if end_date:
+        try:
+            end = datetime.fromisoformat(end_date)
+            if not end.tzinfo:
+                end = end.replace(tzinfo=timezone.utc)
+        except Exception:
+            end = now
+    else:
+        end = now
+
+    if start_date:
+        try:
+            start = datetime.fromisoformat(start_date)
+            if not start.tzinfo:
+                start = start.replace(tzinfo=timezone.utc)
+        except Exception:
+            start = end - timedelta(days=1)
+    else:
+        start = end - timedelta(days=1)
+
+    match_stage = {
+        "created_at": {"$gte": start.isoformat(), "$lte": end.isoformat()},
+    }
+
+    # Aggregate transactions by service using metadata.service when available
+    pipeline = [
+        {"$match": {**match_stage, "type": "purchase", "status": "completed"}},
+        {
+            "$group": {
+                "_id": {"service": "$metadata.service"},
+                "total_amount": {"$sum": "$amount"},
+                "count": {"$sum": 1},
+            }
+        },
+        {"$sort": {"total_amount": -1}},
+        {"$limit": 20},
+    ]
+
+    cursor = db.transactions.aggregate(pipeline)
+    rows = await cursor.to_list(20)
+
+    services = []
+    for row in rows:
+        sid = row.get("_id", {}) or {}
+        service_code = sid.get("service") or "unknown"
+        services.append(
+            {
+                "service": service_code,
+                "total_amount": float(row.get("total_amount", 0) or 0),
+                "count": row.get("count", 0),
+            }
+        )
+
+    return {
+        "success": True,
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "services": services,
+    }
+
+
 # ============ Admin Routes ============
 
 @api_router.get("/admin/pricing")
