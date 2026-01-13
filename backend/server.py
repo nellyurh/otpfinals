@@ -2574,6 +2574,24 @@ async def admin_list_notifications(admin: dict = Depends(require_admin)):
     notifs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
     return {'success': True, 'notifications': notifs}
 
+@api_router.post('/admin/notifications/broadcast')
+async def admin_broadcast_notification(payload: dict, admin: dict = Depends(require_admin)):
+    """Create an update/announcement for all users."""
+    notif = Notification(
+        title=payload.get('title') or 'Update',
+        message=payload.get('message') or '',
+        type=payload.get('type') or 'update',
+        active=bool(payload.get('active', True)),
+        show_on_login=bool(payload.get('show_on_login', False)),
+        created_by=admin.get('id'),
+    )
+    doc = notif.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.notifications.insert_one(doc)
+    doc.pop('_id', None)
+    return {'success': True, 'notification': doc}
+
+
 
 @api_router.put('/admin/notifications/{notification_id}')
 async def admin_update_notification(notification_id: str, payload: dict, admin: dict = Depends(require_admin)):
