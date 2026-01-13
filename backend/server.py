@@ -2401,6 +2401,13 @@ async def purchase_number(
         'success': True, 
         'order': {
             'id': order.id,
+    await _create_transaction_notification(
+        user['id'],
+        'OTP purchase',
+        f"You purchased a number for {data.service.upper()} ({provider}).",
+        metadata={'reference': order.id, 'type': 'purchase', 'provider': provider},
+    )
+
             'phone_number': phone_number,
             'activation_id': activation_id,
             'provider': provider,
