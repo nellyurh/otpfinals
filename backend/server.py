@@ -1273,9 +1273,6 @@ async def otp_polling_task(order_id: str):
 
 @api_router.post("/auth/register")
 async def register(data: UserRegister):
-        ,
-            'is_suspended': user.is_suspended,
-            'is_blocked': user.is_blocked
 
     # Validate phone number
     if not validate_nigerian_phone(data.phone):
