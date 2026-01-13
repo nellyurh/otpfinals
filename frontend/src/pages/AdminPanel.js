@@ -39,7 +39,7 @@ const AdminPanel = ({ user, setUser }) => {
   });
 
   const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings' | 'providers' | 'users'
-  const [periodPreset, setPeriodPreset] = useState('7d'); // '1d' | '7d' | '30d'
+  const [periodPreset, setPeriodPreset] = useState<'1d' | '7d' | '30d'>('7d');
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
   const [adsSpend, setAdsSpend] = useState('0');
 
@@ -534,7 +534,7 @@ const AdminPanel = ({ user, setUser }) => {
                 )}
 
             {/* Simple activity snapshot (placeholder instead of real chart) */}
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
               <Card className="border border-slate-200 shadow-sm bg-white">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold">Recent Activity</CardTitle>
