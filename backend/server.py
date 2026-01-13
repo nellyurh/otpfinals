@@ -505,6 +505,9 @@ DAISYSMS_PRICES = {
     'bm2': 0.80,  # BMO Alto
     'va': 0.80,  # Varo
     'g1': 0.80,  # Golden1
+    'ns': 1.00,  # Netspend
+    'fr': 1.00,  # Frost Bank
+    'ey': 0.80   # EverBank
 }
 
 async def _plisio_request(method: str, endpoint: str, params: dict):
