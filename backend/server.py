@@ -2611,7 +2611,7 @@ async def admin_update_notification(notification_id: str, payload: dict, admin: 
 @api_router.get('/notifications')
 async def get_notifications(user: dict = Depends(get_current_user)):
     # return latest notifications with read/dismiss status
-    notifs = await db.notifications.find({'active': True}, {'_id': 0}).to_list(200)
+    notifs = await db.notifications.find({'active': True, '$or': [{'user_id': {'$exists': False}}, {'user_id': user['id']}]}, {'_id': 0}).to_list(200)
     notifs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
 
     receipts = await db.notification_receipts.find({'user_id': user['id']}, {'_id': 0}).to_list(500)
