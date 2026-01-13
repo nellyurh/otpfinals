@@ -30,6 +30,7 @@ import { Switch } from '@/components/ui/switch';
 
 import {
   AlertDialog,
+  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
