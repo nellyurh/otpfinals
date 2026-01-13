@@ -149,15 +149,6 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
-
-        ngn_to_usd_rate: response.data.ngn_to_usd_rate,
-        fivesim_coin_per_usd: response.data.fivesim_coin_per_usd ?? prev.fivesim_coin_per_usd,
-      }));
-    } catch (error) {
-      console.error('Failed to fetch pricing');
-    }
-  };
-
   const handleUpdatePricing = async () => {
     setLoading(true);
     try {
