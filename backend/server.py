@@ -1878,6 +1878,39 @@ async def _apply_promo_discount(
                         price_rub = float(data[country_code][service_code].get('cost', 0))
                         data[country_code][service_code]['cost'] = str(round(price_rub * rub_to_usd, 2))
                         data[country_code][service_code]['cost_rub'] = f"{price_rub} ₽"
+
+    # Apply promo code discount (if any)
+    discount_ngn, discount_usd, promo = await _apply_promo_discount(
+        promo_code=data.promo_code,
+        user_id=user['id'],
+        final_price_ngn=final_price_ngn,
+        final_price_usd=final_price_usd,
+        ngn_to_usd_rate=ngn_rate,
+    )
+    final_price_ngn = float(final_price_ngn - discount_ngn)
+    final_price_usd = float(final_price_usd - discount_usd)
+
+    return {
+        'success': True,
+        'base_price_usd': round(base_price_usd, 2),
+        'our_markup_percent': provider_markup,
+        'final_price_usd': round(final_price_usd, 2),
+        'final_price_ngn': round(final_price_ngn, 2),
+        'promo': {
+            'code': promo.get('code'),
+            'discount_ngn': round(discount_ngn, 2),
+            'discount_usd': round(discount_usd, 2),
+            'type': promo.get('discount_type'),
+            'value': promo.get('discount_value'),
+        } if promo else None,
+        'breakdown': {
+            'provider_base': round(base_price_usd, 2),
+            'our_markup_amount': round(final_price_usd - base_price_usd, 2),
+            'includes_area_code': data.area_code is not None,
+            'includes_carrier': data.carrier is not None
+        }
+    }
+
                 
                 return {'success': True, 'data': data, 'cached': False}
             
