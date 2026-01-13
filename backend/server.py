@@ -2834,26 +2834,6 @@ async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
 
     return {'success': True}
 
-    if promo.get('one_time_per_user', True):
-        prior = await db.promo_redemptions.find_one({"promo_id": promo['id'], "user_id": user['id']}, {"_id": 0})
-        if prior:
-            raise HTTPException(status_code=400, detail="Promo code already used")
-
-    return {
-        "success": True,
-        "promo": {
-            "id": promo.get('id'),
-            "code": promo.get('code'),
-            "description": promo.get('description'),
-            "discount_type": promo.get('discount_type'),
-            "discount_value": promo.get('discount_value'),
-            "currency": promo.get('currency'),
-            "expires_at": promo.get('expires_at'),
-            "one_time_per_user": promo.get('one_time_per_user', True),
-            "max_total_uses": promo.get('max_total_uses'),
-        },
-    }
-
 @api_router.post("/payscribe/buy-airtime")
 async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
     """Purchase airtime via Payscribe"""
