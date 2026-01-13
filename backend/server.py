@@ -2585,9 +2585,6 @@ async def validate_promo_code(payload: dict, user: dict = Depends(get_current_us
         },
     }
 
-    result = await get_data_plans_service(network.lower(), category)
-    return result or {'status': False, 'message': 'Failed to fetch plans'}
-
 @api_router.post("/payscribe/buy-airtime")
 async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
     """Purchase airtime via Payscribe"""
