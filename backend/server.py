@@ -2478,6 +2478,18 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
             await db.transactions.insert_one(trans_dict)
+            
+            return {'success': True, 'message': 'Betting wallet funded successfully', 'details': result}
+        
+        raise HTTPException(status_code=400, detail="Betting wallet funding failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Betting fund error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============ Admin Routes ============
+
 @api_router.get("/admin/users")
 async def admin_list_users(admin: dict = Depends(require_admin)):
     """List users for admin view (basic snapshot)."""
