@@ -180,9 +180,14 @@ const NewDashboard = () => {
   };
 
   // Crypto funding functions
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    } catch (err) {
+      console.error('Clipboard write failed', err);
+      toast.error('Unable to copy to clipboard in this browser.');
+    }
   };
 
   const handleCreateCryptoInvoice = async () => {
