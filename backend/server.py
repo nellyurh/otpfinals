@@ -505,6 +505,7 @@ DAISYSMS_PRICES = {
     'bm2': 0.80,  # BMO Alto
     'va': 0.80,  # Varo
     'g1': 0.80,  # Golden1
+}
 
 async def _plisio_request(method: str, endpoint: str, params: dict):
     if not PLISIO_SECRET_KEY:
