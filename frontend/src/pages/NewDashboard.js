@@ -88,6 +88,25 @@ const NewDashboard = () => {
   const [preferredNumber, setPreferredNumber] = useState('');
   const [purchasing, setPurchasing] = useState(false);
   
+
+  // Public branding (used for brand text + primary green accents)
+  const [branding, setBranding] = useState({
+    brand_name: 'UltraCloud Sms',
+    primary_color_hex: '#005E3A',
+    landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
+    landing_hero_subtitle:
+      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters'
+  });
+
+  const fetchBranding = async () => {
+    try {
+      const resp = await axios.get(`${API}/api/public/branding`);
+      setBranding(resp.data);
+    } catch (e) {
+      // ignore
+    }
+  };
+
   // Orders
   const [orders, setOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -208,23 +227,6 @@ const NewDashboard = () => {
           }
         } catch (error) {
 
-  // Load public branding for UI text/color
-  const [branding, setBranding] = useState({
-    brand_name: 'UltraCloud Sms',
-    primary_color_hex: '#059669',
-    landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
-    landing_hero_subtitle:
-      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters'
-  });
-
-  const fetchBranding = async () => {
-    try {
-      const resp = await axios.get(`${API}/api/public/branding`);
-      setBranding(resp.data);
-    } catch (e) {
-      // ignore
-    }
-  };
 
           console.error('Failed to calculate price:', error);
         }
