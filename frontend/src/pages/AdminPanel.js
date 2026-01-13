@@ -404,6 +404,127 @@ const AdminPanel = ({ user, setUser }) => {
                       <CardTitle className="text-sm font-semibold">Decision Notes</CardTitle>
                       <CardDescription className="text-xs">
                         Quick rules of thumb for scaling or pausing.
+
+                {/* Ads performance & efficiency metrics */}
+                {stats && stats.ads_and_conversion && (
+                  <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <KpiCard
+                      title="New Users (period)"
+                      value={stats.ads_and_conversion.new_users_count || 0}
+                      icon={Users}
+                      accent="text-slate-700 bg-slate-50"
+                    />
+                    <KpiCard
+                      title="New Depositors"
+                      value={stats.ads_and_conversion.new_depositors_count || 0}
+                      icon={Users}
+                      accent="text-emerald-700 bg-emerald-50"
+                    />
+                    <KpiCard
+                      title="Deposit Conversion Rate"
+                      value={`${(stats.ads_and_conversion.deposit_conversion_rate || 0).toFixed(1)}%`}
+                      icon={TrendingUp}
+                      accent="text-sky-700 bg-sky-50"
+                    />
+                    <KpiCard
+                      title="Deposit→Buy Conversion"
+                      value={`${(stats.ads_and_conversion.deposit_to_buy_conversion || 0).toFixed(1)}%`}
+                      icon={TrendingUp}
+                      accent="text-indigo-700 bg-indigo-50"
+                    />
+                  </section>
+                )}
+
+                {/* User behavior metrics */}
+                {stats && stats.user_behavior && (
+                  <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <KpiCard
+                      title="New User Depositors"
+                      value={`${stats.user_behavior.new_user_depositors_count || 0} (₦${Math.round(
+                        stats.user_behavior.new_user_deposits_ngn || 0,
+                      ).toLocaleString()})`}
+                      icon={Users}
+                      accent="text-emerald-700 bg-emerald-50"
+                    />
+                    <KpiCard
+                      title="Old User Depositors"
+                      value={`${stats.user_behavior.old_user_depositors_count || 0} (₦${Math.round(
+                        stats.user_behavior.old_user_deposits_ngn || 0,
+                      ).toLocaleString()})`}
+                      icon={Users}
+                      accent="text-slate-700 bg-slate-50"
+                    />
+                    <KpiCard
+                      title="Old Buyers w/o Deposit"
+                      value={`${stats.user_behavior.old_buyers_without_deposit_count || 0} (₦${Math.round(
+                        stats.user_behavior.old_buyers_without_deposit_sales_ngn || 0,
+                      ).toLocaleString()})`}
+                      icon={Users}
+                      accent="text-amber-700 bg-amber-50"
+                    />
+                    <KpiCard
+                      title="Repeat Buyer Rate"
+                      value={`${(stats.user_behavior.repeat_buyer_rate || 0).toFixed(1)}%`}
+                      icon={TrendingUp}
+                      accent="text-emerald-700 bg-emerald-50"
+                    />
+                  </section>
+                )}
+
+                {/* Pricing & risk metrics */}
+                {stats && stats.pricing_risk && (
+                  <section className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <KpiCard
+                      title="WhatsApp Share of Revenue"
+                      value={`${(stats.pricing_risk.whatsapp_share_pct || 0).toFixed(1)}%`}
+                      icon={TrendingUp}
+                      accent="text-emerald-700 bg-emerald-50"
+                    />
+                    <KpiCard
+                      title="Signal Share of Revenue"
+                      value={`${(stats.pricing_risk.signal_share_pct || 0).toFixed(1)}%`}
+                      icon={TrendingUp}
+                      accent="text-sky-700 bg-sky-50"
+                    />
+                    <KpiCard
+                      title="Avg Selling Price / OTP"
+                      value={`₦${Math.round(
+                        stats.pricing_risk.avg_selling_price_ngn || 0,
+                      ).toLocaleString()}`}
+                      icon={DollarSign}
+                      accent="text-slate-700 bg-slate-50"
+                    />
+                    <KpiCard
+                      title="Price Spike Exposure"
+                      value={stats.pricing_risk.price_spike_exposure_count || 0}
+                      icon={TrendingUp}
+                      accent="text-rose-700 bg-rose-50"
+                    />
+                  </section>
+                )}
+
+                {/* System health & safety */}
+                {stats && stats.system_health && (
+                  <section className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <KpiCard
+                      title="Active Unfulfilled Value"
+                      value={`₦${Math.round(
+                        stats.system_health.active_unfulfilled_value_ngn || 0,
+                      ).toLocaleString()}`}
+                      icon={Wallet}
+                      accent="text-amber-700 bg-amber-50"
+                    />
+                    <KpiCard
+                      title="Available Liquidity"
+                      value={`₦${Math.round(
+                        stats.system_health.available_liquidity_ngn || 0,
+                      ).toLocaleString()}`}
+                      icon={Wallet}
+                      accent="text-emerald-700 bg-emerald-50"
+                    />
+                  </section>
+                )}
+
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="text-[11px] text-slate-600 space-y-1">
