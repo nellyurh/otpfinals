@@ -2514,6 +2514,7 @@ async def list_orders(user: dict = Depends(get_current_user)):
         'created_at': 1,
         'expires_at': 1,
         'can_cancel': 1,
+        'service_name': 1,
     }
     orders = (
         await db.sms_orders
