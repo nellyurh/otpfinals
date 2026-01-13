@@ -1800,6 +1800,24 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
                 
                 if cached_services:
                     await db.cached_services.delete_many({'provider': 'tigersms'})
+                    for service in cached_services:
+                        service['last_updated'] = service['last_updated'].isoformat()
+                    await db.cached_services.insert_many(cached_services)
+                
+                # Convert prices to USD for frontend
+                for country_code in data:
+                    for service_code in data[country_code]:
+                        price_rub = float(data[country_code][service_code].get('cost', 0))
+                        data[country_code][service_code]['cost'] = str(round(price_rub * rub_to_usd, 2))
+                        data[country_code][service_code]['cost_rub'] = f"{price_rub} ₽"
+                
+                return {'success': True, 'data': data, 'cached': False}
+            
+            return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
+    except Exception as e:
+        logger.error(f"TigerSMS service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
 
 async def _apply_promo_discount(
     *,
@@ -1829,7 +1847,6 @@ async def _apply_promo_discount(
         except HTTPException:
             raise
         except Exception:
-            # if malformed expiry, treat as expired to be safe
             raise HTTPException(status_code=400, detail="Promo code expired")
 
     max_total = promo.get('max_total_uses')
@@ -1862,62 +1879,11 @@ async def _apply_promo_discount(
     else:
         raise HTTPException(status_code=400, detail="Invalid promo configuration")
 
-    # Ensure no negative final price
     discount_ngn = min(discount_ngn, final_price_ngn)
     discount_usd = min(discount_usd, final_price_usd)
 
     return float(discount_ngn), float(discount_usd), promo
 
-                    for service in cached_services:
-                        service['last_updated'] = service['last_updated'].isoformat()
-                    await db.cached_services.insert_many(cached_services)
-                
-                # Convert prices to USD for frontend
-                for country_code in data:
-                    for service_code in data[country_code]:
-                        price_rub = float(data[country_code][service_code].get('cost', 0))
-                        data[country_code][service_code]['cost'] = str(round(price_rub * rub_to_usd, 2))
-                        data[country_code][service_code]['cost_rub'] = f"{price_rub} ₽"
-
-    # Apply promo code discount (if any)
-    discount_ngn, discount_usd, promo = await _apply_promo_discount(
-        promo_code=data.promo_code,
-        user_id=user['id'],
-        final_price_ngn=final_price_ngn,
-        final_price_usd=final_price_usd,
-        ngn_to_usd_rate=ngn_rate,
-    )
-    final_price_ngn = float(final_price_ngn - discount_ngn)
-    final_price_usd = float(final_price_usd - discount_usd)
-
-    return {
-        'success': True,
-        'base_price_usd': round(base_price_usd, 2),
-        'our_markup_percent': provider_markup,
-        'final_price_usd': round(final_price_usd, 2),
-        'final_price_ngn': round(final_price_ngn, 2),
-        'promo': {
-            'code': promo.get('code'),
-            'discount_ngn': round(discount_ngn, 2),
-            'discount_usd': round(discount_usd, 2),
-            'type': promo.get('discount_type'),
-            'value': promo.get('discount_value'),
-        } if promo else None,
-        'breakdown': {
-            'provider_base': round(base_price_usd, 2),
-            'our_markup_amount': round(final_price_usd - base_price_usd, 2),
-            'includes_area_code': data.area_code is not None,
-            'includes_carrier': data.carrier is not None
-        }
-    }
-
-                
-                return {'success': True, 'data': data, 'cached': False}
-            
-            return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
-    except Exception as e:
-        logger.error(f"TigerSMS service fetch error: {str(e)}")
-        return {'success': False, 'message': str(e)}
 
 @api_router.get("/services/unified")
 async def get_unified_services(user: dict = Depends(get_current_user)):
