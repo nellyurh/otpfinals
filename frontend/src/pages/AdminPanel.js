@@ -1243,6 +1243,40 @@ const AdminPanel = ({ user, setUser }) => {
                                 <td className="px-2 py-1 whitespace-nowrap">₦{(u.ngn_balance || 0).toLocaleString()}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">${(u.usd_balance || 0).toLocaleString()}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">{u.created_at ? new Date(u.created_at).toLocaleString() : '-'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {u.is_blocked ? (
+                                    <Badge className="bg-red-50 text-red-700 border-red-200 text-[10px]">Blocked</Badge>
+                                  ) : u.is_suspended ? (
+                                    <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[10px]">Suspended</Badge>
+                                  ) : (
+                                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">Active</Badge>
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="outline"
+                                      className="h-7 px-2 text-[11px] border-slate-200"
+                                      onClick={() => openUserEditor(u)}
+                                    >
+                                      Edit
+                                    </Button>
+                                    <button
+                                      type="button"
+                                      className="text-[11px] text-amber-700 hover:underline"
+                                      onClick={() => quickToggleUser(u, 'is_suspended')}
+                                    >
+                                      {u.is_suspended ? 'Unsuspend' : 'Suspend'}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-[11px] text-red-700 hover:underline"
+                                      onClick={() => quickToggleUser(u, 'is_blocked')}
+                                    >
+                                      {u.is_blocked ? 'Unblock' : 'Block'}
+                                    </button>
+                                  </div>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
