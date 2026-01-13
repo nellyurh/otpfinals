@@ -283,6 +283,26 @@ class UpdatePricingRequest(BaseModel):
     area_code_markup: Optional[float] = None
     carrier_markup: Optional[float] = None
 
+    # Branding
+    brand_name: Optional[str] = None
+    landing_hero_title: Optional[str] = None
+    landing_hero_subtitle: Optional[str] = None
+
+    # Page toggles
+    enable_dashboard: Optional[bool] = None
+    enable_transactions: Optional[bool] = None
+    enable_fund_wallet: Optional[bool] = None
+    enable_virtual_numbers: Optional[bool] = None
+    enable_buy_data: Optional[bool] = None
+    enable_airtime: Optional[bool] = None
+    enable_betting: Optional[bool] = None
+    enable_virtual_cards: Optional[bool] = None
+    enable_sms_history: Optional[bool] = None
+    enable_account_upgrade: Optional[bool] = None
+    enable_referral: Optional[bool] = None
+    enable_profile: Optional[bool] = None
+    enable_support: Optional[bool] = None
+
 class BillPaymentRequest(BaseModel):
     service_type: str
     provider: str
