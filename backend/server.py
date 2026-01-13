@@ -18,8 +18,6 @@ import hashlib
 import hmac
 import re
 import shutil
-import hmac
-import hashlib
 import phpserialize
 
 
