@@ -341,10 +341,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       return;
     }
 
-    if (user.ngn_balance < (estimatedPrice?.final_ngn || 0)) {
-      toast.error('Insufficient NGN balance');
-      return;
-    }
+    // Balance check is still done by backend; client-side check can be misleading with promo discounts.
 
     setPurchasing(true);
     try {
