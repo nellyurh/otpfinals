@@ -2564,23 +2564,160 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     return {'success': True, 'updated': update_fields}
 
 @api_router.get("/admin/stats")
-async def get_admin_stats(admin: dict = Depends(require_admin)):
+async def get_admin_stats(
+    admin: dict = Depends(require_admin),
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+):
+    """Admin metrics dashboard stats for a selected period (default last 7 days)."""
+    # Base user + order counts (all-time)
     total_users = await db.users.count_documents({})
     total_orders = await db.sms_orders.count_documents({})
     active_orders = await db.sms_orders.count_documents({'status': 'active'})
-    
-    pipeline = [
+
+    # Resolve date range
+    now = datetime.now(timezone.utc)
+    if end_date:
+        try:
+            end = datetime.fromisoformat(end_date)
+            if not end.tzinfo:
+                end = end.replace(tzinfo=timezone.utc)
+        except Exception:
+            end = now
+    else:
+        end = now
+
+    if start_date:
+        try:
+            start = datetime.fromisoformat(start_date)
+            if not start.tzinfo:
+                start = start.replace(tzinfo=timezone.utc)
+        except Exception:
+            start = end - timedelta(days=7)
+    else:
+        start = end - timedelta(days=7)
+
+    # Transactions in period
+    period_match = {
+        'created_at': {
+            '$gte': start.isoformat(),
+            '$lte': end.isoformat(),
+        }
+    }
+
+    # Total deposits (NGN + USD) in period
+    deposits_cursor = db.transactions.aggregate([
+        {
+            '$match': {
+                **period_match,
+                'type': {'$in': ['deposit_ngn', 'deposit_usd']},
+                'status': 'completed',
+            }
+        },
+        {
+            '$group': {
+                '_id': '$currency',
+                'total': {'$sum': '$amount'},
+            }
+        },
+    ])
+    deposit_totals = await deposits_cursor.to_list(10)
+    total_deposits_ngn = 0.0
+    total_deposits_usd_native = 0.0
+    for row in deposit_totals:
+        cur = row.get('_id')
+        amt = float(row.get('total', 0) or 0)
+        if cur == 'NGN':
+            total_deposits_ngn += amt
+        elif cur == 'USD':
+            total_deposits_usd_native += amt
+
+    # Load pricing config for FX
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if not config:
+        default_config = PricingConfig()
+        cfg = default_config.model_dump()
+        cfg['updated_at'] = cfg['updated_at'].isoformat()
+        await db.pricing_config.insert_one(cfg)
+        config = cfg
+
+    ngn_rate = float(config.get('ngn_to_usd_rate', 1500.0) or 1500.0)
+
+    total_deposits_usd = (total_deposits_ngn / ngn_rate) + total_deposits_usd_native
+
+    # Total sales (OTP spend) in period - purchase transactions
+    sales_cursor = db.transactions.aggregate([
+        {
+            '$match': {
+                **period_match,
+                'type': 'purchase',
+                'status': 'completed',
+            }
+        },
+        {
+            '$group': {
+                '_id': '$currency',
+                'total': {'$sum': '$amount'},
+            }
+        },
+    ])
+    sales_totals = await sales_cursor.to_list(5)
+    total_sales_usd = 0.0
+    for row in sales_totals:
+        cur = row.get('_id')
+        amt = float(row.get('total', 0) or 0)
+        if cur == 'USD':
+            total_sales_usd += amt
+        elif cur == 'NGN':
+            total_sales_usd += amt / ngn_rate
+
+    # API cost from sms_orders (cost_usd) in period
+    api_cost_cursor = db.sms_orders.aggregate([
+        {
+            '$match': {
+                'created_at': {
+                    '$gte': start.isoformat(),
+                    '$lte': end.isoformat(),
+                }
+            }
+        },
+        {
+            '$group': {
+                '_id': None,
+                'total_cost_usd': {'$sum': {'$ifNull': ['$cost_usd', 0]}},
+            }
+        },
+    ])
+    api_cost_rows = await api_cost_cursor.to_list(1)
+    api_cost_usd = float(api_cost_rows[0].get('total_cost_usd', 0) or 0) if api_cost_rows else 0.0
+
+    gross_profit_usd = total_sales_usd - api_cost_usd
+    float_added_usd = total_deposits_usd - total_sales_usd
+
+    # All-time revenue (for backward compatibility)
+    revenue_result = await db.transactions.aggregate([
         {'$match': {'type': 'purchase', 'status': 'completed'}},
-        {'$group': {'_id': None, 'total': {'$sum': '$amount'}}}
-    ]
-    revenue_result = await db.transactions.aggregate(pipeline).to_list(1)
+        {'$group': {'_id': None, 'total': {'$sum': '$amount'}}},
+    ]).to_list(1)
     total_revenue = revenue_result[0]['total'] if revenue_result else 0
-    
+
     return {
         'total_users': total_users,
         'total_orders': total_orders,
         'active_orders': active_orders,
-        'total_revenue_usd': total_revenue
+        'total_revenue_usd': total_revenue,
+        'period': {
+            'start': start.isoformat(),
+            'end': end.isoformat(),
+        },
+        'money_flow': {
+            'total_deposits_ngn': total_deposits_ngn,
+            'total_deposits_usd': total_deposits_usd,
+            'total_sales_usd': total_sales_usd,
+            'api_cost_usd': api_cost_usd,
+            'gross_profit_usd': gross_profit_usd,
+            'float_added_usd': float_added_usd,
+        },
     }
 
 # ============ Webhook Routes ============
