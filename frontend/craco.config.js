@@ -42,6 +42,14 @@ const webpackConfig = {
         webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
           return !(plugin.constructor.name === 'HotModuleReplacementPlugin');
         });
+      }
+
+      // Always remove ESLintWebpackPlugin to avoid CRA ESLint blocking dev builds
+      if (webpackConfig.plugins) {
+        webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
+          return !(plugin && plugin.constructor && plugin.constructor.name === 'ESLintWebpackPlugin');
+        });
+      }
 
         // Disable watch mode
         webpackConfig.watch = false;
