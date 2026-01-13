@@ -194,7 +194,7 @@ const NewDashboard = () => {
     setCreatingDeposit(true);
     try {
       const response = await axios.post(
-        `${API}/api/plisio/create-invoice`,
+        `${API}/api/crypto/plisio/create-invoice`,
         {
           amount_usd: parseFloat(cryptoAmountUsd),
           currency: cryptoCurrency
