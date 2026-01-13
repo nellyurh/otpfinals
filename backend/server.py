@@ -2888,6 +2888,126 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
             if r.status_code == 200:
                 balances['5sim'] = r.json()
             else:
+
+# ============ Crypto Deposits (Plisio) ============
+
+@api_router.post('/crypto/plisio/create-invoice')
+async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_user)):
+    """Create a Plisio invoice and return address/QR fields for UI."""
+    amount_usd = float(payload.get('amount_usd') or 0)
+    currency = (payload.get('currency') or 'USDT').upper()
+
+    if amount_usd <= 0:
+        raise HTTPException(status_code=400, detail='Amount is required')
+
+    order_id = str(uuid.uuid4())
+    callback_url = f"{FRONTEND_URL}/api/crypto/plisio/webhook" if FRONTEND_URL else None
+
+    resp = await _plisio_request('POST', '/invoices/new', {
+        'source_currency': 'USD',
+        'source_amount': amount_usd,
+        'currency': currency,
+        'order_number': order_id,
+        'order_name': f"UltraCloud Sms Wallet Deposit ({user['email']})",
+        'callback_url': callback_url,
+        'email': user.get('email'),
+    })
+
+    if not resp or not resp.get('status'):
+        raise HTTPException(status_code=500, detail='Failed to create invoice')
+
+    data = resp.get('data') or {}
+    invoice_doc = {
+        'id': order_id,
+        'user_id': user['id'],
+        'provider': 'plisio',
+        'invoice_id': data.get('txn_id') or data.get('id') or data.get('invoice'),
+        'currency': currency,
+        'amount_usd': amount_usd,
+        'status': 'pending',
+        'created_at': datetime.now(timezone.utc).isoformat(),
+        'raw': data,
+    }
+    await db.crypto_invoices.insert_one(invoice_doc)
+
+    return {
+        'success': True,
+        'deposit': {
+            'id': order_id,
+            'currency': currency,
+            'amount_usd': amount_usd,
+            'address': data.get('wallet_hash') or data.get('address'),
+            'amount_crypto': data.get('amount') or data.get('amount_to_pay'),
+            'qr': data.get('qr_code') or data.get('qr'),
+            'invoice_url': data.get('invoice_url'),
+            'status': 'pending'
+        }
+    }
+
+
+@api_router.post('/crypto/plisio/webhook')
+async def plisio_webhook(request: Request):
+    payload = {}
+    try:
+        payload = await request.json()
+    except Exception:
+        # fallback to form
+        form = await request.form()
+        payload = dict(form)
+
+    # best-effort verification (some Plisio configs rely on api_key only)
+    if payload.get('verify_hash') and not _plisio_verify_hash(payload):
+        raise HTTPException(status_code=400, detail='Invalid signature')
+
+    order_number = payload.get('order_number') or payload.get('order') or payload.get('order_id')
+    if not order_number:
+        return {'success': True}
+
+    invoice = await db.crypto_invoices.find_one({'id': order_number}, {'_id': 0})
+    if not invoice:
+        return {'success': True}
+
+    status_val = (payload.get('status') or payload.get('invoice_status') or '').lower()
+    paid = status_val in ['completed', 'paid', 'success', 'finished']
+
+    if paid and invoice.get('status') != 'paid':
+        # Credit USD
+        amount_usd = float(invoice.get('amount_usd') or 0)
+        await db.users.update_one({'id': invoice['user_id']}, {'$inc': {'usd_balance': amount_usd}})
+
+        # Transaction
+        transaction = Transaction(
+            user_id=invoice['user_id'],
+            type='deposit_usd',
+            amount=amount_usd,
+            currency='USD',
+            status='completed',
+            reference=str(invoice.get('invoice_id') or invoice.get('id')),
+            metadata={'provider': 'plisio', 'currency': invoice.get('currency')}
+        )
+        trans_dict = transaction.model_dump()
+        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+        await db.transactions.insert_one(trans_dict)
+
+        await _create_transaction_notification(
+            invoice['user_id'],
+            'Crypto deposit confirmed',
+            f"Your wallet was credited ${amount_usd:,.2f}.",
+            metadata={'reference': trans_dict.get('id'), 'type': 'deposit_usd', 'provider': 'plisio'},
+        )
+
+        await db.crypto_invoices.update_one({'id': order_number}, {'$set': {'status': 'paid', 'paid_at': datetime.now(timezone.utc).isoformat(), 'webhook': payload}})
+
+    return {'success': True}
+
+
+@api_router.get('/crypto/plisio/status/{deposit_id}')
+async def plisio_status(deposit_id: str, user: dict = Depends(get_current_user)):
+    inv = await db.crypto_invoices.find_one({'id': deposit_id, 'user_id': user['id']}, {'_id': 0})
+    if not inv:
+        raise HTTPException(status_code=404, detail='Not found')
+    return {'success': True, 'deposit': inv}
+
                 balances['5sim'] = {'status_code': r.status_code}
         except Exception:
             balances['5sim'] = {'error': 'failed'}
