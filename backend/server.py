@@ -58,6 +58,11 @@ FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Plisio (Crypto) Config
+PLISIO_SECRET_KEY = os.environ.get('PLISIO_SECRET_KEY')
+PLISIO_BASE_URL = 'https://api.plisio.net/api/v1'
+
+
 # ============ Models ============
 
 class UserRegister(BaseModel):
