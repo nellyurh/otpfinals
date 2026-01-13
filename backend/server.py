@@ -2470,6 +2470,119 @@ async def get_payscribe_services(user: dict = Depends(get_current_user)):
 @api_router.get("/payscribe/data-plans")
 async def get_data_plans_endpoint(network: str, category: str = None, user: dict = Depends(get_current_user)):
     """Get data plans for a network"""
+
+# ============ Promo Codes (Admin) ============
+
+@api_router.post("/admin/promo-codes")
+async def create_promo_code(payload: dict, admin: dict = Depends(require_admin)):
+    code = (payload.get('code') or '').strip().upper()
+    if not code:
+        raise HTTPException(status_code=400, detail="Code is required")
+
+    exists = await db.promo_codes.find_one({"code": code}, {"_id": 0})
+    if exists:
+        raise HTTPException(status_code=400, detail="Promo code already exists")
+
+    promo = PromoCode(
+        code=code,
+        description=payload.get('description'),
+        discount_type=payload.get('discount_type'),
+        discount_value=float(payload.get('discount_value') or 0),
+        currency=payload.get('currency'),
+        active=bool(payload.get('active', True)),
+        max_total_uses=payload.get('max_total_uses'),
+        one_time_per_user=bool(payload.get('one_time_per_user', True)),
+        expires_at=payload.get('expires_at'),
+    )
+
+    doc = promo.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.promo_codes.insert_one(doc)
+    return {"success": True, "promo": doc}
+
+
+@api_router.get("/admin/promo-codes")
+async def list_promo_codes(admin: dict = Depends(require_admin)):
+    promos = await db.promo_codes.find({}, {"_id": 0}).to_list(200)
+    promos.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    return {"success": True, "promos": promos}
+
+
+@api_router.put("/admin/promo-codes/{promo_id}")
+async def update_promo_code(promo_id: str, payload: dict, admin: dict = Depends(require_admin)):
+    update_fields = {}
+    for key in [
+        'description',
+        'discount_type',
+        'discount_value',
+        'currency',
+        'active',
+        'max_total_uses',
+        'one_time_per_user',
+        'expires_at',
+    ]:
+        if key in payload:
+            update_fields[key] = payload[key]
+
+    if 'discount_value' in update_fields:
+        update_fields['discount_value'] = float(update_fields.get('discount_value') or 0)
+
+    update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
+
+    res = await db.promo_codes.update_one({"id": promo_id}, {"$set": update_fields})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Promo code not found")
+
+    promo = await db.promo_codes.find_one({"id": promo_id}, {"_id": 0})
+    return {"success": True, "promo": promo}
+
+
+@api_router.post("/promo/validate")
+async def validate_promo_code(payload: dict, user: dict = Depends(get_current_user)):
+    """Validate promo and return discount preview (OTP purchase only)."""
+    code = (payload.get('code') or '').strip().upper()
+    if not code:
+        raise HTTPException(status_code=400, detail="Code is required")
+
+    # We validate eligibility without requiring price context here.
+    promo = await db.promo_codes.find_one({"code": code, "active": True}, {"_id": 0})
+    if not promo:
+        raise HTTPException(status_code=400, detail="Invalid promo code")
+
+    expires_at = promo.get('expires_at')
+    if expires_at:
+        exp = datetime.fromisoformat(expires_at)
+        if not exp.tzinfo:
+            exp = exp.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > exp:
+            raise HTTPException(status_code=400, detail="Promo code expired")
+
+    max_total = promo.get('max_total_uses')
+    if max_total is not None:
+        used = await db.promo_redemptions.count_documents({"promo_id": promo['id']})
+        if used >= int(max_total):
+            raise HTTPException(status_code=400, detail="Promo code usage limit reached")
+
+    if promo.get('one_time_per_user', True):
+        prior = await db.promo_redemptions.find_one({"promo_id": promo['id'], "user_id": user['id']}, {"_id": 0})
+        if prior:
+            raise HTTPException(status_code=400, detail="Promo code already used")
+
+    return {
+        "success": True,
+        "promo": {
+            "id": promo.get('id'),
+            "code": promo.get('code'),
+            "description": promo.get('description'),
+            "discount_type": promo.get('discount_type'),
+            "discount_value": promo.get('discount_value'),
+            "currency": promo.get('currency'),
+            "expires_at": promo.get('expires_at'),
+            "one_time_per_user": promo.get('one_time_per_user', True),
+            "max_total_uses": promo.get('max_total_uses'),
+        },
+    }
+
     result = await get_data_plans_service(network.lower(), category)
     return result or {'status': False, 'message': 'Failed to fetch plans'}
 
