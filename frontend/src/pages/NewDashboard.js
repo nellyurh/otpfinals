@@ -395,9 +395,7 @@ const NewDashboard = () => {
           <Settings className="w-7 h-7 text-emerald-700" />
         </div>
         <p className="text-gray-700 font-semibold">Maintenance in progress</p>
-        <p className="text-sm text-gray-500 mt-1">
-          This page is currently disabled by the admin.
-        </p>
+        <p className="text-sm text-gray-500 mt-1">This page is currently disabled by the admin.</p>
       </div>
     </div>
   );
