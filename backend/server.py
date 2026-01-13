@@ -2789,6 +2789,13 @@ async def validate_promo_code(payload: dict, user: dict = Depends(get_current_us
         if not exp.tzinfo:
             exp = exp.replace(tzinfo=timezone.utc)
 
+@api_router.get('/admin/promo-codes')
+async def list_promo_codes_admin(admin: dict = Depends(require_admin)):
+    promos = await db.promo_codes.find({}, {"_id": 0}).to_list(200)
+    promos.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    return {"success": True, "promos": promos}
+
+
 @api_router.get('/admin/provider-balances')
 async def admin_provider_balances(admin: dict = Depends(require_admin)):
     config = await db.pricing_config.find_one({}, {'_id': 0})
