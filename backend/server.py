@@ -2929,50 +2929,23 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
         # Check balance
         if user.get('ngn_balance', 0) < request.amount:
             raise HTTPException(status_code=400, detail="Insufficient NGN balance")
-        
+
         # Validate account first
         validation = await validate_bet_account(request.bet_id, request.customer_id)
         if not validation or not validation.get('status'):
             raise HTTPException(status_code=400, detail="Invalid betting account")
-        
+
         # Fund wallet
         result = await fund_bet_wallet(request.bet_id, request.customer_id, request.amount, request.ref)
-        
+
         if result and result.get('status'):
             # Deduct from user balance
             await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
-            
+
             # Create transaction record
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
-
-class AdminUpdateUserRequest(BaseModel):
-    full_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    ngn_balance: Optional[float] = None
-    usd_balance: Optional[float] = None
-    is_admin: Optional[bool] = None
-    is_suspended: Optional[bool] = None
-    is_blocked: Optional[bool] = None
-
-@api_router.put("/admin/users/{user_id}")
-async def admin_update_user(user_id: str, data: AdminUpdateUserRequest, admin: dict = Depends(require_admin)):
-    update_fields = {}
-    for key in ['full_name', 'email', 'ngn_balance', 'usd_balance', 'is_admin', 'is_suspended', 'is_blocked']:
-        val = getattr(data, key)
-        if val is not None:
-            update_fields[key] = val
-
-    if not update_fields:
-        return {"success": True}
-
-    await db.users.update_one({'id': user_id}, {'$set': update_fields})
-    user = await db.users.find_one({'id': user_id}, {'_id': 0, 'password_hash': 0})
-    if not user:
-        raise HTTPException(status_code=404, detail='User not found')
-    return {"success": True, "user": user}
-
                 amount=request.amount,
                 currency='NGN',
                 status='completed',
@@ -2982,9 +2955,16 @@ async def admin_update_user(user_id: str, data: AdminUpdateUserRequest, admin: d
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
             await db.transactions.insert_one(trans_dict)
-            
+
+            await _create_transaction_notification(
+                user['id'],
+                'Betting funded',
+                f"₦{request.amount:,.2f} was used to fund betting wallet.",
+                metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment'},
+            )
+
             return {'success': True, 'message': 'Betting wallet funded successfully', 'details': result}
-        
+
         raise HTTPException(status_code=400, detail="Betting wallet funding failed")
     except HTTPException:
         raise
