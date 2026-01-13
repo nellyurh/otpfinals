@@ -2926,9 +2926,37 @@ async def get_admin_stats(
             'total_deposits_ngn': total_deposits_ngn,
             'total_deposits_usd': total_deposits_usd,
             'total_sales_usd': total_sales_usd,
+            'total_sales_ngn': total_sales_ngn,
             'api_cost_usd': api_cost_usd,
             'gross_profit_usd': gross_profit_usd,
             'float_added_usd': float_added_usd,
+        },
+        'ads_and_conversion': {
+            'new_users_count': new_users_count,
+            'new_depositors_count': new_depositors_count,
+            'old_depositors_count': old_depositors_count,
+            'deposit_conversion_rate': deposit_conversion_rate,
+            'deposit_to_buy_conversion': deposit_to_buy_conversion,
+        },
+        'user_behavior': {
+            'new_user_depositors_count': new_depositors_count,
+            'new_user_deposits_ngn': new_deposits_ngn,
+            'old_user_depositors_count': old_depositors_count,
+            'old_user_deposits_ngn': old_deposits_ngn,
+            'period_buyers_count': period_buyers_count,
+            'repeat_buyer_rate': repeat_buyer_rate,
+            'old_buyers_without_deposit_count': old_buyers_without_deposit_count,
+            'old_buyers_without_deposit_sales_ngn': old_buyers_without_deposit_sales_ngn,
+        },
+        'pricing_risk': {
+            'whatsapp_share_pct': whatsapp_share,
+            'signal_share_pct': signal_share,
+            'avg_selling_price_ngn': avg_selling_price_ngn,
+            'price_spike_exposure_count': price_spike_exposure_count,
+        },
+        'system_health': {
+            'active_unfulfilled_value_ngn': active_unfulfilled_value_ngn,
+            'available_liquidity_ngn': available_liquidity_ngn,
         },
     }
 
