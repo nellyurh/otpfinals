@@ -460,13 +460,6 @@ const AdminPanel = ({ user, setUser }) => {
               </Card>
             </section>
 
-            {/* Settings section */}
-            {activeSection === 'settings' && (
-              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-2">
-                {/* Settings content moved here */}
-                {/* Pricing & FX and Provider keys already handled above in original layout; keeping structure simple */}
-              </section>
-            )}
           </main>
         </div>
       </div>
