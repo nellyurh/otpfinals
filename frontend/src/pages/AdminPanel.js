@@ -844,6 +844,100 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs font-semibold text-slate-600">Landing Hero Title</Label>
+
+              {/* Promo Codes */}
+              <section className="mt-6 grid grid-cols-1 gap-6">
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Promo Codes</CardTitle>
+                    <CardDescription className="text-xs">Create discount codes for OTP purchases (percent or fixed). Limits + expiry supported.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-xs text-slate-700 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+                      <div className="md:col-span-2">
+                        <Label className="text-xs">Code</Label>
+                        <Input value={newPromo.code} onChange={(e) => setNewPromo({ ...newPromo, code: e.target.value })} className="h-8 text-xs bg-slate-50 border-slate-200" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label className="text-xs">Description</Label>
+                        <Input value={newPromo.description} onChange={(e) => setNewPromo({ ...newPromo, description: e.target.value })} className="h-8 text-xs bg-slate-50 border-slate-200" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Type</Label>
+                        <select
+                          value={newPromo.discount_type}
+                          onChange={(e) => setNewPromo({ ...newPromo, discount_type: e.target.value })}
+                          className="h-8 w-full text-xs bg-slate-50 border border-slate-200 rounded-md px-2"
+                        >
+                          <option value="percent">Percent (%)</option>
+                          <option value="fixed_ngn">Fixed NGN (₦)</option>
+                          <option value="fixed_usd">Fixed USD ($)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Value</Label>
+                        <Input type="number" value={newPromo.discount_value} onChange={(e) => setNewPromo({ ...newPromo, discount_value: e.target.value })} className="h-8 text-xs bg-slate-50 border-slate-200" />
+                      </div>
+                      <div>
+                        <Button onClick={handleCreatePromo} className="h-8 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">Create</Button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <Label className="text-xs">Max total uses</Label>
+                        <Input type="number" value={newPromo.max_total_uses} onChange={(e) => setNewPromo({ ...newPromo, max_total_uses: e.target.value })} className="h-8 text-xs bg-slate-50 border-slate-200" />
+                      </div>
+                      <div className="flex items-center gap-3 pt-5">
+                        <Switch checked={newPromo.one_time_per_user} onCheckedChange={(val) => setNewPromo({ ...newPromo, one_time_per_user: val })} />
+                        <span className="text-xs text-slate-700">One-time per user</span>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Expires at</Label>
+                        <Input type="datetime-local" value={newPromo.expires_at} onChange={(e) => setNewPromo({ ...newPromo, expires_at: e.target.value })} className="h-8 text-xs bg-slate-50 border-slate-200" />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-3">
+                      {!promoCodes && <p>Loading promo codes…</p>}
+                      {promoCodes && promoCodes.length === 0 && <p>No promo codes yet.</p>}
+                      {promoCodes && promoCodes.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full text-left text-[11px]">
+                            <thead className="border-b border-slate-200 bg-slate-50">
+                              <tr>
+                                <th className="px-2 py-1 font-semibold text-slate-600">Code</th>
+                                <th className="px-2 py-1 font-semibold text-slate-600">Type</th>
+                                <th className="px-2 py-1 font-semibold text-slate-600">Value</th>
+                                <th className="px-2 py-1 font-semibold text-slate-600">Max Uses</th>
+                                <th className="px-2 py-1 font-semibold text-slate-600">Expiry</th>
+                                <th className="px-2 py-1 font-semibold text-slate-600">Active</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {promoCodes.map((p) => (
+                                <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                  <td className="px-2 py-1 whitespace-nowrap font-semibold">{p.code}</td>
+                                  <td className="px-2 py-1 whitespace-nowrap">{p.discount_type}</td>
+                                  <td className="px-2 py-1 whitespace-nowrap">{p.discount_value}</td>
+                                  <td className="px-2 py-1 whitespace-nowrap">{p.max_total_uses ?? '-'}</td>
+                                  <td className="px-2 py-1 whitespace-nowrap">{p.expires_at ? new Date(p.expires_at).toLocaleString() : '-'}</td>
+                                  <td className="px-2 py-1 whitespace-nowrap">
+                                    <button type="button" onClick={() => togglePromoActive(p)} className="text-emerald-700 hover:underline">
+                                      {p.active ? 'ON' : 'OFF'}
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+
                           <Input
                             value={branding.landing_hero_title}
                             onChange={(e) => setBranding({ ...branding, landing_hero_title: e.target.value })}
