@@ -1446,6 +1446,13 @@ async def create_payscribe_customer(request: Dict[str, Any], user: dict = Depend
 
 @api_router.post("/user/convert-ngn-to-usd")
 async def convert_ngn_to_usd(data: ConversionRequest, user: dict = Depends(get_current_user)):
+        await _create_transaction_notification(
+            user['id'],
+            'Wallet funded',
+            f"Your wallet was credited ₦{amount:,.2f}.",
+            metadata={'reference': transaction.reference, 'type': 'deposit_ngn'},
+        )
+
     config = await db.pricing_config.find_one({}, {'_id': 0})
     if not config:
         default_config = PricingConfig()
