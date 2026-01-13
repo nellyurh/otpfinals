@@ -749,7 +749,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="block text-2xl font-extrabold text-[#005E3A] leading-tight">
+                    <span className="block text-2xl font-extrabold text-emerald-700 leading-tight">
                       ₦{estimatedPrice.final_ngn?.toFixed(2)}
                     </span>
                     {estimatedPrice.final_usd && (
