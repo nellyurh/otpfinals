@@ -543,7 +543,7 @@ const NewDashboard = () => {
     return (
       <div className="space-y-6">
         {/* Welcome Card with Balance */}
-        <div className="bg-[#005E3A] text-white rounded-2xl p-8">
+        <div className="bg-gradient-to-br from-[#005E3A] via-emerald-700 to-emerald-900 text-white rounded-2xl p-8">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
               <span className="text-xl font-bold">{getUserInitials()}</span>
