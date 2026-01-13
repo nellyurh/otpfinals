@@ -20,6 +20,26 @@ const popularServices = [
 
 const Landing = ({ setUser }) => {
   const [showAuth, setShowAuth] = useState(false);
+  const [branding, setBranding] = useState({
+    brand_name: 'UltraCloud Sms',
+    primary_color_hex: '#059669',
+    landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
+    landing_hero_subtitle:
+      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters'
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const resp = await axios.get(`${API}/public/branding`);
+        setBranding(resp.data);
+      } catch (e) {
+        // ignore
+      }
+    };
+    load();
+  }, []);
+
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   
