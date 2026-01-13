@@ -2908,6 +2908,14 @@ async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_curr
             
             return {'success': True, 'message': 'Airtime purchase successful', 'details': result}
         
+
+            await _create_transaction_notification(
+                user['id'],
+                'Airtime purchase',
+                f"Airtime purchase of ₦{request.amount:,.2f} completed.",
+                metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'airtime'},
+            )
+
         raise HTTPException(status_code=400, detail=result.get('description') if result else "Airtime purchase failed")
     except HTTPException:
         raise
@@ -2980,6 +2988,14 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
                 currency='NGN',
                 status='completed',
                 reference=result.get('message', {}).get('details', {}).get('trans_id'),
+
+            await _create_transaction_notification(
+                user['id'],
+                'Data purchase',
+                f"Data purchase of ₦{amount:,.2f} completed.",
+                metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'data'},
+            )
+
                 metadata={'service': 'data', 'plan_code': request.plan_code}
             )
             trans_dict = transaction.model_dump()
