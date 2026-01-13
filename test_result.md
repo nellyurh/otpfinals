@@ -155,11 +155,68 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+# --- UltraCloud SMS Backend Testing (Jan 2026) ---
+backend:
+  - task: "Plisio Crypto Deposit Flow (Backend Only)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "PLISIO CRYPTO DEPOSIT FLOW TESTING COMPLETED ✅ All review request requirements verified successfully: 1) POST /api/crypto/plisio/create-invoice with admin token and body {amount_usd: 5, currency: 'USDT'} returns 200 with success=true, deposit object containing id, currency='USDT', amount_usd=5, status='pending'. 2) GET /api/crypto/plisio/status/{deposit_id} returns 200 with success=true and same deposit ID with status='pending'. 3) Suspended user correctly blocked from create-invoice (403 'Account suspended') but can access status endpoint (404 for other user's invoice as expected). All Plisio crypto functionality working perfectly."
+
+  - task: "Suspended vs Blocked User Behavior"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "SUSPENDED VS BLOCKED USER BEHAVIOR TESTING COMPLETED ✅ All requirements verified: 1) Blocked user: login succeeds (200), profile access returns 403 'Account blocked' as expected. 2) Suspended user: login (200) and profile access (200) both work correctly. 3) Suspended user restrictions working: POST /api/orders/purchase returns 403 'Account suspended', POST /api/crypto/plisio/create-invoice returns 403 'Account suspended', POST /api/user/generate-virtual-account returns 403 'Account suspended'. 4) Suspended user can still access crypto status endpoint (returns 404 for other user's invoices as expected). All user state restrictions implemented correctly."
+
+  - task: "Regression Checks - Core Backend Functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "REGRESSION CHECKS COMPLETED ✅ All core functionality verified: 1) Admin login with admin@smsrelay.com/admin123 works perfectly (200, returns valid token). 2) GET /api/admin/provider-balances returns 200 with success=true and proper structure containing 'daisysms', 'smspool', '5sim' provider balances. 3) Normal user profile access via GET /api/user/profile works correctly (200) with all required fields: id, email, full_name, ngn_balance, usd_balance. All regression tests passed - no breaking changes detected."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.1"
+  test_sequence: 5
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Plisio Crypto Deposit Flow (Backend Only)"
+    - "Suspended vs Blocked User Behavior"
+    - "Regression Checks - Core Backend Functionality"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
 agent_communication:
   - agent: "main"
     message: "Admin panel fixed: /admin loads, tab navigation works, Providers/Users pages render, date range filter wired incl custom range, NGN primary display, masked keys safe handling. Please run frontend testing agent to validate end-to-end in browser."
   - agent: "testing"
     message: "ADMIN PANEL END-TO-END TESTING COMPLETED ✅ All review request requirements successfully verified: 1) Login flow working (admin@smsrelay.com/admin123). 2) /admin renders properly (no blank page, 27 dashboard cards, sidebar navigation). 3) Period presets fully functional (Today/Last 7 days/Last 30 days switch correctly). 4) Custom date range working (2 date inputs, period label updates). 5) Providers tab displays Top OTP Services table with NGN amounts and friendly service names. 6) Users tab shows users table with 37 rows of user data. 7) Wallet & Pricing tab shows 5 markup/FX inputs, 3 masked API key fields, Save/Reset buttons. No console errors detected. Admin panel is production-ready and all functionality working as specified."
+  - agent: "testing"
+    message: "ULTRACLOUD SMS BACKEND TESTING COMPLETED ✅ All review request requirements successfully verified: 1) Plisio crypto deposit flow working perfectly - create-invoice and status endpoints return proper responses with correct structure. Suspended users correctly blocked from creating invoices but can check status. 2) User state behavior working correctly - blocked users can login but not access profile (403), suspended users can login and access profile but blocked from orders/crypto/virtual-account generation (403). 3) Regression tests passed - admin login, provider-balances endpoint, and normal user profile all working. All 18 backend tests passed (100% success rate). Backend is production-ready."
+
+user_problem_statement: "Test the updated backend for the UltraCloud Sms app with focus on: 1) Plisio crypto deposit flow (backend only), 2) Suspended vs blocked behavior, 3) Regression checks."
 
 user_problem_statement: "Fix /admin admin dashboard: blank white page, date range filter, Users page, and Providers > Top OTP Services page not working; display primary currency in NGN."
 
