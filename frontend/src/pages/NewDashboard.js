@@ -1128,6 +1128,17 @@ const NewDashboard = () => {
               <button
                 onClick={handleCreateCryptoInvoice}
                 disabled={creatingDeposit}
+                    <div className="mt-2 text-xs text-gray-600 space-y-1">
+                      {cryptoCountdown !== null && (
+                        <p>
+                          Time left: <span className="font-semibold">{cryptoCountdown > 0 ? `${Math.floor(cryptoCountdown / 60)}m ${cryptoCountdown % 60}s` : 'Expired'}</span>
+                        </p>
+                      )}
+                      <p className="text-[11px] text-gray-500">
+                        This deposit link is valid for about 10 minutes. After expiry, please create a new one.
+                      </p>
+                    </div>
+
                 className="w-full py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {creatingDeposit ? (
