@@ -2788,6 +2788,67 @@ async def validate_promo_code(payload: dict, user: dict = Depends(get_current_us
         exp = datetime.fromisoformat(expires_at)
         if not exp.tzinfo:
             exp = exp.replace(tzinfo=timezone.utc)
+
+@api_router.get('/admin/provider-balances')
+async def admin_provider_balances(admin: dict = Depends(require_admin)):
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if not config:
+        default_config = PricingConfig()
+        cfg = default_config.model_dump()
+        cfg['updated_at'] = cfg['updated_at'].isoformat()
+        await db.pricing_config.insert_one(cfg)
+        config = cfg
+
+    daisysms_key = config.get('daisysms_api_key') or DAISYSMS_API_KEY
+    smspool_key = config.get('smspool_api_key') or SMSPOOL_API_KEY
+    fivesim_key = config.get('fivesim_api_key') or FIVESIM_API_KEY
+
+    balances = {
+        'daisysms': None,
+        'smspool': None,
+        '5sim': None,
+    }
+
+    # DaisySMS balance
+    if daisysms_key and daisysms_key != '********':
+        try:
+            url = f"https://daisysms.com/stubs/handler_api.php?api_key={daisysms_key}&action=getBalance"
+            async with httpx.AsyncClient(timeout=15.0) as client_http:
+                r = await client_http.get(url)
+            if r.status_code == 200:
+                # example: ACCESS_BALANCE:10.00
+                txt = r.text.strip()
+                parts = txt.split(':')
+                balances['daisysms'] = {'raw': txt, 'balance': float(parts[1]) if len(parts) > 1 else None}
+        except Exception:
+            balances['daisysms'] = {'error': 'failed'}
+
+    # SMS-pool balance
+    if smspool_key and smspool_key != '********':
+        try:
+            url = f"https://api.smspool.net/request/balance?key={smspool_key}"
+            async with httpx.AsyncClient(timeout=15.0) as client_http:
+                r = await client_http.get(url)
+            if r.status_code == 200:
+                j = r.json()
+                balances['smspool'] = j
+        except Exception:
+            balances['smspool'] = {'error': 'failed'}
+
+    # 5sim balance
+    if fivesim_key and fivesim_key != '********':
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client_http:
+                r = await client_http.get('https://5sim.net/v1/user/profile', headers={'Authorization': f'Bearer {fivesim_key}'})
+            if r.status_code == 200:
+                balances['5sim'] = r.json()
+            else:
+                balances['5sim'] = {'status_code': r.status_code}
+        except Exception:
+            balances['5sim'] = {'error': 'failed'}
+
+    return {'success': True, 'balances': balances}
+
         if datetime.now(timezone.utc) > exp:
             raise HTTPException(status_code=400, detail="Promo code expired")
 
