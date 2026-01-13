@@ -612,29 +612,41 @@ const AdminPanel = ({ user, setUser }) => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1">
             {activeSection === 'providers' && (
-              <section className="grid grid-cols-1 gap-6">
+              <section className="grid grid-cols-1 gap-6 mt-4">
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-semibold">Providers Overview</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Top OTP Services (period)</CardTitle>
                     <CardDescription className="text-xs">
-                      High level status of connected OTP providers.
+                      Sorted by total sales amount for the selected date range.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="text-xs text-slate-600">
-                    <ul className="space-y-2">
-                      <li className="flex items-center justify-between">
-                        <span>DaisySMS (US Server)</span>
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">Active</Badge>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span>SMS-pool (International)</span>
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">Active</Badge>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <span>5sim (Global)</span>
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">Active</Badge>
-                      </li>
-                    </ul>
+                    {!topServices && <p>Loading top services…</p>}
+                    {topServices && topServices.length === 0 && <p>No OTP purchases in this period.</p>}
+                    {topServices && topServices.length > 0 && (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-left text-[11px]">
+                          <thead className="border-b border-slate-200 bg-slate-50">
+                            <tr>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Service</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Total Amount (₦ est.)</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Orders</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {topServices.map((s, idx) => (
+                              <tr key={`${s.service}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="px-2 py-1 whitespace-nowrap">{s.service || 'Unknown'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  ₦{Math.round(s.total_amount * (pricing.ngn_to_usd_rate || 1500)).toLocaleString()}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">{s.count}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </section>
