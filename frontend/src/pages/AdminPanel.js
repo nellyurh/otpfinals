@@ -121,6 +121,7 @@ const AdminPanel = ({ user, setUser }) => {
     fetchPricing();
     fetchUsers();
     fetchPromoCodes();
+    fetchProviderBalances();
   }, []);
 
   useEffect(() => {
