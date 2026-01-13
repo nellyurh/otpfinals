@@ -2254,21 +2254,6 @@ async def purchase_number(
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
     
     order = SMSOrder(
-
-    # Record promo redemption AFTER order is created and user is charged
-    if promo:
-        redemption = PromoRedemption(
-            promo_id=promo['id'],
-            code=promo['code'],
-            user_id=user['id'],
-            order_id=order.id,
-            amount_discounted=discount_ngn if charged_currency == 'NGN' else discount_usd,
-            currency=charged_currency,
-        )
-        red_dict = redemption.model_dump()
-        red_dict['created_at'] = red_dict['created_at'].isoformat()
-        await db.promo_redemptions.insert_one(red_dict)
-
         user_id=user['id'],
         server=data.server,
         provider=provider,
