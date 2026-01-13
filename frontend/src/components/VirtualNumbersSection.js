@@ -301,7 +301,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             {
               server: selectedServer.value,
               service: selectedService.value,
-              country: selectedCountry?.value
+              country: selectedCountry?.value,
+              promo_code: promoCode || undefined
             },
             axiosConfig
           );
