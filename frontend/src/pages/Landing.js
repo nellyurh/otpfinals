@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
+
 import { Phone, Shield, Zap, Globe, DollarSign, Clock, CheckCircle2, X, TrendingUp, Users, Star } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
