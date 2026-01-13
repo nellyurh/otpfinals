@@ -2919,8 +2919,6 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
     callback_url = f"{FRONTEND_URL.rstrip('/')}/api/crypto/plisio/webhook?json=true" if FRONTEND_URL else None
 
     resp = await _plisio_request('GET', '/invoices/new', {
-        'source_currency': 'USD',
-        'source_amount': amount_usd,
         'currency': currency,
         'order_name': f"UltraCloud Sms Wallet Deposit ({user['email']})",
         'order_number': order_id,
@@ -2929,6 +2927,8 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'allowed_psys_cids': currency,
         'callback_url': callback_url,
         'email': user.get('email'),
+        'expire_min': 10,
+        'description': f"Wallet top-up for {user['email']}",
     })
 
     if not resp or not resp.get('status'):

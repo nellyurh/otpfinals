@@ -878,10 +878,16 @@ const NewDashboard = () => {
     const [copied, setCopied] = useState(false);
     const [generatingAccount, setGeneratingAccount] = useState(false);
 
-    const copyToClipboard = (text) => {
-      navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    const copyToClipboard = async (text) => {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Clipboard write failed', err);
+        toast.error('Unable to copy to clipboard in this browser.');
+      }
     };
 
     const handleGenerateAccount = async () => {
