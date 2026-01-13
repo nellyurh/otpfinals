@@ -102,6 +102,60 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
+
+# --- Admin dashboard fixes (Jan 2026) ---
+frontend:
+  - task: "Admin /admin renders (no blank page) + tabs (Dashboard/Settings/Providers/Users)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/AdminPanel.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported /admin is blank white page; date range, Users page, Top OTP sales not working."
+      - working: true
+        agent: "main"
+        comment: "Fixed broken JSX nesting that prevented Providers/Users/Settings sections from rendering; verified /admin loads and tab navigation works via screenshots."
+      - working: true
+        agent: "main"
+        comment: "Added Custom date range picker (inclusive end-of-day) and wired to /api/admin/stats + /api/admin/top-services; verified metrics refresh and custom range via screenshots."
+      - working: true
+        agent: "main"
+        comment: "Providers tab now displays Top OTP Services with NGN amounts and friendly service name mapping; Users tab displays users table; Settings tab shows pricing + masked keys with safe PUT behavior."
+
+backend:
+  - task: "Admin metrics endpoints (stats/users/top-services)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Verified via curl: /api/admin/stats, /api/admin/users, /api/admin/top-services all return success/data with admin token."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 4
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Admin panel regression: /admin load, tab switching, Users list, Top services, date range presets + custom"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Admin panel fixed: /admin loads, tab navigation works, Providers/Users pages render, date range filter wired incl custom range, NGN primary display, masked keys safe handling. Please run frontend testing agent to validate end-to-end in browser."
+
 user_problem_statement: "Fix /admin admin dashboard: blank white page, date range filter, Users page, and Providers > Top OTP Services page not working; display primary currency in NGN."
 
 frontend:
