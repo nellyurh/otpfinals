@@ -2491,67 +2491,6 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
 # ============ Admin Routes ============
 
 # ============ Admin Routes ============
-    """Return top OTP services by sales volume for the selected period."""
-    now = datetime.now(timezone.utc)
-    if end_date:
-        try:
-            end = datetime.fromisoformat(end_date)
-            if not end.tzinfo:
-                end = end.replace(tzinfo=timezone.utc)
-        except Exception:
-            end = now
-    else:
-        end = now
-
-    if start_date:
-        try:
-            start = datetime.fromisoformat(start_date)
-            if not start.tzinfo:
-                start = start.replace(tzinfo=timezone.utc)
-        except Exception:
-            start = end - timedelta(days=1)
-    else:
-        start = end - timedelta(days=1)
-
-    match_stage = {
-        "created_at": {"$gte": start.isoformat(), "$lte": end.isoformat()},
-    }
-
-    # Aggregate transactions by service using metadata.service when available
-    pipeline = [
-        {"$match": {**match_stage, "type": "purchase", "status": "completed"}},
-        {
-            "$group": {
-                "_id": {"service": "$metadata.service"},
-                "total_amount": {"$sum": "$amount"},
-                "count": {"$sum": 1},
-            }
-        },
-        {"$sort": {"total_amount": -1}},
-        {"$limit": 20},
-    ]
-
-    cursor = db.transactions.aggregate(pipeline)
-    rows = await cursor.to_list(20)
-
-    services = []
-    for row in rows:
-        sid = row.get("_id", {}) or {}
-        service_code = sid.get("service") or "unknown"
-        services.append(
-            {
-                "service": service_code,
-                "total_amount": float(row.get("total_amount", 0) or 0),
-                "count": row.get("count", 0),
-            }
-        )
-
-    return {
-        "success": True,
-        "start": start.isoformat(),
-        "end": end.isoformat(),
-        "services": services,
-    }
 
 @api_router.get("/admin/pricing")
 async def get_pricing_config(admin: dict = Depends(require_admin)):
