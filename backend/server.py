@@ -3012,12 +3012,6 @@ async def plisio_status(deposit_id: str, user: dict = Depends(get_current_user))
         raise HTTPException(status_code=404, detail='Not found')
     return {'success': True, 'deposit': inv}
 
-                balances['5sim'] = {'status_code': r.status_code}
-        except Exception:
-            balances['5sim'] = {'error': 'failed'}
-
-    return {'success': True, 'balances': balances}
-
 
 @api_router.post('/admin/purge')
 async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
