@@ -545,6 +545,11 @@ const AdminPanel = ({ user, setUser }) => {
                         value={customRange.end}
                         onChange={(e) => setCustomRange((prev) => ({ ...prev, end: e.target.value }))}
                         className="text-[11px] text-slate-700 bg-transparent focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+
             {activeSection === 'deposits' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
