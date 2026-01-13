@@ -517,7 +517,7 @@ const NewDashboard = () => {
                   fetchProfile={fetchProfile}
                 />
               ) : (
-                <MaintenanceSection title="Virtual Numbers" />
+                maintenanceContent("Virtual Numbers")
               )
             )}
 
