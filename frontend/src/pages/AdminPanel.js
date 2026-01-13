@@ -713,7 +713,7 @@ const AdminPanel = ({ user, setUser }) => {
                           <thead className="border-b border-slate-200 bg-slate-50">
                             <tr>
                               <th className="px-2 py-1 font-semibold text-slate-600">Service</th>
-                              <th className="px-2 py-1 font-semibold text-slate-600">Total Amount (₦ est.)</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Total Amount (₦)</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">Orders</th>
                             </tr>
                           </thead>
@@ -722,7 +722,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <tr key={`${s.service}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 whitespace-nowrap">{s.service || 'Unknown'}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">
-                                  ₦{Math.round(s.total_amount * (pricing.ngn_to_usd_rate || 1500)).toLocaleString()}
+                                  ₦{Math.round(s.total_amount).toLocaleString()}
                                 </td>
                                 <td className="px-2 py-1 whitespace-nowrap">{s.count}</td>
                               </tr>
