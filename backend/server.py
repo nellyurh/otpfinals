@@ -185,6 +185,7 @@ class ProviderBalanceResponse(BaseModel):
     balances: Dict[str, Any]
 
 
+
 class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
