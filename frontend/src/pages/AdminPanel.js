@@ -56,10 +56,12 @@ const AdminPanel = ({ user, setUser }) => {
       return;
     }
     fetchPricing();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
     fetchStats();
+    fetchTopServices();
   }, [periodPreset]);
 
   const fetchStats = async () => {
