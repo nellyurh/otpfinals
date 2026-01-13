@@ -168,6 +168,26 @@ class SMSOrder(BaseModel):
     # DaisySMS optional filters
     area_code: Optional[str] = None
     carrier: Optional[str] = None
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    message: str
+    type: str = 'announcement'  # 'announcement' | 'transaction' | 'update'
+    active: bool = True
+    show_on_login: bool = False
+    created_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NotificationReceipt(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    notification_id: str
+    user_id: str
+    read_at: Optional[str] = None
+    dismissed_at: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
     phone_make: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(minutes=8))
