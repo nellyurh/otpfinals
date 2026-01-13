@@ -39,19 +39,13 @@ const webpackConfig = {
       // Disable hot reload completely if environment variable is set
       if (config.disableHotReload) {
         // Remove hot reload related plugins
-        webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
-          return !(plugin.constructor.name === 'HotModuleReplacementPlugin');
-        });
-      }
+        if (webpackConfig.plugins) {
+          webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
+            return !(plugin && plugin.constructor && plugin.constructor.name === 'HotModuleReplacementPlugin');
+          });
+        }
 
-      // Always remove ESLintWebpackPlugin to avoid CRA ESLint blocking dev builds
-      if (webpackConfig.plugins) {
-        webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
-          return !(plugin && plugin.constructor && plugin.constructor.name === 'ESLintWebpackPlugin');
-        });
-      }
-
-        // Disable watch mode
+        // Disable watch mode completely
         webpackConfig.watch = false;
         webpackConfig.watchOptions = {
           ignored: /.*/, // Ignore all files
@@ -69,6 +63,13 @@ const webpackConfig = {
             '**/public/**',
           ],
         };
+      }
+
+      // Always remove ESLintWebpackPlugin to avoid CRA ESLint blocking dev builds
+      if (webpackConfig.plugins) {
+        webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
+          return !(plugin && plugin.constructor && plugin.constructor.name === 'ESLintWebpackPlugin');
+        });
       }
 
       // Add health check plugin to webpack if enabled
