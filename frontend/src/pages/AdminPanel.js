@@ -113,6 +113,9 @@ const AdminPanel = ({ user, setUser }) => {
   }, []);
 
   useEffect(() => {
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editUser, setEditUser] = useState(null);
+
     fetchStats();
     fetchTopServices();
   }, [periodPreset, customRange.start, customRange.end]);
