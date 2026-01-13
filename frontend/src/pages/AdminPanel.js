@@ -106,6 +106,20 @@ const AdminPanel = ({ user, setUser }) => {
   const [users, setUsers] = useState(null);
   const [topServices, setTopServices] = useState(null);
 
+
+  const [providerBalances, setProviderBalances] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editUser, setEditUser] = useState(null);
+
+  const fetchProviderBalances = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/provider-balances`, axiosConfig);
+      if (resp.data.success) setProviderBalances(resp.data.balances);
+    } catch (e) {
+      console.error('Failed to fetch provider balances');
+    }
+  };
+
   const token = localStorage.getItem('token');
   const axiosConfig = {
     headers: { Authorization: `Bearer ${token}` },
@@ -118,25 +132,11 @@ const AdminPanel = ({ user, setUser }) => {
     }
     fetchPricing();
     fetchUsers();
-  const [providerBalances, setProviderBalances] = useState(null);
-
-  const fetchProviderBalances = async () => {
-    try {
-      const resp = await axios.get(`${API}/admin/provider-balances`, axiosConfig);
-      if (resp.data.success) setProviderBalances(resp.data.balances);
-    } catch (e) {
-      console.error('Failed to fetch provider balances');
-    }
-  };
-
     fetchPromoCodes();
     fetchProviderBalances();
   }, []);
 
   useEffect(() => {
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [editUser, setEditUser] = useState(null);
-
     fetchStats();
     fetchTopServices();
   }, [periodPreset, customRange.start, customRange.end]);
