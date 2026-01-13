@@ -192,6 +192,10 @@ const AdminPanel = ({ user, setUser }) => {
         enable_profile: response.data.enable_profile !== false,
         enable_support: response.data.enable_support !== false,
       });
+    } catch (error) {
+      console.error('Failed to fetch pricing');
+    }
+  };
 
   const handleCreatePromo = async () => {
     try {
@@ -227,11 +231,6 @@ const AdminPanel = ({ user, setUser }) => {
       fetchPromoCodes();
     } catch (e) {
       toast.error('Failed to update promo');
-    }
-  };
-
-    } catch (error) {
-      console.error('Failed to fetch pricing');
     }
   };
 
