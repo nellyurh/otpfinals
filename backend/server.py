@@ -3004,6 +3004,12 @@ async def plisio_webhook(request: Request):
     status_val = (payload.get('status') or payload.get('invoice_status') or '').lower()
     paid = status_val in ['completed', 'paid', 'success', 'finished']
 
+    update_fields = {
+        'plisio_status': status_val,
+        'webhook': payload,
+        'last_webhook_at': datetime.now(timezone.utc).isoformat(),
+    }
+
     if paid and invoice.get('status') != 'paid':
         # Credit USD
         amount_usd = float(invoice.get('amount_usd') or 0)
@@ -3017,6 +3023,25 @@ async def plisio_webhook(request: Request):
             currency='USD',
             status='completed',
             reference=str(invoice.get('invoice_id') or invoice.get('id')),
+            metadata={'provider': 'plisio', 'currency': invoice.get('currency')}
+        )
+        trans_dict = transaction.model_dump()
+        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+        await db.transactions.insert_one(trans_dict)
+
+        await _create_transaction_notification(
+            invoice['user_id'],
+            'Crypto deposit confirmed',
+            f"Your wallet was credited ${amount_usd:,.2f}.",
+            metadata={'reference': trans_dict.get('id'), 'type': 'deposit_usd', 'provider': 'plisio'},
+        )
+
+        update_fields['status'] = 'paid'
+        update_fields['paid_at'] = datetime.now(timezone.utc).isoformat()
+
+    await db.crypto_invoices.update_one({'id': order_number}, {'$set': update_fields})
+
+    return {'success': True}
 
 
 @api_router.post('/crypto/plisio/cancel/{deposit_id}')
@@ -3069,23 +3094,6 @@ async def plisio_current(user: dict = Depends(get_current_user)):
             pass
 
     return {'success': True, 'deposit': inv}
-
-            metadata={'provider': 'plisio', 'currency': invoice.get('currency')}
-        )
-        trans_dict = transaction.model_dump()
-        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
-        await db.transactions.insert_one(trans_dict)
-
-        await _create_transaction_notification(
-            invoice['user_id'],
-            'Crypto deposit confirmed',
-            f"Your wallet was credited ${amount_usd:,.2f}.",
-            metadata={'reference': trans_dict.get('id'), 'type': 'deposit_usd', 'provider': 'plisio'},
-        )
-
-        await db.crypto_invoices.update_one({'id': order_number}, {'$set': {'status': 'paid', 'paid_at': datetime.now(timezone.utc).isoformat(), 'webhook': payload}})
-
-    return {'success': True}
 
 
 @api_router.get('/crypto/plisio/status/{deposit_id}')
