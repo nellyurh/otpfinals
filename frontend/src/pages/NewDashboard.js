@@ -490,7 +490,7 @@ const NewDashboard = () => {
                 </svg>
               </button>
               
-              <div className="flex items-center gap-2 bg-[#005E3A] text-white px-4 py-2 rounded-lg">
+              <div className="flex items-center gap-2 text-white px-4 py-2 rounded-lg" style={{ background: branding.primary_color_hex || '#005E3A' }}>
                 <Wallet className="w-4 h-4" />
                 <span className="font-bold">₦{(user.ngn_balance || 0).toFixed(2)}</span>
                 <div className="w-px h-4 bg-white/30 mx-1"></div>
