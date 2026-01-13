@@ -157,6 +157,7 @@ class SMSOrder(BaseModel):
     server: str  # us_server, server1, server2
     provider: str  # daisysms, smspool, tigersms
     service: str
+    service_name: Optional[str] = None
     country: str
     phone_number: Optional[str] = None
     activation_id: Optional[str] = None
@@ -326,6 +327,7 @@ class VirtualCard(BaseModel):
 class PurchaseNumberRequest(BaseModel):
     server: str  # us_server, server1, server2
     service: str
+    service_name: Optional[str] = None
     country: str
     payment_currency: str = 'NGN'  # Default to NGN
     promo_code: Optional[str] = None

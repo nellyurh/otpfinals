@@ -351,6 +351,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       const payload = {
         server: selectedServer.value,
         service: selectedService.value,
+        service_name: selectedService.name || selectedService.label,
         // For now DaisySMS is US-only so country is fixed to 187;
         // for other providers, country comes from selectedCountry
         country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value,
@@ -870,7 +871,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       <tr key={order.id} className="border-b hover:bg-gray-50">
                         <td className="py-4 px-4">
                           <div style={{ color: '#000000', fontWeight: '500' }}>
-                            {getServiceName(order.service)}
+                            {order.service_name || getServiceName(order.service)}
                           </div>
                         </td>
                         <td className="py-4 px-4">
