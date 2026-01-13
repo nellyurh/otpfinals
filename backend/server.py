@@ -2935,6 +2935,19 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         raise HTTPException(status_code=500, detail='Failed to create invoice')
 
     data = resp.get('data') or {}
+
+    # Determine expiry time from Plisio (expire_utc) or fallback to 10 minutes
+    expires_at_iso = None
+    exp_utc = data.get('expire_utc')
+    if exp_utc is not None:
+        try:
+            exp_dt = datetime.fromtimestamp(int(exp_utc), tz=timezone.utc)
+            expires_at_iso = exp_dt.isoformat()
+        except Exception:
+            expires_at_iso = None
+    if not expires_at_iso:
+        expires_at_iso = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+
     invoice_doc = {
         'id': order_id,
         'user_id': user['id'],
@@ -2943,7 +2956,9 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'currency': currency,
         'amount_usd': amount_usd,
         'status': 'pending',
+        'plisio_status': (data.get('status') or 'new').lower(),
         'created_at': datetime.now(timezone.utc).isoformat(),
+        'expires_at': expires_at_iso,
         'raw': data,
     }
     await db.crypto_invoices.insert_one(invoice_doc)
@@ -2958,7 +2973,8 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
             'amount_crypto': data.get('amount') or data.get('amount_to_pay'),
             'qr': data.get('qr_code') or data.get('qr'),
             'invoice_url': data.get('invoice_url'),
-            'status': 'pending'
+            'status': 'pending',
+            'expires_at': expires_at_iso,
         }
     }
 
@@ -3001,6 +3017,59 @@ async def plisio_webhook(request: Request):
             currency='USD',
             status='completed',
             reference=str(invoice.get('invoice_id') or invoice.get('id')),
+
+
+@api_router.post('/crypto/plisio/cancel/{deposit_id}')
+async def plisio_cancel(deposit_id: str, user: dict = Depends(get_current_user)):
+    """Allow a user to cancel/clear an unpaid crypto deposit locally."""
+    inv = await db.crypto_invoices.find_one({'id': deposit_id, 'user_id': user['id']}, {'_id': 0})
+    if not inv:
+        raise HTTPException(status_code=404, detail='Not found')
+
+    if inv.get('status') == 'paid':
+        raise HTTPException(status_code=400, detail='Cannot cancel a paid deposit')
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    await db.crypto_invoices.update_one(
+        {'id': deposit_id},
+        {'$set': {'status': 'cancelled', 'cancelled_at': now_iso}},
+    )
+
+    return {'success': True}
+
+
+@api_router.get('/crypto/plisio/current')
+async def plisio_current(user: dict = Depends(get_current_user)):
+    """Return the most recent active Plisio deposit for the current user."""
+    cursor = db.crypto_invoices.find(
+        {'user_id': user['id'], 'status': {'$in': ['pending', 'new']}},
+        {'_id': 0},
+    ).sort('created_at', -1).limit(1)
+    items = await cursor.to_list(1)
+    if not items:
+        return {'success': True, 'deposit': None}
+
+    inv = items[0]
+
+    # Auto-expire if past expires_at and not yet paid/expired
+    expires_at = inv.get('expires_at')
+    if expires_at:
+        try:
+            exp = datetime.fromisoformat(expires_at)
+            if not exp.tzinfo:
+                exp = exp.replace(tzinfo=timezone.utc)
+            now = datetime.now(timezone.utc)
+            if now > exp and inv.get('status') not in ['paid', 'expired']:
+                inv['status'] = 'expired'
+                await db.crypto_invoices.update_one(
+                    {'id': inv['id']},
+                    {'$set': {'status': 'expired', 'expired_at': now.isoformat()}},
+                )
+        except Exception:
+            pass
+
+    return {'success': True, 'deposit': inv}
+
             metadata={'provider': 'plisio', 'currency': invoice.get('currency')}
         )
         trans_dict = transaction.model_dump()
