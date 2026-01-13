@@ -38,6 +38,43 @@ const AdminPanel = ({ user, setUser }) => {
     fivesim_api_key: '',
   });
 
+  const [branding, setBranding] = useState({
+    brand_name: 'UltraCloud Sms',
+    landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
+    landing_hero_subtitle:
+      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters'
+  });
+
+  const [pageToggles, setPageToggles] = useState({
+    enable_dashboard: true,
+    enable_transactions: true,
+    enable_fund_wallet: true,
+    enable_virtual_numbers: true,
+    enable_buy_data: true,
+    enable_airtime: true,
+    enable_betting: true,
+    enable_virtual_cards: true,
+    enable_sms_history: true,
+    enable_account_upgrade: true,
+    enable_referral: true,
+    enable_profile: true,
+    enable_support: true,
+  });
+
+  const [promoCodes, setPromoCodes] = useState(null);
+  const [newPromo, setNewPromo] = useState({
+    code: '',
+    description: '',
+    discount_type: 'percent',
+    discount_value: 10,
+    currency: 'NGN',
+    active: true,
+    max_total_uses: 100,
+    one_time_per_user: true,
+    expires_at: ''
+  });
+
+
   const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings' | 'providers' | 'users'
   const [periodPreset, setPeriodPreset] = useState('7d');
   const [customRange, setCustomRange] = useState({ start: '', end: '' }); // YYYY-MM-DD
@@ -58,6 +95,7 @@ const AdminPanel = ({ user, setUser }) => {
     }
     fetchPricing();
     fetchUsers();
+    fetchPromoCodes();
   }, []);
 
   useEffect(() => {
@@ -86,6 +124,16 @@ const AdminPanel = ({ user, setUser }) => {
           d.setDate(d.getDate() - 7);
           start = d;
         } else if (periodPreset === '30d') {
+
+  const fetchPromoCodes = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/promo-codes`, axiosConfig);
+      if (resp.data.success) setPromoCodes(resp.data.promos || []);
+    } catch (e) {
+      console.error('Failed to fetch promo codes');
+    }
+  };
+
           const d = new Date(now);
           d.setDate(d.getDate() - 30);
           start = d;
