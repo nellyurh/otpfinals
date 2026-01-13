@@ -116,12 +116,22 @@ const AdminPanel = ({ user, setUser }) => {
           </div>
 
           <nav className="flex-1 px-3 py-4 space-y-2 text-sm">
-            <SidebarItem icon={LayoutDashboard} label="Dashboard" active />
+            <SidebarItem
+              icon={LayoutDashboard}
+              label="Dashboard"
+              active={activeSection === 'dashboard'}
+              onClick={() => setActiveSection('dashboard')}
+            />
             <div className="mt-4 text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-3">
               Settings
             </div>
-            <SidebarItem icon={Wallet} label="Wallet & Pricing" />
-            <SidebarItem icon={Settings} label="Providers" />
+            <SidebarItem
+              icon={Wallet}
+              label="Wallet & Pricing"
+              active={activeSection === 'settings'}
+              onClick={() => setActiveSection('settings')}
+            />
+            <SidebarItem icon={Settings} label="Providers" disabled />
             <SidebarItem icon={Users} label="Users" disabled />
           </nav>
 
