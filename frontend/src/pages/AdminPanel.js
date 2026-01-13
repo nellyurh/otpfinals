@@ -1096,6 +1096,31 @@ const AdminPanel = ({ user, setUser }) => {
                       </div>
                     </div>
 
+                    {/* Provider balances */}
+                    <div className="border border-slate-100 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-xs font-semibold text-slate-800">Provider Balances</div>
+                        <Button variant="outline" className="h-7 px-2 text-[11px]" onClick={fetchProviderBalances}>Refresh</Button>
+                      </div>
+                      {!providerBalances && <div className="text-xs text-slate-500">Loading…</div>}
+                      {providerBalances && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                          <div className="rounded-lg border border-slate-100 p-3">
+                            <div className="text-slate-500">DaisySMS</div>
+                            <div className="text-slate-900 font-semibold mt-1">{providerBalances.daisysms?.balance ?? providerBalances.daisysms?.raw ?? '-'}</div>
+                          </div>
+                          <div className="rounded-lg border border-slate-100 p-3">
+                            <div className="text-slate-500">SMS-pool</div>
+                            <div className="text-slate-900 font-semibold mt-1">{providerBalances.smspool?.balance ?? providerBalances.smspool?.data?.balance ?? '-'}</div>
+                          </div>
+                          <div className="rounded-lg border border-slate-100 p-3">
+                            <div className="text-slate-500">5sim</div>
+                            <div className="text-slate-900 font-semibold mt-1">{providerBalances['5sim']?.balance ?? providerBalances['5sim']?.balance_rub ?? providerBalances['5sim']?.balance_usd ?? '-'}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Page toggles */}
                     <div className="border border-slate-100 rounded-xl p-4">
                       <div className="text-xs font-semibold text-slate-800 mb-3">Page Toggles</div>
