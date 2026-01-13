@@ -991,63 +991,6 @@ const AdminPanel = ({ user, setUser }) => {
                                 <th className="px-2 py-1 font-semibold text-slate-600">Code</th>
                                 <th className="px-2 py-1 font-semibold text-slate-600">Type</th>
                                 <th className="px-2 py-1 font-semibold text-slate-600">Value</th>
-
-      <Dialog open={!!selectedUser} onOpenChange={(open) => { if (!open) { setSelectedUser(null); setEditUser(null); } }}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription className="text-xs">Update user details, balances, and status.</DialogDescription>
-          </DialogHeader>
-
-          {editUser && (
-            <div className="space-y-4 text-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Full name</Label>
-                  <Input value={editUser.full_name} onChange={(e) => setEditUser({ ...editUser, full_name: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs">Email</Label>
-                  <Input value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs">NGN balance</Label>
-                  <Input type="number" value={editUser.ngn_balance} onChange={(e) => setEditUser({ ...editUser, ngn_balance: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs">USD balance</Label>
-                  <Input type="number" value={editUser.usd_balance} onChange={(e) => setEditUser({ ...editUser, usd_balance: e.target.value })} />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={editUser.is_admin} onCheckedChange={(v) => setEditUser({ ...editUser, is_admin: !!v })} />
-                  <span className="text-xs">Admin</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={editUser.is_suspended} onCheckedChange={(v) => setEditUser({ ...editUser, is_suspended: !!v })} />
-                  <span className="text-xs">Suspended</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={editUser.is_blocked} onCheckedChange={(v) => setEditUser({ ...editUser, is_blocked: !!v })} />
-                  <span className="text-xs">Blocked</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setSelectedUser(null); setEditUser(null); }}>
-              Cancel
-            </Button>
-            <Button onClick={saveUserEdits} className="bg-emerald-600 hover:bg-emerald-700">
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
                                 <th className="px-2 py-1 font-semibold text-slate-600">Max Uses</th>
                                 <th className="px-2 py-1 font-semibold text-slate-600">Expiry</th>
                                 <th className="px-2 py-1 font-semibold text-slate-600">Active</th>
@@ -1130,6 +1073,64 @@ const AdminPanel = ({ user, setUser }) => {
                           ['ltc_usd_rate', 'LTC'],
                           ['doge_usd_rate', 'DOGE'],
                         ].map(([key, label]) => (
+
+                      {/* User edit dialog */}
+                      <Dialog open={!!selectedUser} onOpenChange={(open) => { if (!open) { setSelectedUser(null); setEditUser(null); } }}>
+                        <DialogContent className="max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Edit User</DialogTitle>
+                            <DialogDescription className="text-xs">Update user details, balances, and status.</DialogDescription>
+                          </DialogHeader>
+
+                          {editUser && (
+                            <div className="space-y-4 text-sm">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <Label className="text-xs">Full name</Label>
+                                  <Input value={editUser.full_name} onChange={(e) => setEditUser({ ...editUser, full_name: e.target.value })} />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Email</Label>
+                                  <Input value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">NGN balance</Label>
+                                  <Input type="number" value={editUser.ngn_balance} onChange={(e) => setEditUser({ ...editUser, ngn_balance: e.target.value })} />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">USD balance</Label>
+                                  <Input type="number" value={editUser.usd_balance} onChange={(e) => setEditUser({ ...editUser, usd_balance: e.target.value })} />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox checked={editUser.is_admin} onCheckedChange={(v) => setEditUser({ ...editUser, is_admin: !!v })} />
+                                  <span className="text-xs">Admin</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Checkbox checked={editUser.is_suspended} onCheckedChange={(v) => setEditUser({ ...editUser, is_suspended: !!v })} />
+                                  <span className="text-xs">Suspended</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Checkbox checked={editUser.is_blocked} onCheckedChange={(v) => setEditUser({ ...editUser, is_blocked: !!v })} />
+                                  <span className="text-xs">Blocked</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => { setSelectedUser(null); setEditUser(null); }}>
+                              Cancel
+                            </Button>
+                            <Button onClick={saveUserEdits} className="bg-emerald-600 hover:bg-emerald-700">
+                              Save
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
                           <div key={key} className="space-y-1">
                             <Label className="text-[11px] text-slate-600">{label}/USD</Label>
                             <Input
