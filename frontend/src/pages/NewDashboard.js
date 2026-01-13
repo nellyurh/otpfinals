@@ -179,6 +179,64 @@ const NewDashboard = () => {
     navigate('/');
   };
 
+  // Crypto funding functions
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
+  };
+
+  const handleCreateCryptoInvoice = async () => {
+    if (!cryptoAmountUsd || parseFloat(cryptoAmountUsd) < 1) {
+      toast.error('Please enter a valid amount (minimum $1)');
+      return;
+    }
+
+    setCreatingDeposit(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/plisio/create-invoice`,
+        {
+          amount_usd: parseFloat(cryptoAmountUsd),
+          currency: cryptoCurrency
+        },
+        axiosConfig
+      );
+
+      if (response.data.success) {
+        setCurrentDeposit(response.data.invoice);
+        toast.success('Crypto deposit created! Send payment to the address shown.');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create crypto deposit');
+    } finally {
+      setCreatingDeposit(false);
+    }
+  };
+
+  const handleRefreshCryptoStatus = async () => {
+    if (!currentDeposit) return;
+
+    setCheckingStatus(true);
+    try {
+      const response = await axios.get(
+        `${API}/api/plisio/check-status/${currentDeposit.id}`,
+        axiosConfig
+      );
+
+      if (response.data.success) {
+        setCurrentDeposit(response.data.invoice);
+        if (response.data.invoice.status === 'paid') {
+          toast.success('Payment confirmed! Your wallet has been credited.');
+          fetchProfile(); // Refresh balance
+        }
+      }
+    } catch (error) {
+      toast.error('Failed to check payment status');
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
   useEffect(() => {
     const calculatePrice = async () => {
       if (!selectedServer || !selectedService) {
