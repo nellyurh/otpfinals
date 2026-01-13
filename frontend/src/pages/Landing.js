@@ -100,7 +100,7 @@ const Landing = ({ setUser }) => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#4169E1' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: branding.primary_color_hex || '#059669' }}>
                 <Phone className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-bold text-white">SMS Relay</span>
