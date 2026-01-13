@@ -503,6 +503,23 @@ DAISYSMS_PRICES = {
 
 # ============ Helper Functions ============
 
+async def _create_transaction_notification(user_id: str, title: str, message: str, metadata: Optional[dict] = None):
+    notif = Notification(
+        title=title,
+        message=message,
+        type='transaction',
+        active=True,
+        show_on_login=False,
+        created_by='system',
+    )
+    doc = notif.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['user_id'] = user_id  # scoped to user
+    if metadata:
+        doc['metadata'] = metadata
+    await db.notifications.insert_one(doc)
+
+
 # Comprehensive country mapping
 COUNTRY_NAMES = {
     '0': 'Russia', '1': 'Ukraine', '2': 'Kazakhstan', '3': 'China', '4': 'Philippines',
