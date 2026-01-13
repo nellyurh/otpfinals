@@ -102,15 +102,26 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     india: 'https://flagcdn.com/w40/in.png'
   };
 
-  const getCountryFlagUrl = (codeOrName) => {
-    if (!codeOrName) return null;
-    const key = String(codeOrName).toLowerCase().replace(/\s+/g, '');
-    if (countryFlagMap[key]) return countryFlagMap[key];
-    // default fallback: try two-letter country codes for smspool short_name
-    if (key.length === 2) {
-      return `https://flagcdn.com/w40/${key}.png`;
-    }
-    return null;
+  const getCountryFlagUrl = (countryValue) => {
+    if (!countryValue) return null;
+    const key = String(countryValue).toLowerCase().replace(/\s+/g, '');
+
+    // Common overrides
+    const known = {
+      usa: 'us',
+      unitedstates: 'us',
+      nigeria: 'ng',
+      unitedkingdom: 'gb',
+      uk: 'gb',
+      canada: 'ca',
+      india: 'in',
+    };
+
+    const iso2 = known[key] || (/^[a-z]{2}$/.test(key) ? key : null);
+    if (!iso2) return null;
+
+    // Use svg for better compatibility
+    return `https://flagcdn.com/${iso2}.svg`;
   };
 
   const getServiceName = (code) => {
