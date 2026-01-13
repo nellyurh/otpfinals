@@ -2788,6 +2788,30 @@ async def validate_promo_code(payload: dict, user: dict = Depends(get_current_us
     if max_total is not None:
         used = await db.promo_redemptions.count_documents({"promo_id": promo['id']})
         if used >= int(max_total):
+
+@api_router.post('/admin/purge')
+async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
+    """Dangerous: purge user data (users/orders/transactions) as requested."""
+    confirm = payload.get('confirm')
+    if confirm != 'CONFIRM PURGE':
+        raise HTTPException(status_code=400, detail='Missing confirmation')
+
+    # Delete all non-admin users
+    await db.users.delete_many({'is_admin': {'$ne': True}})
+
+    # Delete all orders and all transactions (including admin history)
+    await db.sms_orders.delete_many({})
+    await db.transactions.delete_many({})
+
+    # Delete notification receipts and user-scoped notifications; keep global announcements/updates
+    await db.notification_receipts.delete_many({})
+    await db.notifications.delete_many({'user_id': {'$exists': True}})
+
+    # Delete promo redemptions (promo codes remain)
+    await db.promo_redemptions.delete_many({})
+
+    return {'success': True}
+
             raise HTTPException(status_code=400, detail="Promo code usage limit reached")
 
     if promo.get('one_time_per_user', True):
