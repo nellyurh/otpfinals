@@ -2518,6 +2518,113 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     return {'success': True, 'message': 'Order cancelled and refunded', 'refund_amount': refund_ngn, 'currency': 'NGN'}
 
 @api_router.get("/transactions/list")
+
+# ============ Notifications ============
+
+@api_router.post('/admin/notifications')
+async def admin_create_notification(payload: dict, admin: dict = Depends(require_admin)):
+    notif = Notification(
+        title=payload.get('title') or 'Update',
+        message=payload.get('message') or '',
+        type=payload.get('type') or 'announcement',
+        active=bool(payload.get('active', True)),
+        show_on_login=bool(payload.get('show_on_login', False)),
+        created_by=admin.get('id'),
+    )
+    doc = notif.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.notifications.insert_one(doc)
+    return {'success': True, 'notification': doc}
+
+
+@api_router.get('/admin/notifications')
+async def admin_list_notifications(admin: dict = Depends(require_admin)):
+    notifs = await db.notifications.find({}, {'_id': 0}).to_list(200)
+    notifs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    return {'success': True, 'notifications': notifs}
+
+
+@api_router.put('/admin/notifications/{notification_id}')
+async def admin_update_notification(notification_id: str, payload: dict, admin: dict = Depends(require_admin)):
+    update_fields = {}
+    for key in ['title', 'message', 'type', 'active', 'show_on_login']:
+        if key in payload:
+            update_fields[key] = payload[key]
+    update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
+
+    res = await db.notifications.update_one({'id': notification_id}, {'$set': update_fields})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail='Notification not found')
+    notif = await db.notifications.find_one({'id': notification_id}, {'_id': 0})
+    return {'success': True, 'notification': notif}
+
+
+@api_router.get('/notifications')
+async def get_notifications(user: dict = Depends(get_current_user)):
+    # return latest notifications with read/dismiss status
+    notifs = await db.notifications.find({'active': True}, {'_id': 0}).to_list(200)
+    notifs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+
+    receipts = await db.notification_receipts.find({'user_id': user['id']}, {'_id': 0}).to_list(500)
+    receipt_map = {r['notification_id']: r for r in receipts}
+
+    items = []
+    unread_count = 0
+    for n in notifs[:50]:
+        r = receipt_map.get(n['id'])
+        dismissed = bool(r and r.get('dismissed_at'))
+        read = bool(r and r.get('read_at'))
+        if not dismissed and not read:
+            unread_count += 1
+        items.append({
+            **n,
+            'read_at': r.get('read_at') if r else None,
+            'dismissed_at': r.get('dismissed_at') if r else None,
+        })
+
+    return {'success': True, 'unread_count': unread_count, 'notifications': items}
+
+
+@api_router.post('/notifications/{notification_id}/read')
+async def mark_notification_read(notification_id: str, user: dict = Depends(get_current_user)):
+    now = datetime.now(timezone.utc).isoformat()
+    existing = await db.notification_receipts.find_one({'notification_id': notification_id, 'user_id': user['id']}, {'_id': 0})
+    if existing:
+        await db.notification_receipts.update_one({'id': existing['id']}, {'$set': {'read_at': now}})
+    else:
+        rec = NotificationReceipt(notification_id=notification_id, user_id=user['id'], read_at=now)
+        doc = rec.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.notification_receipts.insert_one(doc)
+    return {'success': True}
+
+
+@api_router.post('/notifications/{notification_id}/dismiss')
+async def dismiss_notification(notification_id: str, user: dict = Depends(get_current_user)):
+    now = datetime.now(timezone.utc).isoformat()
+    existing = await db.notification_receipts.find_one({'notification_id': notification_id, 'user_id': user['id']}, {'_id': 0})
+    if existing:
+        await db.notification_receipts.update_one({'id': existing['id']}, {'$set': {'dismissed_at': now}})
+    else:
+        rec = NotificationReceipt(notification_id=notification_id, user_id=user['id'], dismissed_at=now)
+        doc = rec.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.notification_receipts.insert_one(doc)
+    return {'success': True}
+
+
+@api_router.get('/notifications/login-popups')
+async def get_login_popups(user: dict = Depends(get_current_user)):
+    # Only those marked show_on_login, not dismissed
+    popups = await db.notifications.find({'active': True, 'show_on_login': True}, {'_id': 0}).to_list(50)
+    popups.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+
+    receipts = await db.notification_receipts.find({'user_id': user['id']}, {'_id': 0}).to_list(500)
+    dismissed_ids = {r['notification_id'] for r in receipts if r.get('dismissed_at')}
+
+    items = [p for p in popups if p.get('id') not in dismissed_ids]
+    return {'success': True, 'popups': items[:3]}
+
 async def list_transactions(user: dict = Depends(get_current_user)):
     transactions = await db.transactions.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(100)
     return {'transactions': transactions}
