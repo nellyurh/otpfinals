@@ -459,6 +459,9 @@ const AdminPanel = ({ user, setUser }) => {
             </section>
               </>
             )}
+
+            {/* Settings section */}
+            {activeSection === 'settings' && (}
           </main>
         </div>
       </div>
