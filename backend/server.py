@@ -2990,6 +2990,12 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.landing_hero_subtitle is not None:
         update_fields['landing_hero_subtitle'] = data.landing_hero_subtitle
 
+    # Manual coin->USD rates
+    for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
+        val = getattr(data, key, None)
+        if val is not None:
+            update_fields[key] = val
+
     # Page toggles
     for key in [
         'enable_dashboard',
