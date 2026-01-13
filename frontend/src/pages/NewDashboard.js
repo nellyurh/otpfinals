@@ -203,7 +203,7 @@ const NewDashboard = () => {
       );
 
       if (response.data.success) {
-        setCurrentDeposit(response.data.invoice);
+        setCurrentDeposit(response.data.deposit);
         toast.success('Crypto deposit created! Send payment to the address shown.');
       }
     } catch (error) {
