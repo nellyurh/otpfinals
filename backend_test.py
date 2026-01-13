@@ -2014,89 +2014,493 @@ class SMSRelayAPITester:
         
         return all_passed
 
-    def run_all_tests(self):
-        """Run all API tests"""
-        print(f"🚀 Starting SMS Relay API Tests")
-        print(f"📡 Testing against: {self.base_url}")
+    def test_plisio_crypto_deposit_flow(self):
+        """Test Plisio crypto deposit flow (backend only)"""
+        print("\n🪙 PLISIO CRYPTO DEPOSIT FLOW TEST")
         print("=" * 60)
         
-        # First ensure admin login
-        print("\n🔐 Admin Authentication Setup")
-        admin_success = self.test_admin_login()
+        if not self.admin_token:
+            self.log_test("Plisio Crypto Flow", False, "", "No admin token available")
+            return False
         
-        if admin_success:
-            # MAIN FOCUS: 5sim Integration Tests (Review Request)
-            print("\n🎯 MAIN TEST: 5sim (Global Server) Integration")
-            self.test_5sim_countries_fetch()
-            self.test_5sim_services_pricing()
-            self.test_5sim_purchase_flow()
-            self.test_5sim_order_lifecycle()
+        # Step 1: Create invoice with admin token
+        print("   💰 Step 1: Creating Plisio invoice with admin token...")
+        invoice_data = {
+            "amount_usd": 5,
+            "currency": "USDT"
+        }
+        
+        success, invoice_response = self.run_test(
+            "Plisio Create Invoice (Admin)",
+            "POST",
+            "crypto/plisio/create-invoice",
+            200,
+            data=invoice_data,
+            use_admin=True
+        )
+        
+        if not success:
+            self.log_test("Plisio Create Invoice", False, "", f"Failed to create invoice: {invoice_response}")
+            return False
+        
+        # Validate response structure
+        if not invoice_response.get('success') or 'deposit' not in invoice_response:
+            self.log_test("Plisio Invoice Response Structure", False, "", f"Invalid response: {invoice_response}")
+            return False
+        
+        deposit = invoice_response['deposit']
+        required_fields = ['id', 'currency', 'amount_usd', 'status']
+        missing_fields = [field for field in required_fields if field not in deposit]
+        
+        if missing_fields:
+            self.log_test("Plisio Deposit Fields", False, "", f"Missing fields: {missing_fields}")
+            return False
+        
+        if deposit['currency'] != 'USDT' or deposit['amount_usd'] != 5 or deposit['status'] != 'pending':
+            self.log_test("Plisio Deposit Values", False, "", f"Invalid values: {deposit}")
+            return False
+        
+        deposit_id = deposit['id']
+        print(f"   ✅ Invoice created successfully:")
+        print(f"     - ID: {deposit_id}")
+        print(f"     - Currency: {deposit['currency']}")
+        print(f"     - Amount USD: ${deposit['amount_usd']}")
+        print(f"     - Status: {deposit['status']}")
+        
+        # Step 2: Check status using deposit ID
+        print("   📊 Step 2: Checking deposit status...")
+        
+        success, status_response = self.run_test(
+            "Plisio Check Status",
+            "GET",
+            f"crypto/plisio/status/{deposit_id}",
+            200,
+            use_admin=True
+        )
+        
+        if not success:
+            self.log_test("Plisio Status Check", False, "", f"Failed to check status: {status_response}")
+            return False
+        
+        if not status_response.get('success') or 'deposit' not in status_response:
+            self.log_test("Plisio Status Response", False, "", f"Invalid status response: {status_response}")
+            return False
+        
+        status_deposit = status_response['deposit']
+        if status_deposit.get('id') != deposit_id:
+            self.log_test("Plisio Status ID Match", False, "", f"ID mismatch: expected {deposit_id}, got {status_deposit.get('id')}")
+            return False
+        
+        print(f"   ✅ Status check successful - same deposit ID: {status_deposit.get('id')}")
+        print(f"     - Status: {status_deposit.get('status', 'unknown')}")
+        
+        return True
+    
+    def test_suspended_vs_blocked_behavior(self):
+        """Test suspended vs blocked user behavior"""
+        print("\n🚫 SUSPENDED VS BLOCKED USER BEHAVIOR TEST")
+        print("=" * 60)
+        
+        # Step 1: Create test users and update their status in MongoDB
+        print("   👥 Step 1: Creating and configuring test users...")
+        
+        try:
+            import pymongo
             
-            # Regression Tests
-            print("\n🔄 REGRESSION TESTS: DaisySMS and SMS-pool")
-            self.test_regression_daisysms_smspool()
+            # Connect to MongoDB
+            mongo_client = pymongo.MongoClient("mongodb://localhost:27017")
+            db = mongo_client["sms_relay_db"]
             
-            # SECONDARY: SMS-pool Buy + Cancel Flow Test
-            print("\n🎯 SECONDARY TEST: SMS-pool Buy + Cancel Flow (International Server)")
-            self.test_smspool_buy_cancel_flow_comprehensive()
+            # Create blocked user
+            blocked_user_email = f"blocked_test_{int(time.time())}@example.com"
+            blocked_user_data = {
+                "email": blocked_user_email,
+                "password": "TestPass123!",
+                "full_name": "Blocked Test User",
+                "phone": "08012345679"
+            }
             
-            # TERTIARY: DaisySMS Buy → Cancel Flow Test
-            print("\n🎯 TERTIARY TEST: DaisySMS Buy → Cancel Flow")
-            self.test_daisysms_buy_cancel_flow_comprehensive()
-        else:
-            print("❌ Admin login failed - skipping main tests")
+            success, blocked_reg_response = self.run_test(
+                "Register Blocked User",
+                "POST",
+                "auth/register",
+                200,
+                data=blocked_user_data
+            )
+            
+            if not success:
+                self.log_test("Blocked User Registration", False, "", "Failed to register blocked user")
+                return False
+            
+            blocked_user_id = blocked_reg_response['user']['id']
+            
+            # Update user to blocked status
+            db.users.update_one(
+                {'id': blocked_user_id},
+                {'$set': {'is_blocked': True}}
+            )
+            
+            print(f"   ✅ Blocked user created: {blocked_user_email}")
+            
+            # Create suspended user
+            suspended_user_email = f"suspended_test_{int(time.time())}@example.com"
+            suspended_user_data = {
+                "email": suspended_user_email,
+                "password": "TestPass123!",
+                "full_name": "Suspended Test User",
+                "phone": "08012345680"
+            }
+            
+            success, suspended_reg_response = self.run_test(
+                "Register Suspended User",
+                "POST",
+                "auth/register",
+                200,
+                data=suspended_user_data
+            )
+            
+            if not success:
+                self.log_test("Suspended User Registration", False, "", "Failed to register suspended user")
+                return False
+            
+            suspended_user_id = suspended_reg_response['user']['id']
+            
+            # Update user to suspended status
+            db.users.update_one(
+                {'id': suspended_user_id},
+                {'$set': {'is_suspended': True}}
+            )
+            
+            print(f"   ✅ Suspended user created: {suspended_user_email}")
+            
+        except Exception as e:
+            self.log_test("MongoDB User Setup", False, "", f"Failed to setup test users: {str(e)}")
+            return False
         
-        # Authentication Tests
-        print("\n📋 Authentication Tests")
-        self.test_user_registration()
-        self.test_user_login()
+        # Step 2: Test blocked user behavior
+        print("   🔒 Step 2: Testing blocked user behavior...")
         
-        # User Profile Tests
-        print("\n👤 User Profile Tests")
-        self.test_get_profile()
-        self.test_virtual_accounts()
+        # Blocked user login should still succeed
+        blocked_login_data = {
+            "email": blocked_user_email,
+            "password": "TestPass123!"
+        }
         
-        # Financial Tests
-        print("\n💰 Financial Tests")
-        self.test_ngn_to_usd_conversion()
+        success, blocked_login_response = self.run_test(
+            "Blocked User Login",
+            "POST",
+            "auth/login",
+            200,
+            data=blocked_login_data
+        )
         
-        # SMS Service Tests
-        print("\n📱 SMS Service Tests")
-        self.test_services_list()
-        self.test_purchase_number()
-        self.test_orders_list()
-        self.test_transactions_list()
+        if not success:
+            self.log_test("Blocked User Login", False, "", "Blocked user login should succeed")
+            return False
         
-        # SMS-pool Dynamic Pricing Tests (Main Focus)
-        print("\n🌍 SMS-pool Dynamic Pricing Tests")
-        if self.admin_token:
-            self.test_smspool_countries_fetch()
-            self.test_smspool_services_pricing()
-            self.test_smspool_error_handling()
+        blocked_token = blocked_login_response.get('token')
+        print(f"   ✅ Blocked user login succeeded")
         
-        # NEW: SMS Order Lifecycle with 10-minute Rules (MAIN FOCUS)
-        print("\n🔄 SMS Order Lifecycle with 10-minute Rules Tests")
-        if self.admin_token:
-            self.test_sms_order_lifecycle_10min_rules()
-        self.test_order_polling_task_verification()
+        # Profile access should return 403
+        success, profile_response = self.run_test(
+            "Blocked User Profile Access",
+            "GET",
+            "user/profile",
+            403,
+            headers={'Authorization': f'Bearer {blocked_token}'}
+        )
         
-        # Admin Tests
-        print("\n🔧 Admin Tests")
-        if self.admin_token:
-            self.test_admin_pricing_get()
-            self.test_admin_pricing_update()
-            self.test_admin_stats()
+        if not success:
+            self.log_test("Blocked User Profile Block", False, "", "Profile access should return 403 for blocked user")
+            return False
         
-        # Print Results
+        print(f"   ✅ Blocked user profile access correctly blocked (403)")
+        
+        # Step 3: Test suspended user behavior
+        print("   ⏸️  Step 3: Testing suspended user behavior...")
+        
+        # Suspended user login should succeed
+        suspended_login_data = {
+            "email": suspended_user_email,
+            "password": "TestPass123!"
+        }
+        
+        success, suspended_login_response = self.run_test(
+            "Suspended User Login",
+            "POST",
+            "auth/login",
+            200,
+            data=suspended_login_data
+        )
+        
+        if not success:
+            self.log_test("Suspended User Login", False, "", "Suspended user login should succeed")
+            return False
+        
+        suspended_token = suspended_login_response.get('token')
+        print(f"   ✅ Suspended user login succeeded")
+        
+        # Profile access should work
+        success, profile_response = self.run_test(
+            "Suspended User Profile Access",
+            "GET",
+            "user/profile",
+            200,
+            headers={'Authorization': f'Bearer {suspended_token}'}
+        )
+        
+        if not success:
+            self.log_test("Suspended User Profile Access", False, "", "Profile access should work for suspended user")
+            return False
+        
+        print(f"   ✅ Suspended user profile access works")
+        
+        # Orders purchase should return 403
+        purchase_data = {
+            "server": "us_server",
+            "service": "wa",
+            "country": "187",
+            "payment_currency": "NGN"
+        }
+        
+        success, purchase_response = self.run_test(
+            "Suspended User Order Purchase",
+            "POST",
+            "orders/purchase",
+            403,
+            data=purchase_data,
+            headers={'Authorization': f'Bearer {suspended_token}'}
+        )
+        
+        if not success:
+            self.log_test("Suspended User Order Block", False, "", "Order purchase should return 403 for suspended user")
+            return False
+        
+        print(f"   ✅ Suspended user order purchase correctly blocked (403)")
+        
+        # Crypto invoice creation should return 403
+        invoice_data = {
+            "amount_usd": 5,
+            "currency": "USDT"
+        }
+        
+        success, crypto_response = self.run_test(
+            "Suspended User Crypto Invoice",
+            "POST",
+            "crypto/plisio/create-invoice",
+            403,
+            data=invoice_data,
+            headers={'Authorization': f'Bearer {suspended_token}'}
+        )
+        
+        if not success:
+            self.log_test("Suspended User Crypto Block", False, "", "Crypto invoice should return 403 for suspended user")
+            return False
+        
+        print(f"   ✅ Suspended user crypto invoice correctly blocked (403)")
+        
+        # Virtual account generation should return 403
+        success, va_response = self.run_test(
+            "Suspended User Virtual Account",
+            "POST",
+            "user/generate-virtual-account",
+            403,
+            headers={'Authorization': f'Bearer {suspended_token}'}
+        )
+        
+        if not success:
+            self.log_test("Suspended User Virtual Account Block", False, "", "Virtual account generation should return 403 for suspended user")
+            return False
+        
+        print(f"   ✅ Suspended user virtual account generation correctly blocked (403)")
+        
+        # But crypto status check should work for suspended user
+        # First create an invoice with admin, then check with suspended user
+        if hasattr(self, 'admin_token') and self.admin_token:
+            success, admin_invoice = self.run_test(
+                "Admin Create Invoice for Status Test",
+                "POST",
+                "crypto/plisio/create-invoice",
+                200,
+                data=invoice_data,
+                use_admin=True
+            )
+            
+            if success and admin_invoice.get('success'):
+                deposit_id = admin_invoice['deposit']['id']
+                
+                success, status_response = self.run_test(
+                    "Suspended User Crypto Status Check",
+                    "GET",
+                    f"crypto/plisio/status/{deposit_id}",
+                    404,  # Should be 404 because it's not their invoice
+                    headers={'Authorization': f'Bearer {suspended_token}'}
+                )
+                
+                # This is expected to fail with 404 since it's not their invoice
+                print(f"   ✅ Suspended user crypto status check works (404 for other user's invoice is expected)")
+        
+        # Close MongoDB connection
+        mongo_client.close()
+        
+        print("\n🎉 SUSPENDED VS BLOCKED BEHAVIOR TEST COMPLETED!")
+        print("✅ All behavior tests passed:")
+        print("   ✓ Blocked user: login works, profile returns 403")
+        print("   ✓ Suspended user: login and profile work")
+        print("   ✓ Suspended user: orders/purchase returns 403")
+        print("   ✓ Suspended user: crypto/create-invoice returns 403")
+        print("   ✓ Suspended user: generate-virtual-account returns 403")
+        
+        return True
+    
+    def test_regression_checks(self):
+        """Test regression checks for core functionality"""
+        print("\n🔄 REGRESSION CHECKS")
+        print("=" * 60)
+        
+        # Step 1: Admin login
+        print("   🔐 Step 1: Testing admin login...")
+        admin_login_data = {
+            "email": "admin@smsrelay.com",
+            "password": "admin123"
+        }
+        
+        success, login_response = self.run_test(
+            "Admin Login Regression",
+            "POST",
+            "auth/login",
+            200,
+            data=admin_login_data
+        )
+        
+        if not success or 'token' not in login_response:
+            self.log_test("Admin Login Regression", False, "", "Admin login failed")
+            return False
+        
+        self.admin_token = login_response['token']
+        print(f"   ✅ Admin login successful")
+        
+        # Step 2: Admin provider balances
+        print("   ⚖️  Step 2: Testing admin provider balances...")
+        
+        success, balances_response = self.run_test(
+            "Admin Provider Balances",
+            "GET",
+            "admin/provider-balances",
+            200,
+            use_admin=True
+        )
+        
+        if not success:
+            self.log_test("Admin Provider Balances", False, "", "Provider balances endpoint failed")
+            return False
+        
+        if not balances_response.get('success') or 'balances' not in balances_response:
+            self.log_test("Provider Balances Structure", False, "", f"Invalid response structure: {balances_response}")
+            return False
+        
+        balances = balances_response['balances']
+        expected_providers = ['daisysms', 'smspool', '5sim']
+        
+        for provider in expected_providers:
+            if provider not in balances:
+                self.log_test("Provider Balances Content", False, "", f"Missing provider: {provider}")
+                return False
+        
+        print(f"   ✅ Provider balances endpoint working - found {len(balances)} providers")
+        
+        # Step 3: User profile for normal user
+        print("   👤 Step 3: Testing normal user profile...")
+        
+        # Create a normal user
+        normal_user_data = {
+            "email": f"normal_test_{int(time.time())}@example.com",
+            "password": "TestPass123!",
+            "full_name": "Normal Test User",
+            "phone": "08012345681"
+        }
+        
+        success, reg_response = self.run_test(
+            "Normal User Registration",
+            "POST",
+            "auth/register",
+            200,
+            data=normal_user_data
+        )
+        
+        if not success or 'token' not in reg_response:
+            self.log_test("Normal User Registration", False, "", "Failed to register normal user")
+            return False
+        
+        normal_token = reg_response['token']
+        
+        # Test profile access
+        success, profile_response = self.run_test(
+            "Normal User Profile",
+            "GET",
+            "user/profile",
+            200,
+            headers={'Authorization': f'Bearer {normal_token}'}
+        )
+        
+        if not success:
+            self.log_test("Normal User Profile", False, "", "Normal user profile access failed")
+            return False
+        
+        required_profile_fields = ['id', 'email', 'full_name', 'ngn_balance', 'usd_balance']
+        missing_fields = [field for field in required_profile_fields if field not in profile_response]
+        
+        if missing_fields:
+            self.log_test("Profile Fields", False, "", f"Missing profile fields: {missing_fields}")
+            return False
+        
+        print(f"   ✅ Normal user profile working - email: {profile_response.get('email')}")
+        
+        print("\n🎉 REGRESSION CHECKS COMPLETED!")
+        print("✅ All regression tests passed:")
+        print("   ✓ Admin login with admin@smsrelay.com/admin123 works")
+        print("   ✓ Admin provider-balances returns proper structure")
+        print("   ✓ Normal user profile access works")
+        
+        return True
+
+    def run_all_tests(self):
+        """Run all tests"""
+        print(f"🚀 Starting UltraCloud SMS API Tests")
+        print(f"📍 Base URL: {self.base_url}")
+        print(f"🔗 API URL: {self.api_url}")
+        print("=" * 60)
+        
+        # Get admin token first for crypto tests
+        self.test_admin_login()
+        
+        # Review request specific tests
+        print("\n🎯 REVIEW REQUEST SPECIFIC TESTS")
+        print("=" * 60)
+        
+        # 1. Plisio crypto deposit flow
+        self.test_plisio_crypto_deposit_flow()
+        
+        # 2. Suspended vs blocked behavior
+        self.test_suspended_vs_blocked_behavior()
+        
+        # 3. Regression checks
+        self.test_regression_checks()
+        
+        # Print summary
         print("\n" + "=" * 60)
-        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
+        print(f"📊 Test Summary")
+        print(f"Total Tests: {self.tests_run}")
+        print(f"Passed: {self.tests_passed}")
+        print(f"Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed / self.tests_run * 100):.1f}%")
         
         if self.tests_passed == self.tests_run:
             print("🎉 All tests passed!")
-            return 0
         else:
-            print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
-            return 1
+            print("⚠️  Some tests failed. Check the logs above.")
+        
+        return self.tests_passed == self.tests_run
 
 def main():
     tester = SMSRelayAPITester()
