@@ -1119,6 +1119,32 @@ const AdminPanel = ({ user, setUser }) => {
                       )}
                     </div>
 
+                    {/* Manual coin rates */}
+                    <div className="border border-slate-100 rounded-xl p-4">
+                      <div className="text-xs font-semibold text-slate-800 mb-3">Crypto USD Rates (manual)</div>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {[
+                          ['btc_usd_rate', 'BTC'],
+                          ['eth_usd_rate', 'ETH'],
+                          ['bnb_usd_rate', 'BNB'],
+                          ['ltc_usd_rate', 'LTC'],
+                          ['doge_usd_rate', 'DOGE'],
+                        ].map(([key, label]) => (
+                          <div key={key} className="space-y-1">
+                            <Label className="text-[11px] text-slate-600">{label}/USD</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={pricing[key] ?? 1420}
+                              onChange={(e) => setPricing({ ...pricing, [key]: parseFloat(e.target.value) || 0 })}
+                              className="h-8 text-xs bg-slate-50 border-slate-200"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-2">Used for auto-crediting volatile coin deposits.</p>
+                    </div>
+
                     {/* Page toggles */}
                     <div className="border border-slate-100 rounded-xl p-4">
                       <div className="text-xs font-semibold text-slate-800 mb-3">Page Toggles</div>
