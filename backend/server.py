@@ -2853,35 +2853,6 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
 
     return {'success': True, 'balances': balances}
 
-        if datetime.now(timezone.utc) > exp:
-            raise HTTPException(status_code=400, detail="Promo code expired")
-
-    max_total = promo.get('max_total_uses')
-    if max_total is not None:
-        used = await db.promo_redemptions.count_documents({"promo_id": promo['id']})
-        if used >= int(max_total):
-            raise HTTPException(status_code=400, detail="Promo code usage limit reached")
-
-    if promo.get('one_time_per_user', True):
-        prior = await db.promo_redemptions.find_one({"promo_id": promo['id'], "user_id": user['id']}, {"_id": 0})
-        if prior:
-            raise HTTPException(status_code=400, detail="Promo code already used")
-
-    return {
-        "success": True,
-        "promo": {
-            "id": promo.get('id'),
-            "code": promo.get('code'),
-            "description": promo.get('description'),
-            "discount_type": promo.get('discount_type'),
-            "discount_value": promo.get('discount_value'),
-            "currency": promo.get('currency'),
-            "expires_at": promo.get('expires_at'),
-            "one_time_per_user": promo.get('one_time_per_user', True),
-            "max_total_uses": promo.get('max_total_uses'),
-        },
-    }
-
 
 @api_router.post('/admin/purge')
 async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
