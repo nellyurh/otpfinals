@@ -18,6 +18,10 @@ import hashlib
 import hmac
 import re
 import shutil
+import hmac
+import hashlib
+import phpserialize
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
