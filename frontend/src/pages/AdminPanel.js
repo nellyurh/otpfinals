@@ -373,8 +373,6 @@ const AdminPanel = ({ user, setUser }) => {
                     </CardContent>
                   </Card>
                 </section>
-
-              />
             </section>
 
             {/* Simple activity snapshot (placeholder instead of real chart) */}
