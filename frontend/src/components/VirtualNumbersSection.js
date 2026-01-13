@@ -739,6 +739,18 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               </div>
             )}
 
+            {/* Promo Code */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Promo Code (optional)</label>
+              <input
+                type="text"
+                placeholder="Enter promo code"
+                value={promoCode || ''}
+                onChange={(e) => setPromoCode(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:outline-none text-gray-900"
+              />
+            </div>
+
             {/* Price Display */}
             {estimatedPrice && (
               <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-white border border-green-200 rounded-2xl p-4 space-y-3 shadow-sm">
