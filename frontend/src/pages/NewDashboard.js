@@ -1128,17 +1128,6 @@ const NewDashboard = () => {
               <button
                 onClick={handleCreateCryptoInvoice}
                 disabled={creatingDeposit}
-                    <div className="mt-2 text-xs text-gray-600 space-y-1">
-                      {cryptoCountdown !== null && (
-                        <p>
-                          Time left: <span className="font-semibold">{cryptoCountdown > 0 ? `${Math.floor(cryptoCountdown / 60)}m ${cryptoCountdown % 60}s` : 'Expired'}</span>
-                        </p>
-                      )}
-                      <p className="text-[11px] text-gray-500">
-                        This deposit link is valid for about 10 minutes. After expiry, please create a new one.
-                      </p>
-                    </div>
-
                 className="w-full py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {creatingDeposit ? (
@@ -1147,31 +1136,22 @@ const NewDashboard = () => {
                     <span>Creating deposit...</span>
                   </>
                 ) : (
-                      <button
-                        onClick={async () => {
-                          if (!currentDeposit) return;
-                          try {
-                            await axios.post(
-                              `${API}/api/crypto/plisio/cancel/${currentDeposit.id}`,
-                              {},
-                              axiosConfig
-                            );
-                            setCurrentDeposit(null);
-                            setCryptoCountdown(null);
-                            toast.success('Deposit cancelled. You can generate a new one any time.');
-                          } catch (e) {
-                            toast.error(e.response?.data?.detail || 'Failed to cancel deposit');
-                          }
-                        }}
-                        disabled={checkingStatus || currentDeposit?.status === 'paid'}
-                        className="w-full mt-1 flex items-center justify-center gap-2 px-4 py-2 border border-red-300 rounded-lg text-sm font-semibold text-red-700 hover:bg-red-50 disabled:bg-gray-100 disabled:text-gray-400"
-                      >
-                        Cancel deposit
-                      </button>
-
                   <span>Generate Crypto Deposit</span>
                 )}
               </button>
+
+              {currentDeposit && (
+                <div className="mt-2 text-xs text-gray-600 space-y-1">
+                  {cryptoCountdown !== null && (
+                    <p>
+                      Time left: <span className="font-semibold">{cryptoCountdown > 0 ? `${Math.floor(cryptoCountdown / 60)}m ${cryptoCountdown % 60}s` : 'Expired'}</span>
+                    </p>
+                  )}
+                  <p className="text-[11px] text-gray-500">
+                    This deposit link is valid for about 10 minutes. After expiry, please create a new one.
+                  </p>
+                </div>
+              )}
 
               {/* Current deposit details */}
               {currentDeposit && (
