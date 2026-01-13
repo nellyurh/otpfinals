@@ -108,7 +108,7 @@ const Landing = ({ setUser }) => {
             <button
               onClick={() => setShowAuth(true)}
               className="px-6 py-2.5 rounded-lg font-semibold transition-all hover:opacity-90"
-              style={{ background: '#4169E1', color: 'white' }}
+              style={{ background: branding.primary_color_hex || '#059669', color: 'white' }}
               data-testid="get-started-btn"
             >
               Get Started
@@ -131,7 +131,7 @@ const Landing = ({ setUser }) => {
             <button
               onClick={() => { setShowAuth(true); setIsLogin(false); }}
               className="px-8 py-3.5 rounded-lg font-bold text-lg transition-all hover:opacity-90"
-              style={{ background: '#4169E1', color: 'white' }}
+              style={{ background: branding.primary_color_hex || '#059669', color: 'white' }}
             >
               Register Now
             </button>
@@ -191,7 +191,7 @@ const Landing = ({ setUser }) => {
                 <button
                   onClick={() => setShowAuth(true)}
                   className="w-full mt-4 py-2 rounded-lg font-semibold transition-all"
-                  style={{ background: '#4169E1', color: 'white' }}
+                  style={{ background: branding.primary_color_hex || '#059669', color: 'white' }}
                 >
                   Order Now
                 </button>
@@ -382,7 +382,7 @@ const Landing = ({ setUser }) => {
                   disabled={loading}
                   data-testid="login-submit-button"
                   className="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90"
-                  style={{ background: '#4169E1', color: 'white' }}
+                  style={{ background: branding.primary_color_hex || '#059669', color: 'white' }}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
@@ -450,7 +450,7 @@ const Landing = ({ setUser }) => {
                   disabled={loading}
                   data-testid="register-submit-button"
                   className="w-full py-3 rounded-lg font-bold transition-all hover:opacity-90"
-                  style={{ background: '#4169E1', color: 'white' }}
+                  style={{ background: branding.primary_color_hex || '#059669', color: 'white' }}
                 >
                   {loading ? 'Creating account...' : 'Create Account'}
                 </button>
