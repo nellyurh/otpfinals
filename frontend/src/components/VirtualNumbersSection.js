@@ -354,7 +354,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         // For now DaisySMS is US-only so country is fixed to 187;
         // for other providers, country comes from selectedCountry
         country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value,
-        promo_code: promoCode || undefined
+        promo_code: promoCode || undefined,
+        area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+        carrier: selectedCarrier?.value
       };
 
       // For SMS-pool, include selected pool (if any)
