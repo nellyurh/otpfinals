@@ -373,7 +373,6 @@ const AdminPanel = ({ user, setUser }) => {
                     </CardContent>
                   </Card>
                 </section>
-            </section>
 
             {/* Simple activity snapshot (placeholder instead of real chart) */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
