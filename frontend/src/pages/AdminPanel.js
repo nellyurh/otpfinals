@@ -358,47 +358,60 @@ const AdminPanel = ({ user, setUser }) => {
                   />
                 </section>
 
-                {/* Ads performance inputs */}
-                <section className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <Card className="border border-slate-200 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold">Ads Spend (manual)</CardTitle>
-                      <CardDescription className="text-xs">
-                        Enter your ad spend for this period to compute net profit.
-                      </CardDescription>
+                {/* Ads performance inputs - compact metric cards */}
+                <section className="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-xs font-semibold">Ads Spend (₦)</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2 text-xs">
-                      <Label className="text-[11px] font-semibold text-slate-600">Ads Spend (₦)</Label>
+                    <CardContent className="pt-1 text-xs space-y-1">
                       <Input
                         type="number"
                         value={adsSpend}
                         onChange={(e) => setAdsSpend(e.target.value)}
                         className="h-8 text-xs bg-slate-50 border-slate-200"
                       />
-                      <p className="text-[10px] text-slate-500">
-                        Net profit = Deposits – API cost – Ads.
-                      </p>
+                      <p className="text-[10px] text-slate-500">Used for net profit & CAC.</p>
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-slate-200 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold">Float Added</CardTitle>
-                      <CardDescription className="text-xs">Deposits not yet spent on OTPs.</CardDescription>
+                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-xs font-semibold">Float Added (info)</CardTitle>
                     </CardHeader>
-                    <CardContent className="text-xs space-y-1">
-                      <p>
-                        High float = safe buffer.
-                        <br />Low float = liquidity risk.
-                      </p>
+                    <CardContent className="pt-1 text-[10px] text-slate-600 space-y-0.5">
+                      <p>High float = safe buffer.</p>
+                      <p>Low float = liquidity risk.</p>
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-slate-200 shadow-sm bg-white">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold">Decision Notes</CardTitle>
-                      <CardDescription className="text-xs">
-                        Quick rules of thumb for scaling or pausing.
+                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-xs font-semibold">Decision Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-1 text-[10px] text-slate-600 space-y-0.5">
+                      <p>• Deposits &lt; ads → ads failing.</p>
+                      <p>• Deposits &gt; ads → you&rsquo;re alive.</p>
+                      <p>• Gross profit &lt; 0 → pricing wrong.</p>
+                      <p>• Net profit &lt; 0 → stop ads / adjust.</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Fourth card placeholder for future metrics */}
+                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-xs font-semibold">CAC Estimate</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-1 text-[10px] text-slate-600 space-y-0.5">
+                      <p>
+                        {stats && stats.ads_and_conversion && stats.ads_and_conversion.new_users_count > 0
+                          ? `₦${Math.round((parseFloat(adsSpend) || 0) / stats.ads_and_conversion.new_users_count).toLocaleString()}`
+                          : '₦0'} per user
+                      </p>
+                      <p className="text-[9px] text-slate-400">Ads spend ÷ new users</p>
+                    </CardContent>
+                  </Card>
+                </section>
 
                 {/* Ads performance & efficiency metrics */}
                 {stats && stats.ads_and_conversion && (
@@ -519,17 +532,6 @@ const AdminPanel = ({ user, setUser }) => {
                     />
                   </section>
                 )}
-
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-[11px] text-slate-600 space-y-1">
-                      <p>• If deposits &lt; ad spend → ads are failing.</p>
-                      <p>• If deposits &gt; ad spend → you&rsquo;re alive.</p>
-                      <p>• If gross profit negative → pricing is wrong.</p>
-                      <p>• If net profit negative → stop ads or adjust prices.</p>
-                    </CardContent>
-                  </Card>
-                </section>
 
             {/* Simple activity snapshot (placeholder instead of real chart) */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
