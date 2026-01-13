@@ -57,6 +57,9 @@ FIVESIM_BASE_URL = 'https://5sim.net/v1'
 FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 
 # Logging
+
+PLISIO_WEBHOOK_SECRET = os.environ.get('PLISIO_WEBHOOK_SECRET')
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
