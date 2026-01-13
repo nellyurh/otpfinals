@@ -431,7 +431,7 @@ const NewDashboard = () => {
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
                       activeSection === item.id
-                        ? 'bg-[#005E3A] text-white'
+                        ? 'text-white'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
