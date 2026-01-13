@@ -869,7 +869,7 @@ const AdminPanel = ({ user, setUser }) => {
                           <tbody>
                             {topServices.map((s, idx) => (
                               <tr key={`${s.service}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
-                                <td className="px-2 py-1 whitespace-nowrap">{s.service || 'Unknown'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">{getServiceName(s.service)}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">₦{Math.round(s.total_amount).toLocaleString()}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">{s.count}</td>
                               </tr>
