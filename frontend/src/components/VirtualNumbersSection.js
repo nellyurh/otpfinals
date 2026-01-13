@@ -729,7 +729,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       setPreferredNumber(e.target.value.replace(/\D/g, '').slice(0, 11))
                     }
                     maxLength={11}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:outline-none text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">Enter full number without +1</p>
                 </div>
