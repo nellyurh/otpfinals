@@ -830,6 +830,68 @@ const AdminPanel = ({ user, setUser }) => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5">
+                    {/* Branding */}
+                    <div className="border border-slate-100 rounded-xl p-4">
+                      <div className="text-xs font-semibold text-slate-800 mb-3">Branding</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-600">Brand Name</Label>
+                          <Input
+                            value={branding.brand_name}
+                            onChange={(e) => setBranding({ ...branding, brand_name: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-600">Landing Hero Title</Label>
+                          <Input
+                            value={branding.landing_hero_title}
+                            onChange={(e) => setBranding({ ...branding, landing_hero_title: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200"
+                          />
+                        </div>
+                        <div className="space-y-1 md:col-span-2">
+                          <Label className="text-xs font-semibold text-slate-600">Landing Hero Subtitle</Label>
+                          <Input
+                            value={branding.landing_hero_subtitle}
+                            onChange={(e) => setBranding({ ...branding, landing_hero_subtitle: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Page toggles */}
+                    <div className="border border-slate-100 rounded-xl p-4">
+                      <div className="text-xs font-semibold text-slate-800 mb-3">Page Toggles</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        {[
+                          ['enable_dashboard', 'Dashboard'],
+                          ['enable_transactions', 'Transactions'],
+                          ['enable_fund_wallet', 'Fund Wallet'],
+                          ['enable_virtual_numbers', 'Virtual Numbers'],
+                          ['enable_buy_data', 'Buy Data Bundle'],
+                          ['enable_airtime', 'Airtime Top-Up'],
+                          ['enable_betting', 'Betting'],
+                          ['enable_virtual_cards', 'Virtual Cards'],
+                          ['enable_sms_history', 'SMS History'],
+                          ['enable_account_upgrade', 'Account Upgrade'],
+                          ['enable_referral', 'Referral Program'],
+                          ['enable_profile', 'Profile Settings'],
+                          ['enable_support', 'Support'],
+                        ].map(([key, label]) => (
+                          <div key={key} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 bg-white">
+                            <span className="text-slate-700">{label}</span>
+                            <Switch
+                              checked={pageToggles[key]}
+                              onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, [key]: val }))}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-2">Disabled pages remain visible to users but show “Maintenance in progress”.</p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-1">
                         <Label className="text-xs font-semibold text-slate-600">SMS-pool Markup (%)</Label>
