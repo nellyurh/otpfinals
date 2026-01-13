@@ -192,6 +192,26 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const getServiceName = (service) => {
+    if (!service) return 'Unknown';
+    const s = String(service).toLowerCase();
+    const map = {
+      wa: 'WhatsApp',
+      whatsapp: 'WhatsApp',
+      tg: 'Telegram',
+      telegram: 'Telegram',
+      ig: 'Instagram',
+      instagram: 'Instagram',
+      fb: 'Facebook',
+      facebook: 'Facebook',
+      gg: 'Google',
+      google: 'Google',
+      gmail: 'Gmail',
+      ot: 'Other',
+    };
+    return map[s] || service;
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900">
       <div className="flex min-h-screen w-full">
