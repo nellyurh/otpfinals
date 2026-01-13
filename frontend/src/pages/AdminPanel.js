@@ -248,7 +248,7 @@ const AdminPanel = ({ user, setUser }) => {
     setLoading(true);
     try {
       // Avoid overwriting keys with empty strings unless explicitly provided
-      const body = { ...pricing };
+      const body = { ...pricing, ...branding, ...pageToggles };
       // Don't send masked placeholder back (would overwrite real key)
       if (!body.daisysms_api_key || body.daisysms_api_key === '********') delete body.daisysms_api_key;
       if (!body.smspool_api_key || body.smspool_api_key === '********') delete body.smspool_api_key;
