@@ -224,8 +224,8 @@ const NewDashboard = () => {
       );
 
       if (response.data.success) {
-        setCurrentDeposit(response.data.invoice);
-        if (response.data.invoice.status === 'paid') {
+        setCurrentDeposit(response.data.deposit);
+        if (response.data.deposit.status === 'paid') {
           toast.success('Payment confirmed! Your wallet has been credited.');
           fetchProfile(); // Refresh balance
         }
