@@ -2117,6 +2117,17 @@ async def purchase_number(
     ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
     final_price_ngn = final_price_usd * ngn_rate
 
+    # Apply promo code discount (case-insensitive)
+    discount_ngn, discount_usd, promo = await _apply_promo_discount(
+        promo_code=data.promo_code,
+        user_id=user['id'],
+        final_price_ngn=final_price_ngn,
+        final_price_usd=final_price_usd,
+        ngn_to_usd_rate=ngn_rate,
+    )
+    final_price_ngn = float(final_price_ngn - discount_ngn)
+    final_price_usd = float(final_price_usd - discount_usd)
+
     # Check balance based on payment currency
     if data.payment_currency == 'NGN':
         if user.get('ngn_balance', 0) < final_price_ngn:
