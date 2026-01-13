@@ -1991,12 +1991,27 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
         final_price_ngn = final_price_usd * ngn_rate
         
+        discount_ngn, discount_usd, promo = await _apply_promo_discount(
+            promo_code=data.promo_code,
+            user_id=user['id'],
+            final_price_ngn=final_price_ngn,
+            final_price_usd=final_price_usd,
+            ngn_to_usd_rate=ngn_rate,
+        )
+
         return {
             'success': True,
             'base_price_usd': round(base_price_usd, 2),
             'our_markup_percent': provider_markup,
-            'final_price_usd': round(final_price_usd, 2),
-            'final_price_ngn': round(final_price_ngn, 2),
+            'final_price_usd': round(final_price_usd - discount_usd, 2),
+            'final_price_ngn': round(final_price_ngn - discount_ngn, 2),
+            'promo': {
+                'code': promo.get('code'),
+                'discount_ngn': round(discount_ngn, 2),
+                'discount_usd': round(discount_usd, 2),
+                'type': promo.get('discount_type'),
+                'value': promo.get('discount_value'),
+            } if promo else None,
             'breakdown': {
                 'provider_base': round(base_price_usd, 2),
                 'our_markup_amount': round(final_price_usd - base_price_usd, 2),
