@@ -2676,6 +2676,34 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['area_code_markup'] = data.area_code_markup
     if data.carrier_markup is not None:
         update_fields['carrier_markup'] = data.carrier_markup
+
+    # Branding
+    if data.brand_name is not None:
+        update_fields['brand_name'] = data.brand_name
+    if data.landing_hero_title is not None:
+        update_fields['landing_hero_title'] = data.landing_hero_title
+    if data.landing_hero_subtitle is not None:
+        update_fields['landing_hero_subtitle'] = data.landing_hero_subtitle
+
+    # Page toggles
+    for key in [
+        'enable_dashboard',
+        'enable_transactions',
+        'enable_fund_wallet',
+        'enable_virtual_numbers',
+        'enable_buy_data',
+        'enable_airtime',
+        'enable_betting',
+        'enable_virtual_cards',
+        'enable_sms_history',
+        'enable_account_upgrade',
+        'enable_referral',
+        'enable_profile',
+        'enable_support',
+    ]:
+        val = getattr(data, key, None)
+        if val is not None:
+            update_fields[key] = val
     
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
     
