@@ -265,6 +265,7 @@ class CalculatePriceRequest(BaseModel):
     server: str
     service: str
     country: str
+    promo_code: Optional[str] = None
     area_code: Optional[str] = None
     carrier: Optional[str] = None
 
