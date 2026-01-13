@@ -104,6 +104,7 @@ const NewDashboard = () => {
     fetchOrders();
     fetchTransactions();
     fetchPageToggles();
+    fetchBranding();
     
     const interval = setInterval(fetchOrders, 10000);
     return () => clearInterval(interval);
