@@ -2665,7 +2665,7 @@ async def dismiss_notification(notification_id: str, user: dict = Depends(get_cu
 @api_router.get('/notifications/login-popups')
 async def get_login_popups(user: dict = Depends(get_current_user)):
     # Only those marked show_on_login, not dismissed
-    popups = await db.notifications.find({'active': True, 'show_on_login': True}, {'_id': 0}).to_list(50)
+    popups = await db.notifications.find({'active': True, 'show_on_login': True, '$or': [{'user_id': {'$exists': False}}, {'user_id': user['id']}]}, {'_id': 0}).to_list(50)
     popups.sort(key=lambda x: x.get('created_at', ''), reverse=True)
 
     receipts = await db.notification_receipts.find({'user_id': user['id']}, {'_id': 0}).to_list(500)
