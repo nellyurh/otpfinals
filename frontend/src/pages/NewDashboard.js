@@ -343,6 +343,43 @@ const NewDashboard = () => {
   ];
 
   // Filter menu items based on page toggles
+
+  const isPageEnabled = (id) => {
+    const map = {
+      dashboard: 'enable_dashboard',
+      transactions: 'enable_transactions',
+      'fund-wallet': 'enable_fund_wallet',
+      'virtual-numbers': 'enable_virtual_numbers',
+      'buy-data': 'enable_buy_data',
+      airtime: 'enable_airtime',
+      betting: 'enable_betting',
+      'virtual-cards': 'enable_virtual_cards',
+      'sms-history': 'enable_sms_history',
+      'account-upgrade': 'enable_account_upgrade',
+      referral: 'enable_referral',
+      profile: 'enable_profile',
+      support: 'enable_support'
+    };
+    const key = map[id];
+    if (!key) return true;
+    return pageToggles[key] !== false;
+  };
+
+  const MaintenanceSection = ({ title = 'Maintenance in progress' }) => (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+      <div className="bg-white p-8 rounded-xl border shadow-sm text-center">
+        <div className="mx-auto w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+          <Settings className="w-7 h-7 text-emerald-700" />
+        </div>
+        <p className="text-gray-700 font-semibold">Maintenance in progress</p>
+        <p className="text-sm text-gray-500 mt-1">
+          This page is currently disabled by the admin.
+        </p>
+      </div>
+    </div>
+  );
+
   // NOTE: you requested: keep pages visible but show maintenance if OFF.
   // So we do NOT filter them out; we only use toggles to block content/actions.
   const menuItems = allMenuItems;
