@@ -184,6 +184,12 @@ const AdminPanel = ({ user, setUser }) => {
               <div>
                 <div className="text-xs text-slate-500">Admin control center</div>
                 <div className="text-base font-semibold">Dashboard</div>
+                {periodRange && (
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    Period: {new Date(periodRange.start).toLocaleDateString()} -{' '}
+                    {new Date(periodRange.end).toLocaleDateString()}
+                  </div>
+                )}
               </div>
             </div>
 
