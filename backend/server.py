@@ -2988,6 +2988,11 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
                 currency='NGN',
                 status='completed',
                 reference=result.get('message', {}).get('details', {}).get('trans_id'),
+                metadata={'service': 'data', 'plan_code': request.plan_code}
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
 
             await _create_transaction_notification(
                 user['id'],
@@ -2995,12 +3000,6 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
                 f"Data purchase of ₦{amount:,.2f} completed.",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'data'},
             )
-
-                metadata={'service': 'data', 'plan_code': request.plan_code}
-            )
-            trans_dict = transaction.model_dump()
-            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
-            await db.transactions.insert_one(trans_dict)
             
             return {'success': True, 'message': 'Data purchase successful', 'details': result}
         
