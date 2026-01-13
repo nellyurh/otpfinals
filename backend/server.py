@@ -19,6 +19,7 @@ import hmac
 import re
 import shutil
 import phpserialize
+import json
 
 
 ROOT_DIR = Path(__file__).parent
