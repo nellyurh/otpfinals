@@ -4,12 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  LayoutDashboard,
-  Settings,
-  Wallet,
 import { Checkbox } from '@/components/ui/checkbox';
-
 import {
   Dialog,
   DialogContent,
@@ -20,17 +15,9 @@ import {
 } from '@/components/ui/dialog';
 
 import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@/components/ui/alert-dialog';
-
+  LayoutDashboard,
+  Settings,
+  Wallet,
   Users,
   TrendingUp,
   ArrowLeft,
