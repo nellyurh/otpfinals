@@ -42,6 +42,8 @@ const AdminPanel = ({ user, setUser }) => {
   const [periodPreset, setPeriodPreset] = useState<'1d' | '7d' | '30d'>('7d');
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
   const [adsSpend, setAdsSpend] = useState('0');
+  const [users, setUsers] = useState(null);
+  const [topServices, setTopServices] = useState(null);
 
   const token = localStorage.getItem('token');
   const axiosConfig = {
