@@ -466,7 +466,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         >
           <div className="flex items-center gap-3">
             <Plus
-              className={`w-5 h-5 text-[#005E3A] transition-transform ${
+              className={`w-5 h-5 text-emerald-600 transition-transform ${
                 purchaseExpanded ? 'rotate-45' : ''
               }`}
             />
