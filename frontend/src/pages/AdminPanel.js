@@ -614,6 +614,51 @@ const AdminPanel = ({ user, setUser }) => {
                 <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1">
+            {activeSection === 'providers' && (
+              <section className="grid grid-cols-1 gap-6">
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Providers Overview</CardTitle>
+                    <CardDescription className="text-xs">
+                      High level status of connected OTP providers.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-xs text-slate-600">
+                    <ul className="space-y-2">
+                      <li className="flex items-center justify-between">
+                        <span>DaisySMS (US Server)</span>
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">Active</Badge>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span>SMS-pool (International)</span>
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">Active</Badge>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <span>5sim (Global)</span>
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">Active</Badge>
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {activeSection === 'users' && (
+              <section className="grid grid-cols-1 gap-6">
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold">Users Snapshot</CardTitle>
+                    <CardDescription className="text-xs">
+                      This page can later show detailed user lists and filters.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-xs text-slate-600">
+                    <p>Basic metrics are already summarized on the dashboard above.</p>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
                       <Label className="text-xs font-semibold text-slate-600">SMS-pool Markup (%)</Label>
                       <Input
                         type="number"
