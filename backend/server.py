@@ -2788,6 +2788,8 @@ async def validate_promo_code(payload: dict, user: dict = Depends(get_current_us
         exp = datetime.fromisoformat(expires_at)
         if not exp.tzinfo:
             exp = exp.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > exp:
+            raise HTTPException(status_code=400, detail="Promo code expired")
 
 
 
