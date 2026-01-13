@@ -2563,6 +2563,8 @@ async def admin_create_notification(payload: dict, admin: dict = Depends(require
     doc = notif.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     await db.notifications.insert_one(doc)
+    # Ensure no Mongo ObjectId leaks into response
+    doc.pop('_id', None)
     return {'success': True, 'notification': doc}
 
 
