@@ -64,6 +64,8 @@ PLISIO_SECRET_KEY = os.environ.get('PLISIO_SECRET_KEY')
 PLISIO_WEBHOOK_SECRET = os.environ.get('PLISIO_WEBHOOK_SECRET')
 PLISIO_BASE_URL = 'https://api.plisio.net/api/v1'
 
+FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -638,8 +640,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             raise HTTPException(status_code=401, detail="User not found")
         if user.get('is_blocked'):
             raise HTTPException(status_code=403, detail="Account blocked")
-        if user.get('is_suspended'):
-            raise HTTPException(status_code=403, detail="Account suspended")
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
@@ -1318,11 +1318,6 @@ async def login(data: UserLogin):
     if not user or not verify_password(data.password, user['password_hash']):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    if user.get('is_blocked'):
-        raise HTTPException(status_code=403, detail="Account blocked")
-    if user.get('is_suspended'):
-        raise HTTPException(status_code=403, detail="Account suspended")
-    
     token = create_token(user['id'], user['email'], user.get('is_admin', False))
     
     return {
@@ -2723,6 +2718,8 @@ async def list_transactions(user: dict = Depends(get_current_user)):
     return {'transactions': transactions}
 
 # ============ Payscribe Routes ============
+@api_router.get("/transactions/list")
+
 
 @api_router.get("/payscribe/services")
 async def get_payscribe_services(user: dict = Depends(get_current_user)):
