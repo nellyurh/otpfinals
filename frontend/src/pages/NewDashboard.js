@@ -497,7 +497,7 @@ const NewDashboard = () => {
                 <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
               </div>
               
-              <div className="w-10 h-10 rounded-full bg-[#005E3A] flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ background: branding.primary_color_hex || '#005E3A' }}>
                 {user.email?.slice(0, 2).toUpperCase() || 'NG'}
               </div>
             </div>
