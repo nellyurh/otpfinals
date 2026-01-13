@@ -88,6 +88,12 @@ const NewDashboard = () => {
   const [preferredNumber, setPreferredNumber] = useState('');
   const [purchasing, setPurchasing] = useState(false);
   
+  // Crypto funding state
+  const [cryptoAmountUsd, setCryptoAmountUsd] = useState('');
+  const [cryptoCurrency, setCryptoCurrency] = useState('USDT');
+  const [currentDeposit, setCurrentDeposit] = useState(null);
+  const [creatingDeposit, setCreatingDeposit] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   // Public branding (used for brand text + primary green accents)
   const [branding, setBranding] = useState({
