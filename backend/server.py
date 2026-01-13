@@ -2592,6 +2592,9 @@ async def cancel_order(order_id: str, user: dict = Depends(get_current_user)):
     return {'success': True, 'message': 'Order cancelled and refunded', 'refund_amount': refund_ngn, 'currency': 'NGN'}
 
 @api_router.get("/transactions/list")
+async def list_transactions(user: dict = Depends(get_current_user)):
+    transactions = await db.transactions.find({'user_id': user['id']}, {'_id': 0}).sort('created_at', -1).to_list(100)
+    return {'transactions': transactions}
 
 # ============ Notifications ============
 
