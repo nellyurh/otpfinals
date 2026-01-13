@@ -38,6 +38,10 @@ const AdminPanel = ({ user, setUser }) => {
     fivesim_api_key: '',
   });
 
+  const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings'
+  const [periodPreset, setPeriodPreset] = useState('7d'); // '1d' | '7d' | '30d'
+  const [adsSpend, setAdsSpend] = useState('0');
+
   const token = localStorage.getItem('token');
   const axiosConfig = {
     headers: { Authorization: `Bearer ${token}` },
