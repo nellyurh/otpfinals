@@ -276,6 +276,7 @@ const AdminPanel = ({ user, setUser }) => {
                     { id: '1d', label: 'Today' },
                     { id: '7d', label: 'Last 7 days' },
                     { id: '30d', label: 'Last 30 days' },
+                    { id: 'custom', label: 'Custom' },
                   ].map((p) => (
                     <button
                       key={p.id}
@@ -291,6 +292,27 @@ const AdminPanel = ({ user, setUser }) => {
                     </button>
                   ))}
                 </div>
+
+                {periodPreset === 'custom' && (
+                  <div className="hidden lg:flex items-center gap-2 ml-2">
+                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-3 py-1">
+                      <span className="text-[11px] text-slate-500">From</span>
+                      <input
+                        type="date"
+                        value={customRange.start}
+                        onChange={(e) => setCustomRange((prev) => ({ ...prev, start: e.target.value }))}
+                        className="text-[11px] text-slate-700 bg-transparent focus:outline-none"
+                      />
+                      <span className="text-[11px] text-slate-500">To</span>
+                      <input
+                        type="date"
+                        value={customRange.end}
+                        onChange={(e) => setCustomRange((prev) => ({ ...prev, end: e.target.value }))}
+                        className="text-[11px] text-slate-700 bg-transparent focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] px-2.5 py-1 rounded-full">
                 Admin
