@@ -102,6 +102,14 @@ const AdminPanel = ({ user, setUser }) => {
         tigersms_markup: response.data.tigersms_markup,
         daisysms_markup: response.data.daisysms_markup,
         smspool_markup: response.data.smspool_markup,
+        ngn_to_usd_rate: response.data.ngn_to_usd_rate,
+        fivesim_coin_per_usd: response.data.fivesim_coin_per_usd ?? prev.fivesim_coin_per_usd,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch pricing');
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const response = await axios.get(`${API}/admin/users`, axiosConfig);
