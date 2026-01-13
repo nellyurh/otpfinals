@@ -252,9 +252,10 @@ const AdminPanel = ({ user, setUser }) => {
             </section>
 
             {/* Provider & pricing configuration */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-              {/* Pricing & FX */}
-              <Card className="lg:col-span-2 border border-slate-200 shadow-sm bg-white">
+            {activeSection === 'settings' && (
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                {/* Pricing & FX */}
+                <Card className="lg:col-span-2 border border-slate-200 shadow-sm bg-white">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold">Pricing & FX Configuration</CardTitle>
                   <CardDescription className="text-xs">
