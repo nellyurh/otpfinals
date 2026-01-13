@@ -123,9 +123,9 @@ const AdminPanel = ({ user, setUser }) => {
 
   const fetchTopServices = async () => {
     try {
-      const params: any = {};
+      const params = {};
       const now = new Date();
-      let start: Date | null = null;
+      let start = null;
       if (periodPreset === '1d') {
         start = new Date(now);
         start.setDate(start.getDate() - 1);
