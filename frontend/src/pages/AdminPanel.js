@@ -456,6 +456,8 @@ const AdminPanel = ({ user, setUser }) => {
                 </CardContent>
               </Card>
             </section>
+              </>
+            )}
           </main>
         </div>
       </div>
