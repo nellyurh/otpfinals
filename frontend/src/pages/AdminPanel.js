@@ -114,6 +114,10 @@ const AdminPanel = ({ user, setUser }) => {
         smspool_markup: response.data.smspool_markup,
         ngn_to_usd_rate: response.data.ngn_to_usd_rate,
         fivesim_coin_per_usd: response.data.fivesim_coin_per_usd ?? prev.fivesim_coin_per_usd,
+        // keep masked values from GET; only update if user types a new key
+        daisysms_api_key: response.data.daisysms_api_key || '',
+        smspool_api_key: response.data.smspool_api_key || '',
+        fivesim_api_key: response.data.fivesim_api_key || '',
       }));
     } catch (error) {
       console.error('Failed to fetch pricing');
