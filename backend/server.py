@@ -1197,6 +1197,13 @@ async def otp_polling_task(order_id: str):
             if refund_ngn > 0:
                 await db.users.update_one({'id': order['user_id']}, {'$inc': {'ngn_balance': refund_ngn}})
 
+                await _create_transaction_notification(
+                    order['user_id'],
+                    'Refund processed',
+                    f"₦{refund_ngn:,.2f} was refunded to your wallet (Order auto-cancelled).",
+                    metadata={'reference': order_id, 'type': 'refund'},
+                )
+
                 # Record refund transaction
                 transaction = Transaction(
                     user_id=order['user_id'],
