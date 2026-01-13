@@ -59,8 +59,29 @@ const AdminPanel = ({ user, setUser }) => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API}/admin/stats`, axiosConfig);
+      const params = {};
+      const now = new Date();
+      let start = null;
+      if (periodPreset === '1d') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 1);
+        start = d;
+      } else if (periodPreset === '7d') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 7);
+        start = d;
+      } else if (periodPreset === '30d') {
+        const d = new Date(now);
+        d.setDate(d.getDate() - 30);
+        start = d;
+      }
+      if (start) {
+        params.start_date = start.toISOString();
+        params.end_date = now.toISOString();
+      }
+      const response = await axios.get(`${API}/admin/stats`, { ...axiosConfig, params });
       setStats(response.data);
+      setPeriodRange(response.data.period || null);
     } catch (error) {
       console.error('Failed to fetch stats');
     }
