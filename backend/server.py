@@ -1243,7 +1243,9 @@ async def register(data: UserRegister):
     user = User(
         email=data.email,
         full_name=data.full_name,
-        phone=data.phone
+        phone=data.phone,
+        is_suspended=False,
+        is_blocked=False,
     )
     
     user_dict = user.model_dump()
