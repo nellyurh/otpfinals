@@ -210,6 +210,10 @@ const NewDashboard = () => {
 
       if (response.data.success) {
         setCurrentDeposit(response.data.deposit);
+        if (response.data.deposit.expires_at) {
+          const exp = new Date(response.data.deposit.expires_at).getTime();
+          setCryptoCountdown(Math.max(0, Math.floor((exp - Date.now()) / 1000)));
+        }
         toast.success('Crypto deposit created! Send payment to the address shown.');
       }
     } catch (error) {
