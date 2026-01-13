@@ -1329,13 +1329,68 @@ const AdminPanel = ({ user, setUser }) => {
                                 </td>
                                 <td className="px-2 py-1 whitespace-nowrap">
                                   <div className="flex items-center gap-2">
-                                    <Button
-                                      variant="outline"
-                                      className="h-7 px-2 text-[11px] border-slate-200"
-                                      onClick={() => openUserEditor(u)}
-                                    >
-                                      Edit
-                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className="h-7 px-2 text-[11px] border-slate-200"
+                                        >
+                                          Edit
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="max-w-lg">
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Edit User</AlertDialogTitle>
+                                          <AlertDialogDescription className="text-xs">Update user details, balances, and status.</AlertDialogDescription>
+                                        </AlertDialogHeader>
+
+                                        <div className="space-y-4 text-sm">
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                              <Label className="text-xs">Full name</Label>
+                                              <Input value={editUser?.full_name || u.full_name || ''} onChange={(e) => setEditUser({ ...(editUser || {}), full_name: e.target.value, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                            </div>
+                                            <div>
+                                              <Label className="text-xs">Email</Label>
+                                              <Input value={editUser?.email || u.email || ''} onChange={(e) => setEditUser({ ...(editUser || {}), email: e.target.value, full_name: editUser?.full_name ?? u.full_name, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                            </div>
+                                            <div>
+                                              <Label className="text-xs">NGN balance</Label>
+                                              <Input type="number" value={editUser?.ngn_balance ?? (u.ngn_balance || 0)} onChange={(e) => setEditUser({ ...(editUser || {}), ngn_balance: e.target.value, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                            </div>
+                                            <div>
+                                              <Label className="text-xs">USD balance</Label>
+                                              <Input type="number" value={editUser?.usd_balance ?? (u.usd_balance || 0)} onChange={(e) => setEditUser({ ...(editUser || {}), usd_balance: e.target.value, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                            </div>
+                                          </div>
+
+                                          <div className="flex items-center gap-6">
+                                            <div className="flex items-center gap-2">
+                                              <Checkbox checked={editUser?.is_admin ?? !!u.is_admin} onCheckedChange={(v) => setEditUser({ ...(editUser || {}), is_admin: !!v, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <span className="text-xs">Admin</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <Checkbox checked={editUser?.is_suspended ?? !!u.is_suspended} onCheckedChange={(v) => setEditUser({ ...(editUser || {}), is_suspended: !!v, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <span className="text-xs">Suspended</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <Checkbox checked={editUser?.is_blocked ?? !!u.is_blocked} onCheckedChange={(v) => setEditUser({ ...(editUser || {}), is_blocked: !!v, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended })} />
+                                              <span className="text-xs">Blocked</span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel onClick={() => { setSelectedUser(null); setEditUser(null); }}>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => { setSelectedUser(u); saveUserEdits(); }}
+                                            className="bg-emerald-600 hover:bg-emerald-700"
+                                          >
+                                            Save
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                     <button
                                       type="button"
                                       className="text-[11px] text-amber-700 hover:underline"
