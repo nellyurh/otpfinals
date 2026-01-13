@@ -528,16 +528,28 @@ async def _plisio_request(method: str, endpoint: str, params: dict):
 
 
 def _plisio_verify_hash(payload: dict) -> bool:
-    """Best-effort verify_hash check (Plisio style)."""
+    """Verify Plisio callback using JSON-based HMAC (per Node.js example).
+
+    Expects the callback to be sent with `?json=true` so that the body is JSON.
+    Algorithm:
+      - Copy payload and remove `verify_hash`
+      - Serialize to JSON string
+      - Compute HMAC-SHA1 over that string using PLISIO_SECRET_KEY
+    """
     try:
         verify_hash = payload.get('verify_hash')
         if not verify_hash or not PLISIO_SECRET_KEY:
             return False
-        p = dict(payload)
-        p.pop('verify_hash', None)
-        # sort keys and serialize like PHP
-        serialized = phpserialize.dumps({k: str(p[k]).encode('utf-8') for k in sorted(p.keys())}, charset='utf-8')
-        digest = hmac.new(PLISIO_SECRET_KEY.encode('utf-8'), serialized, hashlib.sha1).hexdigest()
+
+        ordered = dict(payload)
+        ordered.pop('verify_hash', None)
+
+        # Normalize known numeric fields to strings (as in official examples)
+        if 'expire_utc' in ordered:
+            ordered['expire_utc'] = str(ordered['expire_utc'])
+
+        data_str = json.dumps(ordered, separators=(',', ':'), ensure_ascii=False)
+        digest = hmac.new(PLISIO_SECRET_KEY.encode('utf-8'), data_str.encode('utf-8'), hashlib.sha1).hexdigest()
         return digest == verify_hash
     except Exception:
         return False
@@ -2904,9 +2916,9 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         raise HTTPException(status_code=400, detail='Amount is required')
 
     order_id = str(uuid.uuid4())
-    callback_url = f"{FRONTEND_URL}/api/crypto/plisio/webhook" if FRONTEND_URL else None
+    callback_url = f"{FRONTEND_URL.rstrip('/')}/api/crypto/plisio/webhook?json=true" if FRONTEND_URL else None
 
-    resp = await _plisio_request('POST', '/invoices/new', {
+    resp = await _plisio_request('GET', '/invoices/new', {
         'source_currency': 'USD',
         'source_amount': amount_usd,
         'currency': currency,
