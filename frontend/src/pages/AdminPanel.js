@@ -468,7 +468,6 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
           </main>
-          </main>
         </div>
       </div>
     </div>
