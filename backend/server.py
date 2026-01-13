@@ -2573,17 +2573,6 @@ async def admin_top_services(
         "services": services,
     }
 
-
-            
-            return {'success': True, 'message': 'Betting wallet funded successfully', 'details': result}
-        
-        raise HTTPException(status_code=400, detail="Betting wallet funding failed")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Betting fund error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 # ============ Admin Routes ============
 
 @api_router.get("/admin/users")
