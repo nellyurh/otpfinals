@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "CRITICAL ISSUE: Table text rendering as invisible/white despite inline black styles. In Virtual Numbers 'Your Verifications' table and 'SMS History' table, the Service and Phone Number columns appear completely EMPTY/WHITE."
+user_problem_statement: "Fix /admin admin dashboard: blank white page, date range filter, Users page, and Providers > Top OTP Services page not working; display primary currency in NGN."
 
 frontend:
   - task: "Virtual Numbers - Your Verifications Table Text Visibility"
