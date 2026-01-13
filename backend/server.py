@@ -2951,8 +2951,16 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'description': f"Wallet top-up for {user['email']}",
     })
 
-    if not resp or not resp.get('status'):
-        raise HTTPException(status_code=500, detail='Failed to create invoice')
+    if not resp or resp.get('status') != 'success':
+        # Plisio error payload structure: {"status":"error","data":{...}}
+        msg = 'Failed to create invoice'
+        try:
+            data_err = resp.get('data') or {}
+            if isinstance(data_err, dict) and data_err.get('message'):
+                msg = f"Plisio error: {data_err['message']}"
+        except Exception:
+            pass
+        raise HTTPException(status_code=400, detail=msg)
 
     data = resp.get('data') or {}
 
