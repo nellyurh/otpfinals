@@ -16,6 +16,8 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
