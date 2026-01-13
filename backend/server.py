@@ -2949,7 +2949,7 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'allowed_psys_cids': currency,
         'callback_url': callback_url,
         'email': user.get('email'),
-        'expire_min': 10,
+        'expire_min': 15,
         'description': f"Wallet top-up for {user['email']}",
     })
 
