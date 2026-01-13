@@ -334,7 +334,7 @@ const AdminPanel = ({ user, setUser }) => {
               U
             </div>
             <div className="ml-3">
-              <div className="text-sm font-semibold">UltraCloud Sms</div>
+              <div className="text-sm font-semibold">{branding.brand_name || 'UltraCloud Sms'}</div>
               <div className="text-[11px] text-slate-500">Admin Dashboard</div>
             </div>
           </div>
