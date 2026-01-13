@@ -39,7 +39,7 @@ const AdminPanel = ({ user, setUser }) => {
   });
 
   const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings' | 'providers' | 'users'
-  const [periodPreset, setPeriodPreset] = useState<'1d' | '7d' | '30d'>('7d');
+  const [periodPreset, setPeriodPreset] = useState('7d');
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
   const [adsSpend, setAdsSpend] = useState('0');
   const [users, setUsers] = useState(null);
