@@ -415,10 +415,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     }
   };
 
-  const copyToClipboard = (text, message = 'Copied to clipboard!') => {
+  const copyToClipboard = async (text, message = 'Copied to clipboard!') => {
     if (!text) return;
-    navigator.clipboard.writeText(text);
-    toast.success(message);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(message);
+    } catch (err) {
+      console.error('Clipboard write failed', err);
+      toast.error('Unable to copy to clipboard in this browser.');
+    }
   };
 
   const copyOTP = (code) => {
