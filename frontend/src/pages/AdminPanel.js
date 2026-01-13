@@ -177,9 +177,10 @@ const AdminPanel = ({ user, setUser }) => {
     try {
       // Avoid overwriting keys with empty strings unless explicitly provided
       const body = { ...pricing };
-      if (!body.daisysms_api_key) delete body.daisysms_api_key;
-      if (!body.smspool_api_key) delete body.smspool_api_key;
-      if (!body.fivesim_api_key) delete body.fivesim_api_key;
+      // Don't send masked placeholder back (would overwrite real key)
+      if (!body.daisysms_api_key || body.daisysms_api_key === '********') delete body.daisysms_api_key;
+      if (!body.smspool_api_key || body.smspool_api_key === '********') delete body.smspool_api_key;
+      if (!body.fivesim_api_key || body.fivesim_api_key === '********') delete body.fivesim_api_key;
 
       await axios.put(`${API}/admin/pricing`, body, axiosConfig);
       toast.success('Pricing & provider config updated!');
