@@ -219,7 +219,7 @@ const NewDashboard = () => {
     setCheckingStatus(true);
     try {
       const response = await axios.get(
-        `${API}/api/plisio/check-status/${currentDeposit.id}`,
+        `${API}/api/crypto/plisio/status/${currentDeposit.id}`,
         axiosConfig
       );
 
