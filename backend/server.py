@@ -58,6 +58,9 @@ FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 
 # Logging
 
+
+PLISIO_TOKEN = PLISIO_SECRET_KEY
+
 PLISIO_WEBHOOK_SECRET = os.environ.get('PLISIO_WEBHOOK_SECRET')
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
