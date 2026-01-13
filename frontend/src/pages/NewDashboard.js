@@ -235,6 +235,10 @@ const NewDashboard = () => {
 
       if (response.data.success) {
         setCurrentDeposit(response.data.deposit);
+        if (response.data.deposit.expires_at) {
+          const exp = new Date(response.data.deposit.expires_at).getTime();
+          setCryptoCountdown(Math.max(0, Math.floor((exp - Date.now()) / 1000)));
+        }
         if (response.data.deposit.status === 'paid') {
           toast.success('Payment confirmed! Your wallet has been credited.');
           fetchProfile(); // Refresh balance
