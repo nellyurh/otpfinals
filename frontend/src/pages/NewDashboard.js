@@ -387,7 +387,7 @@ const NewDashboard = () => {
     return pageToggles[key] !== false;
   };
 
-  const MaintenanceSection = ({ title = 'Maintenance in progress' }) => (
+  const maintenanceContent = (title = 'Maintenance in progress') => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
       <div className="bg-white p-8 rounded-xl border shadow-sm text-center">
