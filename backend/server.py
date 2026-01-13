@@ -80,6 +80,9 @@ class UserLogin(BaseModel):
     password: str
 
 class User(BaseModel):
+    is_suspended: bool = False
+    is_blocked: bool = False
+
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: EmailStr
