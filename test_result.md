@@ -328,6 +328,18 @@ frontend:
         agent: "testing"
         comment: "ADMIN PANEL UI TESTING COMPLETED ✅ Comprehensive review request verification successful: 1) Login with admin@smsrelay.com/admin123 ✅ working perfectly. 2) Navigation to /admin ✅ successful. 3) Layout & theming ✅ PERFECT: Left sidebar white background, logo box (U) in emerald, menu items present, main area white top bar, 'Back to app' button left, Admin badge right in green, light theme with emerald accents (no purple/orange). 4) Stats/header section ✅ PERFECT: Large green gradient card with greeting 'Hello, Nelson Urhie 👋', Total Users (36), Active Orders (0), Total Revenue ($57327.54), three KPI cards (Total Orders: 33, NGN to USD: ₦1550 = $1, 5sim Coin per USD: 77.44). 5) Pricing & FX Configuration ✅ PERFECT: All markup fields present (SMS-pool: 23%, DaisySMS: 22%, TigerSMS: 25%), NGN to USD Rate (1550), 5sim Coin per USD field (77.44) VISIBLE AND EDITABLE, Save Changes button (green), Reset button working. 6) Provider API Keys ✅ PERFECT: All three API key fields present (DaisySMS, SMS-pool, 5sim), eye/eye-off toggle functionality working correctly (password ↔ text). 7) Environment & Activity ✅ PERFECT: Recent Activity card with platform metrics, Environment card with PaymentPoint (Active-green), Payscribe (Pending-amber), OTP Polling (Active-green). 8) Regression test ✅ PASSED: 'Back to app' button returns to dashboard without errors. ALL REQUIREMENTS MET PERFECTLY - ADMIN PANEL READY FOR PRODUCTION."
 
+  - task: "UltraCloud SMS Frontend Testing - Login, Fund Wallet, Virtual Numbers"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/NewDashboard.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "ULTRACLOUD SMS FRONTEND TESTING COMPLETED ✅ Comprehensive testing of review request requirements: 1) Login + Navigation: ✅ WORKING - admin@smsrelay.com/admin123 login successful, redirects to /dashboard properly. 2) Fund Wallet - Crypto (Plisio): ✅ WORKING - USD amount input (5), USDT selection, Generate Crypto Deposit creates deposit reference (ed02321f-0211-4a43-891c-acdfe7f01056), shows 'Pending payment' status, displays amount/currency correctly, Refresh status button functional. 3) Fund Wallet - NGN Virtual Account: ✅ WORKING - Virtual account exists (6607109312), displays Palmpay bank name, account name shown, copy functionality works. 4) Dashboard Regression: ⚠️ PARTIAL - Header wallet balance shows NGN (₦44410.06) and USD ($200.00) correctly, but Virtual Numbers page has runtime errors blocking navigation. CRITICAL ISSUE FOUND: Red error overlay with 'Uncaught runtime errors: Failed to execute writeText on Clipboard: Write permission denied' - this blocks UI interactions and needs immediate fix. Overall: 3.5/4 tests passed, clipboard permission error needs resolution."
+
 
 backend:
   - task: "SMS-pool dynamic pricing (International Server)"
