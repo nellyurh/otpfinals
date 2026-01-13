@@ -256,6 +256,10 @@ const AdminPanel = ({ user, setUser }) => {
         expires_at: ''
       });
       fetchPromoCodes();
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to create promo');
+    }
+  };
 
   const openUserEditor = (u) => {
     setSelectedUser(u);
@@ -273,7 +277,8 @@ const AdminPanel = ({ user, setUser }) => {
   const saveUserEdits = async () => {
     try {
       if (!selectedUser) return;
-      await axios.put(`${API}/admin/users/${selectedUser.id}`,
+      await axios.put(
+        `${API}/admin/users/${selectedUser.id}`,
         {
           full_name: editUser.full_name,
           email: editUser.email,
@@ -300,11 +305,6 @@ const AdminPanel = ({ user, setUser }) => {
       fetchUsers();
     } catch (e) {
       toast.error('Failed to update user');
-    }
-  };
-
-    } catch (e) {
-      toast.error(e.response?.data?.detail || 'Failed to create promo');
     }
   };
 
