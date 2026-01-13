@@ -410,7 +410,7 @@ const NewDashboard = () => {
       <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-r h-screen sticky top-0 overflow-hidden`}>
         <div className="p-6">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-[#005E3A] rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: branding.primary_color_hex || '#005E3A' }}>
               <Phone className="w-6 h-6 text-white" />
             </div>
             <div>
