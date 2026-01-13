@@ -2922,8 +2922,11 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'source_currency': 'USD',
         'source_amount': amount_usd,
         'currency': currency,
-        'order_number': order_id,
         'order_name': f"UltraCloud Sms Wallet Deposit ({user['email']})",
+        'order_number': order_id,
+        'source_currency': 'USD',
+        'source_amount': amount_usd,
+        'allowed_psys_cids': currency,
         'callback_url': callback_url,
         'email': user.get('email'),
     })
