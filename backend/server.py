@@ -249,6 +249,7 @@ class PurchaseNumberRequest(BaseModel):
     service: str
     country: str
     payment_currency: str = 'NGN'  # Default to NGN
+    promo_code: Optional[str] = None
     # Optional DaisySMS filters
     area_code: Optional[str] = None
     area_codes: Optional[str] = None  # Comma-separated for frontend
