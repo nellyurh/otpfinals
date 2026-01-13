@@ -40,6 +40,7 @@ const AdminPanel = ({ user, setUser }) => {
 
   const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings' | 'providers' | 'users'
   const [periodPreset, setPeriodPreset] = useState('7d');
+  const [customRange, setCustomRange] = useState({ start: '', end: '' }); // YYYY-MM-DD
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
   const [adsSpend, setAdsSpend] = useState('0');
   const [users, setUsers] = useState(null);
@@ -62,30 +63,39 @@ const AdminPanel = ({ user, setUser }) => {
   useEffect(() => {
     fetchStats();
     fetchTopServices();
-  }, [periodPreset]);
+  }, [periodPreset, customRange.start, customRange.end]);
 
   const fetchStats = async () => {
     try {
       const params = {};
       const now = new Date();
-      let start = null;
-      if (periodPreset === '1d') {
-        const d = new Date(now);
-        d.setDate(d.getDate() - 1);
-        start = d;
-      } else if (periodPreset === '7d') {
-        const d = new Date(now);
-        d.setDate(d.getDate() - 7);
-        start = d;
-      } else if (periodPreset === '30d') {
-        const d = new Date(now);
-        d.setDate(d.getDate() - 30);
-        start = d;
+
+      if (periodPreset === 'custom' && customRange.start && customRange.end) {
+        const startLocal = new Date(`${customRange.start}T00:00:00`);
+        const endLocal = new Date(`${customRange.end}T23:59:59.999`);
+        params.start_date = startLocal.toISOString();
+        params.end_date = endLocal.toISOString();
+      } else {
+        let start = null;
+        if (periodPreset === '1d') {
+          const d = new Date(now);
+          d.setDate(d.getDate() - 1);
+          start = d;
+        } else if (periodPreset === '7d') {
+          const d = new Date(now);
+          d.setDate(d.getDate() - 7);
+          start = d;
+        } else if (periodPreset === '30d') {
+          const d = new Date(now);
+          d.setDate(d.getDate() - 30);
+          start = d;
+        }
+        if (start) {
+          params.start_date = start.toISOString();
+          params.end_date = now.toISOString();
+        }
       }
-      if (start) {
-        params.start_date = start.toISOString();
-        params.end_date = now.toISOString();
-      }
+
       const response = await axios.get(`${API}/admin/stats`, { ...axiosConfig, params });
       setStats(response.data);
       setPeriodRange(response.data.period || null);
@@ -125,21 +135,30 @@ const AdminPanel = ({ user, setUser }) => {
     try {
       const params = {};
       const now = new Date();
-      let start = null;
-      if (periodPreset === '1d') {
-        start = new Date(now);
-        start.setDate(start.getDate() - 1);
-      } else if (periodPreset === '7d') {
-        start = new Date(now);
-        start.setDate(start.getDate() - 7);
-      } else if (periodPreset === '30d') {
-        start = new Date(now);
-        start.setDate(start.getDate() - 30);
+
+      if (periodPreset === 'custom' && customRange.start && customRange.end) {
+        const startLocal = new Date(`${customRange.start}T00:00:00`);
+        const endLocal = new Date(`${customRange.end}T23:59:59.999`);
+        params.start_date = startLocal.toISOString();
+        params.end_date = endLocal.toISOString();
+      } else {
+        let start = null;
+        if (periodPreset === '1d') {
+          start = new Date(now);
+          start.setDate(start.getDate() - 1);
+        } else if (periodPreset === '7d') {
+          start = new Date(now);
+          start.setDate(start.getDate() - 7);
+        } else if (periodPreset === '30d') {
+          start = new Date(now);
+          start.setDate(start.getDate() - 30);
+        }
+        if (start) {
+          params.start_date = start.toISOString();
+          params.end_date = now.toISOString();
+        }
       }
-      if (start) {
-        params.start_date = start.toISOString();
-        params.end_date = now.toISOString();
-      }
+
       const response = await axios.get(`${API}/admin/top-services`, { ...axiosConfig, params });
       if (response.data.success) {
         setTopServices(response.data.services || []);
