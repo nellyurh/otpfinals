@@ -444,6 +444,18 @@ const AdminPanel = ({ user, setUser }) => {
             <div className="flex items-center justify-between">
               <span>Signed in as</span>
               <span className="font-semibold text-slate-800 text-xs truncate max-w-[120px]" title={user?.email}>
+
+  const [providerBalances, setProviderBalances] = useState(null);
+
+  const fetchProviderBalances = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/provider-balances`, axiosConfig);
+      if (resp.data.success) setProviderBalances(resp.data.balances);
+    } catch (e) {
+      console.error('Failed to fetch provider balances');
+    }
+  };
+
                 {user?.email}
               </span>
             </div>
