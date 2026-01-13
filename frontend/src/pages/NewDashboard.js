@@ -236,6 +236,48 @@ const NewDashboard = () => {
           fetchProfile(); // Refresh balance
         }
       }
+  // Load existing active crypto deposit on mount
+  useEffect(() => {
+    const loadCurrentCryptoDeposit = async () => {
+      if (!token) return;
+      try {
+        const resp = await axios.get(`${API}/api/crypto/plisio/current`, axiosConfig);
+        if (resp.data?.success && resp.data.deposit) {
+          setCurrentDeposit(resp.data.deposit);
+          if (resp.data.deposit.expires_at) {
+            const exp = new Date(resp.data.deposit.expires_at).getTime();
+            setCryptoCountdown(Math.max(0, Math.floor((exp - Date.now()) / 1000)));
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    loadCurrentCryptoDeposit();
+  }, [token]);
+
+  // Countdown timer for crypto deposit
+  useEffect(() => {
+    if (!currentDeposit || !currentDeposit.expires_at) {
+      setCryptoCountdown(null);
+      return;
+    }
+    const expTs = new Date(currentDeposit.expires_at).getTime();
+    const tick = () => {
+      const diff = Math.floor((expTs - Date.now()) / 1000);
+      if (diff <= 0) {
+        setCryptoCountdown(0);
+        return;
+      }
+      setCryptoCountdown(diff);
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [currentDeposit]);
+
     } catch (error) {
       toast.error('Failed to check payment status');
     } finally {
