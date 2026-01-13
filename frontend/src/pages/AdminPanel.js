@@ -38,7 +38,7 @@ const AdminPanel = ({ user, setUser }) => {
     fivesim_api_key: '',
   });
 
-  const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings'
+  const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings' | 'providers' | 'users'
   const [periodPreset, setPeriodPreset] = useState('7d'); // '1d' | '7d' | '30d'
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
   const [adsSpend, setAdsSpend] = useState('0');
@@ -53,9 +53,12 @@ const AdminPanel = ({ user, setUser }) => {
       navigate('/dashboard');
       return;
     }
-    fetchStats();
     fetchPricing();
   }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [periodPreset]);
 
   const fetchStats = async () => {
     try {
