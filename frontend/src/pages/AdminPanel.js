@@ -209,7 +209,7 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
                     <div className="text-lg font-semibold mb-1">Hello, {user?.full_name || 'Admin'} 👋</div>
                     <p className="text-[12px] text-emerald-100 max-w-md">
-                      Monitor provider performance, adjust markups and 5sim coin rate, and keep your OTP flows healthy.
+                      Monitor deposits, OTP sales and profit in real time to decide when to scale or pause.
                     </p>
                   </div>
                   <div className="mt-4 flex items-center justify-between text-xs">
@@ -222,9 +222,13 @@ const AdminPanel = ({ user, setUser }) => {
                       <div className="text-base font-semibold">{stats?.active_orders || 0}</div>
                     </div>
                     <div>
-                      <div className="text-emerald-100/80">Total Revenue</div>
+                      <div className="text-emerald-100/80">Total OTP Volume (₦ est.)</div>
                       <div className="text-base font-semibold">
-                        ${stats?.total_revenue_usd?.toFixed(2) || '0.00'}
+                        ₦{
+                          stats && pricing
+                            ? Math.round((stats.total_revenue_usd || 0) * (pricing.ngn_to_usd_rate || 1500)).toLocaleString()
+                            : '0'
+                        }
                       </div>
                     </div>
                   </div>
