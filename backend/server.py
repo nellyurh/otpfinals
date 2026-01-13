@@ -153,14 +153,30 @@ class PricingConfig(BaseModel):
     # DaisySMS specific markups (from their side)
     area_code_markup: float = 20.0  # DaisySMS adds 20% for area code
     carrier_markup: float = 20.0    # DaisySMS adds 20% for carrier
-    # Page toggles
+    # Branding (admin editable)
+    brand_name: str = "UltraCloud Sms"
+    landing_hero_title: str = "Cheapest and Fastest\nOnline SMS Verification"
+    landing_hero_subtitle: str = (
+        "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms "
+        "and calls and also prevent your identity from fraudsters"
+    )
+    primary_color_hex: str = "#059669"  # emerald-600
+
+    # Page toggles (admin controlled)
+    enable_dashboard: bool = True
+    enable_transactions: bool = True
+    enable_fund_wallet: bool = True
     enable_virtual_numbers: bool = True
     enable_buy_data: bool = True
     enable_airtime: bool = True
     enable_betting: bool = True
     enable_virtual_cards: bool = True
-    enable_fund_wallet: bool = True
+    enable_sms_history: bool = True
+    enable_account_upgrade: bool = True
     enable_referral: bool = True
+    enable_profile: bool = True
+    enable_support: bool = True
+
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CachedService(BaseModel):
