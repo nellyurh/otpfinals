@@ -2663,13 +2663,16 @@ async def get_admin_stats(
     ])
     sales_totals = await sales_cursor.to_list(5)
     total_sales_usd = 0.0
+    total_sales_ngn = 0.0
     for row in sales_totals:
         cur = row.get('_id')
         amt = float(row.get('total', 0) or 0)
         if cur == 'USD':
             total_sales_usd += amt
+            total_sales_ngn += amt * ngn_rate
         elif cur == 'NGN':
             total_sales_usd += amt / ngn_rate
+            total_sales_ngn += amt
 
     # API cost from sms_orders (cost_usd) in period
     api_cost_cursor = db.sms_orders.aggregate([
@@ -2690,6 +2693,211 @@ async def get_admin_stats(
     ])
     api_cost_rows = await api_cost_cursor.to_list(1)
     api_cost_usd = float(api_cost_rows[0].get('total_cost_usd', 0) or 0) if api_cost_rows else 0.0
+
+    # ================= Additional metrics for ads, users & risk =================
+
+    # Fetch new and old users for the period
+    new_users_cursor = db.users.find(
+        {
+            'created_at': {
+                '$gte': start.isoformat(),
+                '$lte': end.isoformat(),
+            }
+        },
+        {'_id': 0, 'id': 1},
+    )
+    new_users = await new_users_cursor.to_list(5000)
+    new_user_ids = {u['id'] for u in new_users if u.get('id')}
+    new_users_count = len(new_user_ids)
+
+    old_users_cursor = db.users.find(
+        {
+            'created_at': {'$lt': start.isoformat()}
+        },
+        {'_id': 0, 'id': 1},
+    )
+    old_users = await old_users_cursor.to_list(5000)
+    old_user_ids = {u['id'] for u in old_users if u.get('id')}
+
+    # All deposit transactions in period
+    deposit_txs_cursor = db.transactions.find(
+        {
+            **period_match,
+            'type': {'$in': ['deposit_ngn', 'deposit_usd']},
+            'status': 'completed',
+        },
+        {'_id': 0, 'user_id': 1, 'currency': 1, 'amount': 1},
+    )
+    deposit_txs = await deposit_txs_cursor.to_list(20000)
+
+    depositors_all: set[str] = set()
+    new_depositors: set[str] = set()
+    old_depositors: set[str] = set()
+    new_deposits_ngn = 0.0
+    old_deposits_ngn = 0.0
+
+    for tx in deposit_txs:
+        uid = tx.get('user_id')
+        if not uid:
+            continue
+        depositors_all.add(uid)
+        amt = float(tx.get('amount', 0) or 0)
+        cur = tx.get('currency')
+        amt_ngn = amt * ngn_rate if cur == 'USD' else amt
+        if uid in new_user_ids:
+            new_depositors.add(uid)
+            new_deposits_ngn += amt_ngn
+        elif uid in old_user_ids:
+            old_depositors.add(uid)
+            old_deposits_ngn += amt_ngn
+
+    new_depositors_count = len(new_depositors)
+    old_depositors_count = len(old_depositors)
+
+    # All purchase transactions in period
+    purchase_txs_cursor = db.transactions.find(
+        {
+            **period_match,
+            'type': 'purchase',
+            'status': 'completed',
+        },
+        {'_id': 0, 'user_id': 1, 'currency': 1, 'amount': 1, 'metadata': 1},
+    )
+    purchase_txs = await purchase_txs_cursor.to_list(20000)
+
+    buyers_all: set[str] = set()
+    whatsapp_sales_ngn = 0.0
+    signal_sales_ngn = 0.0
+    total_sales_ngn_from_txs = 0.0
+
+    WHATSAPP_CODES = {'wa', 'whatsapp'}
+    SIGNAL_CODES = {'signal', 'sg', 'si'}
+
+    for tx in purchase_txs:
+        uid = tx.get('user_id')
+        if not uid:
+            continue
+        buyers_all.add(uid)
+        amt = float(tx.get('amount', 0) or 0)
+        cur = tx.get('currency')
+        amt_ngn = amt * ngn_rate if cur == 'USD' else amt
+        total_sales_ngn_from_txs += amt_ngn
+        meta = tx.get('metadata') or {}
+        service_code = str(meta.get('service', '')).lower()
+        if service_code in WHATSAPP_CODES:
+            whatsapp_sales_ngn += amt_ngn
+        if service_code in SIGNAL_CODES:
+            signal_sales_ngn += amt_ngn
+
+    period_depositors_count = len(depositors_all)
+    period_buyers_count = len(buyers_all)
+
+    # Deposit-to-buy conversion
+    depositors_who_bought = depositors_all & buyers_all
+    depositors_who_bought_count = len(depositors_who_bought)
+
+    deposit_conversion_rate = (
+        (new_depositors_count / new_users_count) * 100.0 if new_users_count > 0 else 0.0
+    )
+    deposit_to_buy_conversion = (
+        (depositors_who_bought_count / period_depositors_count) * 100.0
+        if period_depositors_count > 0
+        else 0.0
+    )
+
+    # New vs old buyers in this period
+    new_buyers_ids = buyers_all & new_user_ids
+    old_buyers_ids = buyers_all & old_user_ids
+    new_buyers_count = len(new_buyers_ids)
+    old_buyers_count = len(old_buyers_ids)
+    repeat_buyer_rate = (
+        (old_buyers_count / period_buyers_count) * 100.0 if period_buyers_count > 0 else 0.0
+    )
+
+    # Old users buying without depositing in this period
+    old_buyers_without_deposit = old_buyers_ids - depositors_all
+    old_buyers_without_deposit_count = len(old_buyers_without_deposit)
+    old_buyers_without_deposit_sales_ngn = 0.0
+    if old_buyers_without_deposit_count:
+        old_set = set(old_buyers_without_deposit)
+        for tx in purchase_txs:
+            uid = tx.get('user_id')
+            if uid not in old_set:
+                continue
+            amt = float(tx.get('amount', 0) or 0)
+            cur = tx.get('currency')
+            amt_ngn = amt * ngn_rate if cur == 'USD' else amt
+            old_buyers_without_deposit_sales_ngn += amt_ngn
+
+    # Service risk metrics
+    total_sales_ngn_effective = total_sales_ngn_from_txs or total_sales_ngn
+    whatsapp_share = (
+        (whatsapp_sales_ngn / total_sales_ngn_effective) * 100.0 if total_sales_ngn_effective > 0 else 0.0
+    )
+    signal_share = (
+        (signal_sales_ngn / total_sales_ngn_effective) * 100.0 if total_sales_ngn_effective > 0 else 0.0
+    )
+
+    # Average selling price per OTP
+    otp_count_period = await db.sms_orders.count_documents(
+        {
+            'created_at': {
+                '$gte': start.isoformat(),
+                '$lte': end.isoformat(),
+            }
+        }
+    )
+    avg_selling_price_ngn = (
+        total_sales_ngn_effective / otp_count_period if otp_count_period > 0 else 0.0
+    )
+
+    # Price spike exposure: orders where provider cost > sell price
+    price_spike_exposure_count = await db.sms_orders.count_documents(
+        {
+            'created_at': {
+                '$gte': start.isoformat(),
+                '$lte': end.isoformat(),
+            },
+            'provider_cost': {'$gt': 0},
+            '$expr': {'$gt': ['$provider_cost', '$cost_usd']},
+        }
+    )
+
+    # Active unfulfilled numbers value
+    active_unfulfilled_cursor = db.sms_orders.aggregate([
+        {
+            '$match': {
+                'status': 'active',
+                'otp': None,
+            }
+        },
+        {
+            '$group': {
+                '_id': None,
+                'total_cost_usd': {'$sum': {'$ifNull': ['$cost_usd', 0]}},
+            }
+        },
+    ])
+    active_unfulfilled_rows = await active_unfulfilled_cursor.to_list(1)
+    active_unfulfilled_value_ngn = 0.0
+    if active_unfulfilled_rows:
+        total_cost_unfulfilled_usd = float(
+            active_unfulfilled_rows[0].get('total_cost_usd', 0) or 0
+        )
+        active_unfulfilled_value_ngn = total_cost_unfulfilled_usd * ngn_rate
+
+    # Available liquidity: total NGN wallet balance - unfulfilled exposure
+    wallet_cursor = db.users.aggregate([
+        {
+            '$group': {
+                '_id': None,
+                'total_ngn_balance': {'$sum': {'$ifNull': ['$ngn_balance', 0]}},
+            }
+        }
+    ])
+    wallet_rows = await wallet_cursor.to_list(1)
+    total_wallet_ngn = float(wallet_rows[0].get('total_ngn_balance', 0) or 0) if wallet_rows else 0.0
+    available_liquidity_ngn = max(0.0, total_wallet_ngn - active_unfulfilled_value_ngn)
 
     gross_profit_usd = total_sales_usd - api_cost_usd
     float_added_usd = total_deposits_usd - total_sales_usd
