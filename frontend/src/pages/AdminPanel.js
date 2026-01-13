@@ -127,7 +127,7 @@ const AdminPanel = ({ user, setUser }) => {
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900">
-      <div className="flex min-h-screen max-w-7xl mx-auto">
+      <div className="flex min-h-screen w-full">
         {/* Sidebar */}
         <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
           <div className="flex items-center h-16 px-6 border-b border-slate-200">
