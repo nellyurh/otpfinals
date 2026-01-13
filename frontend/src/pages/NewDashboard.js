@@ -508,26 +508,31 @@ const NewDashboard = () => {
         <main className="px-5 py-6">
           <div className="w-full">
             {activeSection === 'virtual-numbers' && (
-              <VirtualNumbersSection
-                user={user}
-                orders={orders}
-                axiosConfig={axiosConfig}
-                fetchOrders={fetchOrders}
-                fetchProfile={fetchProfile}
-              />
+              isPageEnabled('virtual-numbers') ? (
+                <VirtualNumbersSection
+                  user={user}
+                  orders={orders}
+                  axiosConfig={axiosConfig}
+                  fetchOrders={fetchOrders}
+                  fetchProfile={fetchProfile}
+                />
+              ) : (
+                <MaintenanceSection title="Virtual Numbers" />
+              )
             )}
-            {activeSection === 'fund-wallet' && <FundWalletSection />}
-            {activeSection === 'buy-data' && <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-            {activeSection === 'airtime' && <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-            {activeSection === 'betting' && <BettingSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-            {activeSection === 'transactions' && <TransactionsSection />}
-            {activeSection === 'dashboard' && <DashboardOverview />}
-            {activeSection === 'sms-history' && <SMSHistorySection />}
-            {activeSection === 'account-upgrade' && <AccountUpgradeSection />}
-            {activeSection === 'profile' && <ProfileSection />}
-            {activeSection === 'referral' && <ReferralSection />}
-            {activeSection === 'support' && <SupportSection />}
-            {activeSection === 'virtual-cards' && <VirtualCardsSection />}
+
+            {activeSection === 'fund-wallet' && (isPageEnabled('fund-wallet') ? <FundWalletSection /> : <MaintenanceSection title="Fund Wallet" />)}
+            {activeSection === 'buy-data' && (isPageEnabled('buy-data') ? <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : <MaintenanceSection title="Buy Data Bundle" />)}
+            {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : <MaintenanceSection title="Airtime Top-Up" />)}
+            {activeSection === 'betting' && (isPageEnabled('betting') ? <BettingSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : <MaintenanceSection title="Betting" />)}
+            {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : <MaintenanceSection title="Transactions" />)}
+            {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : <MaintenanceSection title="Dashboard" />)}
+            {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : <MaintenanceSection title="SMS History" />)}
+            {activeSection === 'account-upgrade' && (isPageEnabled('account-upgrade') ? <AccountUpgradeSection /> : <MaintenanceSection title="Account Upgrade" />)}
+            {activeSection === 'profile' && (isPageEnabled('profile') ? <ProfileSection /> : <MaintenanceSection title="Profile Settings" />)}
+            {activeSection === 'referral' && (isPageEnabled('referral') ? <ReferralSection /> : <MaintenanceSection title="Referral Program" />)}
+            {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : <MaintenanceSection title="Support Channels" />)}
+            {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection /> : <MaintenanceSection title="Virtual Cards" />)}
           </div>
         </main>
       </div>
