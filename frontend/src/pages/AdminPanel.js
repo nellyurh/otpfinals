@@ -50,7 +50,6 @@ const AdminPanel = ({ user, setUser }) => {
     }
     fetchStats();
     fetchPricing();
-     
   }, []);
 
   const fetchStats = async () => {
