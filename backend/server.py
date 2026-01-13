@@ -2490,8 +2490,6 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
 
 # ============ Admin Routes ============
 
-# ============ Admin Routes ============
-
 @api_router.get("/admin/pricing")
 async def get_pricing_config(admin: dict = Depends(require_admin)):
     config = await db.pricing_config.find_one({}, {'_id': 0})
