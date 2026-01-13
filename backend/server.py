@@ -3163,6 +3163,33 @@ async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
     return {'success': True}
 
 @api_router.post("/payscribe/buy-airtime")
+
+
+@api_router.get('/admin/deposits')
+async def admin_list_deposits(admin: dict = Depends(require_admin)):
+    """List all crypto deposits (Plisio) for admin view."""
+    projection = {'_id': 0}
+    deposits = (
+        await db.crypto_invoices
+        .find({}, projection)
+        .sort('created_at', -1)
+        .to_list(500)
+    )
+    return {'deposits': deposits}
+
+
+@api_router.get('/admin/transactions')
+async def admin_list_transactions(admin: dict = Depends(require_admin)):
+    """List all user transactions for admin view."""
+    projection = {'_id': 0}
+    txns = (
+        await db.transactions
+        .find({}, projection)
+        .sort('created_at', -1)
+        .to_list(500)
+    )
+    return {'transactions': txns}
+
 async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
     """Purchase airtime via Payscribe"""
     try:
