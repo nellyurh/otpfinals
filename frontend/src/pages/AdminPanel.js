@@ -166,6 +166,29 @@ const AdminPanel = ({ user, setUser }) => {
             </div>
 
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="hidden sm:inline">Period:</span>
+                <div className="flex rounded-full border border-slate-200 bg-white p-0.5 text-[11px]">
+                  {[
+                    { id: '1d', label: 'Today' },
+                    { id: '7d', label: 'Last 7 days' },
+                    { id: '30d', label: 'Last 30 days' },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPeriodPreset(p.id)}
+                      className={`px-2.5 py-0.5 rounded-full font-medium ${
+                        periodPreset === p.id
+                          ? 'bg-emerald-600 text-white'
+                          : 'text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] px-2.5 py-1 rounded-full">
                 Admin
               </Badge>
@@ -174,7 +197,9 @@ const AdminPanel = ({ user, setUser }) => {
 
           {/* Content body */}
           <main className="flex-1 px-8 py-6 space-y-6 overflow-y-auto">
-            {/* Greeting + summary cards */}
+            {activeSection === 'dashboard' && (
+              <>
+                {/* Greeting + summary cards */}
             <section className="grid grid-cols-1 lg:grid-cols-4 gap-5">
               <Card className="col-span-1 lg:col-span-2 border-none shadow-sm bg-gradient-to-br from-emerald-600 to-emerald-500 text-white">
                 <CardContent className="pt-4 pb-5 px-5 flex flex-col justify-between h-full">
