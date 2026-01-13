@@ -1181,6 +1181,32 @@ const NewDashboard = () => {
                       </p>
                       {currentDeposit.address && (
                         <div className="mt-2">
+                    <div className="flex flex-col items-end gap-1">
+                      <span
+                        className={`px-3 py-1 text-[11px] font-semibold rounded-full ${
+                          currentDeposit.status === 'paid'
+                            ? 'bg-green-100 text-green-700'
+                            : currentDeposit.status === 'expired' || currentDeposit.status === 'cancelled'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}
+                      >
+                        {currentDeposit.status === 'paid'
+                          ? 'Paid / Credited'
+                          : currentDeposit.status === 'expired'
+                          ? 'Expired'
+                          : currentDeposit.status === 'cancelled'
+                          ? 'Cancelled'
+                          : 'Pending payment'}
+                      </span>
+
+                      {currentDeposit.plisio_status && (
+                        <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                          Plisio: {currentDeposit.plisio_status}
+                        </span>
+                      )}
+                    </div>
+
                           <p className="text-[11px] text-gray-500 mb-1">Destination address</p>
                           <div className="flex items-center gap-2">
                             <span className="flex-1 break-all text-xs bg-white px-2 py-1 rounded border border-gray-200">
