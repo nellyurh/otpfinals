@@ -664,10 +664,6 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] px-2.5 py-1 rounded-full">
                 Admin
