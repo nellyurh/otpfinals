@@ -434,6 +434,11 @@ const NewDashboard = () => {
                         ? 'text-white'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
+                    style={
+                      activeSection === item.id
+                        ? { background: branding.primary_color_hex || '#005E3A' }
+                        : undefined
+                    }
                   >
                     <div className="flex items-center gap-3">
                       <item.icon className="w-5 h-5" />
