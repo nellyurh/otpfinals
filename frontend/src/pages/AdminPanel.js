@@ -166,6 +166,8 @@ const AdminPanel = ({ user, setUser }) => {
   useEffect(() => {
     fetchStats();
     fetchTopServices();
+    fetchAdminDeposits();
+    fetchAdminTransactions();
   }, [periodPreset, customRange.start, customRange.end]);
 
   const fetchPromoCodes = async () => {
