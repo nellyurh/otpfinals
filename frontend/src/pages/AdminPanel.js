@@ -591,7 +591,7 @@ const AdminPanel = ({ user, setUser }) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {stats.deposits.map((d) => (
+                        {adminDeposits.map((d) => (
                           <tr key={d.id} className="border-b last:border-b-0 hover:bg-slate-50">
                             <td className="py-2 px-2 text-xs text-slate-600">
                               {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
