@@ -1127,6 +1127,23 @@ const NewDashboard = () => {
                     <option value="BNB">BNB (Binance Coin)</option>
                     <option value="DOGE">DOGE (Dogecoin)</option>
                   </select>
+
+                  {cryptoCurrency === 'USDT' && (
+                    <div className="mt-2">
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        USDT Network
+                      </label>
+                      <select
+                        value={cryptoNetwork}
+                        onChange={(e) => setCryptoNetwork(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs"
+                      >
+                        <option value="TRON">TRON (TRC20)</option>
+                        <option value="BSC">Binance Smart Chain (BEP20)</option>
+                      </select>
+                    </div>
+                  )}
+
                   <p className="mt-1 text-[11px] text-gray-500">
                     Powered by Plisio secure payments.
                   </p>
