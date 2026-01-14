@@ -113,6 +113,8 @@ const AdminPanel = ({ user, setUser }) => {
   const [users, setUsers] = useState(null);
   const [topServices, setTopServices] = useState(null);
 
+  const [adminDeposits, setAdminDeposits] = useState(null);
+  const [adminTransactions, setAdminTransactions] = useState(null);
 
   const [providerBalances, setProviderBalances] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -124,6 +126,24 @@ const AdminPanel = ({ user, setUser }) => {
       if (resp.data.success) setProviderBalances(resp.data.balances);
     } catch (e) {
       console.error('Failed to fetch provider balances');
+    }
+  };
+
+  const fetchAdminDeposits = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/deposits`, axiosConfig);
+      setAdminDeposits(resp.data.deposits || []);
+    } catch (e) {
+      console.error('Failed to fetch admin deposits');
+    }
+  };
+
+  const fetchAdminTransactions = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/transactions`, axiosConfig);
+      setAdminTransactions(resp.data.transactions || []);
+    } catch (e) {
+      console.error('Failed to fetch admin transactions');
     }
   };
 
