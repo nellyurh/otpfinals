@@ -638,6 +638,24 @@ const AdminPanel = ({ user, setUser }) => {
                                   href={d.invoice_url}
                                   target="_blank"
                                   rel="noreferrer"
+                                  className="text-emerald-600 hover:underline"
+                                >
+                                  Open
+                                </a>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 py-6">No deposits found</div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'bank-accounts' && (
 
             {activeSection === 'bank-accounts' && (
               <section className="space-y-4">
