@@ -494,6 +494,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => setActiveSection('deposits')}
             />
             <SidebarItem
+              icon={Wallet}
+              label="Bank Accounts"
+              active={activeSection === 'bank-accounts'}
+              onClick={() => setActiveSection('bank-accounts')}
+            />
+            <SidebarItem
               icon={Receipt}
               label="All Transactions"
               active={activeSection === 'transactions'}
