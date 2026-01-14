@@ -1202,8 +1202,13 @@ const NewDashboard = () => {
                       <p className="text-xs text-gray-600 mb-1">Amount to send</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {currentDeposit.amount_crypto || currentDeposit.amount_usd}{' '}
-                        {cryptoCurrency}
+                        {currentDeposit.currency || cryptoCurrency}
                       </p>
+                      {currentDeposit.currency === 'USDT' && currentDeposit.network && (
+                        <p className="mt-1 text-[11px] text-gray-500">
+                          Network: <span className="font-semibold">{currentDeposit.network}</span>
+                        </p>
+                      )}
                       {currentDeposit.address && (
                         <div className="mt-2">
                     <div className="flex flex-col items-end gap-1">
