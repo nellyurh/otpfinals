@@ -3169,6 +3169,28 @@ async def admin_list_deposits(admin: dict = Depends(require_admin)):
     return {'deposits': deposits}
 
 
+@api_router.get('/admin/virtual-accounts')
+async def admin_virtual_accounts(admin: dict = Depends(require_admin)):
+    """List all PaymentPoint virtual accounts for all users."""
+    accounts = await db.virtual_accounts.find({}, {'_id': 0}).to_list(2000)
+
+    # Attach basic user info for easier inspection
+    user_ids = list({acc.get('user_id') for acc in accounts if acc.get('user_id')})
+    user_map: Dict[str, Dict[str, Any]] = {}
+    if user_ids:
+        users = await db.users.find({'id': {'$in': user_ids}}, {'_id': 0, 'id': 1, 'email': 1, 'full_name': 1}).to_list(len(user_ids))
+        user_map = {u['id']: u for u in users}
+
+    for acc in accounts:
+        u = user_map.get(acc.get('user_id') or '')
+        if u:
+            acc['user_email'] = u.get('email')
+            acc['user_full_name'] = u.get('full_name')
+
+    return {'accounts': accounts}
+
+
+
 @api_router.get('/admin/transactions')
 async def admin_list_transactions(admin: dict = Depends(require_admin)):
     """List all user transactions for admin view."""

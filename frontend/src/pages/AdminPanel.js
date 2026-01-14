@@ -115,6 +115,7 @@ const AdminPanel = ({ user, setUser }) => {
 
   const [adminDeposits, setAdminDeposits] = useState(null);
   const [adminTransactions, setAdminTransactions] = useState(null);
+  const [adminVirtualAccounts, setAdminVirtualAccounts] = useState(null);
 
   const [providerBalances, setProviderBalances] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -144,6 +145,15 @@ const AdminPanel = ({ user, setUser }) => {
       setAdminTransactions(resp.data.transactions || []);
     } catch (e) {
       console.error('Failed to fetch admin transactions');
+    }
+  };
+
+  const fetchAdminVirtualAccounts = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/virtual-accounts`, axiosConfig);
+      setAdminVirtualAccounts(resp.data.accounts || []);
+    } catch (e) {
+      console.error('Failed to fetch admin bank accounts');
     }
   };
 
