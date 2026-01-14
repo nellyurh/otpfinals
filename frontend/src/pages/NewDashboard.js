@@ -95,6 +95,7 @@ const NewDashboard = () => {
   const [creatingDeposit, setCreatingDeposit] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [cryptoCountdown, setCryptoCountdown] = useState(null);
+  const [cryptoNetwork, setCryptoNetwork] = useState('TRON');
 
   // Public branding (used for brand text + primary green accents)
   const [branding, setBranding] = useState({
@@ -209,7 +210,8 @@ const NewDashboard = () => {
         `${API}/api/crypto/plisio/create-invoice`,
         {
           amount_usd: amt,
-          currency: cryptoCurrency
+          currency: cryptoCurrency,
+          network: cryptoCurrency === 'USDT' ? cryptoNetwork : null,
         },
         axiosConfig
       );
