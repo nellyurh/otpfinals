@@ -301,13 +301,6 @@ const NewDashboard = () => {
     return () => clearInterval(id);
   }, [currentDeposit]);
 
-    } catch (error) {
-      toast.error('Failed to check payment status');
-    } finally {
-      setCheckingStatus(false);
-    }
-  };
-
   useEffect(() => {
     const calculatePrice = async () => {
       if (!selectedServer || !selectedService) {
