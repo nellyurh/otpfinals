@@ -252,6 +252,13 @@ const NewDashboard = () => {
           fetchProfile(); // Refresh balance
         }
       }
+    } catch (error) {
+      toast.error('Failed to check payment status');
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
   // Load existing active crypto deposit on mount
   useEffect(() => {
     const loadCurrentCryptoDeposit = async () => {
