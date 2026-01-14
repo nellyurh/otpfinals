@@ -2992,6 +2992,8 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
         'plisio_status': (data.get('status') or 'new').lower(),
         'created_at': datetime.now(timezone.utc).isoformat(),
         'expires_at': expires_at_iso,
+        # Network (e.g. TRON / BSC) is optional metadata from frontend
+        'network': payload.get('network'),
         # Flatten a few commonly used fields for easy frontend display
         'address': data.get('wallet_hash') or data.get('address'),
         'amount_crypto': data.get('amount') or data.get('amount_to_pay'),
@@ -3013,6 +3015,7 @@ async def plisio_create_invoice(payload: dict, user: dict = Depends(get_current_
             'invoice_url': data.get('invoice_url'),
             'status': 'pending',
             'expires_at': expires_at_iso,
+            'network': payload.get('network'),
         }
     }
 
@@ -3103,7 +3106,11 @@ async def plisio_cancel(deposit_id: str, user: dict = Depends(get_current_user))
 
 @api_router.get('/crypto/plisio/current')
 async def plisio_current(user: dict = Depends(get_current_user)):
-    """Return the most recent active Plisio deposit for the current user."""
+    """Return the most recent *pending* Plisio deposit for the current user.
+
+    We rely on Plisio + webhook/cancel actions to move deposits out of 'pending'.
+    This endpoint only surfaces deposits that are still pending/new.
+    """
     cursor = db.crypto_invoices.find(
         {'user_id': user['id'], 'status': {'$in': ['pending', 'new']}},
         {'_id': 0},
@@ -3112,26 +3119,7 @@ async def plisio_current(user: dict = Depends(get_current_user)):
     if not items:
         return {'success': True, 'deposit': None}
 
-    inv = items[0]
-
-    # Auto-expire if past expires_at and not yet paid/expired
-    expires_at = inv.get('expires_at')
-    if expires_at:
-        try:
-            exp = datetime.fromisoformat(expires_at)
-            if not exp.tzinfo:
-                exp = exp.replace(tzinfo=timezone.utc)
-            now = datetime.now(timezone.utc)
-            if now > exp and inv.get('status') not in ['paid', 'expired']:
-                inv['status'] = 'expired'
-                await db.crypto_invoices.update_one(
-                    {'id': inv['id']},
-                    {'$set': {'status': 'expired', 'expired_at': now.isoformat()}},
-                )
-        except Exception:
-            pass
-
-    return {'success': True, 'deposit': inv}
+    return {'success': True, 'deposit': items[0]}
 
 
 @api_router.get('/crypto/plisio/status/{deposit_id}')
