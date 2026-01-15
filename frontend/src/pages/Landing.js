@@ -201,7 +201,7 @@ const Landing = ({ setUser }) => {
                   onMouseEnter={(e) => { e.target.style.borderColor = buttonColor; e.target.style.color = buttonColor; }}
                   onMouseLeave={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.color = '#374151'; }}
                 >
-                  Become an Agent
+                  Get Started
                 </button>
               </div>
             </div>
