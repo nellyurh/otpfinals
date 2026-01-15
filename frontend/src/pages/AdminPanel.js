@@ -144,7 +144,13 @@ const AdminPanel = ({ user, setUser }) => {
   const [editingPlan, setEditingPlan] = useState(null);
   const [resellerApiUrl, setResellerApiUrl] = useState('https://ultracloud.preview.emergentagent.com');
 
-  const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications | resellers
+  // OTP Sales state
+  const [otpOrders, setOtpOrders] = useState([]);
+  const [otpStats, setOtpStats] = useState(null);
+  const [otpStatusFilter, setOtpStatusFilter] = useState('');
+  const [selectedOtpOrder, setSelectedOtpOrder] = useState(null);
+
+  const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications | resellers | otp-sales
   const [periodPreset, setPeriodPreset] = useState('7d');
   const [customRange, setCustomRange] = useState({ start: '', end: '' }); // YYYY-MM-DD
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
