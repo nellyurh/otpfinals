@@ -2316,8 +2316,103 @@ const NewDashboard = () => {
     );
   }
 
+  // Login Popup Modal Component
+  const LoginPopupModal = () => {
+    if (!showLoginPopup || loginPopups.length === 0) return null;
+    
+    const popup = loginPopups[currentPopupIndex];
+    if (!popup) return null;
 
+    const getPopupIcon = () => {
+      switch (popup.popup_type) {
+        case 'promo':
+          return <Gift className="w-12 h-12 text-green-500" />;
+        case 'support':
+          return <MessageSquare className="w-12 h-12 text-blue-500" />;
+        case 'deposit_bonus':
+          return <Wallet className="w-12 h-12 text-purple-500" />;
+        case 'downtime':
+          return <Bell className="w-12 h-12 text-red-500" />;
+        default:
+          return <Bell className="w-12 h-12 text-gray-500" />;
+      }
+    };
 
+    const getPopupColor = () => {
+      switch (popup.popup_type) {
+        case 'promo':
+          return 'from-green-500 to-emerald-600';
+        case 'support':
+          return 'from-blue-500 to-indigo-600';
+        case 'deposit_bonus':
+          return 'from-purple-500 to-pink-600';
+        case 'downtime':
+          return 'from-red-500 to-orange-600';
+        default:
+          return 'from-gray-500 to-gray-600';
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+          {/* Header with gradient */}
+          <div className={`bg-gradient-to-r ${getPopupColor()} p-6 text-white text-center`}>
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              {getPopupIcon()}
+            </div>
+            <h2 className="text-xl font-bold">{popup.title}</h2>
+          </div>
+          
+          {/* Content */}
+          <div className="p-6">
+            {popup.image_url && (
+              <img 
+                src={popup.image_url} 
+                alt="" 
+                className="w-full h-40 object-cover rounded-lg mb-4"
+              />
+            )}
+            <p className="text-gray-600 text-center whitespace-pre-wrap">{popup.message}</p>
+            
+            {/* Action Buttons */}
+            <div className="mt-6 space-y-3">
+              {popup.action_url && (
+                <a
+                  href={popup.action_url}
+                  target={popup.action_url.startsWith('http') ? '_blank' : '_self'}
+                  rel="noopener noreferrer"
+                  className={`block w-full py-3 bg-gradient-to-r ${getPopupColor()} text-white rounded-xl font-semibold text-center hover:opacity-90 transition-opacity`}
+                >
+                  {popup.action_text || 'Learn More'}
+                </a>
+              )}
+              <button
+                onClick={dismissLoginPopup}
+                className="w-full py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                {currentPopupIndex < loginPopups.length - 1 ? 'Next' : 'Close'}
+              </button>
+            </div>
+            
+            {/* Popup counter */}
+            {loginPopups.length > 1 && (
+              <p className="text-center text-xs text-gray-400 mt-3">
+                {currentPopupIndex + 1} of {loginPopups.length}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <LoginPopupModal />
+      {renderDashboard()}
+    </>
+  );
 };
 
 export default NewDashboard;
