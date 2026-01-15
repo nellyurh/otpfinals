@@ -1059,10 +1059,15 @@ const NewDashboard = () => {
                   <p className="text-white/70 text-xs mt-1">Your Balance</p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-white/90 font-semibold text-lg">{branding.brand_name || 'UltraCloud'}</span>
+                  {/* Logo image instead of text */}
+                  {branding.brand_logo_url ? (
+                    <img src={branding.brand_logo_url} alt="Logo" className="h-6 object-contain" />
+                  ) : (
+                    <span className="text-white/90 font-semibold text-lg">{branding.brand_name || 'UltraCloud'}</span>
+                  )}
                   <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-red-500 opacity-80"></div>
-                    <div className="w-8 h-8 rounded-full bg-orange-400 opacity-80"></div>
+                    <div className="w-8 h-8 rounded-full bg-white/30"></div>
+                    <div className="w-8 h-8 rounded-full bg-white/20"></div>
                   </div>
                 </div>
               </div>
@@ -1072,6 +1077,7 @@ const NewDashboard = () => {
         </div>
 
         {/* Banner Carousel */}
+        {bannerImages.length > 0 && (
         <div className="relative overflow-hidden rounded-2xl">
           <div 
             className="flex transition-transform duration-500 ease-in-out"
@@ -1085,13 +1091,14 @@ const NewDashboard = () => {
               >
                 <img 
                   src={banner.image} 
-                  alt={banner.alt}
+                  alt="Banner"
                   className="w-full h-32 sm:h-40 lg:h-48 object-cover rounded-2xl"
                 />
               </div>
             ))}
           </div>
           {/* Dots indicator */}
+          {bannerImages.length > 1 && (
           <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
             {bannerImages.map((_, i) => (
               <button
@@ -1103,13 +1110,15 @@ const NewDashboard = () => {
               />
             ))}
           </div>
+          )}
         </div>
+        )}
 
-        {/* Quick Services - Grid Cards like Screenshot 3 */}
+        {/* Quick Services - Grid Cards with dynamic color */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base sm:text-lg font-bold text-gray-900">Quick Services</h3>
-            <button className="text-sm text-purple-600 font-medium hover:underline">View all</button>
+            <button className="text-sm font-medium hover:underline" style={{ color: primaryColor }}>View all</button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -1120,11 +1129,11 @@ const NewDashboard = () => {
                 className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
               >
                 {/* Background Icon */}
-                <div className={`absolute -bottom-2 -right-2 opacity-10 ${service.bgIcon}`}>
+                <div className="absolute -bottom-2 -right-2 opacity-10">
                   {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-16 h-16" />}
                 </div>
                 
-                <h4 className={`text-sm sm:text-base font-bold ${service.color} mb-8 sm:mb-12 relative z-10`}>
+                <h4 className="text-sm sm:text-base font-bold mb-8 sm:mb-12 relative z-10" style={{ color: primaryColor }}>
                   {service.name}
                 </h4>
                 
