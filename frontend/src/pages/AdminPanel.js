@@ -410,6 +410,11 @@ const AdminPanel = ({ user, setUser }) => {
         brand_logo_url: response.data.brand_logo_url || 'https://cloudsmsservice.org/img/social_logo.png',
         primary_color_hex: response.data.primary_color_hex || '#059669',
         secondary_color_hex: response.data.secondary_color_hex || '#10b981',
+        accent_color_hex: response.data.accent_color_hex || '#7c3aed',
+        button_color_hex: response.data.button_color_hex || '#7c3aed',
+        header_bg_color_hex: response.data.header_bg_color_hex || '#ffffff',
+        hero_gradient_from: response.data.hero_gradient_from || '#10b981',
+        hero_gradient_to: response.data.hero_gradient_to || '#06b6d4',
         landing_hero_title: response.data.landing_hero_title || 'Cheapest and Fastest\nOnline SMS Verification',
         landing_hero_subtitle:
           response.data.landing_hero_subtitle ||
