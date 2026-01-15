@@ -2644,6 +2644,363 @@ const NewDashboard = () => {
     );
   }
 
+  // ============ RESELLER SECTION ============
+  function ResellerSection() {
+    const [resellerProfile, setResellerProfile] = useState(null);
+    const [plans, setPlans] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showApiKey, setShowApiKey] = useState(false);
+    const [registering, setRegistering] = useState(false);
+    const [upgrading, setUpgrading] = useState(false);
+
+    useEffect(() => {
+      fetchResellerProfile();
+      fetchPlans();
+    }, []);
+
+    const fetchResellerProfile = async () => {
+      try {
+        const res = await axios.get(`${API}/api/reseller/profile`, axiosConfig);
+        setResellerProfile(res.data);
+        if (res.data.is_reseller) {
+          fetchOrders();
+        }
+      } catch (err) {
+        console.error('Error fetching reseller profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchPlans = async () => {
+      try {
+        const res = await axios.get(`${API}/api/reseller/plans`);
+        setPlans(res.data.plans || []);
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+      }
+    };
+
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(`${API}/api/reseller/orders?limit=20`, axiosConfig);
+        setOrders(res.data.orders || []);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+      }
+    };
+
+    const handleRegister = async () => {
+      setRegistering(true);
+      try {
+        const res = await axios.post(`${API}/api/reseller/register`, {}, axiosConfig);
+        toast.success('Registered as reseller!');
+        fetchResellerProfile();
+      } catch (err) {
+        toast.error(err.response?.data?.detail || 'Failed to register');
+      } finally {
+        setRegistering(false);
+      }
+    };
+
+    const handleUpgrade = async (planName) => {
+      if (!window.confirm(`Upgrade to ${planName} plan? Monthly fee will be deducted from your balance.`)) return;
+      setUpgrading(true);
+      try {
+        const res = await axios.post(`${API}/api/reseller/upgrade?plan_name=${planName}`, {}, axiosConfig);
+        toast.success(`Upgraded to ${planName} plan!`);
+        fetchResellerProfile();
+        fetchProfile();
+      } catch (err) {
+        toast.error(err.response?.data?.detail || 'Failed to upgrade');
+      } finally {
+        setUpgrading(false);
+      }
+    };
+
+    const copyToClipboard = (text) => {
+      navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    };
+
+    if (loading) {
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
+          <div className="bg-white p-8 rounded-xl border shadow-sm text-center">
+            <RefreshCw className="w-8 h-8 mx-auto text-gray-400 animate-spin" />
+            <p className="text-sm text-gray-500 mt-2">Loading...</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Not a reseller yet - show registration
+    if (!resellerProfile?.is_reseller) {
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
+          
+          {/* Hero Card */}
+          <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 text-white">
+            <h3 className="text-2xl font-bold mb-2">Become a Reseller</h3>
+            <p className="text-purple-100 text-sm mb-4">
+              Access our API to resell SMS verification services. Get competitive pricing, 
+              dedicated support, and comprehensive documentation.
+            </p>
+            <button
+              onClick={handleRegister}
+              disabled={registering}
+              className="px-6 py-2.5 bg-white text-purple-600 rounded-full font-semibold text-sm hover:bg-purple-50 transition-colors disabled:opacity-50"
+            >
+              {registering ? 'Registering...' : 'Register for Free'}
+            </button>
+          </div>
+
+          {/* Plans */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Plans</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {plans.map((plan) => (
+                <div key={plan.id} className={`bg-white rounded-xl border-2 p-5 ${plan.name === 'Pro' ? 'border-purple-400 ring-2 ring-purple-200' : 'border-gray-200'}`}>
+                  {plan.name === 'Pro' && (
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full mb-2 inline-block">POPULAR</span>
+                  )}
+                  <h4 className="text-lg font-bold text-gray-900">{plan.name}</h4>
+                  <div className="mt-2 mb-3">
+                    <span className="text-2xl font-bold text-gray-900">₦{plan.monthly_fee_ngn?.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500">/month</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3">{plan.description}</p>
+                  <div className="space-y-1.5">
+                    {(plan.features || []).map((f, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
+                        <Check className="w-3.5 h-3.5 text-green-500" />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Check className="w-3.5 h-3.5 text-green-500" />
+                      <span>{Math.round((1 - plan.markup_multiplier) * 100)}% markup discount</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Reseller dashboard
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
+          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+            {resellerProfile.plan} Plan
+          </span>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Total Orders</p>
+            <p className="text-2xl font-bold text-gray-900">{resellerProfile.total_orders || 0}</p>
+          </div>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Total Revenue</p>
+            <p className="text-2xl font-bold text-emerald-600">₦{(resellerProfile.total_revenue_ngn || 0).toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Markup Discount</p>
+            <p className="text-2xl font-bold text-purple-600">
+              {resellerProfile.custom_markup_multiplier 
+                ? `${Math.round((1 - resellerProfile.custom_markup_multiplier) * 100)}%`
+                : `${Math.round((1 - (resellerProfile.plan_details?.markup_multiplier || 1)) * 100)}%`}
+            </p>
+          </div>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Your Balance</p>
+            <p className="text-2xl font-bold text-gray-900">₦{user.ngn_balance?.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* API Key Section */}
+        <div className="bg-white rounded-xl border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Key className="w-5 h-5 text-purple-600" />
+              <h3 className="text-sm font-semibold text-gray-900">API Key</h3>
+            </div>
+            <button
+              onClick={() => copyToClipboard(resellerProfile.api_key)}
+              className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-semibold hover:bg-purple-200"
+            >
+              <Copy className="w-3.5 h-3.5 inline mr-1" />
+              Copy
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type={showApiKey ? 'text' : 'password'}
+              value={resellerProfile.api_key || ''}
+              readOnly
+              className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-700"
+            />
+            <button
+              onClick={() => setShowApiKey(!showApiKey)}
+              className="p-2.5 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              {showApiKey ? <EyeOff className="w-4 h-4 text-gray-600" /> : <Eye className="w-4 h-4 text-gray-600" />}
+            </button>
+          </div>
+          <p className="text-[10px] text-gray-400 mt-2">Use this key in the X-API-KEY header or as api_key query parameter</p>
+        </div>
+
+        {/* API Endpoints Documentation */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">API Endpoints</h3>
+          <div className="space-y-3 text-xs">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/balance</span>
+              </div>
+              <p className="text-gray-500">Get your wallet balance</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/servers</span>
+              </div>
+              <p className="text-gray-500">List available servers (usa, all_country_1, all_country_2)</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/countries?server=all_country_1</span>
+              </div>
+              <p className="text-gray-500">Get countries for a server</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/services?server=usa</span>
+              </div>
+              <p className="text-gray-500">Get services with pricing</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-mono text-[10px]">POST</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/buy</span>
+              </div>
+              <p className="text-gray-500">Purchase a number (server, service, country, price required)</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/status?provider_order_id=xxx</span>
+              </div>
+              <p className="text-gray-500">Check order status and get OTP</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded font-mono text-[10px]">POST</span>
+                <span className="font-mono text-gray-700">/api/reseller/v1/cancel</span>
+              </div>
+              <p className="text-gray-500">Cancel order and get refund (provider_order_id required)</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Orders */}
+        <div className="bg-white rounded-xl border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-gray-900">Recent Orders</h3>
+            <button onClick={fetchOrders} className="text-xs text-purple-600 hover:text-purple-700 font-semibold">
+              <RefreshCw className="w-3.5 h-3.5 inline mr-1" />
+              Refresh
+            </button>
+          </div>
+          {orders.length === 0 ? (
+            <div className="text-center py-8">
+              <Server className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-sm text-gray-500">No orders yet</p>
+              <p className="text-xs text-gray-400">Orders made through API will appear here</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="border-b border-gray-200 bg-gray-50">
+                  <tr>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Service</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Phone</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">OTP</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Price</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Status</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-3 py-2.5 font-medium text-gray-800">{order.service_name || order.service}</td>
+                      <td className="px-3 py-2.5 font-mono text-gray-700">{order.phone_number || '-'}</td>
+                      <td className="px-3 py-2.5">
+                        {order.otp ? (
+                          <span className="font-mono font-bold text-emerald-600">{order.otp}</span>
+                        ) : (
+                          <span className="text-gray-400">Waiting...</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5 text-gray-700">₦{order.cost_ngn?.toFixed(2)}</td>
+                      <td className="px-3 py-2.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          order.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'refunded' ? 'bg-orange-100 text-orange-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {order.status?.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Upgrade Plans */}
+        {resellerProfile.plan !== 'Enterprise' && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Upgrade Plan</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {plans.filter(p => p.monthly_fee_ngn > (resellerProfile.plan_details?.monthly_fee_ngn || 0)).map((plan) => (
+                <div key={plan.id} className="bg-white rounded-xl border p-4">
+                  <h4 className="font-semibold text-gray-900">{plan.name}</h4>
+                  <p className="text-lg font-bold text-gray-900 mt-1">₦{plan.monthly_fee_ngn?.toLocaleString()}<span className="text-xs text-gray-500">/mo</span></p>
+                  <p className="text-xs text-gray-500 mt-1">{Math.round((1 - plan.markup_multiplier) * 100)}% markup discount</p>
+                  <button
+                    onClick={() => handleUpgrade(plan.name)}
+                    disabled={upgrading}
+                    className="w-full mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {upgrading ? 'Upgrading...' : 'Upgrade'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   function VirtualCardsSection() {
     return (
       <div className="space-y-6">
