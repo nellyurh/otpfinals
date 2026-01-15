@@ -5,6 +5,40 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 15, 2026)
 
+### Reseller System - NEW
+Complete reseller portal with API access for white-label SMS verification:
+1. **User Reseller Portal**: 
+   - Register as reseller with Free plan
+   - View API key (show/hide, copy)
+   - API documentation for all endpoints
+   - Order history and stats
+   - Plan upgrades
+
+2. **Reseller API v1**:
+   - `GET /api/reseller/v1/balance` - Get wallet balance
+   - `GET /api/reseller/v1/servers` - List servers (usa, all_country_1, all_country_2)
+   - `GET /api/reseller/v1/countries` - Get countries for a server
+   - `GET /api/reseller/v1/services` - Get services with reseller pricing
+   - `POST /api/reseller/v1/buy` - Purchase a number
+   - `GET /api/reseller/v1/status` - Check order status/get OTP
+   - `POST /api/reseller/v1/cancel` - Cancel and refund
+
+3. **Subscription Plans**:
+   - **Free**: ₦0/mo, same markup as regular users (0% discount)
+   - **Basic**: ₦10,000/mo, 50% markup discount
+   - **Pro**: ₦50,000/mo, 70% markup discount
+   - **Enterprise**: ₦100,000/mo, 80% markup discount
+
+4. **Admin Reseller Management**:
+   - Edit plan prices and markup multipliers
+   - View all resellers with stats
+   - Set custom markup per reseller
+   - Suspend/activate reseller accounts
+
+5. **Provider Names Hidden**:
+   - Servers are labeled as "usa", "all_country_1", "all_country_2"
+   - Internal provider names (smspool, daisysms, 5sim) never exposed to resellers
+
 ### Admin Panel Split - NEW
 The "Wallet & Pricing" page has been split into 5 separate, more expansive pages:
 1. **Page Toggles** - Control which dashboard pages are visible to users
@@ -12,8 +46,9 @@ The "Wallet & Pricing" page has been split into 5 separate, more expansive pages
 3. **Promo Codes** - Create and manage discount codes with full form
 4. **Branding & Banners** - Logo, theme colors, landing page content, dashboard banners
 5. **SMS Providers** - Provider balances, markup rates, 5sim coin rate, API keys
+6. **Resellers** - NEW section for reseller management
 
-### Landing Page Update - NEW
+### Landing Page Update
 - Changed "Become an Agent" button to "Get Started"
 
 ### Admin Color Settings Expansion
@@ -28,49 +63,12 @@ The "Wallet & Pricing" page has been split into 5 separate, more expansive pages
 2. **Text Size Reduction** - All labels, prices, and buttons use smaller fonts
 3. **Compact Purchase Form** - Reduced padding and spacing throughout
 
-### Mobile Responsiveness Fixes
-1. **Virtual SMS as Default Page** - Users now land on the SMS page instead of Dashboard
-2. **My Cards Hidden on Mobile** - Removed card section on mobile for cleaner view
-3. **Reduced Font Sizes** - All text sizes reduced for better mobile fit
-4. **Sidebar Styling** - Compact sidebar with smaller icons, reduced padding
-
-### Features Implemented
-1. **Branding Controls** (Admin)
-   - Brand Name, Logo URL, Primary Color, Secondary Color
-   - Button/CTA Color, Accent Color, Header Background
-   - Hero Gradient Colors (Start/End)
-   - Live logo preview
-
-2. **Dashboard Banners** (Admin)
-   - Add/Edit/Delete banners with image URL + optional link
-   - Active toggle per banner
-
-3. **Payment Gateway Controls** (Admin)
-   - Toggle switches for Ercaspay, PaymentPoint, Plisio
-   - Visual cards showing status
-
-4. **Profile Settings Page** (User)
-   - Edit full name, phone
-   - Change password
-   - View wallet balances
-
-5. **Referral Program Page** (User)
-   - Copy referral code/link
-   - View stats
-
-6. **Transaction Details** (Admin)
-   - View modal for Deposits, Bank Accounts, Transactions, Ercaspay Payments
-
-### Bug Fixes
-- Ercaspay amount field cursor issue fixed
-- Mobile horizontal scrolling fixed
-- Balance card border added
-- Virtual SMS verification card responsiveness fixed
-
 ## Current State Summary
 - ✅ Landing page with dynamic admin colors and "Get Started" button
 - ✅ Dashboard with green theme
-- ✅ Admin panel split into 5 separate configuration pages
+- ✅ Admin panel split into 6 separate configuration pages
+- ✅ Complete Reseller system with API and admin management
+- ✅ Provider names hidden from users and resellers
 - ✅ Mobile-responsive sidebar with hamburger menu
 - ✅ Admin panel mobile-responsive
 - ✅ Transaction detail modals working
