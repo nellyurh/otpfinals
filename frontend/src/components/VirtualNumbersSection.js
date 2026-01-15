@@ -432,15 +432,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   };
 
   return (
-    <div className="space-y-4">
-      <div className="text-center mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Virtual SMS</h1>
-        <p className="text-xs sm:text-sm text-gray-600">Get premium virtual numbers for verification</p>
+    <div className="space-y-3 sm:space-y-4">
+      <div className="text-center mb-3 sm:mb-4">
+        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-0.5">Virtual SMS</h1>
+        <p className="text-[10px] sm:text-xs text-gray-500">Get premium virtual numbers for verification</p>
       </div>
 
       {/* Server Selection */}
-      <div className="bg-white rounded-xl p-4 sm:p-5 border shadow-sm">
-        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Select Server</label>
+      <div className="bg-white rounded-xl p-3 sm:p-4 border shadow-sm">
+        <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Server</label>
         <Select
           menuPortalTarget={document.body}
           styles={{
@@ -947,130 +947,196 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         )}
       </div>
 
-      {/* Your Verifications */}
-      <div className="bg-white rounded-xl border shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Verifications</h3>
+      {/* Your Verifications - Mobile-first responsive design */}
+      <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 md:p-6">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Your Verifications</h3>
 
         {orders.filter((o) => o.status === 'active').length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-black">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                    Service
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                    Phone Number
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                    Code
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders
-                  .filter((o) => o.status === 'active')
-                  .map((order) => {
-                    const createdAt = new Date(order.created_at);
-                    const now = new Date();
-                    const elapsedSeconds = Math.floor((now - createdAt) / 1000);
-                    const remainingSeconds = Math.max(0, 600 - elapsedSeconds); // 10 mins total lifetime
-                    const minutes = Math.floor(remainingSeconds / 60);
-                    const seconds = remainingSeconds % 60;
-                    const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
+          <>
+            {/* Mobile Card Layout */}
+            <div className="block md:hidden space-y-3">
+              {orders
+                .filter((o) => o.status === 'active')
+                .map((order) => {
+                  const createdAt = new Date(order.created_at);
+                  const now = new Date();
+                  const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+                  const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
+                  const minutes = Math.floor(remainingSeconds / 60);
+                  const seconds = remainingSeconds % 60;
+                  const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
 
-                    return (
-                      <tr key={order.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4">
-                          <div style={{ color: '#000000', fontWeight: '500' }}>
-                            {order.service_name || getServiceName(order.service)}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2" style={{ color: '#000000' }}>
-                            <span
-                              className="font-mono text-sm"
-                              style={{ color: '#000000' }}
-                            >
-                              {order.phone_number || 'N/A'}
-                            </span>
-                            {order.phone_number && (
-                              <button
-                                onClick={() => copyToClipboard(order.phone_number, 'Phone number copied!')}
-                                className="p-1 hover:bg-gray-200 rounded transition-colors"
-                                title="Copy Phone Number"
-                              >
-                                <Copy className="w-4 h-4 text-gray-600" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          {order.otp || order.otp_code ? (
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-lg font-bold text-[#005E3A]">
-                                {order.otp || order.otp_code}
-                              </span>
-                              <button
-                                onClick={() => copyOTP(order.otp || order.otp_code)}
-                                className="p-1 hover:bg-gray-200 rounded transition-colors"
-                                title="Copy OTP"
-                              >
-                                <Copy className="w-4 h-4 text-gray-600" />
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-gray-500 flex items-center gap-1">
-                              <RefreshCw className="w-4 h-4 animate-spin" />
-                              <span className="text-gray-600">Waiting...</span>
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex flex-col gap-1">
-                            <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full text-center">
-                              Active
-                            </span>
-                            <span className="text-xs text-gray-600 font-mono">
-                              {minutes}:{seconds.toString().padStart(2, '0')} left
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-xs text-gray-600">
-                          {!(order.otp || order.otp_code) && canCancel && (
+                  return (
+                    <div key={order.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-gray-800">
+                          {order.service_name || getServiceName(order.service)}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full">
+                            Active
+                          </span>
+                          <span className="text-[10px] text-gray-500 font-mono">
+                            {minutes}:{seconds.toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] text-gray-500">Phone:</span>
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs text-gray-800">{order.phone_number || 'N/A'}</span>
+                          {order.phone_number && (
                             <button
-                              onClick={() =>
-                                handleCancelOrder(order.activation_id || order.id)
-                              }
-                              className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-sm font-semibold transition-colors"
+                              onClick={() => copyToClipboard(order.phone_number, 'Phone copied!')}
+                              className="p-0.5 hover:bg-gray-200 rounded"
                             >
-                              Cancel
+                              <Copy className="w-3 h-3 text-gray-500" />
                             </button>
                           )}
-                          {!(order.otp || order.otp_code) && !canCancel && (
-                            <span>Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
-                          )}
-                          {(order.otp || order.otp_code) && (
-                            <span className="text-xs text-green-600 font-semibold">✓ Received</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-gray-500">OTP:</span>
+                        {order.otp || order.otp_code ? (
+                          <div className="flex items-center gap-1">
+                            <span className="font-mono text-sm font-bold text-emerald-600">
+                              {order.otp || order.otp_code}
+                            </span>
+                            <button
+                              onClick={() => copyOTP(order.otp || order.otp_code)}
+                              className="p-0.5 hover:bg-gray-200 rounded"
+                            >
+                              <Copy className="w-3 h-3 text-gray-500" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            Waiting...
+                          </span>
+                        )}
+                      </div>
+
+                      {!(order.otp || order.otp_code) && canCancel && (
+                        <button
+                          onClick={() => handleCancelOrder(order.activation_id || order.id)}
+                          className="w-full mt-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-xs font-semibold"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
+                      {(order.otp || order.otp_code) && (
+                        <div className="text-center mt-2 text-[10px] text-green-600 font-semibold">✓ OTP Received</div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+
+            {/* Desktop Table Layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-black">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Service</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Phone</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Code</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Status</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders
+                    .filter((o) => o.status === 'active')
+                    .map((order) => {
+                      const createdAt = new Date(order.created_at);
+                      const now = new Date();
+                      const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+                      const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
+                      const minutes = Math.floor(remainingSeconds / 60);
+                      const seconds = remainingSeconds % 60;
+                      const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
+
+                      return (
+                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-3">
+                            <span className="text-xs font-medium text-gray-800">
+                              {order.service_name || getServiceName(order.service)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-1">
+                              <span className="font-mono text-xs text-gray-800">{order.phone_number || 'N/A'}</span>
+                              {order.phone_number && (
+                                <button
+                                  onClick={() => copyToClipboard(order.phone_number, 'Phone copied!')}
+                                  className="p-0.5 hover:bg-gray-200 rounded"
+                                >
+                                  <Copy className="w-3 h-3 text-gray-500" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            {order.otp || order.otp_code ? (
+                              <div className="flex items-center gap-1">
+                                <span className="font-mono text-sm font-bold text-emerald-600">
+                                  {order.otp || order.otp_code}
+                                </span>
+                                <button
+                                  onClick={() => copyOTP(order.otp || order.otp_code)}
+                                  className="p-0.5 hover:bg-gray-200 rounded"
+                                >
+                                  <Copy className="w-3 h-3 text-gray-500" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                Waiting...
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full text-center w-fit">
+                                Active
+                              </span>
+                              <span className="text-[10px] text-gray-500 font-mono">
+                                {minutes}:{seconds.toString().padStart(2, '0')}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            {!(order.otp || order.otp_code) && canCancel && (
+                              <button
+                                onClick={() => handleCancelOrder(order.activation_id || order.id)}
+                                className="px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-[10px] font-semibold"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {!(order.otp || order.otp_code) && !canCancel && (
+                              <span className="text-[10px] text-gray-500">Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
+                            )}
+                            {(order.otp || order.otp_code) && (
+                              <span className="text-[10px] text-green-600 font-semibold">✓ Received</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
-          <div className="text-center py-12">
-            <Phone className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">No active verifications</p>
-            <p className="text-sm text-gray-400 mt-1">Purchase a number to get started</p>
+          <div className="text-center py-8 sm:py-12">
+            <Phone className="w-10 h-10 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-3" />
+            <p className="text-xs sm:text-sm text-gray-500">No active verifications</p>
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-1">Purchase a number to get started</p>
           </div>
         )}
       </div>
