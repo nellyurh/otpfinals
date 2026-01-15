@@ -4183,6 +4183,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://ultracloud.preview.emergentagent.com"),
     }
 
 @api_router.get("/user/page-toggles")
