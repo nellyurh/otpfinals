@@ -727,33 +727,36 @@ const NewDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-0">
-        {/* Top Bar */}
-        <header className="bg-white border-b px-4 lg:px-8 py-4 sticky top-0 z-30">
+        {/* Top Bar - Clean white design */}
+        <header className="bg-white border-b border-gray-100 px-4 lg:px-6 py-3 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center justify-between">
             {/* Hamburger menu for mobile */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors"
             >
               <Menu className="w-6 h-6 text-gray-600" />
             </button>
             
-            {/* Desktop: empty div for spacing */}
-            <div className="hidden lg:block" />
+            {/* Desktop: Welcome text */}
+            <div className="hidden lg:block">
+              <p className="text-sm text-gray-500">Welcome back,</p>
+              <p className="text-base font-semibold text-gray-900">{user.full_name || user.email?.split('@')[0] || 'User'}</p>
+            </div>
             
-            <div className="flex items-center gap-2 lg:gap-4">
+            <div className="flex items-center gap-2 lg:gap-3">
               {/* Dark mode toggle */}
               <button 
                 onClick={toggleDarkMode}
-                className="hidden sm:block p-2 hover:bg-gray-100 rounded-lg" 
+                className="hidden sm:flex p-2.5 hover:bg-gray-100 rounded-xl transition-colors items-center justify-center" 
                 title="Toggle theme"
               >
                 {darkMode ? (
-                  <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
                 )}
@@ -763,12 +766,12 @@ const NewDashboard = () => {
               <div className="relative">
                 <button 
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 hover:bg-gray-100 rounded-lg" 
+                  className="relative p-2.5 hover:bg-gray-100 rounded-xl transition-colors" 
                   title="Notifications"
                 >
-                  <Bell className="w-5 h-5 text-gray-600" />
+                  <Bell className="w-5 h-5 text-gray-500" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5 min-w-[18px] text-center">
+                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -776,34 +779,34 @@ const NewDashboard = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
-                    <div className="p-3 border-b border-gray-100 flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-800">Notifications</h3>
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-96 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900">Notifications</h3>
                       <button 
                         onClick={() => setShowNotifications(false)}
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                       >
                         <X className="w-4 h-4 text-gray-500" />
                       </button>
                     </div>
                     <div className="overflow-y-auto max-h-72">
                       {notifications.length === 0 ? (
-                        <div className="p-6 text-center text-gray-500 text-sm">
+                        <div className="p-8 text-center text-gray-400 text-sm">
                           No notifications yet
                         </div>
                       ) : (
                         notifications.slice(0, 10).map((notif) => (
                           <div 
                             key={notif.id}
-                            className={`p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${!notif.read_at ? 'bg-blue-50' : ''}`}
+                            className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read_at ? 'bg-purple-50' : ''}`}
                             onClick={() => markNotificationRead(notif.id)}
                           >
-                            <div className="flex items-start gap-2">
-                              <div className={`w-2 h-2 rounded-full mt-2 ${!notif.read_at ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-800">{notif.title}</p>
-                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
-                                <p className="text-[10px] text-gray-400 mt-1">
+                            <div className="flex items-start gap-3">
+                              <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read_at ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900">{notif.title}</p>
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1.5">
                                   {new Date(notif.created_at).toLocaleDateString()}
                                 </p>
                               </div>
@@ -812,7 +815,7 @@ const NewDashboard = () => {
                                   e.stopPropagation();
                                   dismissNotification(notif.id);
                                 }}
-                                className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600"
+                                className="p-1 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -825,24 +828,24 @@ const NewDashboard = () => {
                 )}
               </div>
               
-              {/* Balance display - responsive */}
-              <div className="flex items-center gap-1 lg:gap-2 text-white px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm" style={{ background: branding.primary_color_hex || '#005E3A' }}>
+              {/* Balance display - Modern pill design */}
+              <div className="flex items-center gap-1.5 lg:gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 lg:px-4 py-2 rounded-xl text-xs lg:text-sm shadow-lg shadow-purple-200">
                 <Wallet className="w-4 h-4 hidden sm:block" />
                 <span className="font-bold">₦{(user.ngn_balance || 0).toLocaleString()}</span>
-                <div className="w-px h-4 bg-white/30 mx-0.5 lg:mx-1"></div>
+                <div className="w-px h-4 bg-white/30"></div>
                 <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
               </div>
               
-              {/* User avatar - hidden on very small screens */}
-              <div className="hidden sm:flex w-10 h-10 rounded-full items-center justify-center text-white font-semibold" style={{ background: branding.primary_color_hex || '#005E3A' }}>
-                {user.email?.slice(0, 2).toUpperCase() || 'NG'}
+              {/* User avatar - Modern design */}
+              <div className="hidden sm:flex w-10 h-10 rounded-xl items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-purple-200">
+                {user.email?.slice(0, 2).toUpperCase() || 'U'}
               </div>
             </div>
           </div>
         </header>
 
         {/* Content Area */}
-        <main className="px-3 lg:px-5 py-4 lg:py-6">
+        <main className="px-4 lg:px-6 py-4 lg:py-6">
           <div className="w-full">
             {activeSection === 'virtual-numbers' && (
               isPageEnabled('virtual-numbers') ? (
