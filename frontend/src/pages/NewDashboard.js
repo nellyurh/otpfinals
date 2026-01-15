@@ -2783,11 +2783,11 @@ const NewDashboard = () => {
       );
     }
 
-    // Hardcoded API URL for documentation
-    const API_BASE_URL = 'https://ultracloud.preview.emergentagent.com/api/reseller/v1';
-    
     // API Documentation Component - 5sim Style
     const ApiDocumentation = () => {
+      // Use admin-configurable API URL
+      const API_BASE_URL = `${resellerApiBaseUrl}/api/reseller/v1`;
+      
       const [activeEndpoint, setActiveEndpoint] = useState('balance');
       const [activeTab, setActiveTab] = useState('shell');
       
