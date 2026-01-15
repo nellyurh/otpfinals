@@ -940,10 +940,6 @@ const NewDashboard = () => {
     const [showAccountDetails, setShowAccountDetails] = useState(false);
     const [copied, setCopied] = useState(false);
     const [generatingAccount, setGeneratingAccount] = useState(false);
-    
-    // Ercaspay states
-    const [ercaspayAmount, setErcaspayAmount] = useState('');
-    const [ercaspayLoading, setErcaspayLoading] = useState(false);
 
     const copyToClipboard = async (text) => {
       if (!text) return;
