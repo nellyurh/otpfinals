@@ -263,7 +263,24 @@ class PricingConfig(BaseModel):
     enable_profile: bool = True
     enable_support: bool = True
 
+    # Ercaspay keys (admin editable)
+    ercaspay_secret_key: str = ""
+    ercaspay_api_key: str = ""
+
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ErcaspayPayment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    amount: float  # NGN amount
+    payment_method: str  # 'card' or 'bank-transfer'
+    status: str = "pending"  # pending, paid, failed, expired
+    transaction_reference: Optional[str] = None
+    payment_reference: Optional[str] = None
+    checkout_url: Optional[str] = None
+    ercaspay_response: Optional[Dict[str, Any]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CachedService(BaseModel):
     model_config = ConfigDict(extra="ignore")
