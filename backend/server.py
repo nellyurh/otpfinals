@@ -5049,8 +5049,8 @@ async def reseller_get_services(request: Request, server: str, country: Optional
     ngn_rate = pricing.get('ngn_to_usd_rate', 1500)
     
     if server == 'usa':
-        # DaisySMS
-        daisy_key = pricing.get('daisysms_api_key')
+        # DaisySMS - use environment variable
+        daisy_key = DAISYSMS_API_KEY
         markup = pricing.get('daisysms_markup', 20)
         if daisy_key:
             try:
@@ -5075,10 +5075,10 @@ async def reseller_get_services(request: Request, server: str, country: Optional
                 logger.error(f"DaisySMS services error: {e}")
                 
     elif server == 'all_country_1':
-        # SMS-pool
+        # SMS-pool - use environment variable
         if not country:
             raise HTTPException(status_code=400, detail="Country required for this server")
-        smspool_key = pricing.get('smspool_api_key')
+        smspool_key = SMSPOOL_API_KEY
         markup = pricing.get('smspool_markup', 20)
         if smspool_key:
             try:
@@ -5105,10 +5105,10 @@ async def reseller_get_services(request: Request, server: str, country: Optional
                 logger.error(f"SMS-pool services error: {e}")
                 
     elif server == 'all_country_2':
-        # 5sim
+        # 5sim - use environment variable
         if not country:
             raise HTTPException(status_code=400, detail="Country required for this server")
-        fivesim_key = pricing.get('fivesim_api_key')
+        fivesim_key = FIVESIM_API_KEY
         markup = pricing.get('tigersms_markup', 20)  # Uses same field as tigersms
         coin_rate = pricing.get('fivesim_coin_per_usd', 77.44)
         if fivesim_key:
