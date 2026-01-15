@@ -1427,7 +1427,7 @@ const NewDashboard = () => {
                 <button
                   onClick={handleGenerateAccount}
                   disabled={generatingAccount}
-                  className="px-6 py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   {generatingAccount ? (
                     <span className="flex items-center gap-2">
@@ -1441,9 +1441,10 @@ const NewDashboard = () => {
               </div>
             )}
           </div>
+          )}
 
-          {/* USD / Crypto Funding Card (Plisio) */}
-          {/* Crypto (Plisio) Funding Card - Clean modern design */}
+          {/* USD / Crypto Funding Card (Plisio) - Conditionally rendered */}
+          {pageToggles.enable_plisio && (
           <div className="bg-white rounded-2xl border-2 border-blue-200 shadow-lg overflow-hidden">
             {/* Header with Plisio logo */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-blue-100">
