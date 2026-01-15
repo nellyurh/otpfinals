@@ -3275,7 +3275,7 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
     payment_ref = f"ERCS-{user['id'][:8]}-{str(uuid.uuid4())[:8]}".upper()
     
     # Get frontend URL for redirect
-    frontend_url = os.environ.get('REACT_APP_BACKEND_URL', FRONTEND_URL) or 'https://onetimepass.preview.emergentagent.com'
+    frontend_url = os.environ.get('REACT_APP_BACKEND_URL', FRONTEND_URL) or 'https://paytech-smscloud.preview.emergentagent.com'
     
     # Prepare Ercaspay initiate checkout request
     checkout_data = {

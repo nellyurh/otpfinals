@@ -1,221 +1,202 @@
 <analysis>**original_problem_statement:**
-The user wants to build a full-stack OTP (One-Time Password) service platform, UltraCloud Sms, that acts as an intermediary between users and three SMS service providers: DaisySMS, SMS-pool, and 5sim.
+The user wants to build a full-stack OTP service platform, UltraCloud Sms, acting as an intermediary for SMS services. The platform includes JWT auth, a user wallet, crypto deposits via Plisio, and an admin panel.
 
-**Business Flow:**
-1.  **Number Purchase:** Users select a provider, country, and service. The platform deducts the cost (including a configurable markup) from the user's wallet and provides the number.
-2.  **OTP Fetching:** The platform polls the provider's API for 10 minutes to retrieve the OTP.
-3.  **Cancellation & Refund:** Orders are auto-cancelled with a full refund if no OTP is received within 10 minutes.
+In the previous session, the user requested to integrate a new payment gateway (Ercaspay), fix multiple UI and data bugs in the admin panel, and correct a dashboard metric.
 
-**Product Requirements:**
-*   **UI:** A platform branded UltraCloud Sms with customizable colors and text.
-*   **Authentication:** JWT-based email/password authentication.
-*   **Core Functionality:** OTP number purchasing, promo code system.
-*   **SMS Providers:** DaisySMS, SMS-pool, and 5sim.
-*   **Admin Panel:** A comprehensive dashboard with metrics, user management (edit, suspend, block), provider balance checks, promo code management, site branding controls, and page visibility toggles.
-*   **Payments:** Crypto deposits via Plisio (whitelabel mode).
-*   **Notifications:** A global pop-up notification system managed by the admin, and per-user notifications for transactions.
+In the current session, the user's requests evolved to:
+1.  **Implement Ercaspay Integration:** For card and bank transfer payments, including a new section on the Fund Wallet page and a dedicated management page in the admin panel.
+2.  **Fix Plisio Expired Deposits:** Prevent expired crypto deposits from showing up on the user's dashboard.
+3.  **Implement Promo Code Validation:** The backend logic existed, but the user wanted the frontend to properly validate the code, apply the discount, and show clear feedback (success or error).
+4.  **Major UI/UX Overhaul:**
+    *   Make the entire user dashboard mobile-responsive, adding a hamburger menu.
+    *   Change the default landing section from Virtual Numbers to Dashboard.
+    *   Redesign the Fund Wallet page, adding provider logos and improving the layout.
+    *   Redesign the dashboard overview, replacing static promotional cards with a flowing image banner carousel and a more compact Quick Services grid.
+    *   Fix mobile text sizes and layout issues to prevent horizontal scrolling.
+5.  **Dashboard Redesign (New Request):** A complete redesign of the user dashboard and landing page, using three user-provided screenshots as inspiration.
+6.  **Admin Feature (New Request):** Add the ability for the admin to lock or suspend payment methods (e.g., Ercaspay, Plisio) from the admin dashboard.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The platform is a full-stack application with a FastAPI backend and a React frontend. The initial set of features, including OTP purchasing from three providers and a detailed admin metrics dashboard, is complete and functional.
-
-In this session, the agent successfully implemented a wide range of new features requested by the user:
-*   **Admin Controls:** Page visibility toggles, site-wide branding customization (colors, text), and promo code management have been added to the admin panel.
-*   **User Management:** The admin can now view a list of users, with UI elements in place to edit, suspend, and block them.
-*   **Promo Codes:** A full-featured promo code system was implemented on the backend and integrated into the frontend purchase flow.
-*   **UI/UX Overhaul:** The user dashboard and landing page have been updated with new branding colors, text, and layout adjustments as per user requests. The user balance card now has a gradient, and broken country flags have been fixed.
-*   **Data Management:** A backend endpoint was created to purge user and transaction data while preserving configuration.
-*   **In-Progress Features:** The agent began implementing several new major features simultaneously: Plisio integration for crypto deposits, an admin-managed pop-up notification system, and a user-specific notification system for transactions. This led to significant instability.
+The application is a full-stack FastAPI/React platform. The backend is stable. The Ercaspay payment gateway has been fully integrated on both the backend and frontend. The user dashboard has been significantly improved with a mobile-responsive design, a hamburger menu, a dark mode toggle, and a user notification system (bell icon dropdown and login popups). The promo code validation flow has been fixed, and the dashboard's Fund Wallet and overview sections have been redesigned with provider logos and an image banner. An admin page for managing pop-up notifications has also been created.
 
 **Last working item**:
--   **Last item agent was working:** The agent was trying to stabilize the backend server after introducing a large number of new features (Plisio integration, notifications, advanced user management, provider balance checks). The server is currently failing to start due to multiple , , and  issues within . The agent used the  which identified an  as the immediate cause of the startup failure.
--   **Status:** 
+-   **Last item agent was working:** The agent was beginning a major UI/UX redesign of the dashboard and landing page, based on three inspiration screenshots provided by the user. The agent was also tasked with adding a feature to allow admins to enable/disable payment gateways. The agent started by analyzing the screenshots but failed to analyze the third one due to an HTTP error.
+-   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** The agent must first fix the backend startup errors. This can be verified by checking backend                          RUNNING   pid 48, uptime 0:00:04 and then making  requests to basic endpoints like . No other testing is possible until the server is running.
+-   **Which testing method agent to use?** Frontend testing agent to verify the new UI/UX redesign. Backend testing agent to verify the payment gateway lock/suspend functionality.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Backend server fails to start. (P0 - CRITICAL BLOCKER)
+-   Issue 1: Runtime Error: Objects are not valid as a React child (P0)
+-   Issue 2: Mobile view layout issues (P1)
 
-Issues Detail:
--   **Issue 1: Backend server fails to start.**
-    -   **Attempted fixes:** The agent made numerous edits to  to add new features, which introduced syntax and indentation errors. The last log indicates an  is preventing startup. The agent was in the process of fixing these errors sequentially but has not yet succeeded.
-    -   **Next debug checklist:**
-        1.  Carefully review  around the lines indicated in the last error log ().
-        2.  Fix the identified indentation error.
-        3.  Restart the backend: backend: stopped
-backend: started.
-        4.  Check the logs again (INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [85]
-INFO:     Stopping reloader process [48]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [177] using WatchFiles
-INFO:     Started server process [180]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.) for the *next* error.
-        5.  Repeat this cycle of fix one error, restart, check logs until the server starts successfully (). Common errors introduced were  for missing key definitions (like ) and  from mismatched brackets or incorrect async/await usage.
-    -   **Why fix this issue and what will be achieved with the fix?** The entire application is down. Fixing this will restore backend functionality and unblock all other development and testing.
-    -   **Status:** 
-    -   **Is recurring issue?** Y (The pattern of introducing breaking syntax errors while adding features has recurred).
-    -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on other issue:** This is the primary blocker for all other tasks.
+**Issues Detail:**
+-   **Issue 1: Runtime Error: Objects are not valid as a React child**
+    -   **Description:** User reported a crash when applying an invalid promo code. The error occurs because the  block in the frontend was trying to render the entire error object instead of the message string.
+    -   **Attempted fixes:** The agent identified the root cause and implemented a fix by ensuring only the string part of the error () is set in the state.
+    -   **Next debug checklist:** The fix has been applied. The next step is to test the promo code functionality again, specifically with an invalid code, to confirm the error is gone and the correct message is displayed.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug that crashes the application for users trying to use promo codes. Fixing it restores core functionality.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** frontend
+
+-   **Issue 2: Mobile view layout issues**
+    -   **Description:** The user reported that the mobile view was not responsive, with content overflowing and causing horizontal scrolling. Card and text sizes were too large.
+    -   **Attempted fixes:** The agent refactored the  component in , replacing hardcoded promotional cards with a responsive grid for Quick Services and adjusting text sizes and container widths to fit the mobile viewport.
+    -   **Next debug checklist:** A screenshot confirms the layout is improved, but user verification is pending.
+    -   **Why fix this issue and what will be achieved with the fix?** Improves usability and provides a professional user experience on mobile devices.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** frontend
 
 **In progress Task List**:
--   **Task 1: Complete Plisio crypto deposit integration.** (P1)
-    -   **Where to resume:** The backend has endpoints for creating Plisio invoices () and a webhook handler (), but the server is down. The Plisio API key is in . The frontend needs a new section, likely in  within , to allow users to select a cryptocurrency, enter an amount, and see a QR code/deposit address from the invoice.
-    -   **What will be achieved with this?** Users will be able to deposit funds using various cryptocurrencies.
-    -   **Status:** 
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** Backend server fails to start.
+-   **Task 1: Major Dashboard & Landing Page Redesign (P0)**
+    -   **Description**: The user has requested a significant visual overhaul of the dashboard and landing page, providing three screenshots for design inspiration. The agent must not touch the mechanics (backend logic), only the UI.
+    -   **Where to resume**:
+        1.  Re-attempt analysis of the third screenshot which previously failed ().
+        2.  Based on the analysis of all three images, create a plan to update the UI in  and the landing page component.
+        3.  The design should incorporate a clean, modern aesthetic with better information hierarchy as seen in the examples.
+    -   **What will be achieved with this?** A more professional and user-friendly interface that aligns with the user's vision.
+    -   **Status:** NOT STARTED
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on something:** Analysis of the third screenshot failed.
 
--   **Task 2: Implement User and Transaction Notification System.** (P2)
-    -   **Where to resume:** Backend models (, ) and API endpoints (, ) have been created. The logic to create transaction notifications () is also in place. The frontend needs to be built: a bell icon in the header that shows a dropdown of user notifications, and logic to fetch and display the admin-configured pop-up on login.
-    -   **What will be achieved with this?** Admins can communicate with users via pop-ups, and users will receive updates on their transactions.
-    -   **Status:** 
+-   **Task 2: Admin Control for Payment Methods (P1)**
+    -   **Description**: Add functionality in the admin panel to enable or disable payment methods (Plisio, Ercaspay, etc.).
+    -   **Where to resume**:
+        1.  **Backend**: Modify  model in  to include boolean flags like , . Update the  endpoint to return these flags.
+        2.  **Frontend**: In , use these flags to conditionally render the payment method cards in the .
+        3.  **Admin Panel**: In , add switches/toggles in the 'Settings' or a new 'Payment Gateways' section to allow the admin to update these boolean flags via the  endpoint.
+    -   **What will be achieved with this?** Gives the admin operational control over which payment gateways are available to users.
+    -   **Status:** NOT STARTED
     -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** Backend server fails to start.
-
--   **Task 3: Finalize Admin User Management.** (P3)
-    -   **Where to resume:** The UI in  for editing users (full name, email, balances, admin status) and toggling / status is implemented. The backend needs a  endpoint to save these changes. The  model in  has been updated with  and  fields.
-    -   **What will be achieved with this?** Admins will have full control over user accounts.
-    -   **Status:** 
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** Backend server fails to start.
+    -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
+*   **Upcoming Tasks:**
+    *   **P1:** Finalize Admin User Management: Implement the frontend UI in  to use the new  endpoint to allow editing user details (name, email, balances) and status (suspend/block).
+    *   **P2:** Admin-editable Image Banners: Convert the hardcoded image banner into a system where banners can be uploaded and managed from the admin panel.
+    *   **P3:** Finalize Referral Program & Profile Settings pages functionality.
 *   **Future Tasks:**
-    *   **P1:** Re-implement the dark mode toggle, which was lost in a previous redesign.
-    *   **P2:** Implement Referral Program page functionality.
-    *   **P3:** Implement Profile Settings page functionality (e.g., password change).
-    *   **P4:** Refactor the monolithic  into a modular structure (e.g., , ).
-    *   **P5:** Refactor large frontend components like  and  into smaller, manageable sub-components.
-    *   **P6:** Delete deprecated files: , .
+    *   **P4:** Fix Total OTP Volume metric on the admin dashboard (from previous fork).
+    *   **P5:** Fix Bank Accounts page in admin panel showing no data (from previous fork).
+    *   **P6:** Refactor the monolithic  into a modular structure ().
+    *   **P7:** Refactor large frontend components like  and .
+    *   **P8:** Delete deprecated files: , .
 
 **Completed work in this session**
-- **Admin Panel Restoration & Enhancement:**
-  - Fixed the critical bug causing the admin dashboard to render a blank page.
-  - Implemented a tabbed interface with a fully functional metrics dashboard, user management, and settings sections.
-  - Added a Page Toggles feature in admin settings to enable/disable sidebar sections for users (, ).
-  - Added a Branding section for the admin to control site-wide colors and text (, ).
-  - Added a feature to display real-time balances from provider APIs (DaisySMS, SMS-pool, 5sim) on the dashboard ().
-  - Implemented a Promo Codes management section for admins to create and view codes (, ).
-  - Created a data purge function to clear user/transaction data while keeping settings ().
-- **User-Facing Features:**
-  - Integrated the promo code system into the number purchase flow ().
-  - Updated the user dashboard () and landing page () to use the dynamically configured branding colors and text.
-  - Added a gradient background to the user balance cards.
-  - Removed the static Welcome back! message from the dashboard header.
-  - Fixed broken country flag images by switching to a more reliable  flag source ().
-  - Styled the Purchase button to be smaller and more rounded.
+-   **Ercaspay Integration:** Fully implemented backend endpoints and frontend UI for Ercaspay card and bank transfer payments.
+-   **Promo Code Validation:** Fixed frontend error handling and improved UI to show validation status and applied discounts.
+-   **Plisio Bug Fix:** Fixed an issue where expired crypto deposits were shown to the user.
+-   **Mobile Responsiveness:** Added a hamburger menu and refactored the dashboard layout to be responsive and eliminate horizontal scrolling.
+-   **Dashboard UI Redesign:**
+    *   Set the 'Dashboard' as the default view on load.
+    *   Redesigned the Fund Wallet page with provider logos (Ercaspay, Plisio, PaymentPoint) and improved styling.
+    *   Replaced static promotional cards with a dynamic, responsive image banner carousel.
+-   **Notification System:** Implemented a bell-icon notification dropdown, a login pop-up modal for important announcements, and an admin panel section for creating/managing these pop-ups.
+-   **Dark Mode:** Added a functional dark mode toggle in the user dashboard header.
+-   **Admin User Management:** Added the backend  endpoint for updating user details.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Dark mode toggle.** This was an original requirement that was lost during UI redesigns and has not been re-implemented.
+-   **Issue 1: Total OTP Volume metric in admin dashboard is incorrect.** (Carried over from previous fork)
+-   **Issue 2: Bank Accounts page shows no data.** (Carried over from previous fork)
+-   **Issue 3: Plisio crypto deposit flow is buggy (timer freeze, no persistence).** The expired deposit part was fixed, but the overall UX reliability remains unverified.
 
 **Known issue recurrence from previous fork**
--   The previous issue with ESLint was resolved by disabling it. The new recurring issue is the agent introducing multiple syntax/indentation errors into  when adding complex features, leading to critical backend server startup failures.
+-   **Issue recurrence in previous fork:** N/A.
+-   **Recurrence in this fork:** The agent initially struggled with React state management and responsive design, requiring multiple user feedback cycles to fix the Ercaspay amount field reloading and the mobile horizontal scroll issue. This indicates a need for more careful frontend implementation and testing.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Backend:** FastAPI, Pydantic, Motor (MongoDB), Background Tasks, HTTPX for external API calls.
-*   **Frontend:** React, TailwindCSS, , , Shadcn UI.
-*   **Integrations:** DaisySMS, SMS-pool, 5sim, Plisio (in progress).
-*   **Architecture:** Monolithic backend () and a component-based React frontend. State management is done with /.
+*   **Backend:** FastAPI, Pydantic, Motor (MongoDB), HTTPX
+*   **Frontend:** React, TailwindCSS, , Shadcn UI, 
+*   **Integrations:** DaisySMS, SMS-pool, 5sim, Plisio, PaymentPoint, Payscribe, Ercaspay (**new**)
+*   **Architecture:** Monolithic backend () and a component-based React frontend with increasingly complex, large components ().
 
 **key DB schema**
--   **users:**  (added booleans)
--   **sms_orders:** 
--   **transactions:** 
--   **pricing_config:**  (added page visibility toggles)
--   **site_branding:** (new collection) 
--   **promo_codes:** (new collection) 
--   **notifications:** (new collection) 
--   **login_popups:** (new collection) 
+-   **users:** No changes.
+-   **pricing_config:** Added , . Optional boolean flags like  are planned.
+-   **ercaspay_payments:** (new) 
+-   **popup_notifications:** (new) 
 
 **All files of reference**
-*   : The single source of all backend logic and the current primary blocker. It contains all new, partially implemented features.
-*   : The heavily modified frontend for all new admin controls.
-*   : The main user-facing dashboard, containing UI for funding wallets and transaction history.
-*   : The core OTP purchase component, updated with promo code input.
-*   : Contains all API keys, including the new .
+*   : The monolithic backend where Ercaspay, notification, and new admin endpoints were added.
+*   : The main user dashboard, which received a major overhaul for mobile responsiveness, new payment UI, notifications, and banners.
+*   : The admin panel, updated with a page for Ercaspay transactions and another for managing popup notifications.
+*   : Updated to improve the promo code validation UX.
+*   : Created and updated to track project progress.
 
 **Areas that need refactoring**:
-*   : At over 3800 lines, this file is unmaintainable. It **urgently** needs to be broken down into separate files using FastAPI's  for different domains (e.g., , , , , ).
-*   : This component is over 1300 lines and manages the state for the entire admin section. It should be refactored into smaller components for each tab (e.g., , , , ).
-*   : This file is also growing large and could be broken down, especially the .
+*   : Still a monolith and urgently needs to be broken down into  modules.
+*   : Has grown significantly and is now over 2400 lines. It should be broken down into smaller, manageable components (e.g., , , , ).
+*   : Still a very large component that should be refactored.
 
 **key api endpoints**
-*   **Admin:**
-    *   : (Needed) To update user details (suspend, block, etc.).
-    *   : Fetches current balances from SMS provider APIs.
-    *   : Creates a new promo code.
-    *   : Creates a new global notification popup.
-    *   : Updates page visibility for users.
-    *   : Updates site-wide branding.
-    *   : Deletes user and transaction data.
-*   **User:**
-    *   : Fetches unread notifications for the current user.
+*   **Ercaspay (New):**
+    *   : Creates a new Ercaspay payment.
+    *   : Handles Ercaspay payment notifications.
+    *   : Lists Ercaspay transactions in the admin panel.
+*   **Notifications (New):**
+    *   : Fetches unread bell-icon notifications for the user.
     *   : Marks a notification as read.
-*   **Plisio (Crypto):**
-    *   : Creates a crypto deposit invoice.
-    *   : Handles incoming payment status updates from Plisio.
+    *   : Fetches active pop-up notifications to show at login.
+    *   : Creates a new popup notification.
+    *   : Updates an existing popup notification.
+    *   : Deletes a popup notification.
+*   **Admin (New):**
+    *   : Updates a user's profile (balance, status).
+*   **Plisio (Updated):**
+    *   : Updated to exclude expired deposits.
 
 **Critical Info for New Agent**
--   **P0: FIX THE BACKEND.** The  file has multiple syntax/indentation/runtime errors that are preventing the backend from starting. You must methodically fix these errors by checking the supervisor logs (INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [85]
-INFO:     Stopping reloader process [48]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [177] using WatchFiles
-INFO:     Started server process [180]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.), applying one fix at a time, and restarting (backend: stopped
-backend: started) until the server is stable. Nothing else can be done until this is resolved.
--   **Tackle Features Sequentially:** The previous agent's attempt to implement multiple large features in parallel caused the current instability. After fixing the backend, implement and test the remaining features *one by one*: 1. Plisio, 2. Notifications, 3. User Editing.
--   **Plisio Integration Details:** The user's secret key is  and is stored in  in . Plisio does not have a webhook secret to set on their side, but the agent correctly added a blank  to  for potential future use in our own webhook verification logic.
+-   **Top Priority:** The user wants a major dashboard and landing page redesign inspired by the provided screenshots. Focus on aesthetics and layout, not backend logic. One of the inspiration images failed to load; you must try analyzing it again.
+-   **Second Priority:** Implement the admin feature to enable/disable payment gateways. This is a critical operational tool for the user.
+-   **UI is Iterative:** The user provides very specific, iterative feedback on the UI. Be prepared to make multiple small adjustments to layout, color, and responsiveness to meet their expectations. Test on both mobile and desktop viewport sizes after every significant change.
+-   **Component Size:**  is extremely large and difficult to work with. Be very careful when making edits. It would be beneficial to propose refactoring this component into smaller pieces as a future task.
+-   **Backend is Monolithic:** All backend logic is in . When adding new features, be careful not to break existing functionality.
+
+**documents and test reports created in this job**
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Set the USD to NGN rate to 1420 for all providers and chose Fund Wallet as the section to display first. (Partially Implemented - Rate set, but UI order needs check).
-2.  **User:** Confirmed to proceed with purging all user/transaction data, keeping  and . Provided Plisio API key. Confirmed a desire for both a login pop-up and a bell icon notification system. (IN PROGRESS)
-3.  **User:** Selected Plisio as the crypto payment provider. (IN PROGRESS)
-4.  **User:** Confirmed purging transactions but leaving the admin account. Specified fields to be editable for users (fullname, email, balances, is_admin) and statuses (Suspend, Block). Listed providers for balance check. Listed desired cryptocurrencies for Plisio. Confirmed having a Plisio account key. (IN PROGRESS)
-5.  **User:** Requested a full data wipe of transactions and users (except admin). Requested user management (edit/block/suspend), provider API balance display, Plisio integration, and a dual notification system (admin-pushed pop-up and user transaction notifications). (IN PROGRESS)
-6.  **User:** Confirmed to proceed with backend changes for promo codes. (COMPLETED)
-7.  **User:** Provided text for the Landing page hero section. (COMPLETED)
-8.  **User:** Provided a title and subtitle for the landing page. (COMPLETED)
-9.  **User:** Requested to use  for country flags. (COMPLETED)
-10. **User:** Provided a new slogan for the landing page. (COMPLETED)
+1.  **User:** Requests mobile responsiveness, hamburger menu, dashboard as default page, promo code fix, and a new popup notification feature. (COMPLETED)
+2.  **User:** Reports a runtime error when applying an invalid promo code and says mobile text/cards are too big. Asks for a flowing banner system. (IN PROGRESS)
+3.  **User:** Corrects the agent's responsive design, clarifying that mobile should have no horizontal scroll and PC view should wrap the service cards, not list them in one long row. States banners should be images. (COMPLETED)
+4.  **User:** Satisfied with the layout fixes. (RESOLVED)
+5.  **User:** Provides 3 screenshots for a major dashboard and landing page redesign. Requests the ability to lock/suspend payment methods from the admin panel. (PENDING - CURRENT TASK)
 
 **Project Health Check:**
 *   **Broken:**
-    *   **The entire backend is non-functional.** The  service fails to start due to syntax and runtime errors.
+    *   The user is unsatisfied with the current dashboard design and has requested a complete overhaul, making the current UI state obsolete.
 *   **Mocked:**
-    *   None.
+    *   The dashboard's image banner carousel uses a hardcoded image URL. A system for admin-managed banners is a future task.
 
 **3rd Party Integrations**
 *   **DaisySMS** (OTP Service)
 *   **SMS-pool** (OTP Service)
 *   **5sim** (OTP Service)
-*   **PaymentPoint** (NGN Payments) - requires User API Key
+*   **PaymentPoint** (NGN Virtual Accounts) - requires User API Key
 *   **Payscribe** (Bill Payments) - requires User API Key
-*   **Plisio** (Cryptocurrency Payments) - requires User API Key (key provided and is in )
+*   **Plisio** (Cryptocurrency Payments) - requires User API Key
+*   **Ercaspay** (NGN Card/Bank Payments) - requires User API Key
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (Screenshots were used to verify UI changes before the backend broke).
--   **Troubleshoot agent used after agent stuck in loop:** YES (Used to identify the backend startup ).
--   **Test files created:** None.
--   **Known regressions:** The entire backend application is down.
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None
+-   **Known regressions:** A runtime error was introduced during promo code implementation but has since been fixed. Several UI layout regressions occurred during development and were fixed after user feedback.
 
 **Credentials to test flow:**
 *   **Admin user:**  / 
 
 **What agent forgot to execute**
-*   The agent failed to maintain a stable, testable state while developing. It attempted to implement too many complex features simultaneously without incremental testing, resulting in a completely broken backend.
-*   The agent has not deleted deprecated files (, ) despite this being a known future task.</analysis>
+-   Several high-priority items from the *previous* fork's summary were superseded by the user's new, more urgent requests. The following were not addressed in this session:
+    -   Fixing the broken UI layout of the admin Deposits, All Transactions, and Bank Accounts pages.
+    -   Fixing the Bank Accounts page showing no data.
+    -   Fixing the incorrect Total OTP Volume metric in the admin dashboard.
+    -   Adding the Plisio API key to the Providers section in the admin panel.
+-   The agent failed to analyze the third screenshot provided by the user for the UI redesign task.</analysis>

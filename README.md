@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://onetimepass.preview.emergentagent.com/api
-- **Frontend**: https://onetimepass.preview.emergentagent.com
+- **Backend**: https://paytech-smscloud.preview.emergentagent.com/api
+- **Frontend**: https://paytech-smscloud.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 
