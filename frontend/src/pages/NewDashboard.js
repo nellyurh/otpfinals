@@ -2694,49 +2694,27 @@ const NewDashboard = () => {
 
   // ============ RESELLER SECTION ============
   function ResellerSection() {
-    const [resellerProfile, setResellerProfile] = useState(null);
-    const [plans, setPlans] = useState([]);
-    const [resellerOrders, setResellerOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [showApiKey, setShowApiKey] = useState(false);
     const [registering, setRegistering] = useState(false);
     const [upgrading, setUpgrading] = useState(false);
     const [showDocs, setShowDocs] = useState(false);
-    const [initialFetch, setInitialFetch] = useState(false);
 
+    // Fetch reseller data when section mounts (only if not already fetched)
     useEffect(() => {
-      if (!initialFetch) {
-        setInitialFetch(true);
+      if (!resellerFetched) {
         fetchResellerData();
       }
-    }, [initialFetch]);
-
-    const fetchResellerData = async () => {
-      try {
-        const [profileRes, plansRes] = await Promise.all([
-          axios.get(`${API}/api/reseller/profile`, axiosConfig),
-          axios.get(`${API}/api/reseller/plans`)
-        ]);
-        setResellerProfile(profileRes.data);
-        setPlans(plansRes.data.plans || []);
-        if (profileRes.data.is_reseller) {
-          const ordersRes = await axios.get(`${API}/api/reseller/orders?limit=20`, axiosConfig);
-          setResellerOrders(ordersRes.data.orders || []);
-        }
-      } catch (err) {
-        console.error('Error fetching reseller data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    }, []); // Empty dependency - only run once on mount
 
     const handleRegister = async () => {
       setRegistering(true);
       try {
         await axios.post(`${API}/api/reseller/register`, {}, axiosConfig);
         toast.success('Registered as reseller!');
-        setInitialFetch(false);
-        setLoading(true);
+        // Force refetch
+        setResellerFetched(false);
+        setResellerLoading(true);
+        setTimeout(() => fetchResellerData(), 500);
       } catch (err) {
         toast.error(err.response?.data?.detail || 'Failed to register');
       } finally {
@@ -2750,9 +2728,13 @@ const NewDashboard = () => {
       try {
         await axios.post(`${API}/api/reseller/upgrade?plan_name=${planName}`, {}, axiosConfig);
         toast.success(`Upgraded to ${planName} plan!`);
-        setInitialFetch(false);
-        setLoading(true);
-        fetchProfile();
+        // Force refetch
+        setResellerFetched(false);
+        setResellerLoading(true);
+        setTimeout(() => {
+          fetchResellerData();
+          fetchProfile();
+        }, 500);
       } catch (err) {
         toast.error(err.response?.data?.detail || 'Failed to upgrade');
       } finally {
@@ -2775,7 +2757,7 @@ const NewDashboard = () => {
       }
     };
 
-    if (loading) {
+    if (resellerLoading) {
       return (
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
