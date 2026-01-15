@@ -624,7 +624,8 @@ const NewDashboard = () => {
   // So we do NOT filter them out; we only use toggles to block content/actions.
   const menuItems = allMenuItems;
 
-  return (
+  // Main Dashboard Render
+  const renderDashboard = () => (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile Overlay */}
       {sidebarOpen && (
