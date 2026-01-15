@@ -1801,29 +1801,904 @@ const AdminPanel = ({ user, setUser }) => {
             )}
 
 
-            {/* Provider & pricing configuration */}
-            {activeSection === 'settings' && (
-              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                {/* Pricing & FX */}
-                <Card className="lg:col-span-2 border border-slate-200 shadow-sm bg-white">
+            {/* PAGE TOGGLES SECTION */}
+            {activeSection === 'page-toggles' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Page Toggles</h2>
+                    <p className="text-xs text-slate-500 mt-1">Control which pages are visible to users on the dashboard</p>
+                  </div>
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {loading ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                </div>
+                
+                <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold">Pricing & FX Configuration</CardTitle>
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <ToggleLeft className="w-4 h-4 text-emerald-600" />
+                      Dashboard Pages
+                    </CardTitle>
                     <CardDescription className="text-xs">
-                      Control global markups, conversion rate and 5sim coin pricing.
+                      Disabled pages remain visible but show "Maintenance in progress" message
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-5">
-                    {/* Branding */}
-                    <div className="border border-slate-100 rounded-xl p-4">
-                      <div className="text-xs font-semibold text-slate-800 mb-3">Branding & Colors</div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold text-slate-600">Brand Name</Label>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                      {[
+                        ['enable_dashboard', 'Dashboard', 'Main overview page'],
+                        ['enable_transactions', 'Transactions', 'Transaction history'],
+                        ['enable_fund_wallet', 'Fund Wallet', 'Deposit funds'],
+                        ['enable_virtual_numbers', 'Virtual Numbers', 'SMS verification'],
+                        ['enable_buy_data', 'Buy Data Bundle', 'Data packages'],
+                        ['enable_airtime', 'Airtime Top-Up', 'Airtime purchases'],
+                        ['enable_betting', 'Betting', 'Betting wallet'],
+                        ['enable_virtual_cards', 'Virtual Cards', 'Card services'],
+                        ['enable_sms_history', 'SMS History', 'Past SMS orders'],
+                        ['enable_account_upgrade', 'Account Upgrade', 'Upgrade tier'],
+                        ['enable_referral', 'Referral Program', 'Refer & earn'],
+                        ['enable_profile', 'Profile Settings', 'User profile'],
+                        ['enable_support', 'Support', 'Help & support'],
+                      ].map(([key, label, desc]) => (
+                        <div key={key} className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 bg-white hover:bg-slate-50 transition-colors">
+                          <div>
+                            <span className="text-slate-800 font-medium">{label}</span>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{desc}</p>
+                          </div>
+                          <Switch
+                            checked={pageToggles[key]}
+                            onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, [key]: val }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* PAYMENT GATEWAYS SECTION */}
+            {activeSection === 'payment-gateways' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Payment Gateways</h2>
+                    <p className="text-xs text-slate-500 mt-1">Enable or disable payment methods for all users</p>
+                  </div>
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {loading ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Ercaspay */}
+                  <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                            <CreditCard className="w-5 h-5 text-orange-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-sm font-semibold text-orange-900">Ercaspay</CardTitle>
+                            <p className="text-[10px] text-orange-600">Card & Bank Payments</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={pageToggles.enable_ercaspay}
+                          onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, enable_ercaspay: val }))}
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-xs text-orange-700">
+                      <p>Accept NGN payments via cards and bank transfers</p>
+                      <div className={`mt-3 px-3 py-1.5 rounded-full text-center font-semibold ${pageToggles.enable_ercaspay ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {pageToggles.enable_ercaspay ? 'ENABLED' : 'DISABLED'}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* PaymentPoint */}
+                  <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                            <Wallet className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-sm font-semibold text-emerald-900">PaymentPoint</CardTitle>
+                            <p className="text-[10px] text-emerald-600">NGN Virtual Accounts</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={pageToggles.enable_paymentpoint}
+                          onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, enable_paymentpoint: val }))}
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-xs text-emerald-700">
+                      <p>Generate virtual bank accounts for deposits</p>
+                      <div className={`mt-3 px-3 py-1.5 rounded-full text-center font-semibold ${pageToggles.enable_paymentpoint ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {pageToggles.enable_paymentpoint ? 'ENABLED' : 'DISABLED'}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Plisio */}
+                  <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                            <DollarSign className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-sm font-semibold text-blue-900">Plisio</CardTitle>
+                            <p className="text-[10px] text-blue-600">Cryptocurrency</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={pageToggles.enable_plisio}
+                          onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, enable_plisio: val }))}
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-xs text-blue-700">
+                      <p>Accept BTC, ETH, USDT and other cryptos</p>
+                      <div className={`mt-3 px-3 py-1.5 rounded-full text-center font-semibold ${pageToggles.enable_plisio ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {pageToggles.enable_plisio ? 'ENABLED' : 'DISABLED'}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Crypto Rates */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Crypto USD Rates (Manual)</CardTitle>
+                    <CardDescription className="text-xs">Used for auto-crediting volatile coin deposits</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {[
+                        ['btc_usd_rate', 'BTC', '₿'],
+                        ['eth_usd_rate', 'ETH', 'Ξ'],
+                        ['bnb_usd_rate', 'BNB', '◈'],
+                        ['ltc_usd_rate', 'LTC', 'Ł'],
+                        ['doge_usd_rate', 'DOGE', 'Ð'],
+                      ].map(([key, label, symbol]) => (
+                        <div key={key} className="space-y-1.5">
+                          <Label className="text-xs text-slate-600 font-semibold flex items-center gap-1">
+                            <span className="text-base">{symbol}</span> {label}/USD
+                          </Label>
                           <Input
-                            value={branding.brand_name}
-                            onChange={(e) => setBranding({ ...branding, brand_name: e.target.value })}
+                            type="number"
+                            step="0.01"
+                            value={pricing[key] ?? 1420}
+                            onChange={(e) => setPricing({ ...pricing, [key]: parseFloat(e.target.value) || 0 })}
                             className="h-9 text-sm bg-slate-50 border-slate-200"
                           />
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* PROMO CODES SECTION */}
+            {activeSection === 'promo-codes' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Promo Codes</h2>
+                    <p className="text-xs text-slate-500 mt-1">Create and manage discount codes for users</p>
+                  </div>
+                </div>
+
+                {/* Create New Promo */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-emerald-600" />
+                      Create New Promo Code
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Code</Label>
+                        <Input 
+                          value={newPromo.code} 
+                          onChange={(e) => setNewPromo({ ...newPromo, code: e.target.value.toUpperCase() })} 
+                          placeholder="e.g. SAVE20"
+                          className="h-9 text-sm bg-slate-50 border-slate-200 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Description</Label>
+                        <Input 
+                          value={newPromo.description} 
+                          onChange={(e) => setNewPromo({ ...newPromo, description: e.target.value })} 
+                          placeholder="20% off first purchase"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
+                        <select
+                          value={newPromo.discount_type}
+                          onChange={(e) => setNewPromo({ ...newPromo, discount_type: e.target.value })}
+                          className="h-9 w-full text-sm bg-slate-50 border border-slate-200 rounded-md px-3"
+                        >
+                          <option value="percent">Percentage (%)</option>
+                          <option value="fixed_ngn">Fixed NGN (₦)</option>
+                          <option value="fixed_usd">Fixed USD ($)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Discount Value</Label>
+                        <div className="relative">
+                          <Input 
+                            type="number" 
+                            value={newPromo.discount_value} 
+                            onChange={(e) => setNewPromo({ ...newPromo, discount_value: e.target.value })} 
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                            {newPromo.discount_type === 'percent' ? '%' : newPromo.discount_type === 'fixed_ngn' ? '₦' : '$'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Max Total Uses</Label>
+                        <Input 
+                          type="number" 
+                          value={newPromo.max_total_uses} 
+                          onChange={(e) => setNewPromo({ ...newPromo, max_total_uses: e.target.value })} 
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Expires At</Label>
+                        <Input 
+                          type="datetime-local" 
+                          value={newPromo.expires_at} 
+                          onChange={(e) => setNewPromo({ ...newPromo, expires_at: e.target.value })} 
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3 pt-6">
+                        <Switch 
+                          checked={newPromo.one_time_per_user} 
+                          onCheckedChange={(val) => setNewPromo({ ...newPromo, one_time_per_user: val })} 
+                        />
+                        <span className="text-xs text-slate-700">One-time per user</span>
+                      </div>
+                      <div className="flex items-center pt-5">
+                        <Button onClick={handleCreatePromo} className="h-9 px-6 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 w-full">
+                          <Plus className="w-3.5 h-3.5 mr-1.5" />
+                          Create Promo
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Existing Promo Codes */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-purple-600" />
+                      Active Promo Codes
+                    </CardTitle>
+                    <CardDescription className="text-xs">Manage existing promotional codes</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!promoCodes && <p className="text-xs text-slate-500">Loading promo codes…</p>}
+                    {promoCodes && promoCodes.length === 0 && (
+                      <div className="text-center py-8">
+                        <Tag className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                        <p className="text-sm text-slate-500">No promo codes yet</p>
+                        <p className="text-xs text-slate-400">Create your first promo code above</p>
+                      </div>
+                    )}
+                    {promoCodes && promoCodes.length > 0 && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="border-b border-slate-200 bg-slate-50">
+                            <tr>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Code</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Description</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Type</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Value</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Max Uses</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Expiry</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {promoCodes.map((p) => (
+                              <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="px-3 py-2.5">
+                                  <span className="font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{p.code}</span>
+                                </td>
+                                <td className="px-3 py-2.5 text-slate-600">{p.description || '-'}</td>
+                                <td className="px-3 py-2.5">
+                                  <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold">
+                                    {p.discount_type === 'percent' ? 'Percent' : p.discount_type === 'fixed_ngn' ? 'Fixed ₦' : 'Fixed $'}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5 font-semibold text-emerald-700">
+                                  {p.discount_type === 'percent' ? `${p.discount_value}%` : p.discount_type === 'fixed_ngn' ? `₦${p.discount_value}` : `$${p.discount_value}`}
+                                </td>
+                                <td className="px-3 py-2.5 text-slate-600">{p.max_total_uses ?? '∞'}</td>
+                                <td className="px-3 py-2.5 text-slate-500 text-[10px]">{p.expires_at ? new Date(p.expires_at).toLocaleDateString() : 'Never'}</td>
+                                <td className="px-3 py-2.5">
+                                  <button 
+                                    type="button" 
+                                    onClick={() => togglePromoActive(p)} 
+                                    className={`px-3 py-1 rounded-full text-[10px] font-bold transition-colors ${
+                                      p.active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                    }`}
+                                  >
+                                    {p.active ? 'ACTIVE' : 'INACTIVE'}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* BRANDING & BANNERS SECTION */}
+            {activeSection === 'branding' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Branding & Banners</h2>
+                    <p className="text-xs text-slate-500 mt-1">Customize your site's appearance and landing page</p>
+                  </div>
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {loading ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                </div>
+
+                {/* Brand Identity */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Palette className="w-4 h-4 text-pink-600" />
+                      Brand Identity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Brand Name</Label>
+                        <Input
+                          value={branding.brand_name}
+                          onChange={(e) => setBranding({ ...branding, brand_name: e.target.value })}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Logo URL</Label>
+                        <Input
+                          value={branding.brand_logo_url}
+                          onChange={(e) => setBranding({ ...branding, brand_logo_url: e.target.value })}
+                          placeholder="https://..."
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                    </div>
+                    {branding.brand_logo_url && (
+                      <div className="mt-3 p-4 bg-slate-100 rounded-xl">
+                        <p className="text-[10px] text-slate-500 mb-2 font-semibold">Logo Preview:</p>
+                        <img src={branding.brand_logo_url} alt="Logo Preview" className="h-12 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Theme Colors */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Theme Colors</CardTitle>
+                    <CardDescription className="text-xs">Customize colors across landing page and dashboard</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Primary Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.primary_color_hex}
+                            onChange={(e) => setBranding({ ...branding, primary_color_hex: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.primary_color_hex}
+                            onChange={(e) => setBranding({ ...branding, primary_color_hex: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Secondary Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.secondary_color_hex}
+                            onChange={(e) => setBranding({ ...branding, secondary_color_hex: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.secondary_color_hex}
+                            onChange={(e) => setBranding({ ...branding, secondary_color_hex: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Button/CTA Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.button_color_hex || '#7c3aed'}
+                            onChange={(e) => setBranding({ ...branding, button_color_hex: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.button_color_hex || '#7c3aed'}
+                            onChange={(e) => setBranding({ ...branding, button_color_hex: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                        <p className="text-[9px] text-slate-400">Sign Up, Order Now buttons</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Accent Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.accent_color_hex || '#7c3aed'}
+                            onChange={(e) => setBranding({ ...branding, accent_color_hex: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.accent_color_hex || '#7c3aed'}
+                            onChange={(e) => setBranding({ ...branding, accent_color_hex: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                        <p className="text-[9px] text-slate-400">Service cards, features</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Header Background</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.header_bg_color_hex || '#ffffff'}
+                            onChange={(e) => setBranding({ ...branding, header_bg_color_hex: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.header_bg_color_hex || '#ffffff'}
+                            onChange={(e) => setBranding({ ...branding, header_bg_color_hex: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Hero Gradient Start</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.hero_gradient_from || '#10b981'}
+                            onChange={(e) => setBranding({ ...branding, hero_gradient_from: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.hero_gradient_from || '#10b981'}
+                            onChange={(e) => setBranding({ ...branding, hero_gradient_from: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Hero Gradient End</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding.hero_gradient_to || '#06b6d4'}
+                            onChange={(e) => setBranding({ ...branding, hero_gradient_to: e.target.value })}
+                            className="w-10 h-9 rounded-lg border border-slate-200 cursor-pointer"
+                          />
+                          <Input
+                            value={branding.hero_gradient_to || '#06b6d4'}
+                            onChange={(e) => setBranding({ ...branding, hero_gradient_to: e.target.value })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1 font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Live Preview */}
+                    <div className="mt-4 p-4 bg-slate-100 rounded-xl">
+                      <p className="text-[10px] text-slate-500 mb-3 font-semibold">Live Preview:</p>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div 
+                          className="px-4 py-2 rounded-full text-white text-xs font-semibold shadow-md"
+                          style={{ backgroundColor: branding.button_color_hex || '#7c3aed' }}
+                        >
+                          Sign Up Button
+                        </div>
+                        <div 
+                          className="px-4 py-2 rounded-full text-white text-xs font-semibold"
+                          style={{ backgroundColor: branding.primary_color_hex || '#059669' }}
+                        >
+                          Primary
+                        </div>
+                        <div 
+                          className="w-24 h-10 rounded-xl"
+                          style={{ 
+                            background: `linear-gradient(135deg, ${branding.hero_gradient_from || '#10b981'}, ${branding.hero_gradient_to || '#06b6d4'})`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Landing Page Content */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Landing Page Content</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Hero Title</Label>
+                      <Input
+                        value={branding.landing_hero_title}
+                        onChange={(e) => setBranding({ ...branding, landing_hero_title: e.target.value })}
+                        className="h-9 text-sm bg-slate-50 border-slate-200"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Hero Subtitle</Label>
+                      <textarea
+                        value={branding.landing_hero_subtitle}
+                        onChange={(e) => setBranding({ ...branding, landing_hero_subtitle: e.target.value })}
+                        rows={3}
+                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Dashboard Banners */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                          <Image className="w-4 h-4 text-blue-600" />
+                          Dashboard Banners
+                        </CardTitle>
+                        <CardDescription className="text-xs">Carousel images shown on the user dashboard</CardDescription>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="h-8 px-3 text-xs"
+                        onClick={() => {
+                          setBranding({
+                            ...branding,
+                            banner_images: [...(branding.banner_images || []), { id: Date.now(), image_url: '', link_url: '', active: true }]
+                          });
+                        }}
+                      >
+                        <Plus className="w-3 h-3 mr-1" /> Add Banner
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {(!branding.banner_images || branding.banner_images.length === 0) ? (
+                      <div className="text-center py-8">
+                        <Image className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                        <p className="text-sm text-slate-500">No banners configured</p>
+                        <p className="text-xs text-slate-400">Add banners to show in the dashboard carousel</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {branding.banner_images.map((banner, idx) => (
+                          <div key={banner.id || idx} className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <Label className="text-[10px] text-slate-500">Image URL</Label>
+                                <Input
+                                  value={banner.image_url}
+                                  onChange={(e) => {
+                                    const updated = [...branding.banner_images];
+                                    updated[idx].image_url = e.target.value;
+                                    setBranding({ ...branding, banner_images: updated });
+                                  }}
+                                  placeholder="https://..."
+                                  className="h-8 text-xs bg-white"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px] text-slate-500">Link URL (optional)</Label>
+                                <Input
+                                  value={banner.link_url || ''}
+                                  onChange={(e) => {
+                                    const updated = [...branding.banner_images];
+                                    updated[idx].link_url = e.target.value;
+                                    setBranding({ ...branding, banner_images: updated });
+                                  }}
+                                  placeholder="https://..."
+                                  className="h-8 text-xs bg-white"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={banner.active !== false}
+                                onCheckedChange={(val) => {
+                                  const updated = [...branding.banner_images];
+                                  updated[idx].active = val;
+                                  setBranding({ ...branding, banner_images: updated });
+                                }}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  const updated = branding.banner_images.filter((_, i) => i !== idx);
+                                  setBranding({ ...branding, banner_images: updated });
+                                }}
+                              >
+                                <Trash className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
+            {/* SMS PROVIDERS SECTION */}
+            {activeSection === 'sms-providers' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">SMS Providers</h2>
+                    <p className="text-xs text-slate-500 mt-1">Configure API keys, markup rates, and exchange settings</p>
+                  </div>
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {loading ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                </div>
+
+                {/* Provider Balances */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm font-semibold">Provider Balances</CardTitle>
+                        <CardDescription className="text-xs">Current balance on each SMS provider</CardDescription>
+                      </div>
+                      <Button variant="outline" className="h-8 px-3 text-xs" onClick={fetchProviderBalances}>
+                        <RefreshCw className="w-3 h-3 mr-1.5" />
+                        Refresh
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {!providerBalances ? (
+                      <p className="text-xs text-slate-500">Loading balances…</p>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+                          <div className="text-xs text-slate-500 mb-1">DaisySMS</div>
+                          <div className="text-xl font-bold text-slate-900">{providerBalances.daisysms?.balance ?? providerBalances.daisysms?.raw ?? '-'}</div>
+                        </div>
+                        <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+                          <div className="text-xs text-slate-500 mb-1">SMS-pool</div>
+                          <div className="text-xl font-bold text-slate-900">{providerBalances.smspool?.balance ?? providerBalances.smspool?.data?.balance ?? '-'}</div>
+                        </div>
+                        <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+                          <div className="text-xs text-slate-500 mb-1">5sim</div>
+                          <div className="text-xl font-bold text-slate-900">{providerBalances['5sim']?.balance ?? providerBalances['5sim']?.balance_rub ?? providerBalances['5sim']?.balance_usd ?? '-'}</div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Markup & Exchange Rates */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Percent className="w-4 h-4 text-amber-600" />
+                      Markup & Exchange Rates
+                    </CardTitle>
+                    <CardDescription className="text-xs">Control your profit margins on each provider</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">DaisySMS Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.daisysms_markup}
+                            onChange={(e) => setPricing({ ...pricing, daisysms_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">SMS-pool Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.smspool_markup}
+                            onChange={(e) => setPricing({ ...pricing, smspool_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">5sim Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.tigersms_markup}
+                            onChange={(e) => setPricing({ ...pricing, tigersms_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
+                        <p className="text-[9px] text-slate-400">Applied to 5sim prices</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">NGN/USD Rate</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.ngn_to_usd_rate}
+                            onChange={(e) => setPricing({ ...pricing, ngn_to_usd_rate: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">₦</span>
+                        </div>
+                        <p className="text-[9px] text-slate-400">1 USD = X NGN</p>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2 border-t border-slate-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">5sim Coin Rate (per USD)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={pricing.fivesim_coin_per_usd}
+                            onChange={(e) => setPricing({ ...pricing, fivesim_coin_per_usd: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200"
+                          />
+                          <p className="text-[9px] text-slate-400">How many 5sim coins equal 1 USD (used for pricing conversion)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* API Keys */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-slate-600" />
+                      API Keys
+                    </CardTitle>
+                    <CardDescription className="text-xs">Configure provider API credentials</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <ApiKeyField
+                      label="DaisySMS API Key"
+                      value={pricing.daisysms_api_key}
+                      onChange={(val) => setPricing({ ...pricing, daisysms_api_key: val })}
+                    />
+                    <ApiKeyField
+                      label="SMS-pool API Key"
+                      value={pricing.smspool_api_key}
+                      onChange={(val) => setPricing({ ...pricing, smspool_api_key: val })}
+                    />
+                    <ApiKeyField
+                      label="5sim API Key"
+                      value={pricing.fivesim_api_key}
+                      onChange={(val) => setPricing({ ...pricing, fivesim_api_key: val })}
+                    />
+                    <div className="pt-3 border-t border-slate-100">
+                      <p className="text-[10px] text-slate-500 mb-2">Environment-based keys (managed outside dashboard):</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                          <div className={`w-2 h-2 rounded-full ${pricing.plisio_configured ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <span className="text-xs text-slate-600">Plisio</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                          <div className={`w-2 h-2 rounded-full ${pricing.paymentpoint_configured ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <span className="text-xs text-slate-600">PaymentPoint</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
+                          <div className={`w-2 h-2 rounded-full ${pricing.payscribe_configured ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <span className="text-xs text-slate-600">Payscribe</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top Services */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Top OTP Services (Period)</CardTitle>
+                    <CardDescription className="text-xs">Most popular services by revenue</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!topServices && <p className="text-xs text-slate-500">Loading top services…</p>}
+                    {topServices && topServices.length === 0 && <p className="text-xs text-slate-500">No OTP purchases in this period.</p>}
+                    {topServices && topServices.length > 0 && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="border-b border-slate-200 bg-slate-50">
+                            <tr>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Service</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Total (₦)</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Orders</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {topServices.map((s, idx) => (
+                              <tr key={`${s.service}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="px-3 py-2">{getServiceName(s.service)}</td>
+                                <td className="px-3 py-2 font-semibold text-emerald-700">₦{Math.round(s.total_amount).toLocaleString()}</td>
+                                <td className="px-3 py-2">{s.count}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs font-semibold text-slate-600">Logo URL</Label>
