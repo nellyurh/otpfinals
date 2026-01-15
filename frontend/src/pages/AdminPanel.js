@@ -141,6 +141,7 @@ const AdminPanel = ({ user, setUser }) => {
   const [resellerPlans, setResellerPlans] = useState([]);
   const [editingReseller, setEditingReseller] = useState(null);
   const [editingPlan, setEditingPlan] = useState(null);
+  const [resellerApiUrl, setResellerApiUrl] = useState('https://ultracloud.preview.emergentagent.com');
 
   const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications | resellers
   const [periodPreset, setPeriodPreset] = useState('7d');
