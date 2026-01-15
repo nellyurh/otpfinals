@@ -219,6 +219,64 @@ class NotificationReceipt(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+# ============ RESELLER SYSTEM MODELS ============
+
+class ResellerPlan(BaseModel):
+    """Reseller subscription plan tiers"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # "Free", "Basic", "Pro", "Enterprise"
+    monthly_fee_ngn: float = 0.0
+    markup_multiplier: float = 1.0  # 1.0 = same as normal users, 0.5 = 50% of markup
+    description: Optional[str] = None
+    features: List[str] = []
+    active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Reseller(BaseModel):
+    """Reseller account linked to a user"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    api_key: str = Field(default_factory=lambda: f"rsk_{uuid.uuid4().hex}")
+    plan_id: str
+    plan_name: str = "Free"
+    custom_markup_multiplier: Optional[float] = None  # Admin can override plan markup
+    status: str = "active"  # active, suspended, cancelled
+    subscription_start: Optional[datetime] = None
+    subscription_end: Optional[datetime] = None
+    total_orders: int = 0
+    total_revenue_ngn: float = 0.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ResellerOrder(BaseModel):
+    """Orders made through the reseller API"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    reseller_id: str
+    user_id: str  # The reseller's user_id (for balance deduction)
+    client_order_ref: Optional[str] = None  # Reseller's internal reference
+    server: str  # usa, all_country_1, all_country_2
+    provider: str  # Internal provider (daisysms, smspool, 5sim)
+    service: str
+    service_name: Optional[str] = None
+    country: str
+    phone_number: Optional[str] = None
+    provider_order_id: Optional[str] = None  # Provider's order/activation ID
+    otp: Optional[str] = None
+    otp_code: Optional[str] = None
+    sms_text: Optional[str] = None
+    status: str  # pending, active, completed, cancelled, refunded
+    cost_ngn: float = 0.0
+    reseller_price_ngn: float = 0.0  # Price charged to reseller
+    provider_cost: float = 0.0
+    can_cancel: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+
+
 class AdminUserUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
