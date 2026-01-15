@@ -2648,55 +2648,47 @@ const NewDashboard = () => {
   function ResellerSection() {
     const [resellerProfile, setResellerProfile] = useState(null);
     const [plans, setPlans] = useState([]);
-    const [orders, setOrders] = useState([]);
+    const [resellerOrders, setResellerOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showApiKey, setShowApiKey] = useState(false);
     const [registering, setRegistering] = useState(false);
     const [upgrading, setUpgrading] = useState(false);
+    const [showDocs, setShowDocs] = useState(false);
+    const [initialFetch, setInitialFetch] = useState(false);
 
     useEffect(() => {
-      fetchResellerProfile();
-      fetchPlans();
-    }, []);
+      if (!initialFetch) {
+        setInitialFetch(true);
+        fetchResellerData();
+      }
+    }, [initialFetch]);
 
-    const fetchResellerProfile = async () => {
+    const fetchResellerData = async () => {
       try {
-        const res = await axios.get(`${API}/api/reseller/profile`, axiosConfig);
-        setResellerProfile(res.data);
-        if (res.data.is_reseller) {
-          fetchOrders();
+        const [profileRes, plansRes] = await Promise.all([
+          axios.get(`${API}/api/reseller/profile`, axiosConfig),
+          axios.get(`${API}/api/reseller/plans`)
+        ]);
+        setResellerProfile(profileRes.data);
+        setPlans(plansRes.data.plans || []);
+        if (profileRes.data.is_reseller) {
+          const ordersRes = await axios.get(`${API}/api/reseller/orders?limit=20`, axiosConfig);
+          setResellerOrders(ordersRes.data.orders || []);
         }
       } catch (err) {
-        console.error('Error fetching reseller profile:', err);
+        console.error('Error fetching reseller data:', err);
       } finally {
         setLoading(false);
-      }
-    };
-
-    const fetchPlans = async () => {
-      try {
-        const res = await axios.get(`${API}/api/reseller/plans`);
-        setPlans(res.data.plans || []);
-      } catch (err) {
-        console.error('Error fetching plans:', err);
-      }
-    };
-
-    const fetchOrders = async () => {
-      try {
-        const res = await axios.get(`${API}/api/reseller/orders?limit=20`, axiosConfig);
-        setOrders(res.data.orders || []);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
       }
     };
 
     const handleRegister = async () => {
       setRegistering(true);
       try {
-        const res = await axios.post(`${API}/api/reseller/register`, {}, axiosConfig);
+        await axios.post(`${API}/api/reseller/register`, {}, axiosConfig);
         toast.success('Registered as reseller!');
-        fetchResellerProfile();
+        setInitialFetch(false);
+        setLoading(true);
       } catch (err) {
         toast.error(err.response?.data?.detail || 'Failed to register');
       } finally {
@@ -2708,9 +2700,10 @@ const NewDashboard = () => {
       if (!window.confirm(`Upgrade to ${planName} plan? Monthly fee will be deducted from your balance.`)) return;
       setUpgrading(true);
       try {
-        const res = await axios.post(`${API}/api/reseller/upgrade?plan_name=${planName}`, {}, axiosConfig);
+        await axios.post(`${API}/api/reseller/upgrade?plan_name=${planName}`, {}, axiosConfig);
         toast.success(`Upgraded to ${planName} plan!`);
-        fetchResellerProfile();
+        setInitialFetch(false);
+        setLoading(true);
         fetchProfile();
       } catch (err) {
         toast.error(err.response?.data?.detail || 'Failed to upgrade');
@@ -2724,6 +2717,16 @@ const NewDashboard = () => {
       toast.success('Copied to clipboard!');
     };
 
+    const refreshOrders = async () => {
+      try {
+        const res = await axios.get(`${API}/api/reseller/orders?limit=20`, axiosConfig);
+        setResellerOrders(res.data.orders || []);
+        toast.success('Orders refreshed');
+      } catch (err) {
+        toast.error('Failed to refresh orders');
+      }
+    };
+
     if (loading) {
       return (
         <div className="space-y-6">
@@ -2734,6 +2737,355 @@ const NewDashboard = () => {
           </div>
         </div>
       );
+    }
+
+    // API Documentation Component
+    const ApiDocumentation = () => (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">API Documentation</h2>
+          <button
+            onClick={() => setShowDocs(false)}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200"
+          >
+            ← Back to Portal
+          </button>
+        </div>
+
+        {/* Base URL */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Base URL</h3>
+          <div className="bg-gray-900 rounded-lg p-4">
+            <code className="text-green-400 text-sm">{API}/api/reseller/v1</code>
+          </div>
+        </div>
+
+        {/* Authentication */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Authentication</h3>
+          <p className="text-sm text-gray-600 mb-3">All API requests require authentication via API key. You can pass it in two ways:</p>
+          <div className="space-y-2">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs font-semibold text-gray-700 mb-1">Header (Recommended)</p>
+              <code className="text-xs text-purple-600">X-API-KEY: {resellerProfile?.api_key || 'your_api_key'}</code>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs font-semibold text-gray-700 mb-1">Query Parameter</p>
+              <code className="text-xs text-purple-600">?api_key={resellerProfile?.api_key || 'your_api_key'}</code>
+            </div>
+          </div>
+        </div>
+
+        {/* Endpoints */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Endpoints</h3>
+          
+          {/* Balance */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">GET</span>
+              <code className="text-sm font-mono text-gray-800">/balance</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Returns your reseller wallet balance</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">cURL</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`curl -X GET "${API}/api/reseller/v1/balance" \\
+  -H "X-API-KEY: ${resellerProfile?.api_key || 'your_api_key'}"`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "balance_ngn": 50000.00,
+  "balance_usd": 33.33,
+  "currency": "NGN",
+  "plan": "Free"
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Servers */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">GET</span>
+              <code className="text-sm font-mono text-gray-800">/servers</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Returns available servers</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Python</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`import requests
+
+response = requests.get(
+    "${API}/api/reseller/v1/servers",
+    headers={"X-API-KEY": "${resellerProfile?.api_key || 'your_api_key'}"}
+)
+print(response.json())`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "servers": [
+    {"key": "usa", "scope": "US_ONLY", "description": "United States numbers only"},
+    {"key": "all_country_1", "scope": "GLOBAL", "description": "All countries - Primary"},
+    {"key": "all_country_2", "scope": "GLOBAL", "description": "All countries - Secondary"}
+  ]
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Countries */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">GET</span>
+              <code className="text-sm font-mono text-gray-800">/countries?server=all_country_1</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Returns available countries for a server</p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+              <p className="text-xs text-yellow-800"><strong>Note:</strong> Not required for "usa" server (US only)</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">PHP</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`<?php
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "${API}/api/reseller/v1/countries?server=all_country_1");
+curl_setopt($ch, CURLOPT_HTTPHEADER, ["X-API-KEY: ${resellerProfile?.api_key || 'your_api_key'}"]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response, true));`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "server": "all_country_1",
+  "countries": [
+    {"code": "US", "name": "United States", "flag": ""},
+    {"code": "UK", "name": "United Kingdom", "flag": ""},
+    ...
+  ]
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Services */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">GET</span>
+              <code className="text-sm font-mono text-gray-800">/services?server=usa</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Returns available services with pricing</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">JavaScript (Node.js)</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`const axios = require('axios');
+
+const response = await axios.get(
+  "${API}/api/reseller/v1/services",
+  {
+    params: { server: "usa" },
+    headers: { "X-API-KEY": "${resellerProfile?.api_key || 'your_api_key'}" }
+  }
+);
+console.log(response.data);`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "server": "usa",
+  "country": null,
+  "services": [
+    {"code": "wa", "name": "WhatsApp", "price_ngn": 850.00, "price_usd": 0.57, "available": true},
+    {"code": "tg", "name": "Telegram", "price_ngn": 650.00, "price_usd": 0.43, "available": true}
+  ]
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Buy */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold">POST</span>
+              <code className="text-sm font-mono text-gray-800">/buy</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Purchase a virtual number</p>
+            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+              <p className="text-xs font-semibold text-gray-700 mb-2">Request Body</p>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-1">Field</th>
+                    <th className="text-left py-1">Type</th>
+                    <th className="text-left py-1">Required</th>
+                    <th className="text-left py-1">Description</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600">
+                  <tr className="border-b"><td className="py-1">server</td><td>string</td><td>Yes</td><td>Server key (usa, all_country_1, all_country_2)</td></tr>
+                  <tr className="border-b"><td className="py-1">service</td><td>string</td><td>Yes</td><td>Service code from services list</td></tr>
+                  <tr className="border-b"><td className="py-1">country</td><td>string</td><td>For global</td><td>Country code (required for all_country servers)</td></tr>
+                  <tr className="border-b"><td className="py-1">price</td><td>number</td><td>Yes</td><td>Price from services list</td></tr>
+                  <tr><td className="py-1">client_order_ref</td><td>string</td><td>No</td><td>Your internal reference ID</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">cURL</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`curl -X POST "${API}/api/reseller/v1/buy" \\
+  -H "X-API-KEY: ${resellerProfile?.api_key || 'your_api_key'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"server": "usa", "service": "wa", "price": 850}'`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "order_id": "abc123",
+  "provider_order_id": "12345",
+  "phone_number": "+12025551234",
+  "server": "usa",
+  "service": "wa",
+  "price_charged_ngn": 850.00,
+  "status": "active"
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold">GET</span>
+              <code className="text-sm font-mono text-gray-800">/status?provider_order_id=xxx</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Check order status and retrieve OTP</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Python</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`import requests
+import time
+
+# Poll for OTP
+for _ in range(30):  # 5 min timeout
+    response = requests.get(
+        "${API}/api/reseller/v1/status",
+        params={"provider_order_id": "12345"},
+        headers={"X-API-KEY": "${resellerProfile?.api_key || 'your_api_key'}"}
+    )
+    data = response.json()
+    if data.get("otp"):
+        print("OTP:", data["otp"])
+        break
+    time.sleep(10)`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response (OTP Received)</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "order_id": "abc123",
+  "provider_order_id": "12345",
+  "phone_number": "+12025551234",
+  "status": "completed",
+  "otp": "123456",
+  "sms_text": "Your WhatsApp code is 123456"
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Cancel */}
+          <div className="pb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-[10px] font-bold">POST</span>
+              <code className="text-sm font-mono text-gray-800">/cancel</code>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Cancel order and receive refund (before OTP is received)</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">cURL</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-green-400 whitespace-pre-wrap">{`curl -X POST "${API}/api/reseller/v1/cancel" \\
+  -H "X-API-KEY: ${resellerProfile?.api_key || 'your_api_key'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"provider_order_id": "12345"}'`}</pre>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Response</p>
+                <div className="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                  <pre className="text-xs text-blue-400 whitespace-pre-wrap">{`{
+  "success": true,
+  "message": "Order cancelled and refunded",
+  "refund_amount_ngn": 850.00
+}`}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Responses */}
+        <div className="bg-white rounded-xl border p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Error Responses</h3>
+          <div className="space-y-3">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-red-800 mb-1">401 Unauthorized</p>
+              <pre className="text-xs text-red-600">{`{"detail": "API key required"}`}</pre>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-red-800 mb-1">400 Bad Request</p>
+              <pre className="text-xs text-red-600">{`{"detail": "Insufficient balance. Required: ₦850.00, Available: ₦100.00"}`}</pre>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-red-800 mb-1">404 Not Found</p>
+              <pre className="text-xs text-red-600">{`{"detail": "Order not found"}`}</pre>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-red-800 mb-1">500 Server Error</p>
+              <pre className="text-xs text-red-600">{`{"detail": "Provider not configured"}`}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Show docs if user clicked the button
+    if (showDocs && resellerProfile?.is_reseller) {
+      return <ApiDocumentation />;
     }
 
     // Not a reseller yet - show registration
@@ -2798,9 +3150,17 @@ const NewDashboard = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
-          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-            {resellerProfile.plan} Plan
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDocs(true)}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700"
+            >
+              API Documentation
+            </button>
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+              {resellerProfile.plan} Plan
+            </span>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -2859,72 +3219,43 @@ const NewDashboard = () => {
           <p className="text-[10px] text-gray-400 mt-2">Use this key in the X-API-KEY header or as api_key query parameter</p>
         </div>
 
-        {/* API Endpoints Documentation */}
-        <div className="bg-white rounded-xl border p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">API Endpoints</h3>
-          <div className="space-y-3 text-xs">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/balance</span>
-              </div>
-              <p className="text-gray-500">Get your wallet balance</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/servers</span>
-              </div>
-              <p className="text-gray-500">List available servers (usa, all_country_1, all_country_2)</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/countries?server=all_country_1</span>
-              </div>
-              <p className="text-gray-500">Get countries for a server</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/services?server=usa</span>
-              </div>
-              <p className="text-gray-500">Get services with pricing</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-mono text-[10px]">POST</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/buy</span>
-              </div>
-              <p className="text-gray-500">Purchase a number (server, service, country, price required)</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded font-mono text-[10px]">GET</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/status?provider_order_id=xxx</span>
-              </div>
-              <p className="text-gray-500">Check order status and get OTP</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded font-mono text-[10px]">POST</span>
-                <span className="font-mono text-gray-700">/api/reseller/v1/cancel</span>
-              </div>
-              <p className="text-gray-500">Cancel order and get refund (provider_order_id required)</p>
-            </div>
+        {/* Quick Start */}
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Start</h3>
+          <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre className="text-xs text-green-400 whitespace-pre-wrap">{`# 1. Get your balance
+curl "${API}/api/reseller/v1/balance?api_key=${resellerProfile.api_key}"
+
+# 2. List servers
+curl "${API}/api/reseller/v1/servers?api_key=${resellerProfile.api_key}"
+
+# 3. Get services for USA server
+curl "${API}/api/reseller/v1/services?server=usa&api_key=${resellerProfile.api_key}"
+
+# 4. Buy a number
+curl -X POST "${API}/api/reseller/v1/buy" \\
+  -H "X-API-KEY: ${resellerProfile.api_key}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"server":"usa","service":"wa","price":850}'`}</pre>
           </div>
+          <button
+            onClick={() => setShowDocs(true)}
+            className="mt-3 text-sm text-purple-600 font-semibold hover:text-purple-700"
+          >
+            View Full Documentation →
+          </button>
         </div>
 
         {/* Recent Orders */}
         <div className="bg-white rounded-xl border p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-900">Recent Orders</h3>
-            <button onClick={fetchOrders} className="text-xs text-purple-600 hover:text-purple-700 font-semibold">
+            <button onClick={refreshOrders} className="text-xs text-purple-600 hover:text-purple-700 font-semibold">
               <RefreshCw className="w-3.5 h-3.5 inline mr-1" />
               Refresh
             </button>
           </div>
-          {orders.length === 0 ? (
+          {resellerOrders.length === 0 ? (
             <div className="text-center py-8">
               <Server className="w-12 h-12 mx-auto text-gray-300 mb-3" />
               <p className="text-sm text-gray-500">No orders yet</p>
@@ -2944,7 +3275,7 @@ const NewDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order) => (
+                  {resellerOrders.map((order) => (
                     <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="px-3 py-2.5 font-medium text-gray-800">{order.service_name || order.service}</td>
                       <td className="px-3 py-2.5 font-mono text-gray-700">{order.phone_number || '-'}</td>
