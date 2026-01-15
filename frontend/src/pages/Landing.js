@@ -341,7 +341,7 @@ const Landing = ({ setUser }) => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-purple-50 to-indigo-50">
+      <section id="how-it-works" className="py-12 sm:py-16 lg:py-20" style={{ background: `linear-gradient(135deg, ${accentColor}10, ${accentColor}05)` }}>
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">How It Works</h2>
@@ -355,7 +355,10 @@ const Landing = ({ setUser }) => {
               { step: '3', title: 'Get Your OTP', desc: 'Receive SMS code instantly' },
             ].map((item, index) => (
               <div key={index} className="text-center p-6 sm:p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-purple-600 text-white">
+                <div 
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white"
+                  style={{ backgroundColor: buttonColor }}
+                >
                   <span className="text-xl sm:text-2xl font-bold">{item.step}</span>
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
@@ -393,7 +396,7 @@ const Landing = ({ setUser }) => {
       </section>
 
       {/* Stats */}
-      <section className="py-12 sm:py-16 bg-gradient-to-r from-purple-600 to-indigo-600">
+      <section className="py-12 sm:py-16" style={{ background: `linear-gradient(135deg, ${buttonColor}, ${accentColor})` }}>
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-3xl mx-auto text-center">
             {[
@@ -403,7 +406,7 @@ const Landing = ({ setUser }) => {
             ].map((stat, index) => (
               <div key={index}>
                 <div className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white">{stat.value}</div>
-                <p className="text-xs sm:text-base text-purple-200 mt-1">{stat.label}</p>
+                <p className="text-xs sm:text-base text-white/70 mt-1">{stat.label}</p>
               </div>
             ))}
           </div>
