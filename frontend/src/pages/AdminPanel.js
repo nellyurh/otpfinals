@@ -795,8 +795,8 @@ const AdminPanel = ({ user, setUser }) => {
                       <div className="text-emerald-100/80">Total OTP Volume (₦ est.)</div>
                       <div className="text-base font-semibold">
                         ₦{
-                          stats && pricing
-                            ? Math.round((stats.total_revenue_usd || 0) * (pricing.ngn_to_usd_rate || 1500)).toLocaleString()
+                          stats && stats.money_flow
+                            ? Math.round(stats.money_flow.total_sales_ngn || 0).toLocaleString()
                             : '0'
                         }
                       </div>
