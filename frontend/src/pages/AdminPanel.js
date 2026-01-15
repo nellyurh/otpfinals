@@ -1275,34 +1275,33 @@ const AdminPanel = ({ user, setUser }) => {
             )}
             {activeSection === 'deposits' && (
               <section className="space-y-4">
-                <h2 className="text-lg font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
+                <h2 className="text-base font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
                   {adminDeposits?.length ? (
-                    <table className="w-full text-sm">
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b text-xs text-slate-500">
+                        <tr className="border-b text-[10px] text-slate-500">
                           <th className="text-left py-2 px-2">Date</th>
                           <th className="text-left py-2 px-2">User</th>
                           <th className="text-left py-2 px-2">Currency</th>
-                          <th className="text-left py-2 px-2">Amount (USD)</th>
+                          <th className="text-left py-2 px-2">Amount</th>
                           <th className="text-left py-2 px-2">Status</th>
-                          <th className="text-left py-2 px-2">Plisio</th>
-                          <th className="text-left py-2 px-2">Invoice</th>
+                          <th className="text-left py-2 px-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {adminDeposits.map((d) => (
                           <tr key={d.id} className="border-b last:border-b-0 hover:bg-slate-50">
-                            <td className="py-2 px-2 text-xs text-slate-600">
-                              {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
+                            <td className="py-2 px-2 text-[10px] text-slate-600">
+                              {d.created_at ? new Date(d.created_at).toLocaleDateString() : '-'}
                             </td>
-                            <td className="py-2 px-2 text-xs">
-                              <div className="font-medium text-slate-900">{d.user_email || d.user_id}</div>
+                            <td className="py-2 px-2">
+                              <div className="font-medium text-slate-900 truncate max-w-[100px]">{d.user_email || d.user_id}</div>
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-700">{d.currency || 'USD'}</td>
-                            <td className="py-2 px-2 text-xs text-slate-900">${d.amount_usd?.toFixed?.(2) || d.amount_usd}</td>
-                            <td className="py-2 px-2 text-xs">
-                              <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                            <td className="py-2 px-2 text-slate-700">{d.currency || 'USD'}</td>
+                            <td className="py-2 px-2 text-slate-900">${d.amount_usd?.toFixed?.(2) || d.amount_usd}</td>
+                            <td className="py-2 px-2">
+                              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
                                 d.status === 'paid'
                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : d.status === 'cancelled' || d.status === 'expired'
@@ -1312,20 +1311,13 @@ const AdminPanel = ({ user, setUser }) => {
                                 {d.status || 'pending'}
                               </span>
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-600">
-                              {d.plisio_status || '-'}
-                            </td>
-                            <td className="py-2 px-2 text-xs">
-                              {d.invoice_url && (
-                                <a
-                                  href={d.invoice_url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-emerald-600 hover:underline"
-                                >
-                                  Open
-                                </a>
-                              )}
+                            <td className="py-2 px-2">
+                              <button
+                                onClick={() => { setSelectedTransaction(d); setShowTransactionModal(true); }}
+                                className="text-emerald-600 hover:underline text-[10px] font-medium"
+                              >
+                                View
+                              </button>
                             </td>
                           </tr>
                         ))}
