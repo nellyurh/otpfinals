@@ -1393,32 +1393,37 @@ const AdminPanel = ({ user, setUser }) => {
                           <th className="text-left py-2 px-2">User</th>
                           <th className="text-left py-2 px-2">Type</th>
                           <th className="text-left py-2 px-2">Amount</th>
-                          <th className="text-left py-2 px-2">Currency</th>
                           <th className="text-left py-2 px-2">Status</th>
-                          <th className="text-left py-2 px-2">Reference</th>
+                          <th className="text-left py-2 px-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {adminTransactions.map((t) => (
                           <tr key={t.id} className="border-b last:border-b-0 hover:bg-slate-50">
-                            <td className="py-2 px-2 text-xs text-slate-600">
-                              {t.created_at ? new Date(t.created_at).toLocaleString() : '-'}
+                            <td className="py-2 px-2 text-[10px] text-slate-600">
+                              {t.created_at ? new Date(t.created_at).toLocaleDateString() : '-'}
                             </td>
-                            <td className="py-2 px-2 text-xs">
-                              <div className="font-medium text-slate-900">{t.user_email || t.user_id}</div>
+                            <td className="py-2 px-2 text-[10px]">
+                              <div className="font-medium text-slate-900 truncate max-w-[80px]">{t.user_email || t.user_id}</div>
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-700">{t.type}</td>
-                            <td className="py-2 px-2 text-xs text-slate-900">
+                            <td className="py-2 px-2 text-[10px] text-slate-700">{t.type}</td>
+                            <td className="py-2 px-2 text-[10px] text-slate-900">
                               {t.currency === 'NGN' ? '₦' : '$'}
                               {t.amount?.toLocaleString?.() || t.amount}
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-700">{t.currency}</td>
-                            <td className="py-2 px-2 text-xs">
-                              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                            <td className="py-2 px-2 text-[10px]">
+                              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
                                 {t.status}
                               </span>
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-600">{t.reference || '-'}</td>
+                            <td className="py-2 px-2">
+                              <button
+                                onClick={() => { setSelectedTransaction(t); setShowTransactionModal(true); }}
+                                className="text-emerald-600 hover:underline text-[10px] font-medium"
+                              >
+                                View
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1432,17 +1437,17 @@ const AdminPanel = ({ user, setUser }) => {
 
             {/* Ercaspay Payments Section */}
             {activeSection === 'ercaspay' && (
-              <section className="space-y-6">
+              <section className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Ercaspay Payments</h2>
-                    <p className="text-xs text-slate-500">View and manage card/bank transfer payments via Ercaspay</p>
+                    <h2 className="text-base font-semibold text-slate-900">Ercaspay Payments</h2>
+                    <p className="text-[10px] text-slate-500">Card/bank transfer payments via Ercaspay</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => fetchErcaspayPayments()}
-                    className="text-xs"
+                    className="text-[10px] h-7"
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
                     Refresh
