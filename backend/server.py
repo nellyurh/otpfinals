@@ -259,6 +259,11 @@ class PricingConfig(BaseModel):
     )
     primary_color_hex: str = "#059669"  # emerald-600 (green)
     secondary_color_hex: str = "#10b981"  # emerald-500
+    accent_color_hex: str = "#7c3aed"  # Purple accent for buttons
+    button_color_hex: str = "#7c3aed"  # CTA button color
+    header_bg_color_hex: str = "#ffffff"  # Header background
+    hero_gradient_from: str = "#10b981"  # Hero section gradient start
+    hero_gradient_to: str = "#06b6d4"  # Hero section gradient end
 
     # Banner images (admin editable)
     banner_images: list = Field(default_factory=lambda: [
