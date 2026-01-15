@@ -107,11 +107,16 @@ const Landing = ({ setUser }) => {
   };
 
   const primaryColor = branding.primary_color_hex || '#059669';
+  const buttonColor = branding.button_color_hex || branding.accent_color_hex || '#7c3aed';
+  const accentColor = branding.accent_color_hex || '#7c3aed';
+  const heroGradientFrom = branding.hero_gradient_from || '#10b981';
+  const heroGradientTo = branding.hero_gradient_to || '#06b6d4';
+  const headerBgColor = branding.header_bg_color_hex || '#ffffff';
 
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation - Clean white with subtle shadow */}
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <nav className="border-b border-gray-100 sticky top-0 z-40" style={{ backgroundColor: headerBgColor }}>
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
