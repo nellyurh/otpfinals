@@ -30,7 +30,9 @@ const Landing = ({ setUser }) => {
   const [showAuth, setShowAuth] = useState(false);
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
-    primary_color_hex: '#6366f1',
+    brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
+    primary_color_hex: '#059669',
+    secondary_color_hex: '#10b981',
     landing_hero_title: 'Pay Your Utility Bills\nHassle-Free!',
     landing_hero_subtitle:
       'Buy virtual numbers, top up airtime and internet data, pay for TV subscriptions, and do more with our all-in-one platform.'
