@@ -3351,7 +3351,7 @@ print_r(json_decode($response, true));`,
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Plans</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {plans.map((plan) => (
+              {resellerPlans.map((plan) => (
                 <div key={plan.id} className={`bg-white rounded-xl border-2 p-5 ${plan.name === 'Pro' ? 'border-purple-400 ring-2 ring-purple-200' : 'border-gray-200'}`}>
                   {plan.name === 'Pro' && (
                     <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full mb-2 inline-block">POPULAR</span>
@@ -3548,7 +3548,7 @@ curl -X POST "${API}/api/reseller/v1/buy" \\
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Upgrade Plan</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {plans.filter(p => p.monthly_fee_ngn > (resellerProfile.plan_details?.monthly_fee_ngn || 0)).map((plan) => (
+              {resellerPlans.filter(p => p.monthly_fee_ngn > (resellerProfile.plan_details?.monthly_fee_ngn || 0)).map((plan) => (
                 <div key={plan.id} className="bg-white rounded-xl border p-4">
                   <h4 className="font-semibold text-gray-900">{plan.name}</h4>
                   <p className="text-lg font-bold text-gray-900 mt-1">₦{plan.monthly_fee_ngn?.toLocaleString()}<span className="text-xs text-gray-500">/mo</span></p>
