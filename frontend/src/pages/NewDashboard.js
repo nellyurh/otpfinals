@@ -152,6 +152,7 @@ const NewDashboard = () => {
   const [resellerOrders, setResellerOrders] = useState([]);
   const [resellerLoading, setResellerLoading] = useState(true);
   const [resellerFetched, setResellerFetched] = useState(false);
+  const [showResellerDocs, setShowResellerDocs] = useState(false); // Persist docs view
   
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
