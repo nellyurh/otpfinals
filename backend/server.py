@@ -2532,11 +2532,15 @@ async def purchase_number(
     if not result:
         raise HTTPException(status_code=400, detail="Failed to purchase number from provider")
     
-    # Parse response
+    # Parse response based on provider
     phone_number = None
     activation_id = None
     
-    if provider == 'smspool':
+    if provider == '5sim':
+        # 5sim already parsed above, extract values from result
+        activation_id = str(result.get('id', ''))
+        phone_number = str(result.get('phone', ''))
+    elif provider == 'smspool':
         phone_number = str(result.get('number', ''))
         activation_id = result.get('order_id')
     elif provider == 'daisysms':
