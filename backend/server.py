@@ -3190,6 +3190,106 @@ async def get_admin_otp_stats(admin: dict = Depends(require_admin)):
     }
 
 
+# ============ Admin Reseller Sales ============
+@api_router.get("/admin/reseller-orders")
+async def get_admin_reseller_orders(
+    admin: dict = Depends(require_admin),
+    limit: int = 100,
+    skip: int = 0,
+    status: Optional[str] = None,
+    reseller_id: Optional[str] = None,
+):
+    """Get all reseller orders for admin view."""
+    query = {}
+    if status:
+        query['status'] = status
+    if reseller_id:
+        query['reseller_id'] = reseller_id
+    
+    orders_cursor = db.reseller_orders.find(query, {'_id': 0}).sort('created_at', -1).skip(skip).limit(limit)
+    orders = await orders_cursor.to_list(limit)
+    
+    total_count = await db.reseller_orders.count_documents(query)
+    
+    # Enrich with reseller info
+    reseller_ids = list(set(o.get('reseller_id') for o in orders if o.get('reseller_id')))
+    resellers_map = {}
+    if reseller_ids:
+        resellers_cursor = db.resellers.find({'id': {'$in': reseller_ids}}, {'_id': 0, 'id': 1, 'user_id': 1})
+        resellers_list = await resellers_cursor.to_list(len(reseller_ids))
+        user_ids = [r['user_id'] for r in resellers_list]
+        users_cursor = db.users.find({'id': {'$in': user_ids}}, {'_id': 0, 'id': 1, 'email': 1, 'full_name': 1})
+        users_list = await users_cursor.to_list(len(user_ids))
+        users_map = {u['id']: u for u in users_list}
+        for r in resellers_list:
+            u = users_map.get(r['user_id'], {})
+            resellers_map[r['id']] = {'email': u.get('email'), 'full_name': u.get('full_name')}
+    
+    for order in orders:
+        rid = order.get('reseller_id')
+        if rid and rid in resellers_map:
+            order['reseller_email'] = resellers_map[rid].get('email')
+            order['reseller_name'] = resellers_map[rid].get('full_name')
+    
+    return {
+        "success": True,
+        "orders": orders,
+        "total": total_count,
+        "limit": limit,
+        "skip": skip
+    }
+
+
+@api_router.get("/admin/reseller-sales-stats")
+async def get_admin_reseller_sales_stats(admin: dict = Depends(require_admin)):
+    """Get reseller sales statistics."""
+    # Total orders by status
+    status_counts = {}
+    for status in ['active', 'completed', 'cancelled', 'expired', 'refunded']:
+        status_counts[status] = await db.reseller_orders.count_documents({'status': status})
+    
+    # Total revenue (completed orders)
+    revenue_cursor = db.reseller_orders.aggregate([
+        {'$match': {'status': 'completed'}},
+        {'$group': {'_id': None, 'total_ngn': {'$sum': '$cost_ngn'}, 'total_usd': {'$sum': '$cost_usd'}}}
+    ])
+    revenue = await revenue_cursor.to_list(1)
+    total_revenue_ngn = revenue[0]['total_ngn'] if revenue else 0
+    total_revenue_usd = revenue[0]['total_usd'] if revenue else 0
+    
+    # Today's orders
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_orders = await db.reseller_orders.count_documents({
+        'created_at': {'$gte': today_start.isoformat()}
+    })
+    
+    # Today's revenue
+    today_revenue_cursor = db.reseller_orders.aggregate([
+        {'$match': {'status': 'completed', 'created_at': {'$gte': today_start.isoformat()}}},
+        {'$group': {'_id': None, 'total_ngn': {'$sum': '$cost_ngn'}}}
+    ])
+    today_revenue = await today_revenue_cursor.to_list(1)
+    today_revenue_ngn = today_revenue[0]['total_ngn'] if today_revenue else 0
+    
+    # Total resellers
+    total_resellers = await db.resellers.count_documents({})
+    active_resellers = await db.resellers.count_documents({'is_active': True})
+    
+    return {
+        "success": True,
+        "stats": {
+            "total_orders": sum(status_counts.values()),
+            "status_breakdown": status_counts,
+            "total_revenue_ngn": total_revenue_ngn,
+            "total_revenue_usd": total_revenue_usd,
+            "today_orders": today_orders,
+            "today_revenue_ngn": today_revenue_ngn,
+            "total_resellers": total_resellers,
+            "active_resellers": active_resellers
+        }
+    }
+
+
 
 @api_router.get('/admin/provider-balances')
 async def admin_provider_balances(admin: dict = Depends(require_admin)):
