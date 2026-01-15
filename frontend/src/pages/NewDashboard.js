@@ -2184,8 +2184,8 @@ const NewDashboard = () => {
                     <option value="">-- Select Document Type --</option>
                     <option value="NIN">National ID (NIN)</option>
                     <option value="PASSPORT">International Passport</option>
-                    <option value="DRIVERS_LICENSE">Driver's License</option>
-                    <option value="VOTERS_CARD">Voter's Card</option>
+                    <option value="DRIVERS_LICENSE">Driver&apos;s License</option>
+                    <option value="VOTERS_CARD">Voter&apos;s Card</option>
                   </select>
                 </div>
 
