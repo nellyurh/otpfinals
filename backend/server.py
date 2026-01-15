@@ -3892,14 +3892,15 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
 
     # Never expose raw provider API keys in admin GET (security)
     config_sanitized = dict(config)
-    for key in ['daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key']:
-        if key in config_sanitized:
+    for key in ['daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key', 'ercaspay_secret_key', 'ercaspay_api_key']:
+        if key in config_sanitized and config_sanitized[key]:
             config_sanitized[key] = '********'  # masked in GET; editable via PUT
 
     # Expose whether env-based keys are configured (without sending actual secrets)
     config_sanitized['paymentpoint_configured'] = bool(PAYMENTPOINT_API_KEY and PAYMENTPOINT_SECRET and PAYMENTPOINT_BUSINESS_ID)
     config_sanitized['payscribe_configured'] = bool(PAYSCRIBE_API_KEY)
     config_sanitized['plisio_configured'] = bool(PLISIO_SECRET_KEY)
+    config_sanitized['ercaspay_configured'] = bool(ERCASPAY_SECRET_KEY or config.get('ercaspay_secret_key'))
 
     return config_sanitized
 
