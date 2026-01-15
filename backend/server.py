@@ -4098,6 +4098,11 @@ async def get_public_branding():
         "brand_logo_url": config.get("brand_logo_url", "https://cloudsmsservice.org/img/social_logo.png"),
         "primary_color_hex": config.get("primary_color_hex", "#059669"),
         "secondary_color_hex": config.get("secondary_color_hex", "#10b981"),
+        "accent_color_hex": config.get("accent_color_hex", "#7c3aed"),
+        "button_color_hex": config.get("button_color_hex", "#7c3aed"),
+        "header_bg_color_hex": config.get("header_bg_color_hex", "#ffffff"),
+        "hero_gradient_from": config.get("hero_gradient_from", "#10b981"),
+        "hero_gradient_to": config.get("hero_gradient_to", "#06b6d4"),
         "landing_hero_title": config.get("landing_hero_title", "Cheapest and Fastest\nOnline SMS Verification"),
         "landing_hero_subtitle": config.get(
             "landing_hero_subtitle",
