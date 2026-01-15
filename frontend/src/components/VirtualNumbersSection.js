@@ -447,24 +447,24 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             ...selectStyles,
             control: (base) => ({
               ...base,
-              minHeight: '40px',
+              minHeight: '36px',
               borderWidth: '2px',
               borderColor: '#e5e7eb',
               borderRadius: '0.75rem',
-              fontSize: '0.8rem',
+              fontSize: '0.75rem',
               '&:hover': { borderColor: '#10b981' }
             }),
             placeholder: (base) => ({
               ...base,
               color: '#9ca3af',
-              fontSize: '0.75rem',
+              fontSize: '0.7rem',
               fontWeight: 500
             }),
             singleValue: (base) => ({
               ...base,
               color: '#1f2937',
               fontWeight: 600,
-              fontSize: '0.8rem'
+              fontSize: '0.75rem'
             }),
           }}
           value={selectedServer}
@@ -496,30 +496,30 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <button
           onClick={() => setPurchaseExpanded(!purchaseExpanded)}
-          className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-2">
             <Plus
-              className={`w-4 h-4 text-emerald-600 transition-transform ${
+              className={`w-3 h-3 sm:w-4 sm:h-4 text-emerald-600 transition-transform ${
                 purchaseExpanded ? 'rotate-45' : ''
               }`}
             />
-            <h3 className="text-sm sm:text-base font-semibold text-gray-900">Purchase Number</h3>
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Purchase Number</h3>
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-gray-500 transition-transform ${
+            className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform ${
               purchaseExpanded ? 'rotate-180' : ''
             }`}
           />
         </button>
 
         {purchaseExpanded && (
-          <div className="p-4 sm:p-5 pt-0 space-y-3 border-t">
+          <div className="p-3 sm:p-4 pt-0 space-y-2.5 border-t">
             {/* Country Selection - Show for International & Global servers */}
             {selectedServer &&
               (selectedServer.value === 'server1' || selectedServer.value === 'server2') && (
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
                     Select Country
                   </label>
                   <Select
