@@ -255,14 +255,15 @@ const Landing = ({ setUser }) => {
             <div className="lg:col-span-1">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }}></div>
-                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <div className="w-2 h-2 bg-purple-300 rounded-full"></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor, opacity: 0.6 }}></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor, opacity: 0.3 }}></div>
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Our Services</h2>
               <p className="text-gray-600 text-sm sm:text-base mb-4">We make it easy to work with professional, creative experts from around the world</p>
               <button 
                 onClick={() => setShowAuth(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-full font-semibold text-sm hover:bg-purple-700 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-full font-semibold text-sm transition-colors"
+                style={{ backgroundColor: buttonColor }}
               >
                 Discover More
               </button>
@@ -283,7 +284,12 @@ const Landing = ({ setUser }) => {
                   
                   <h3 className={`text-base sm:text-lg font-bold ${service.color} mb-6 sm:mb-8 lg:mb-12`}>{service.name}</h3>
                   
-                  <button className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${service.color} border-current flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all`}>
+                  <button 
+                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${service.color} border-current flex items-center justify-center transition-all`}
+                    style={{ '--hover-bg': buttonColor }}
+                    onMouseEnter={(e) => { e.target.style.backgroundColor = buttonColor; e.target.style.borderColor = buttonColor; e.target.style.color = 'white'; }}
+                    onMouseLeave={(e) => { e.target.style.backgroundColor = 'transparent'; e.target.style.borderColor = 'currentColor'; e.target.style.color = 'inherit'; }}
+                  >
                     <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
@@ -320,9 +326,12 @@ const Landing = ({ setUser }) => {
                     <div className="text-xs text-gray-500">Total Orders</div>
                     <div className="font-semibold text-gray-800">{service.orders}</div>
                   </div>
-                  <div className="text-xl sm:text-2xl font-bold text-purple-600">{service.price}</div>
+                  <div className="text-xl sm:text-2xl font-bold" style={{ color: accentColor }}>{service.price}</div>
                 </div>
-                <button className="w-full mt-4 py-2.5 rounded-xl font-semibold text-sm transition-all bg-purple-600 text-white hover:bg-purple-700">
+                <button 
+                  className="w-full mt-4 py-2.5 rounded-xl font-semibold text-sm transition-all text-white"
+                  style={{ backgroundColor: buttonColor }}
+                >
                   Order Now
                 </button>
               </div>
