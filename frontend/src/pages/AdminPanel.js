@@ -687,6 +687,12 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'notifications'}
               onClick={() => { setActiveSection('notifications'); setAdminSidebarOpen(false); }}
             />
+            <SidebarItem
+              icon={Server}
+              label="Resellers"
+              active={activeSection === 'resellers'}
+              onClick={() => { setActiveSection('resellers'); setAdminSidebarOpen(false); }}
+            />
           </nav>
 
           <div className="border-t border-slate-200 px-3 py-2 text-[10px] text-slate-500">
