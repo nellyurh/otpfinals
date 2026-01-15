@@ -4052,6 +4052,10 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
             'enable_referral': True,
             'enable_profile': True,
             'enable_support': True,
+            # Payment gateway toggles
+            'enable_paymentpoint': True,
+            'enable_plisio': True,
+            'enable_ercaspay': True,
         }
     return {
         'enable_dashboard': config.get('enable_dashboard', True),
@@ -4067,6 +4071,10 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
         'enable_referral': config.get('enable_referral', True),
         'enable_profile': config.get('enable_profile', True),
         'enable_support': config.get('enable_support', True),
+        # Payment gateway toggles
+        'enable_paymentpoint': config.get('enable_paymentpoint', True),
+        'enable_plisio': config.get('enable_plisio', True),
+        'enable_ercaspay': config.get('enable_ercaspay', True),
     }
 
 @api_router.put("/admin/pricing")
