@@ -353,6 +353,9 @@ class PricingConfig(BaseModel):
     enable_profile: bool = True
     enable_support: bool = True
 
+    # Reseller API Settings
+    reseller_api_base_url: str = "https://ultracloud.preview.emergentagent.com"
+
     # Ercaspay keys (admin editable)
     ercaspay_secret_key: str = ""
     ercaspay_api_key: str = ""
