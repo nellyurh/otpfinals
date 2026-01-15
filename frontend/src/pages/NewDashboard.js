@@ -1013,10 +1013,10 @@ const NewDashboard = () => {
         </div>
 
         {/* Ercaspay Card/Bank Transfer Section */}
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl p-6 shadow-lg">
+        <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-2xl p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-orange-200 p-1">
+              <img src="https://merchant.ercaspay.com/logo.png" alt="Ercaspay" className="w-full h-full object-contain" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-gray-900">Pay with Card or Bank Transfer</h3>
@@ -1031,7 +1031,7 @@ const NewDashboard = () => {
                 Amount (NGN)
               </label>
               <div className="flex items-center gap-2">
-                <span className="px-3 py-3 bg-purple-100 border border-purple-200 rounded-lg text-sm font-semibold text-purple-700">
+                <span className="px-3 py-3 bg-orange-100 border border-orange-200 rounded-lg text-sm font-semibold text-orange-700">
                   ₦
                 </span>
                 <input
@@ -1041,7 +1041,7 @@ const NewDashboard = () => {
                   value={ercaspayAmount}
                   onChange={(e) => setErcaspayAmount(e.target.value)}
                   placeholder="Enter amount (min ₦100)"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm"
                   disabled={ercaspayLoading}
                 />
               </div>
@@ -1055,7 +1055,7 @@ const NewDashboard = () => {
               <button
                 onClick={() => handleErcaspayPayment('card')}
                 disabled={ercaspayLoading || !ercaspayAmount}
-                className="flex items-center justify-center gap-2 py-3 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {ercaspayLoading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1067,7 +1067,7 @@ const NewDashboard = () => {
               <button
                 onClick={() => handleErcaspayPayment('bank-transfer')}
                 disabled={ercaspayLoading || !ercaspayAmount}
-                className="flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {ercaspayLoading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1078,8 +1078,8 @@ const NewDashboard = () => {
               </button>
             </div>
 
-            <div className="bg-purple-100 border border-purple-200 rounded-xl p-3">
-              <p className="text-xs text-purple-800">
+            <div className="bg-orange-100 border border-orange-200 rounded-xl p-3">
+              <p className="text-xs text-orange-800">
                 <span className="font-semibold">Secure Payment:</span> Powered by Ercaspay. Your card details are encrypted and secure.
               </p>
             </div>
@@ -1087,15 +1087,15 @@ const NewDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* NGN Funding Card */}
+          {/* NGN Funding Card with PaymentPoint Logo */}
           <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-[#005E3A] rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-[#005E3A] rounded-lg flex items-center justify-center">
-                <Wallet className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-green-200 p-1">
+                <img src="https://www.paymentpoint.co/assets/pdark-rbg-cf3cced4.png" alt="PaymentPoint" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900">Fund with Naira (₦)</h3>
-                <p className="text-xs text-gray-600">Bank Transfer • PalmPay</p>
+                <p className="text-xs text-gray-600">Bank Transfer • PaymentPoint</p>
               </div>
             </div>
 
