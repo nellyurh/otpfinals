@@ -2923,6 +2923,220 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* RESELLERS SECTION */}
+            {activeSection === 'resellers' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Reseller Management</h2>
+                    <p className="text-xs text-slate-500 mt-1">Manage resellers and their pricing plans</p>
+                  </div>
+                  <Button onClick={() => { fetchResellers(); fetchResellerPlans(); }} variant="outline" className="h-9 px-3 text-xs">
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    Refresh
+                  </Button>
+                </div>
+
+                {/* Plans Management */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Subscription Plans</CardTitle>
+                    <CardDescription className="text-xs">Edit pricing and markup discounts for each plan</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {resellerPlans.map((plan) => (
+                        <div key={plan.id} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-slate-900">{plan.name}</h4>
+                            <button
+                              onClick={() => setEditingPlan(editingPlan?.id === plan.id ? null : plan)}
+                              className="text-xs text-purple-600 hover:text-purple-700 font-semibold"
+                            >
+                              {editingPlan?.id === plan.id ? 'Cancel' : 'Edit'}
+                            </button>
+                          </div>
+                          
+                          {editingPlan?.id === plan.id ? (
+                            <div className="space-y-3">
+                              <div>
+                                <Label className="text-[10px] text-slate-500">Monthly Fee (₦)</Label>
+                                <Input
+                                  type="number"
+                                  value={editingPlan.monthly_fee_ngn}
+                                  onChange={(e) => setEditingPlan({...editingPlan, monthly_fee_ngn: parseFloat(e.target.value) || 0})}
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-[10px] text-slate-500">Markup Multiplier (0-1)</Label>
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="1"
+                                  value={editingPlan.markup_multiplier}
+                                  onChange={(e) => setEditingPlan({...editingPlan, markup_multiplier: parseFloat(e.target.value) || 0})}
+                                  className="h-8 text-xs"
+                                />
+                                <p className="text-[9px] text-slate-400 mt-0.5">1.0 = full markup, 0.5 = 50% of markup</p>
+                              </div>
+                              <div>
+                                <Label className="text-[10px] text-slate-500">Description</Label>
+                                <Input
+                                  value={editingPlan.description || ''}
+                                  onChange={(e) => setEditingPlan({...editingPlan, description: e.target.value})}
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                              <Button
+                                onClick={() => handleUpdateResellerPlan(editingPlan)}
+                                className="w-full h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                Save Plan
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-lg font-bold text-slate-900">₦{plan.monthly_fee_ngn?.toLocaleString()}<span className="text-xs text-slate-500 font-normal">/mo</span></p>
+                              <p className="text-xs text-slate-500 mt-1">{plan.description}</p>
+                              <div className="mt-2 text-xs">
+                                <span className="text-slate-600">Markup: </span>
+                                <span className="font-semibold text-purple-600">{Math.round((1 - plan.markup_multiplier) * 100)}% off</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Resellers List */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">All Resellers</CardTitle>
+                    <CardDescription className="text-xs">View and manage individual reseller accounts</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {resellers.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Server className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                        <p className="text-sm text-slate-500">No resellers yet</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="border-b border-slate-200 bg-slate-50">
+                            <tr>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">User</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Plan</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Custom Markup</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Balance</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Orders</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Revenue</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Status</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {resellers.map((r) => (
+                              <tr key={r.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="px-3 py-2.5">
+                                  <div>
+                                    <p className="font-medium text-slate-800">{r.user_email}</p>
+                                    <p className="text-[10px] text-slate-400">{r.user_name}</p>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-[10px] font-semibold">
+                                    {r.plan_name}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  {editingReseller?.id === r.id ? (
+                                    <Input
+                                      type="number"
+                                      step="0.1"
+                                      min="0"
+                                      max="1"
+                                      value={editingReseller.custom_markup_multiplier ?? ''}
+                                      onChange={(e) => setEditingReseller({...editingReseller, custom_markup_multiplier: e.target.value === '' ? null : parseFloat(e.target.value)})}
+                                      placeholder="Plan default"
+                                      className="h-7 w-20 text-[10px]"
+                                    />
+                                  ) : (
+                                    <span className="text-slate-700">
+                                      {r.custom_markup_multiplier != null ? `${r.custom_markup_multiplier} (${Math.round((1 - r.custom_markup_multiplier) * 100)}% off)` : 'Plan default'}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2.5 text-emerald-600 font-semibold">₦{(r.user_balance_ngn || 0).toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-slate-700">{r.total_orders || 0}</td>
+                                <td className="px-3 py-2.5 text-slate-700">₦{(r.total_revenue_ngn || 0).toLocaleString()}</td>
+                                <td className="px-3 py-2.5">
+                                  {editingReseller?.id === r.id ? (
+                                    <select
+                                      value={editingReseller.status}
+                                      onChange={(e) => setEditingReseller({...editingReseller, status: e.target.value})}
+                                      className="h-7 text-[10px] border border-slate-200 rounded px-1"
+                                    >
+                                      <option value="active">Active</option>
+                                      <option value="suspended">Suspended</option>
+                                      <option value="cancelled">Cancelled</option>
+                                    </select>
+                                  ) : (
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                      r.status === 'active' ? 'bg-green-100 text-green-700' :
+                                      r.status === 'suspended' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {r.status?.toUpperCase()}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  {editingReseller?.id === r.id ? (
+                                    <div className="flex items-center gap-1">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleUpdateReseller(r.id, {
+                                          custom_markup_multiplier: editingReseller.custom_markup_multiplier,
+                                          status: editingReseller.status
+                                        })}
+                                        className="h-6 px-2 text-[10px] bg-emerald-600 hover:bg-emerald-700"
+                                      >
+                                        Save
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setEditingReseller(null)}
+                                        className="h-6 px-2 text-[10px]"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => setEditingReseller({...r})}
+                                      className="text-[10px] text-purple-600 hover:text-purple-700 font-semibold"
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
           </main>
         </div>
       </div>
