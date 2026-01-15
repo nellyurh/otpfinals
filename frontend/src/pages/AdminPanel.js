@@ -243,6 +243,9 @@ const AdminPanel = ({ user, setUser }) => {
         daisysms_api_key: response.data.daisysms_api_key || '',
         smspool_api_key: response.data.smspool_api_key || '',
         fivesim_api_key: response.data.fivesim_api_key || '',
+        paymentpoint_configured: response.data.paymentpoint_configured,
+        payscribe_configured: response.data.payscribe_configured,
+        plisio_configured: response.data.plisio_configured,
       }));
 
       setBranding({
