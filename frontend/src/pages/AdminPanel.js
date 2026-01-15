@@ -706,23 +706,6 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
-                                  className="text-emerald-600 hover:underline"
-                                >
-                                  Open
-                                </a>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <div className="text-center text-xs text-slate-500 py-6">No deposits found</div>
-                  )}
-                </div>
-              </section>
-            )}
-
             {activeSection === 'transactions' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">All User Transactions</h2>
