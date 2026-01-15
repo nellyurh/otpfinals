@@ -4992,7 +4992,7 @@ async def reseller_get_countries(request: Request, server: str):
         if smspool_key:
             try:
                 resp = requests.get(
-                    'https://api.sms-pool.com/country/retrieve_all',
+                    'https://api.smspool.net/country/retrieve_all',
                     headers={'Authorization': f'Bearer {smspool_key}'},
                     timeout=15
                 )
@@ -5083,7 +5083,7 @@ async def reseller_get_services(request: Request, server: str, country: Optional
         if smspool_key:
             try:
                 resp = requests.get(
-                    f'https://api.sms-pool.com/service/retrieve_all?country={country}',
+                    f'https://api.smspool.net/service/retrieve_all?country={country}',
                     headers={'Authorization': f'Bearer {smspool_key}'},
                     timeout=15
                 )
