@@ -747,16 +747,73 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               </div>
             )}
 
-            {/* Promo Code */}
+            {/* Promo Code with Validation */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Promo Code (optional)</label>
-              <input
-                type="text"
-                placeholder="Enter promo code"
-                value={promoCode || ''}
-                onChange={(e) => setPromoCode(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:outline-none text-gray-900"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter promo code"
+                  value={promoCode || ''}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase());
+                    // Reset estimated price to recalculate with new promo code
+                    if (estimatedPrice?.promo) {
+                      setEstimatedPrice(prev => ({ ...prev, promo: null }));
+                    }
+                  }}
+                  className={`flex-1 px-4 py-3 border-2 rounded-xl focus:outline-none text-gray-900 ${
+                    estimatedPrice?.promo 
+                      ? 'border-green-400 bg-green-50' 
+                      : 'border-gray-200 focus:border-emerald-600'
+                  }`}
+                />
+                {promoCode && (
+                  <button
+                    onClick={async () => {
+                      if (!selectedService || !selectedServer) {
+                        toast.error('Please select a service first');
+                        return;
+                      }
+                      // Trigger price recalculation which validates promo
+                      try {
+                        const response = await axios.post(
+                          `${API}/api/orders/calculate-price`,
+                          {
+                            server: selectedServer.value,
+                            service: selectedService.value,
+                            country: selectedCountry?.value,
+                            promo_code: promoCode,
+                            area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+                            carrier: selectedCarrier?.value,
+                          },
+                          axiosConfig
+                        );
+                        if (response.data.success && response.data.promo) {
+                          setEstimatedPrice(response.data);
+                          toast.success(`Promo "${promoCode}" applied! You save ₦${response.data.promo.discount_ngn.toFixed(2)}`);
+                        } else if (response.data.success) {
+                          setEstimatedPrice(response.data);
+                          toast.error('Invalid or expired promo code');
+                        }
+                      } catch (error) {
+                        toast.error('Invalid promo code');
+                      }
+                    }}
+                    className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm"
+                  >
+                    Apply
+                  </button>
+                )}
+              </div>
+              {estimatedPrice?.promo && (
+                <div className="mt-2 flex items-center gap-2 text-green-600 text-sm">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">Promo "{estimatedPrice.promo.code}" applied! Saving ₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}</span>
+                </div>
+              )}
             </div>
 
             {/* Price Display */}
