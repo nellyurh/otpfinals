@@ -284,6 +284,11 @@ class PricingConfig(BaseModel):
     ercaspay_secret_key: str = ""
     ercaspay_api_key: str = ""
 
+    # Payment gateway toggles (admin controlled)
+    enable_paymentpoint: bool = True
+    enable_plisio: bool = True
+    enable_ercaspay: bool = True
+
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ErcaspayPayment(BaseModel):
