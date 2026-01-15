@@ -4045,12 +4045,15 @@ async def get_public_branding():
 
     return {
         "brand_name": config.get("brand_name", "UltraCloud Sms"),
+        "brand_logo_url": config.get("brand_logo_url", "https://cloudsmsservice.org/img/social_logo.png"),
         "primary_color_hex": config.get("primary_color_hex", "#059669"),
+        "secondary_color_hex": config.get("secondary_color_hex", "#10b981"),
         "landing_hero_title": config.get("landing_hero_title", "Cheapest and Fastest\nOnline SMS Verification"),
         "landing_hero_subtitle": config.get(
             "landing_hero_subtitle",
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
+        "banner_images": config.get("banner_images", []),
     }
 
 @api_router.get("/user/page-toggles")
