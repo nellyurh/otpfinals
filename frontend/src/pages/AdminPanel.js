@@ -303,6 +303,8 @@ const AdminPanel = ({ user, setUser }) => {
     fetchResellerPlans();
     fetchOtpOrders();
     fetchOtpStats();
+    fetchResellerSalesOrders();
+    fetchResellerSalesStats();
   }, []);
 
   useEffect(() => {
