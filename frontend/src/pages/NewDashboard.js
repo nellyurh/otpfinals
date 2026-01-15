@@ -1035,8 +1035,8 @@ const NewDashboard = () => {
             </div>
           </div>
 
-          {/* My Card - Green gradient with team color */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+          {/* My Card - Hidden on mobile, visible on desktop */}
+          <div className="hidden lg:block bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">My Cards</h3>
               <button 
