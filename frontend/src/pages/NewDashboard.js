@@ -1270,7 +1270,8 @@ const NewDashboard = () => {
           <p className="text-sm text-gray-600">Choose your preferred payment method</p>
         </div>
 
-        {/* Ercaspay Card/Bank Transfer Section */}
+        {/* Ercaspay Card/Bank Transfer Section - Conditionally rendered */}
+        {pageToggles.enable_ercaspay && (
         <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-2xl p-6 shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-orange-200 p-1">
