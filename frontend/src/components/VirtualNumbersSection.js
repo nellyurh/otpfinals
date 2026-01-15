@@ -432,18 +432,41 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">SMS Verification Portal</h1>
-        <p className="text-gray-600">Get premium virtual numbers for legitimate verification purposes</p>
+    <div className="space-y-4">
+      <div className="text-center mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Virtual SMS</h1>
+        <p className="text-xs sm:text-sm text-gray-600">Get premium virtual numbers for verification</p>
       </div>
 
       {/* Server Selection */}
-      <div className="bg-white rounded-xl p-6 border shadow-sm">
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Select Server</label>
+      <div className="bg-white rounded-xl p-4 sm:p-5 border shadow-sm">
+        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Select Server</label>
         <Select
           menuPortalTarget={document.body}
-          styles={selectStyles}
+          styles={{
+            ...selectStyles,
+            control: (base) => ({
+              ...base,
+              minHeight: '40px',
+              borderWidth: '2px',
+              borderColor: '#e5e7eb',
+              borderRadius: '0.75rem',
+              fontSize: '0.8rem',
+              '&:hover': { borderColor: '#10b981' }
+            }),
+            placeholder: (base) => ({
+              ...base,
+              color: '#9ca3af',
+              fontSize: '0.75rem',
+              fontWeight: 500
+            }),
+            singleValue: (base) => ({
+              ...base,
+              color: '#1f2937',
+              fontWeight: 600,
+              fontSize: '0.8rem'
+            }),
+          }}
           value={selectedServer}
           onChange={(option) => {
             setSelectedServer(option);
@@ -458,11 +481,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             }
           }}
           options={[
-            { value: 'us_server', label: '🇺🇸 United States Server' },
-            { value: 'server1', label: '🌍 International Server' },
-            { value: 'server2', label: '🌐 Global Server' }
+            { value: 'us_server', label: '🇺🇸 US Server' },
+            { value: 'server1', label: '🌍 International' },
+            { value: 'server2', label: '🌐 Global' }
           ]}
-          placeholder="Choose server location"
+          placeholder="Choose server"
           className="react-select-container"
           classNamePrefix="react-select"
           isClearable
@@ -473,30 +496,30 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <button
           onClick={() => setPurchaseExpanded(!purchaseExpanded)}
-          className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 transition-colors"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Plus
-              className={`w-5 h-5 text-emerald-600 transition-transform ${
+              className={`w-4 h-4 text-emerald-600 transition-transform ${
                 purchaseExpanded ? 'rotate-45' : ''
               }`}
             />
-            <h3 className="text-lg font-semibold text-gray-900">Purchase New Number</h3>
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900">Purchase Number</h3>
           </div>
           <ChevronDown
-            className={`w-5 h-5 text-gray-500 transition-transform ${
+            className={`w-4 h-4 text-gray-500 transition-transform ${
               purchaseExpanded ? 'rotate-180' : ''
             }`}
           />
         </button>
 
         {purchaseExpanded && (
-          <div className="p-6 pt-0 space-y-4 border-t">
+          <div className="p-4 sm:p-5 pt-0 space-y-3 border-t">
             {/* Country Selection - Show for International & Global servers */}
             {selectedServer &&
               (selectedServer.value === 'server1' || selectedServer.value === 'server2') && (
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Select Country
                   </label>
                   <Select
