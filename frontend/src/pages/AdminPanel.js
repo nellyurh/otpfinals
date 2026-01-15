@@ -41,6 +41,7 @@ import {
   Image,
   Percent,
   Copy,
+  MessageSquare,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
