@@ -2442,6 +2442,44 @@ const AdminPanel = ({ user, setUser }) => {
           </main>
         </div>
       </div>
+
+      {/* Transaction Detail Modal */}
+      {showTransactionModal && selectedTransaction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowTransactionModal(false)}>
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-900">Transaction Details</h3>
+              <button
+                onClick={() => setShowTransactionModal(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-5 space-y-3 text-sm max-h-[70vh] overflow-y-auto">
+              {Object.entries(selectedTransaction).map(([key, value]) => {
+                if (key === '_id' || key === 'password_hash') return null;
+                return (
+                  <div key={key} className="flex justify-between py-2 border-b border-slate-100">
+                    <span className="text-slate-500 text-xs font-medium capitalize">{key.replace(/_/g, ' ')}</span>
+                    <span className="text-slate-900 text-xs font-semibold text-right max-w-[60%] break-all">
+                      {typeof value === 'object' ? JSON.stringify(value) : String(value || '-')}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="p-4 border-t border-slate-200 bg-slate-50">
+              <button
+                onClick={() => setShowTransactionModal(false)}
+                className="w-full py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
