@@ -345,10 +345,14 @@ const AdminPanel = ({ user, setUser }) => {
 
       setBranding({
         brand_name: response.data.brand_name || 'UltraCloud Sms',
+        brand_logo_url: response.data.brand_logo_url || 'https://cloudsmsservice.org/img/social_logo.png',
+        primary_color_hex: response.data.primary_color_hex || '#059669',
+        secondary_color_hex: response.data.secondary_color_hex || '#10b981',
         landing_hero_title: response.data.landing_hero_title || 'Cheapest and Fastest\nOnline SMS Verification',
         landing_hero_subtitle:
           response.data.landing_hero_subtitle ||
           'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
+        banner_images: response.data.banner_images || [],
       });
 
       setPageToggles({
