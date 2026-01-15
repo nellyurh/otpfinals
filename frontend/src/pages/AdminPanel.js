@@ -384,6 +384,27 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  // Reseller Sales fetch functions
+  const fetchResellerSalesOrders = async () => {
+    try {
+      const params = { limit: 100 };
+      if (resellerSalesStatusFilter) params.status = resellerSalesStatusFilter;
+      const resp = await axios.get(`${API}/admin/reseller-orders`, { ...axiosConfig, params });
+      if (resp.data.success) setResellerSalesOrders(resp.data.orders || []);
+    } catch (e) {
+      console.error('Failed to fetch reseller sales orders');
+    }
+  };
+
+  const fetchResellerSalesStats = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/reseller-sales-stats`, axiosConfig);
+      if (resp.data.success) setResellerSalesStats(resp.data.stats);
+    } catch (e) {
+      console.error('Failed to fetch reseller sales stats');
+    }
+  };
+
   const fetchStats = async () => {
     try {
       const params = {};
