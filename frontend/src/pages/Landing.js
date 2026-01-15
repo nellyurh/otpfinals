@@ -101,6 +101,8 @@ const Landing = ({ setUser }) => {
     }
   };
 
+  const primaryColor = branding.primary_color_hex || '#059669';
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation - Clean white with subtle shadow */}
@@ -108,29 +110,39 @@ const Landing = ({ setUser }) => {
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600">
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <span className="text-lg sm:text-xl font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</span>
+              {/* Logo - use image if available */}
+              {branding.brand_logo_url ? (
+                <img src={branding.brand_logo_url} alt="Logo" className="h-9 sm:h-10 object-contain" />
+              ) : (
+                <>
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
+                    <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  <span className="text-lg sm:text-xl font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</span>
+                </>
+              )}
             </div>
             
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#services" className="text-sm font-medium text-gray-600 hover:text-purple-600 transition-colors">Services</a>
-              <a href="#how-it-works" className="text-sm font-medium text-gray-600 hover:text-purple-600 transition-colors">How It Works</a>
-              <a href="#pricing" className="text-sm font-medium text-gray-600 hover:text-purple-600 transition-colors">Pricing</a>
+              <a href="#services" className="text-sm font-medium text-gray-600 transition-colors" style={{ '--hover-color': primaryColor }} onMouseEnter={(e) => e.target.style.color = primaryColor} onMouseLeave={(e) => e.target.style.color = '#4b5563'}>Services</a>
+              <a href="#how-it-works" className="text-sm font-medium text-gray-600 transition-colors" onMouseEnter={(e) => e.target.style.color = primaryColor} onMouseLeave={(e) => e.target.style.color = '#4b5563'}>How It Works</a>
+              <a href="#pricing" className="text-sm font-medium text-gray-600 transition-colors" onMouseEnter={(e) => e.target.style.color = primaryColor} onMouseLeave={(e) => e.target.style.color = '#4b5563'}>Pricing</a>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => { setShowAuth(true); setIsLogin(true); }}
-                className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors"
+                className="px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 transition-colors"
+                onMouseEnter={(e) => e.target.style.color = primaryColor}
+                onMouseLeave={(e) => e.target.style.color = '#374151'}
               >
                 Login
               </button>
               <button
                 onClick={() => { setShowAuth(true); setIsLogin(false); }}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm transition-all bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-200"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold text-sm transition-all text-white shadow-lg"
+                style={{ backgroundColor: primaryColor }}
                 data-testid="get-started-btn"
               >
                 Sign Up
