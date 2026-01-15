@@ -3182,6 +3182,328 @@ async def plisio_status(deposit_id: str, user: dict = Depends(get_current_user))
     return {'success': True, 'deposit': inv}
 
 
+# ============ Ercaspay Integration ============
+
+async def _ercaspay_request(method: str, endpoint: str, data: Optional[Dict] = None) -> Optional[Dict]:
+    """Make a request to Ercaspay API."""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    secret_key = config.get('ercaspay_secret_key') if config and config.get('ercaspay_secret_key') not in [None, '', '********'] else ERCASPAY_SECRET_KEY
+    
+    if not secret_key:
+        logger.error("Ercaspay secret key not configured")
+        return None
+    
+    headers = {
+        'Authorization': f'Bearer {secret_key}',
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            if method.upper() == 'GET':
+                response = await client.get(f'{ERCASPAY_BASE_URL}/{endpoint}', headers=headers, timeout=30.0)
+            else:
+                response = await client.post(f'{ERCASPAY_BASE_URL}/{endpoint}', json=data, headers=headers, timeout=30.0)
+            
+            logger.info(f"Ercaspay {method} {endpoint}: {response.status_code}")
+            if response.status_code in [200, 201]:
+                return response.json()
+            logger.error(f"Ercaspay error: {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Ercaspay request error: {str(e)}")
+        return None
+
+
+@api_router.post('/ercaspay/initiate')
+async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict = Depends(get_current_user)):
+    """Initiate an Ercaspay payment for card or bank transfer."""
+    # Block suspended users
+    if user.get('is_suspended'):
+        raise HTTPException(status_code=403, detail="Account suspended")
+    
+    amount = payload.amount
+    payment_method = payload.payment_method
+    
+    if amount < 100:
+        raise HTTPException(status_code=400, detail="Minimum deposit amount is ₦100")
+    
+    if payment_method not in ['card', 'bank-transfer']:
+        raise HTTPException(status_code=400, detail="Invalid payment method. Use 'card' or 'bank-transfer'")
+    
+    # Generate unique payment reference
+    payment_ref = f"ERCS-{user['id'][:8]}-{str(uuid.uuid4())[:8]}".upper()
+    
+    # Get frontend URL for redirect
+    frontend_url = os.environ.get('REACT_APP_BACKEND_URL', FRONTEND_URL) or 'https://onetimepass.preview.emergentagent.com'
+    
+    # Prepare Ercaspay initiate checkout request
+    checkout_data = {
+        'amount': amount,
+        'paymentReference': payment_ref,
+        'paymentMethods': payment_method,
+        'customerName': user.get('full_name') or user.get('email', 'Customer'),
+        'customerEmail': user.get('email'),
+        'customerPhoneNumber': user.get('phone') or '',
+        'currency': 'NGN',
+        'feeBearer': 'customer',
+        'redirectUrl': f"{frontend_url}/dashboard?ercaspay_callback=true&ref={payment_ref}",
+        'description': f"Wallet top-up for {user.get('email')}",
+        'metadata': {
+            'user_id': user['id'],
+            'payment_method': payment_method
+        }
+    }
+    
+    result = await _ercaspay_request('POST', 'payment/initiate', checkout_data)
+    
+    if not result:
+        raise HTTPException(status_code=500, detail="Failed to initiate payment with Ercaspay")
+    
+    # Extract checkout URL from response
+    response_body = result.get('responseBody', {})
+    checkout_url = response_body.get('checkoutUrl')
+    transaction_ref = response_body.get('transactionReference')
+    
+    if not checkout_url:
+        logger.error(f"Ercaspay response missing checkoutUrl: {result}")
+        raise HTTPException(status_code=500, detail="Failed to get checkout URL from Ercaspay")
+    
+    # Create payment record
+    payment_record = ErcaspayPayment(
+        user_id=user['id'],
+        amount=amount,
+        payment_method=payment_method,
+        status='pending',
+        transaction_reference=transaction_ref,
+        payment_reference=payment_ref,
+        checkout_url=checkout_url,
+        ercaspay_response=result
+    )
+    
+    payment_dict = payment_record.model_dump()
+    payment_dict['created_at'] = payment_dict['created_at'].isoformat()
+    await db.ercaspay_payments.insert_one(payment_dict)
+    
+    return {
+        'success': True,
+        'checkout_url': checkout_url,
+        'payment_reference': payment_ref,
+        'transaction_reference': transaction_ref,
+        'amount': amount,
+        'payment_method': payment_method
+    }
+
+
+@api_router.post('/ercaspay/webhook')
+async def ercaspay_webhook(request: Request):
+    """Handle Ercaspay webhook callbacks for payment status updates."""
+    try:
+        payload = await request.json()
+    except Exception:
+        return {'status': 'error', 'message': 'Invalid JSON'}
+    
+    logger.info(f"Ercaspay webhook received: {payload}")
+    
+    # Extract payment info from webhook
+    event = payload.get('event')
+    data = payload.get('data', {})
+    
+    payment_ref = data.get('paymentReference') or data.get('payment_reference')
+    transaction_ref = data.get('transactionReference') or data.get('transaction_reference')
+    status = data.get('status', '').lower()
+    amount = data.get('amount', 0)
+    
+    if not payment_ref and not transaction_ref:
+        logger.warning("Ercaspay webhook missing reference")
+        return {'status': 'ignored', 'message': 'Missing reference'}
+    
+    # Find the payment record
+    query = {}
+    if payment_ref:
+        query['payment_reference'] = payment_ref
+    elif transaction_ref:
+        query['transaction_reference'] = transaction_ref
+    
+    payment = await db.ercaspay_payments.find_one(query, {'_id': 0})
+    
+    if not payment:
+        logger.warning(f"Ercaspay payment not found: {payment_ref or transaction_ref}")
+        return {'status': 'ignored', 'message': 'Payment not found'}
+    
+    # Don't process already completed payments
+    if payment.get('status') == 'paid':
+        return {'status': 'ok', 'message': 'Already processed'}
+    
+    # Map Ercaspay status to our status
+    status_map = {
+        'successful': 'paid',
+        'success': 'paid',
+        'paid': 'paid',
+        'completed': 'paid',
+        'failed': 'failed',
+        'cancelled': 'failed',
+        'expired': 'expired'
+    }
+    
+    new_status = status_map.get(status, 'pending')
+    
+    update_fields = {
+        'status': new_status,
+        'ercaspay_response': payload,
+        'updated_at': datetime.now(timezone.utc).isoformat()
+    }
+    
+    # If payment successful, credit user wallet
+    if new_status == 'paid':
+        user = await db.users.find_one({'id': payment['user_id']}, {'_id': 0})
+        if user:
+            credit_amount = float(payment.get('amount', 0))
+            
+            # Credit NGN balance
+            await db.users.update_one(
+                {'id': payment['user_id']},
+                {'$inc': {'ngn_balance': credit_amount}}
+            )
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=payment['user_id'],
+                type='deposit_ngn',
+                amount=credit_amount,
+                currency='NGN',
+                status='completed',
+                reference=payment.get('payment_reference'),
+                metadata={
+                    'provider': 'ercaspay',
+                    'payment_method': payment.get('payment_method'),
+                    'transaction_reference': transaction_ref
+                }
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+            
+            # Create notification
+            await _create_transaction_notification(
+                payment['user_id'],
+                'Deposit successful',
+                f"₦{credit_amount:,.2f} has been credited to your wallet via {payment.get('payment_method', 'Ercaspay')}.",
+                metadata={'reference': payment.get('payment_reference'), 'type': 'deposit_ngn', 'provider': 'ercaspay'},
+            )
+            
+            logger.info(f"Ercaspay payment successful: {payment_ref}, credited ₦{credit_amount} to user {payment['user_id']}")
+    
+    await db.ercaspay_payments.update_one(query, {'$set': update_fields})
+    
+    return {'status': 'ok'}
+
+
+@api_router.get('/ercaspay/verify/{payment_ref}')
+async def ercaspay_verify_payment(payment_ref: str, user: dict = Depends(get_current_user)):
+    """Verify an Ercaspay payment status by reference."""
+    payment = await db.ercaspay_payments.find_one(
+        {'payment_reference': payment_ref, 'user_id': user['id']},
+        {'_id': 0}
+    )
+    
+    if not payment:
+        raise HTTPException(status_code=404, detail='Payment not found')
+    
+    # If still pending, try to verify with Ercaspay
+    if payment.get('status') == 'pending' and payment.get('transaction_reference'):
+        verify_result = await _ercaspay_request('GET', f"payment/transaction/verify/{payment.get('transaction_reference')}")
+        
+        if verify_result:
+            response_body = verify_result.get('responseBody', {})
+            status = response_body.get('status', '').lower()
+            
+            if status in ['successful', 'success', 'paid', 'completed']:
+                # Trigger the same logic as webhook
+                await ercaspay_webhook_internal(payment, verify_result)
+                # Refresh payment data
+                payment = await db.ercaspay_payments.find_one(
+                    {'payment_reference': payment_ref},
+                    {'_id': 0}
+                )
+    
+    return {
+        'success': True,
+        'payment': {
+            'id': payment.get('id'),
+            'amount': payment.get('amount'),
+            'status': payment.get('status'),
+            'payment_method': payment.get('payment_method'),
+            'payment_reference': payment.get('payment_reference'),
+            'created_at': payment.get('created_at')
+        }
+    }
+
+
+async def ercaspay_webhook_internal(payment: dict, verify_result: dict):
+    """Internal function to process verified payment."""
+    response_body = verify_result.get('responseBody', {})
+    status = response_body.get('status', '').lower()
+    
+    if payment.get('status') == 'paid':
+        return  # Already processed
+    
+    if status in ['successful', 'success', 'paid', 'completed']:
+        credit_amount = float(payment.get('amount', 0))
+        
+        # Credit NGN balance
+        await db.users.update_one(
+            {'id': payment['user_id']},
+            {'$inc': {'ngn_balance': credit_amount}}
+        )
+        
+        # Create transaction record
+        transaction = Transaction(
+            user_id=payment['user_id'],
+            type='deposit_ngn',
+            amount=credit_amount,
+            currency='NGN',
+            status='completed',
+            reference=payment.get('payment_reference'),
+            metadata={
+                'provider': 'ercaspay',
+                'payment_method': payment.get('payment_method')
+            }
+        )
+        trans_dict = transaction.model_dump()
+        trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+        await db.transactions.insert_one(trans_dict)
+        
+        # Create notification
+        await _create_transaction_notification(
+            payment['user_id'],
+            'Deposit successful',
+            f"₦{credit_amount:,.2f} has been credited to your wallet.",
+            metadata={'reference': payment.get('payment_reference'), 'type': 'deposit_ngn', 'provider': 'ercaspay'},
+        )
+        
+        # Update payment status
+        await db.ercaspay_payments.update_one(
+            {'id': payment['id']},
+            {'$set': {'status': 'paid', 'updated_at': datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        logger.info(f"Ercaspay payment verified and credited: {payment.get('payment_reference')}")
+
+
+@api_router.get('/admin/ercaspay/payments')
+async def admin_list_ercaspay_payments(admin: dict = Depends(require_admin)):
+    """List all Ercaspay payments for admin view."""
+    projection = {'_id': 0}
+    payments = (
+        await db.ercaspay_payments
+        .find({}, projection)
+        .sort('created_at', -1)
+        .to_list(500)
+    )
+    return {'payments': payments}
+
+
 @api_router.post('/admin/purge')
 async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
     """Dangerous: purge user data (users/orders/transactions) as requested."""
