@@ -26,6 +26,8 @@ import {
   Eye,
   EyeOff,
   Receipt,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
