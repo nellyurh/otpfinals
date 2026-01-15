@@ -3745,6 +3745,94 @@ const AdminPanel = ({ user, setUser }) => {
           </div>
         </div>
       )}
+
+      {/* Reseller Order Detail Modal */}
+      {selectedResellerOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedResellerOrder(null)}>
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-900">Reseller Order Details</h3>
+              <button onClick={() => setSelectedResellerOrder(null)} className="text-slate-400 hover:text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Order ID</p>
+                  <p className="text-sm font-mono text-slate-800">{selectedResellerOrder.id}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Status</p>
+                  <Badge className={`text-xs ${
+                    selectedResellerOrder.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    selectedResellerOrder.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                    selectedResellerOrder.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>
+                    {selectedResellerOrder.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Reseller</p>
+                  <p className="text-sm text-slate-800">{selectedResellerOrder.reseller_email || 'N/A'}</p>
+                  <p className="text-xs text-slate-500">{selectedResellerOrder.reseller_name}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Provider</p>
+                  <p className="text-sm text-slate-800">{selectedResellerOrder.provider}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Service</p>
+                  <p className="text-sm font-semibold text-slate-800">{selectedResellerOrder.service?.toUpperCase()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Country</p>
+                  <p className="text-sm text-slate-800">{selectedResellerOrder.country || 'USA'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Phone Number</p>
+                  <p className="text-sm font-mono text-slate-800">{selectedResellerOrder.phone_number || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">OTP Code</p>
+                  <p className="text-lg font-mono font-bold text-emerald-600">{selectedResellerOrder.otp_code || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Cost (NGN)</p>
+                  <p className="text-sm font-semibold text-slate-800">₦{selectedResellerOrder.cost_ngn?.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Cost (USD)</p>
+                  <p className="text-sm text-slate-800">${selectedResellerOrder.cost_usd?.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Provider Order ID</p>
+                  <p className="text-sm font-mono text-slate-800">{selectedResellerOrder.provider_order_id || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Created</p>
+                  <p className="text-sm text-slate-800">{selectedResellerOrder.created_at ? new Date(selectedResellerOrder.created_at).toLocaleString() : 'N/A'}</p>
+                </div>
+              </div>
+              {selectedResellerOrder.sms_text && (
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1">SMS Text</p>
+                  <p className="text-sm text-slate-800 bg-slate-50 p-3 rounded-lg border">{selectedResellerOrder.sms_text}</p>
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-slate-200 bg-slate-50">
+              <button
+                onClick={() => setSelectedResellerOrder(null)}
+                className="w-full py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
