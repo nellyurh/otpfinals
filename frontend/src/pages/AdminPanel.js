@@ -1822,7 +1822,7 @@ const AdminPanel = ({ user, setUser }) => {
                       Dashboard Pages
                     </CardTitle>
                     <CardDescription className="text-xs">
-                      Disabled pages remain visible but show "Maintenance in progress" message
+                      Disabled pages remain visible but show &quot;Maintenance in progress&quot; message
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
