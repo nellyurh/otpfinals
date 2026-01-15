@@ -3171,21 +3171,42 @@ async def admin_list_deposits(admin: dict = Depends(require_admin)):
 
 @api_router.get('/admin/virtual-accounts')
 async def admin_virtual_accounts(admin: dict = Depends(require_admin)):
-    """List all PaymentPoint virtual accounts for all users."""
-    accounts = await db.virtual_accounts.find({}, {'_id': 0}).to_list(2000)
+    """List all PaymentPoint virtual accounts for all users.
 
-    # Attach basic user info for easier inspection
-    user_ids = list({acc.get('user_id') for acc in accounts if acc.get('user_id')})
-    user_map: Dict[str, Dict[str, Any]] = {}
-    if user_ids:
-        users = await db.users.find({'id': {'$in': user_ids}}, {'_id': 0, 'id': 1, 'email': 1, 'full_name': 1}).to_list(len(user_ids))
-        user_map = {u['id']: u for u in users}
+    We derive these from user documents that have virtual_account_number set,
+    since create_paymentpoint_virtual_account stores details on the user record.
+    """
+    users = await db.users.find(
+        {
+            'virtual_account_number': {'$ne': None},
+        },
+        {
+            '_id': 0,
+            'id': 1,
+            'email': 1,
+            'full_name': 1,
+            'virtual_account_number': 1,
+            'virtual_account_name': 1,
+            'virtual_bank_name': 1,
+            'paymentpoint_customer_id': 1,
+            'created_at': 1,
+        },
+    ).to_list(2000)
 
-    for acc in accounts:
-        u = user_map.get(acc.get('user_id') or '')
-        if u:
-            acc['user_email'] = u.get('email')
-            acc['user_full_name'] = u.get('full_name')
+    accounts = []
+    for u in users:
+        accounts.append(
+            {
+                'user_id': u['id'],
+                'user_email': u.get('email'),
+                'user_full_name': u.get('full_name'),
+                'account_number': u.get('virtual_account_number'),
+                'account_name': u.get('virtual_account_name'),
+                'bank_name': u.get('virtual_bank_name'),
+                'provider_reference': u.get('paymentpoint_customer_id'),
+                'created_at': u.get('created_at'),
+            }
+        )
 
     return {'accounts': accounts}
 
@@ -3500,6 +3521,12 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
     for key in ['daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key']:
         if key in config_sanitized:
             config_sanitized[key] = '********'  # masked in GET; editable via PUT
+
+    # Expose whether env-based keys are configured (without sending actual secrets)
+    config_sanitized['paymentpoint_configured'] = bool(PAYMENTPOINT_API_KEY and PAYMENTPOINT_SECRET and PAYMENTPOINT_BUSINESS_ID)
+    config_sanitized['payscribe_configured'] = bool(PAYSCRIBE_API_KEY)
+    config_sanitized['plisio_configured'] = bool(PLISIO_SECRET_KEY)
+
     return config_sanitized
 
 
