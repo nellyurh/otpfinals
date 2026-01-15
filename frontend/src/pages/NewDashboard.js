@@ -122,6 +122,11 @@ const NewDashboard = () => {
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
     primary_color_hex: '#059669',
     secondary_color_hex: '#10b981',
+    accent_color_hex: '#7c3aed',
+    button_color_hex: '#7c3aed',
+    header_bg_color_hex: '#ffffff',
+    hero_gradient_from: '#10b981',
+    hero_gradient_to: '#06b6d4',
     landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
     landing_hero_subtitle:
       'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
