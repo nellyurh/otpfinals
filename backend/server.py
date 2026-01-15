@@ -5160,17 +5160,20 @@ async def reseller_get_services(request: Request, server: str, country: Optional
                 )
                 if resp.ok:
                     data = resp.json()
-                    for service_code, info in data.get('187', {}).items():
-                        base_usd = float(info.get('cost', 0))
-                        base_ngn = base_usd * ngn_rate
-                        reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
-                        services.append({
-                            'code': service_code,
-                            'name': info.get('name', service_code),
-                            'price_ngn': round(reseller_price, 2),
-                            'price_usd': round(reseller_price / ngn_rate, 4),
-                            'available': True
-                        })
+                    # DaisySMS format: {"service_code": {"187": {...}}, ...}
+                    for service_code, country_data in data.items():
+                        if isinstance(country_data, dict) and '187' in country_data:
+                            info = country_data['187']
+                            base_usd = float(info.get('cost', 0))
+                            base_ngn = base_usd * ngn_rate
+                            reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                            services.append({
+                                'code': service_code,
+                                'name': info.get('name', service_code),
+                                'price_ngn': round(reseller_price, 2),
+                                'price_usd': round(reseller_price / ngn_rate, 4),
+                                'available': True
+                            })
             except Exception as e:
                 logger.error(f"DaisySMS services error: {e}")
                 
