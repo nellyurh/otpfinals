@@ -738,18 +738,88 @@ const NewDashboard = () => {
             <div className="hidden lg:block" />
             
             <div className="flex items-center gap-2 lg:gap-4">
-              {/* Dark mode toggle - will be implemented */}
-              <button className="hidden sm:block p-2 hover:bg-gray-100 rounded-lg" title="Toggle theme">
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
+              {/* Dark mode toggle */}
+              <button 
+                onClick={toggleDarkMode}
+                className="hidden sm:block p-2 hover:bg-gray-100 rounded-lg" 
+                title="Toggle theme"
+              >
+                {darkMode ? (
+                  <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
               </button>
 
-              {/* Notifications bell */}
-              <button className="relative p-2 hover:bg-gray-100 rounded-lg" title="Notifications">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5">0</span>
-              </button>
+              {/* Notifications bell with dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 hover:bg-gray-100 rounded-lg" 
+                  title="Notifications"
+                >
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5 min-w-[18px] text-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+                    <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-800">Notifications</h3>
+                      <button 
+                        onClick={() => setShowNotifications(false)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                      >
+                        <X className="w-4 h-4 text-gray-500" />
+                      </button>
+                    </div>
+                    <div className="overflow-y-auto max-h-72">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500 text-sm">
+                          No notifications yet
+                        </div>
+                      ) : (
+                        notifications.slice(0, 10).map((notif) => (
+                          <div 
+                            key={notif.id}
+                            className={`p-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${!notif.read_at ? 'bg-blue-50' : ''}`}
+                            onClick={() => markNotificationRead(notif.id)}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className={`w-2 h-2 rounded-full mt-2 ${!notif.read_at ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-800">{notif.title}</p>
+                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1">
+                                  {new Date(notif.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  dismissNotification(notif.id);
+                                }}
+                                className="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               
               {/* Balance display - responsive */}
               <div className="flex items-center gap-1 lg:gap-2 text-white px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm" style={{ background: branding.primary_color_hex || '#005E3A' }}>
