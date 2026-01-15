@@ -3816,6 +3816,7 @@ async def admin_list_users(admin: dict = Depends(require_admin)):
         "id": 1,
         "email": 1,
         "full_name": 1,
+        "phone": 1,
         "ngn_balance": 1,
         "usd_balance": 1,
         "is_admin": 1,
@@ -3825,6 +3826,67 @@ async def admin_list_users(admin: dict = Depends(require_admin)):
     }).sort("created_at", -1).limit(100)
     users = await users_cursor.to_list(100)
     return {"success": True, "users": users}
+
+
+@api_router.get("/admin/users/{user_id}")
+async def admin_get_user(user_id: str, admin: dict = Depends(require_admin)):
+    """Get single user details for admin."""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"success": True, "user": user}
+
+
+@api_router.put("/admin/users/{user_id}")
+async def admin_update_user(user_id: str, data: AdminUserUpdate, admin: dict = Depends(require_admin)):
+    """Update user details (balance, status, etc.) by admin."""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_fields = {}
+    
+    if data.full_name is not None:
+        update_fields['full_name'] = data.full_name
+    if data.email is not None:
+        # Check email uniqueness
+        existing = await db.users.find_one({"email": data.email, "id": {"$ne": user_id}}, {"_id": 0})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        update_fields['email'] = data.email
+    if data.phone is not None:
+        update_fields['phone'] = data.phone
+    if data.ngn_balance is not None:
+        update_fields['ngn_balance'] = data.ngn_balance
+    if data.usd_balance is not None:
+        update_fields['usd_balance'] = data.usd_balance
+    if data.is_suspended is not None:
+        update_fields['is_suspended'] = data.is_suspended
+    if data.is_blocked is not None:
+        update_fields['is_blocked'] = data.is_blocked
+    if data.is_admin is not None:
+        update_fields['is_admin'] = data.is_admin
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.users.update_one({"id": user_id}, {"$set": update_fields})
+    
+    # Create audit log
+    await db.admin_audit_logs.insert_one({
+        "id": str(uuid.uuid4()),
+        "admin_id": admin['id'],
+        "action": "update_user",
+        "target_user_id": user_id,
+        "changes": update_fields,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    return {"success": True, "user": updated_user}
+
 
 @api_router.get("/admin/top-services")
 async def admin_top_services(
