@@ -4288,6 +4288,10 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.hero_gradient_to is not None:
         update_fields['hero_gradient_to'] = data.hero_gradient_to
 
+    # Reseller API URL
+    if data.reseller_api_base_url is not None:
+        update_fields['reseller_api_base_url'] = data.reseller_api_base_url
+
     # Manual coin->USD rates
     for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
         val = getattr(data, key, None)
