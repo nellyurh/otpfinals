@@ -432,7 +432,10 @@ const Landing = ({ setUser }) => {
             </button>
 
             <div className="flex items-center gap-3 mb-6 sm:mb-8">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600">
+              <div 
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center"
+                style={{ background: `linear-gradient(135deg, ${buttonColor}, ${accentColor})` }}
+              >
                 <Phone className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -445,18 +448,16 @@ const Landing = ({ setUser }) => {
             <div className="flex gap-2 mb-6 p-1 rounded-xl bg-gray-100">
               <button
                 onClick={() => setIsLogin(true)}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
-                  isLogin ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all"
+                style={isLogin ? { backgroundColor: 'white', color: buttonColor, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' } : { color: '#4b5563' }}
                 data-testid="login-tab"
               >
                 Login
               </button>
               <button
                 onClick={() => setIsLogin(false)}
-                className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
-                  !isLogin ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all"
+                style={!isLogin ? { backgroundColor: 'white', color: buttonColor, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' } : { color: '#4b5563' }}
                 data-testid="register-tab"
               >
                 Register
@@ -475,7 +476,8 @@ const Landing = ({ setUser }) => {
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
                     data-testid="login-email-input"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-gray-900"
+                    style={{ '--tw-ring-color': buttonColor }}
                   />
                 </div>
                 <div>
@@ -487,14 +489,16 @@ const Landing = ({ setUser }) => {
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     required
                     data-testid="login-password-input"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-gray-900"
+                    style={{ '--tw-ring-color': buttonColor }}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
                   data-testid="login-submit-button"
-                  className="w-full py-3.5 rounded-xl font-bold transition-all bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 shadow-lg shadow-purple-200"
+                  className="w-full py-3.5 rounded-xl font-bold transition-all text-white disabled:bg-gray-300 shadow-lg"
+                  style={{ backgroundColor: buttonColor, boxShadow: `0 10px 25px -5px ${buttonColor}40` }}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
