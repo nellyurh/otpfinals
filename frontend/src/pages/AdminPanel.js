@@ -752,6 +752,12 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'resellers'}
               onClick={() => { setActiveSection('resellers'); setAdminSidebarOpen(false); }}
             />
+            <SidebarItem
+              icon={MessageSquare}
+              label="OTP Sales"
+              active={activeSection === 'otp-sales'}
+              onClick={() => { setActiveSection('otp-sales'); setAdminSidebarOpen(false); }}
+            />
           </nav>
 
           <div className="border-t border-slate-200 px-3 py-2 text-[10px] text-slate-500">
