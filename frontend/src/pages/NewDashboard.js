@@ -287,6 +287,46 @@ const NewDashboard = () => {
     }
   };
 
+  // Fetch reseller data (called once when navigating to reseller section)
+  const fetchResellerData = async () => {
+    if (resellerFetched) return; // Already fetched, skip
+    
+    setResellerLoading(true);
+    try {
+      // Fetch profile
+      try {
+        const profileRes = await axios.get(`${API}/api/reseller/profile`, axiosConfig);
+        setResellerProfile(profileRes.data);
+      } catch (e) {
+        if (e.response?.status !== 404) console.error('Failed to fetch reseller profile');
+      }
+      
+      // Fetch plans
+      try {
+        const plansRes = await axios.get(`${API}/api/reseller/plans`, axiosConfig);
+        setResellerPlans(plansRes.data.plans || []);
+      } catch (e) {
+        console.error('Failed to fetch reseller plans');
+      }
+      
+      // Fetch orders if reseller
+      if (resellerProfile?.is_reseller) {
+        try {
+          const ordersRes = await axios.get(`${API}/api/reseller/orders`, axiosConfig);
+          setResellerOrders(ordersRes.data.orders || []);
+        } catch (e) {
+          console.error('Failed to fetch reseller orders');
+        }
+      }
+      
+      setResellerFetched(true);
+    } catch (error) {
+      console.error('Error fetching reseller data:', error);
+    } finally {
+      setResellerLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/');
