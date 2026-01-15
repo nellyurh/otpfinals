@@ -19,13 +19,14 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - Multiple funding methods:
   - Bank Transfer (PaymentPoint virtual accounts)
   - Crypto (Plisio - USDT, BTC, ETH, etc.)
-  - Card/Bank Transfer (Ercaspay) - NEW
+  - Card/Bank Transfer (Ercaspay)
 
 ### OTP Services
 - Integration with DaisySMS, SMS-pool, 5sim
 - Service discovery and pricing
 - Order management with 10-minute timeout
 - Auto-refund on timeout/cancellation
+- Promo code support with validation
 
 ### Admin Panel
 - Dashboard with key metrics
@@ -33,35 +34,44 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - Pricing configuration
 - Provider API key management
 - Transaction monitoring
-- Ercaspay payments management - NEW
+- Ercaspay payments management
 
 ## What's Been Implemented
 
-### Session: January 15, 2026
+### Session: January 15, 2026 (Latest)
 
 #### Completed Tasks:
 1. **Fixed Plisio "Expired Deposit" Display Issue**
    - Updated `/api/crypto/plisio/current` endpoint to check expiry time
    - Automatically marks expired deposits as 'expired' status
-   - Returns null for expired deposits (no more showing stale data)
+   - Returns null for expired deposits
 
 2. **Ercaspay Payment Gateway Integration**
-   - Backend endpoints:
-     - `POST /api/ercaspay/initiate` - Create payment checkout
-     - `POST /api/ercaspay/webhook` - Handle payment callbacks
-     - `GET /api/ercaspay/verify/{payment_ref}` - Verify payment status
-     - `GET /api/admin/ercaspay/payments` - Admin list all payments
-   - Frontend:
-     - New "Pay with Card or Bank Transfer" section in Fund Wallet
-     - Two payment buttons: "Pay with Card" and "Bank Transfer"
-     - Admin panel "Ercaspay Payments" page with payment history table
-   - Database: `ercaspay_payments` collection for payment records
-   - Config: Added `ercaspay_secret_key` and `ercaspay_api_key` to PricingConfig
+   - Backend endpoints for initiate, webhook, verify, admin list
+   - Frontend with orange theme and Ercaspay logo
+   - Two payment buttons: "Pay with Card" and "Bank Transfer"
+   - Admin panel "Ercaspay Payments" section
 
-3. **Promo Code Validation UI Enhancement**
-   - Added visual feedback when promo code is successfully applied
-   - Shows green badge with promo code and discount amount
-   - Displays in the price breakdown section
+3. **UI Improvements - Payment Logos**
+   - Added Ercaspay logo (https://merchant.ercaspay.com/logo.png)
+   - Added PaymentPoint logo (https://www.paymentpoint.co/assets/pdark-rbg-cf3cced4.png)
+   - Added Plisio logo (https://plisio.net/v2/images/logo-color.svg)
+   - Changed Ercaspay color from purple to orange
+
+4. **Fixed Ercaspay Amount Field Reload Issue**
+   - Moved state to parent component level to prevent re-render
+
+5. **Improved Plisio UI Design**
+   - Modern card-based layout inspired by reference screenshot
+   - Cleaner QR code and address display
+   - Better timer visibility
+   - Status badges with animations
+
+6. **Enhanced Promo Code Validation UI**
+   - Added "Apply" button that appears when promo code is entered
+   - Green success message when promo is valid
+   - Visual feedback with checkmark icon
+   - Input field turns green when promo is applied
 
 ### Previous Sessions:
 - Core OTP functionality (DaisySMS, SMS-pool, 5sim)
@@ -105,7 +115,7 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - HTTP Client: Axios
 
 ### Key Files
-- `/app/backend/server.py` - Main backend (monolithic, ~4500 lines)
+- `/app/backend/server.py` - Main backend (monolithic, ~4800 lines)
 - `/app/frontend/src/pages/NewDashboard.js` - User dashboard
 - `/app/frontend/src/pages/AdminPanel.js` - Admin interface
 - `/app/frontend/src/components/VirtualNumbersSection.js` - OTP purchase UI
@@ -115,7 +125,7 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - `sms_orders` - OTP purchase orders
 - `transactions` - All financial transactions
 - `crypto_invoices` - Plisio crypto deposits
-- `ercaspay_payments` - Ercaspay card/bank payments (NEW)
+- `ercaspay_payments` - Ercaspay card/bank payments
 - `pricing_config` - Global configuration
 - `promo_codes` - Discount codes
 - `notifications` - System notifications
@@ -128,8 +138,8 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - `PAYMENTPOINT_*` - Virtual account API
 - `PAYSCRIBE_API_KEY` - Bill payments
 - `PLISIO_SECRET_KEY` - Crypto payments
-- `ERCASPAY_SECRET_KEY` - Card/bank payments (NEW)
-- `ERCASPAY_API_KEY` - Ercaspay API key (NEW)
+- `ERCASPAY_SECRET_KEY` - Card/bank payments
+- `ERCASPAY_API_KEY` - Ercaspay API key
 - Provider keys: DAISYSMS, SMSPOOL, TIGERSMS, FIVESIM
 
 ### Frontend (.env)
