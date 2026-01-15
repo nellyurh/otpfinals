@@ -561,7 +561,8 @@ const Landing = ({ setUser }) => {
                   type="submit"
                   disabled={loading}
                   data-testid="register-submit-button"
-                  className="w-full py-3.5 rounded-xl font-bold transition-all bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 shadow-lg shadow-purple-200"
+                  className="w-full py-3.5 rounded-xl font-bold transition-all text-white disabled:bg-gray-300 shadow-lg"
+                  style={{ backgroundColor: buttonColor, boxShadow: `0 10px 25px -5px ${buttonColor}40` }}
                 >
                   {loading ? 'Creating account...' : 'Create Account'}
                 </button>
