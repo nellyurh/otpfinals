@@ -1936,6 +1936,7 @@ const NewDashboard = () => {
 
   function SMSHistorySection() {
     const getServiceName = (code) => {
+      if (!code) return 'Unknown';
       const names = {
         'wa': 'WhatsApp', 'tg': 'Telegram', 'go': 'Google', 'fb': 'Facebook',
         'ig': 'Instagram', 'tw': 'Twitter', 'ds': 'Discord', 'tt': 'TikTok'
