@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://paytech-smscloud.preview.emergentagent.com/api
-- **Frontend**: https://paytech-smscloud.preview.emergentagent.com
+- **Backend**: https://smsultra.preview.emergentagent.com/api
+- **Frontend**: https://smsultra.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 
