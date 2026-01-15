@@ -1643,6 +1643,7 @@ const NewDashboard = () => {
               )}
             </div>
           </div>
+          )}
         </div>
 
         {/* Transaction History Preview */}
