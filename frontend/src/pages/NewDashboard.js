@@ -959,14 +959,15 @@ const NewDashboard = () => {
                   <span className="text-sm font-normal text-gray-400 ml-2">{dashboardCurrency}</span>
                 </h1>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">+0.00%</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>+0.00%</span>
                   <span className="text-xs text-gray-400">vs previous month</span>
                 </div>
               </div>
               <div className="hidden sm:flex gap-2">
                 <button 
                   onClick={() => setActiveSection('fund-wallet')}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
+                  className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg"
+                  style={{ backgroundColor: primaryColor }}
                 >
                   <Plus className="w-4 h-4" />
                   Add Money
@@ -985,7 +986,8 @@ const NewDashboard = () => {
             <div className="flex sm:hidden gap-2 mt-3">
               <button 
                 onClick={() => setActiveSection('fund-wallet')}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg"
+                style={{ backgroundColor: primaryColor }}
               >
                 <Plus className="w-4 h-4" />
                 Add Money
@@ -999,22 +1001,24 @@ const NewDashboard = () => {
               </button>
             </div>
 
-            {/* Currency Toggle */}
-            <div className="flex items-center gap-2">
+            {/* Currency Toggle - pushed to left on mobile */}
+            <div className="flex items-center mt-4">
               <div className="flex bg-gray-100 rounded-xl p-1">
                 <button 
                   onClick={() => setDashboardCurrency('NGN')}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                    dashboardCurrency === 'NGN' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    dashboardCurrency === 'NGN' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
+                  style={dashboardCurrency === 'NGN' ? { color: primaryColor } : undefined}
                 >
                   NGN
                 </button>
                 <button 
                   onClick={() => setDashboardCurrency('USD')}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                    dashboardCurrency === 'USD' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    dashboardCurrency === 'USD' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
+                  style={dashboardCurrency === 'USD' ? { color: primaryColor } : undefined}
                 >
                   USD
                 </button>
@@ -1022,20 +1026,21 @@ const NewDashboard = () => {
             </div>
           </div>
 
-          {/* My Card - Gradient Card Design like Screenshot 1 */}
+          {/* My Card - Green gradient with team color */}
           <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">My Cards</h3>
               <button 
                 onClick={() => setActiveSection('virtual-cards')}
-                className="text-xs text-purple-600 font-medium hover:underline"
+                className="text-xs font-medium hover:underline"
+                style={{ color: primaryColor }}
               >
                 Manage Cards
               </button>
             </div>
 
-            {/* Gradient Card Visual */}
-            <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden">
+            {/* Gradient Card Visual - using team green color */}
+            <div className="rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${branding.secondary_color_hex || '#10b981'} 100%)` }}>
               {/* Card pattern overlay */}
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
