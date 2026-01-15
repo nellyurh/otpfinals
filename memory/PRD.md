@@ -30,56 +30,66 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 
 ### Admin Panel
 - Dashboard with key metrics
-- User management
+- User management (view, edit, suspend, block)
 - Pricing configuration
 - Provider API key management
 - Transaction monitoring
 - Ercaspay payments management
+- Popup Notifications management
 
 ## What's Been Implemented
 
-### Session: January 15, 2026 (Latest)
+### Session: January 15, 2026 (Latest Update)
 
 #### Completed Tasks:
-1. **Fixed Plisio "Expired Deposit" Display Issue**
-   - Updated `/api/crypto/plisio/current` endpoint to check expiry time
-   - Automatically marks expired deposits as 'expired' status
-   - Returns null for expired deposits
 
-2. **Ercaspay Payment Gateway Integration**
-   - Backend endpoints for initiate, webhook, verify, admin list
-   - Frontend with orange theme and Ercaspay logo
-   - Two payment buttons: "Pay with Card" and "Bank Transfer"
-   - Admin panel "Ercaspay Payments" section
+1. **Mobile Responsive Sidebar**
+   - Added hamburger menu icon for mobile
+   - Sidebar slides in from left on mobile
+   - Overlay background when sidebar is open
+   - X button to close sidebar
+   - Sidebar auto-closes when menu item is selected
 
-3. **UI Improvements - Payment Logos**
-   - Added Ercaspay logo (https://merchant.ercaspay.com/logo.png)
-   - Added PaymentPoint logo (https://www.paymentpoint.co/assets/pdark-rbg-cf3cced4.png)
-   - Added Plisio logo (https://plisio.net/v2/images/logo-color.svg)
-   - Changed Ercaspay color from purple to orange
+2. **Default Dashboard Section**
+   - Changed default section from 'virtual-numbers' to 'dashboard'
+   - Dashboard loads by default when user logs in
 
-4. **Fixed Ercaspay Amount Field Reload Issue**
-   - Moved state to parent component level to prevent re-render
+3. **Dark Mode Toggle**
+   - Added dark mode toggle button in header
+   - Saves preference to localStorage
+   - Toggles document.documentElement 'dark' class
 
-5. **Improved Plisio UI Design**
-   - Modern card-based layout inspired by reference screenshot
-   - Cleaner QR code and address display
-   - Better timer visibility
-   - Status badges with animations
+4. **Notification System UI**
+   - Added notification bell icon with unread count badge
+   - Dropdown shows list of notifications
+   - Mark as read and dismiss functionality
+   - Login popup modal for announcements
+   - Fetches notifications from backend API
 
-6. **Enhanced Promo Code Validation UI**
-   - Added "Apply" button that appears when promo code is entered
-   - Green success message when promo is valid
-   - Visual feedback with checkmark icon
-   - Input field turns green when promo is applied
+5. **Admin User Management (PUT endpoint)**
+   - `GET /api/admin/users/{user_id}` - Get single user
+   - `PUT /api/admin/users/{user_id}` - Update user details
+   - Can edit: full_name, email, phone, ngn_balance, usd_balance, is_suspended, is_blocked, is_admin
+   - Audit logging for admin actions
 
-### Previous Sessions:
-- Core OTP functionality (DaisySMS, SMS-pool, 5sim)
-- Plisio crypto deposit integration
-- PaymentPoint virtual account generation
-- Admin panel with dashboard, settings, users, providers sections
-- Payscribe bill payments (Data, Airtime, Betting)
-- Notification system backend
+6. **Popup Notifications Admin Panel**
+   - New "Popup Notifications" section in admin sidebar
+   - Create/Edit/Delete notifications
+   - Notification types: promo, support, deposit_bonus, downtime, custom
+   - Fields: title, message, popup_type, action_url, action_text, image_url, active, show_on_login, priority
+   - Login popups show on user dashboard after login
+
+7. **Promo Code Validation Enhancement**
+   - Added "Apply" button next to promo code input
+   - Shows success message with discount amount when valid
+   - Green border/background when promo is applied
+   - Improved error handling with backend error messages
+
+8. **Previous Session Tasks:**
+   - Fixed Plisio "Expired Deposit" display issue
+   - Ercaspay Payment Gateway Integration (orange theme, logos)
+   - Added payment provider logos (Ercaspay, PaymentPoint, Plisio)
+   - Improved Plisio UI design
 
 ## Prioritized Backlog
 
@@ -87,13 +97,11 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - None currently
 
 ### P1 - High Priority
-- Finalize Admin User Management (edit/suspend users via PUT endpoint)
-- Implement User Notification UI (bell icon dropdown, login pop-up)
+- Referral Program page functionality
+- Profile Settings page (password change)
 
 ### P2 - Medium Priority
-- Re-implement dark mode toggle
-- Implement Referral Program page functionality
-- Implement Profile Settings page (password change)
+- Dark mode CSS theming (currently only toggles class, needs CSS vars)
 
 ### P3 - Low Priority / Tech Debt
 - Refactor `server.py` into modular routes (admin.py, payments.py, etc.)
@@ -115,7 +123,7 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - HTTP Client: Axios
 
 ### Key Files
-- `/app/backend/server.py` - Main backend (monolithic, ~4800 lines)
+- `/app/backend/server.py` - Main backend (monolithic, ~5000 lines)
 - `/app/frontend/src/pages/NewDashboard.js` - User dashboard
 - `/app/frontend/src/pages/AdminPanel.js` - Admin interface
 - `/app/frontend/src/components/VirtualNumbersSection.js` - OTP purchase UI
@@ -129,21 +137,24 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - `pricing_config` - Global configuration
 - `promo_codes` - Discount codes
 - `notifications` - System notifications
+- `notification_receipts` - User notification read/dismiss status
+- `admin_audit_logs` - Admin action audit trail
 
-## Environment Variables
+## API Endpoints Summary
 
-### Backend (.env)
-- `MONGO_URL` - MongoDB connection
-- `JWT_SECRET` - Token signing key
-- `PAYMENTPOINT_*` - Virtual account API
-- `PAYSCRIBE_API_KEY` - Bill payments
-- `PLISIO_SECRET_KEY` - Crypto payments
-- `ERCASPAY_SECRET_KEY` - Card/bank payments
-- `ERCASPAY_API_KEY` - Ercaspay API key
-- Provider keys: DAISYSMS, SMSPOOL, TIGERSMS, FIVESIM
+### User Endpoints
+- `GET /api/notifications` - Get user notifications
+- `GET /api/notifications/login-popups` - Get login popup notifications
+- `POST /api/notifications/{id}/read` - Mark notification as read
+- `POST /api/notifications/{id}/dismiss` - Dismiss notification
 
-### Frontend (.env)
-- `REACT_APP_BACKEND_URL` - API base URL
+### Admin Endpoints
+- `GET /api/admin/users/{user_id}` - Get single user details
+- `PUT /api/admin/users/{user_id}` - Update user details
+- `POST /api/admin/notifications` - Create notification
+- `PUT /api/admin/notifications/{id}` - Update notification
+- `DELETE /api/admin/notifications/{id}` - Delete notification
+- `GET /api/admin/notifications` - List all notifications
 
 ## Testing Credentials
 - Admin: `admin@smsrelay.com` / `admin123`
