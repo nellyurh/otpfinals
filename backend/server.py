@@ -5348,6 +5348,12 @@ async def reseller_cancel_order(request: Request):
             {'$set': {'status': 'refunded'}}
         )
         
+        # Decrement reseller's total_revenue since order was canceled
+        await db.resellers.update_one(
+            {'id': reseller['id']},
+            {'$inc': {'total_revenue_ngn': -refund_amount, 'total_orders': -1}}
+        )
+        
         return {
             'success': True,
             'message': 'Order cancelled and refunded',
