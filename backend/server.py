@@ -3109,7 +3109,7 @@ async def plisio_current(user: dict = Depends(get_current_user)):
     """Return the most recent *pending* Plisio deposit for the current user.
 
     We rely on Plisio + webhook/cancel actions to move deposits out of 'pending'.
-    This endpoint only surfaces deposits that are still pending/new.
+    This endpoint only surfaces deposits that are still pending/new AND not expired.
     """
     cursor = db.crypto_invoices.find(
         {'user_id': user['id'], 'status': {'$in': ['pending', 'new']}},
@@ -3119,7 +3119,29 @@ async def plisio_current(user: dict = Depends(get_current_user)):
     if not items:
         return {'success': True, 'deposit': None}
 
-    return {'success': True, 'deposit': items[0]}
+    deposit = items[0]
+    
+    # Check if deposit has expired based on expires_at field
+    if deposit.get('expires_at'):
+        try:
+            expires_at_str = deposit['expires_at']
+            if isinstance(expires_at_str, str):
+                expires_at = datetime.fromisoformat(expires_at_str.replace('Z', '+00:00'))
+            else:
+                expires_at = expires_at_str
+            
+            now = datetime.now(timezone.utc)
+            if now > expires_at:
+                # Mark as expired and don't return it
+                await db.crypto_invoices.update_one(
+                    {'id': deposit['id']},
+                    {'$set': {'status': 'expired'}}
+                )
+                return {'success': True, 'deposit': None}
+        except Exception as e:
+            logger.error(f"Error checking deposit expiry: {str(e)}")
+    
+    return {'success': True, 'deposit': deposit}
 
 
 @api_router.get('/crypto/plisio/status/{deposit_id}')
