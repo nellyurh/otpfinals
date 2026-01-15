@@ -585,6 +585,12 @@ const NewDashboard = () => {
       ]
     },
     {
+      category: 'RESELLER',
+      items: [
+        { id: 'reseller', icon: Server, label: 'Reseller Portal', badge: 'API' }
+      ]
+    },
+    {
       category: 'MANAGEMENT',
       items: [
         { id: 'sms-history', icon: History, label: 'SMS History' },
