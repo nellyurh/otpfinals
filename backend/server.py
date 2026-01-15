@@ -422,8 +422,14 @@ class UpdatePricingRequest(BaseModel):
 
     # Branding
     brand_name: Optional[str] = None
+    brand_logo_url: Optional[str] = None
     landing_hero_title: Optional[str] = None
     landing_hero_subtitle: Optional[str] = None
+    primary_color_hex: Optional[str] = None
+    secondary_color_hex: Optional[str] = None
+    
+    # Banner images
+    banner_images: Optional[list] = None
 
     # Manual coin->USD rates
     btc_usd_rate: Optional[float] = None
