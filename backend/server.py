@@ -2685,8 +2685,14 @@ async def admin_create_notification(payload: dict, admin: dict = Depends(require
         title=payload.get('title') or 'Update',
         message=payload.get('message') or '',
         type=payload.get('type') or 'announcement',
+        popup_type=payload.get('popup_type'),
+        action_url=payload.get('action_url'),
+        action_text=payload.get('action_text'),
+        image_url=payload.get('image_url'),
         active=bool(payload.get('active', True)),
         show_on_login=bool(payload.get('show_on_login', False)),
+        priority=int(payload.get('priority', 0)),
+        expires_at=payload.get('expires_at'),
         created_by=admin.get('id'),
     )
     doc = notif.model_dump()
@@ -2700,6 +2706,7 @@ async def admin_create_notification(payload: dict, admin: dict = Depends(require
 @api_router.get('/admin/notifications')
 async def admin_list_notifications(admin: dict = Depends(require_admin)):
     notifs = await db.notifications.find({}, {'_id': 0}).to_list(200)
+    notifs.sort(key=lambda x: (-x.get('priority', 0), x.get('created_at', '')), reverse=False)
     notifs.sort(key=lambda x: x.get('created_at', ''), reverse=True)
     return {'success': True, 'notifications': notifs}
 
@@ -2710,8 +2717,14 @@ async def admin_broadcast_notification(payload: dict, admin: dict = Depends(requ
         title=payload.get('title') or 'Update',
         message=payload.get('message') or '',
         type=payload.get('type') or 'update',
+        popup_type=payload.get('popup_type'),
+        action_url=payload.get('action_url'),
+        action_text=payload.get('action_text'),
+        image_url=payload.get('image_url'),
         active=bool(payload.get('active', True)),
         show_on_login=bool(payload.get('show_on_login', False)),
+        priority=int(payload.get('priority', 0)),
+        expires_at=payload.get('expires_at'),
         created_by=admin.get('id'),
     )
     doc = notif.model_dump()
@@ -2725,7 +2738,7 @@ async def admin_broadcast_notification(payload: dict, admin: dict = Depends(requ
 @api_router.put('/admin/notifications/{notification_id}')
 async def admin_update_notification(notification_id: str, payload: dict, admin: dict = Depends(require_admin)):
     update_fields = {}
-    for key in ['title', 'message', 'type', 'active', 'show_on_login']:
+    for key in ['title', 'message', 'type', 'popup_type', 'action_url', 'action_text', 'image_url', 'active', 'show_on_login', 'priority', 'expires_at']:
         if key in payload:
             update_fields[key] = payload[key]
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
