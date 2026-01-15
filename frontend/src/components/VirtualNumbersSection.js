@@ -797,7 +797,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           toast.error('Invalid or expired promo code');
                         }
                       } catch (error) {
-                        toast.error('Invalid promo code');
+                        const errorMsg = error.response?.data?.detail || 'Invalid promo code';
+                        toast.error(errorMsg);
                       }
                     }}
                     className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm"
