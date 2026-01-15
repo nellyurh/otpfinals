@@ -5,57 +5,50 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 15, 2026)
 
-### Session 4 - Bug Fixes & New Features
+### Session 5 - Reseller Sales Page & API Fixes
 
-**All Reported Issues Fixed:**
+**New Features:**
 
-1. **API Documentation Page Exits After Sometime - FIXED** ✅
-   - Root cause: `showDocs` state was inside nested ResellerSection, reset on parent re-render
-   - Solution: Moved `showResellerDocs` state to parent `NewDashboard` component level
-   - Docs now persist when navigating away and back
+1. **Admin Reseller Sales Page - IMPLEMENTED** ✅
+   - New "Reseller Sales" section in admin sidebar
+   - Stats cards: Total Orders, Total Revenue, Today's Orders, Total Resellers, Active Resellers
+   - Order Status Breakdown: Active, Completed, Cancelled, Expired, Refunded
+   - All Reseller Orders table with View modal
+   - Status filter functionality
+   - Backend endpoints: `/admin/reseller-orders`, `/admin/reseller-sales-stats`
 
-2. **API URL Should Be Configurable from Admin - FIXED** ✅
-   - Added `reseller_api_base_url` field to PricingConfig model
-   - Added "API Documentation Settings" card in Admin > Resellers section
-   - API URL is saved via `/admin/pricing` endpoint and exposed via `/public/branding`
-   - User dashboard fetches and uses the admin-configured URL in API docs
+**Bug Fixes:**
 
-3. **Promo Code Validation Not Working - FIXED** ✅
-   - Fixed `/promo/validate` endpoint to return proper validation result
-   - Made `country` field optional in `CalculatePriceRequest` (was required, blocking DaisySMS)
+2. **Reseller Countries Endpoint Returning Empty - FIXED** ✅
+   - Root cause: Used `api.sms-pool.com` instead of `api.smspool.net`
+   - Also used database API keys instead of environment variables
+   - Fixed to use `SMSPOOL_API_KEY` and `FIVESIM_API_KEY` from environment
+   - Now returns 151 countries for SMS-pool, 154 countries for 5sim
 
-4. **5sim Buy Error but Number Was Bought - FIXED** ✅
-   - Root cause: Purchase endpoint reset `phone_number = None` after 5sim response parsing
-   - Solution: Added explicit case handling for 5sim provider in phone number parsing
+3. **Reseller Services Endpoint (USA/DaisySMS) Returning Empty - FIXED** ✅
+   - Root cause: Wrong JSON parsing - looking for `data.get('187')` but format is `data[service_code]['187']`
+   - Fixed to iterate correctly over DaisySMS response format
+   - Now returns 442 services for USA server
 
-5. **Admin OTP Sales Page - IMPLEMENTED** ✅
-   - New "OTP Sales" section in admin sidebar
-   - Stats cards: Total Orders, Total Revenue, Today's Orders, Today's Revenue
-   - Order Status Breakdown: Active, Completed, Cancelled, Expired, Refunded counts
-   - Orders table with User, Service, Phone, OTP, Price, Provider, Status, Date
-   - Status filter dropdown
-   - View button with detailed order modal (all order fields + SMS text)
-   - Backend endpoints: `/admin/otp-orders`, `/admin/otp-stats`
-
-**Note on Canceled SMS Income:**
-Canceled/refunded orders are NOT counted in revenue calculations. The `total_revenue_ngn` is calculated from `status: 'completed'` orders only.
+**Reseller API Status - ALL WORKING:**
+- ✅ `/api/reseller/v1/balance` - Returns balance, currency, plan
+- ✅ `/api/reseller/v1/servers` - Returns 3 servers (usa, all_country_1, all_country_2)
+- ✅ `/api/reseller/v1/countries?server=all_country_1` - Returns 151 countries (SMS-pool)
+- ✅ `/api/reseller/v1/countries?server=all_country_2` - Returns 154 countries (5sim)
+- ✅ `/api/reseller/v1/services?server=usa` - Returns 442 services (DaisySMS)
+- ✅ `/api/reseller/v1/services?server=all_country_1&country=1` - Returns 1187 services (SMS-pool)
+- ✅ `/api/reseller/v1/buy` - Purchase number
+- ✅ `/api/reseller/v1/status` - Check order/get OTP
+- ✅ `/api/reseller/v1/cancel` - Cancel order
 
 ### Previous Session Fixes (Still Working)
-- ✅ Reseller Portal stable (no infinite reload)
-- ✅ Admin branding colors save and apply to landing page
-- ✅ SMS History page working
-- ✅ 5sim-style API documentation with Shell/Python/PHP tabs
+- ✅ API Documentation page persistence (showResellerDocs at parent level)
+- ✅ Admin-configurable API URL
+- ✅ Promo code validation
+- ✅ 5sim phone number parsing
+- ✅ OTP Sales admin page
 
-## Current State Summary
-- ✅ Landing page with dynamic admin colors
-- ✅ Reseller Portal with persistent API docs
-- ✅ Admin-configurable API base URL
-- ✅ Promo code validation working
-- ✅ 5sim purchases working correctly
-- ✅ **NEW** Admin OTP Sales page with full functionality
-- ✅ Admin panel with 7 sections (added OTP Sales)
-
-## Admin Panel Sections
+## Admin Panel Sections (9 total)
 1. Dashboard
 2. Page Toggles
 3. Payment Gateways
@@ -63,25 +56,16 @@ Canceled/refunded orders are NOT counted in revenue calculations. The `total_rev
 5. Branding & Banners
 6. SMS Providers
 7. Resellers (with API URL setting)
-8. **OTP Sales** (NEW)
+8. OTP Sales
+9. **Reseller Sales** (NEW)
 
 ## Testing Credentials
 - Admin: `admin@smsrelay.com` / `admin123`
-
-## API Endpoints Added
-- `GET /api/admin/otp-orders` - List all OTP orders with user info
-- `GET /api/admin/otp-stats` - OTP sales statistics
-- `PUT /api/admin/pricing` - Now accepts `reseller_api_base_url`
-- `GET /api/public/branding` - Now returns `reseller_api_base_url`
+- Test Reseller API Key: `rsk_9cdb16694e964427991ff3209e029a38`
 
 ## Key Files Modified
-- `/app/frontend/src/pages/NewDashboard.js` - showResellerDocs + resellerApiBaseUrl states
-- `/app/frontend/src/pages/AdminPanel.js` - OTP Sales section + API URL setting
-- `/app/backend/server.py` - OTP endpoints, 5sim fix, promo fix, country optional
-
-## Test Reports
-- `/app/test_reports/iteration_4.json` - 100% pass rate (17/17 backend, all frontend)
-- `/app/tests/test_iteration4_features.py` - Backend test suite
+- `/app/backend/server.py` - Fixed reseller endpoints, added reseller-orders/stats admin endpoints
+- `/app/frontend/src/pages/AdminPanel.js` - Added Reseller Sales section
 
 ## Upcoming Tasks (P1)
 - Complete Profile Settings functionality
@@ -91,4 +75,3 @@ Canceled/refunded orders are NOT counted in revenue calculations. The `total_rev
 ## Future Tasks (P2-P3)
 - Refactor server.py into modular APIRouter structure
 - Refactor NewDashboard.js and AdminPanel.js into smaller components
-- Fix lower-priority issues (Ercaspay focus, Bank Accounts page)
