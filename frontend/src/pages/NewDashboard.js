@@ -119,10 +119,13 @@ const NewDashboard = () => {
   // Public branding (used for brand text + primary green accents)
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
-    primary_color_hex: '#005E3A',
+    brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
+    primary_color_hex: '#059669',
+    secondary_color_hex: '#10b981',
     landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
     landing_hero_subtitle:
-      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters'
+      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
+    banner_images: []
   });
 
   const fetchBranding = async () => {
