@@ -50,7 +50,7 @@ const selectStyles = {
 
 const NewDashboard = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('virtual-numbers');
+  const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [user, setUser] = useState({ email: '', full_name: '', ngn_balance: 0, usd_balance: 0, is_admin: false });
   const [loading, setLoading] = useState(false);
