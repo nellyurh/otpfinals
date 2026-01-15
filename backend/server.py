@@ -3178,7 +3178,7 @@ async def admin_virtual_accounts(admin: dict = Depends(require_admin)):
     """
     users = await db.users.find(
         {
-            'virtual_account_number': {'$ne': None},
+            'virtual_account_number': {'$exists': True, '$ne': ''},
         },
         {
             '_id': 0,

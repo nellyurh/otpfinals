@@ -1126,6 +1126,171 @@ const AdminPanel = ({ user, setUser }) => {
             </section>
               </>
             )}
+            {activeSection === 'deposits' && (
+              <section className="space-y-4">
+                <h2 className="text-lg font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                  {adminDeposits?.length ? (
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-xs text-slate-500">
+                          <th className="text-left py-2 px-2">Date</th>
+                          <th className="text-left py-2 px-2">User</th>
+                          <th className="text-left py-2 px-2">Currency</th>
+                          <th className="text-left py-2 px-2">Amount (USD)</th>
+                          <th className="text-left py-2 px-2">Status</th>
+                          <th className="text-left py-2 px-2">Plisio</th>
+                          <th className="text-left py-2 px-2">Invoice</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminDeposits.map((d) => (
+                          <tr key={d.id} className="border-b last:border-b-0 hover:bg-slate-50">
+                            <td className="py-2 px-2 text-xs text-slate-600">
+                              {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs">
+                              <div className="font-medium text-slate-900">{d.user_email || d.user_id}</div>
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-700">{d.currency || 'USD'}</td>
+                            <td className="py-2 px-2 text-xs text-slate-900">${d.amount_usd?.toFixed?.(2) || d.amount_usd}</td>
+                            <td className="py-2 px-2 text-xs">
+                              <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                                d.status === 'paid'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : d.status === 'cancelled' || d.status === 'expired'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}>
+                                {d.status || 'pending'}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-600">
+                              {d.plisio_status || '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs">
+                              {d.invoice_url && (
+                                <a
+                                  href={d.invoice_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-emerald-600 hover:underline"
+                                >
+                                  Open
+                                </a>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 py-6">No deposits found</div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'bank-accounts' && (
+              <section className="space-y-4">
+                <h2 className="text-lg font-semibold text-slate-900">Bank Accounts (PaymentPoint Virtual Accounts)</h2>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                  {adminVirtualAccounts?.length ? (
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-xs text-slate-500">
+                          <th className="text-left py-2 px-2">User</th>
+                          <th className="text-left py-2 px-2">Account Number</th>
+                          <th className="text-left py-2 px-2">Account Name</th>
+                          <th className="text-left py-2 px-2">Bank</th>
+                          <th className="text-left py-2 px-2">Provider Ref</th>
+                          <th className="text-left py-2 px-2">Created At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminVirtualAccounts.map((acc, idx) => (
+                          <tr key={acc.id || acc.account_number || idx} className="border-b last:border-b-0 hover:bg-slate-50">
+                            <td className="py-2 px-2 text-xs">
+                              <div className="font-medium text-slate-900">{acc.user_full_name || acc.user_email || acc.user_id}</div>
+                              {acc.user_email && (
+                                <div className="text-[11px] text-slate-500">{acc.user_email}</div>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-900 font-mono">
+                              {acc.account_number || acc.virtual_account_number || '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-700">
+                              {acc.account_name || acc.virtual_account_name || '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-700">
+                              {acc.bank_name || acc.virtual_bank_name || '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-600">
+                              {acc.provider_reference || acc.paymentpoint_ref || '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-600">
+                              {acc.created_at ? new Date(acc.created_at).toLocaleString() : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 py-6">No virtual accounts found</div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'transactions' && (
+              <section className="space-y-4">
+                <h2 className="text-lg font-semibold text-slate-900">All User Transactions</h2>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                  {adminTransactions?.length ? (
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-xs text-slate-500">
+                          <th className="text-left py-2 px-2">Date</th>
+                          <th className="text-left py-2 px-2">User</th>
+                          <th className="text-left py-2 px-2">Type</th>
+                          <th className="text-left py-2 px-2">Amount</th>
+                          <th className="text-left py-2 px-2">Currency</th>
+                          <th className="text-left py-2 px-2">Status</th>
+                          <th className="text-left py-2 px-2">Reference</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminTransactions.map((t) => (
+                          <tr key={t.id} className="border-b last:border-b-0 hover:bg-slate-50">
+                            <td className="py-2 px-2 text-xs text-slate-600">
+                              {t.created_at ? new Date(t.created_at).toLocaleString() : '-'}
+                            </td>
+                            <td className="py-2 px-2 text-xs">
+                              <div className="font-medium text-slate-900">{t.user_email || t.user_id}</div>
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-700">{t.type}</td>
+                            <td className="py-2 px-2 text-xs text-slate-900">
+                              {t.currency === 'NGN' ? '₦' : '$'}
+                              {t.amount?.toLocaleString?.() || t.amount}
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-700">{t.currency}</td>
+                            <td className="py-2 px-2 text-xs">
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                {t.status}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2 text-xs text-slate-600">{t.reference || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 py-6">No transactions found</div>
+                  )}
+                </div>
+              </section>
+            )}
+
 
             {/* Provider & pricing configuration */}
             {activeSection === 'settings' && (
