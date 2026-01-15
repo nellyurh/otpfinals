@@ -4132,10 +4132,18 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     # Branding
     if data.brand_name is not None:
         update_fields['brand_name'] = data.brand_name
+    if data.brand_logo_url is not None:
+        update_fields['brand_logo_url'] = data.brand_logo_url
     if data.landing_hero_title is not None:
         update_fields['landing_hero_title'] = data.landing_hero_title
     if data.landing_hero_subtitle is not None:
         update_fields['landing_hero_subtitle'] = data.landing_hero_subtitle
+    if data.primary_color_hex is not None:
+        update_fields['primary_color_hex'] = data.primary_color_hex
+    if data.secondary_color_hex is not None:
+        update_fields['secondary_color_hex'] = data.secondary_color_hex
+    if data.banner_images is not None:
+        update_fields['banner_images'] = data.banner_images
 
     # Manual coin->USD rates
     for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
