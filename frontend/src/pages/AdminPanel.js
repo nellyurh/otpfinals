@@ -656,8 +656,6 @@ const AdminPanel = ({ user, setUser }) => {
             )}
 
             {activeSection === 'bank-accounts' && (
-
-            {activeSection === 'bank-accounts' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Bank Accounts (PaymentPoint Virtual Accounts)</h2>
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
