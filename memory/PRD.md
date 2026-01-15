@@ -36,68 +36,70 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - Transaction monitoring
 - Ercaspay payments management
 - Popup Notifications management
+- **Payment Gateway Controls** (enable/disable gateways)
 
 ## What's Been Implemented
 
 ### Session: January 15, 2026 (Latest Update)
 
-#### Completed Tasks:
+#### Major UI/UX Redesign (NEW)
+Based on user-provided inspiration screenshots, completely redesigned:
 
-1. **Mobile Responsive Sidebar**
-   - Added hamburger menu icon for mobile
-   - Sidebar slides in from left on mobile
-   - Overlay background when sidebar is open
-   - X button to close sidebar
-   - Sidebar auto-closes when menu item is selected
+1. **Landing Page Redesign**
+   - Clean white background (no black/dark theme)
+   - Purple (#6366f1) and emerald (#10b981) accent colors
+   - Modern hero section with floating service badges (Data, TV-Sub, Airtime, Electricity)
+   - Service cards grid (Virtual Numbers, Internet Data, TV Sub, Airtime, Electricity, Virtual Cards)
+   - "Our Services" section with arrow buttons like Screenshot 3
+   - Popular Services section with pricing cards
+   - How It Works section with 3 steps
+   - Features section with icons
+   - Stats section with gradient background
+   - Clean white authentication modal
 
-2. **Default Dashboard Section**
-   - Changed default section from 'virtual-numbers' to 'dashboard'
-   - Dashboard loads by default when user logs in
+2. **Dashboard Redesign**
+   - Clean white sidebar with purple accents
+   - Modern "Total Balance" card with currency toggle (NGN/USD)
+   - Gradient "My Cards" section with virtual debit card design
+   - Image banner carousel with auto-rotate (5 seconds)
+   - Quick Services grid (6 cards with colored titles and arrow buttons)
+   - Recent Transactions section
+   - Mobile-responsive design with hamburger menu
 
-3. **Dark Mode Toggle**
-   - Added dark mode toggle button in header
-   - Saves preference to localStorage
-   - Toggles document.documentElement 'dark' class
+3. **Fund Wallet Page**
+   - Three payment gateway cards:
+     - Ercaspay (Card/Bank) - Orange theme
+     - PaymentPoint (NGN Virtual Account) - Green/Emerald theme
+     - Plisio (Crypto) - Blue theme
+   - All gateways conditionally rendered based on admin toggle
 
-4. **Notification System UI**
-   - Added notification bell icon with unread count badge
-   - Dropdown shows list of notifications
-   - Mark as read and dismiss functionality
-   - Login popup modal for announcements
-   - Fetches notifications from backend API
+4. **Admin Payment Gateway Controls (NEW)**
+   - Added to Settings section in Admin Panel
+   - Toggle switches for each payment gateway:
+     - Ercaspay (Card/Bank) - Orange indicator
+     - PaymentPoint (NGN) - Green indicator
+     - Plisio (Crypto) - Blue indicator
+   - Provider logos displayed next to toggles
+   - Warning message about impact of disabling gateways
+   - Changes take effect immediately on user's Fund Wallet page
 
-5. **Admin User Management (PUT endpoint)**
-   - `GET /api/admin/users/{user_id}` - Get single user
-   - `PUT /api/admin/users/{user_id}` - Update user details
-   - Can edit: full_name, email, phone, ngn_balance, usd_balance, is_suspended, is_blocked, is_admin
-   - Audit logging for admin actions
+5. **Mobile Responsiveness Fixes**
+   - Fixed horizontal scrolling issue on mobile dashboard
+   - Buttons stack properly on mobile viewport (390px)
+   - Balance card, My Cards, and banner carousel scale correctly
 
-6. **Popup Notifications Admin Panel**
-   - New "Popup Notifications" section in admin sidebar
-   - Create/Edit/Delete notifications
-   - Notification types: promo, support, deposit_bonus, downtime, custom
-   - Fields: title, message, popup_type, action_url, action_text, image_url, active, show_on_login, priority
-   - Login popups show on user dashboard after login
-
-7. **Promo Code Validation Enhancement**
-   - Added "Apply" button next to promo code input
-   - Shows success message with discount amount when valid
-   - Green border/background when promo is applied
-   - **Fixed error handling** - properly handles object/array error responses
-
-8. **Mobile UI Improvements**
-   - **Reduced text sizes** for mobile devices
-   - **Smaller, compact Quick Services grid** (4 columns on mobile, 8 on desktop)
-   - **Removed large promotional cards** (Hot Deals, Pay with Ease, Need a number?)
-   - **Added flowing banner carousel** with auto-rotate every 5 seconds
-   - Banner appears after balance card on mobile, below Quick Services on desktop
-   - Dot indicators for banner navigation
-
-9. **Previous Session Tasks:**
-   - Fixed Plisio "Expired Deposit" display issue
-   - Ercaspay Payment Gateway Integration (orange theme, logos)
-   - Added payment provider logos (Ercaspay, PaymentPoint, Plisio)
-   - Improved Plisio UI design
+#### Previous Session Tasks:
+- Mobile Responsive Sidebar with hamburger menu
+- Default Dashboard Section on login
+- Dark Mode Toggle
+- Notification System UI (bell icon, dropdown, login popups)
+- Admin User Management (PUT endpoint)
+- Popup Notifications Admin Panel
+- Promo Code Validation Enhancement
+- Mobile UI Improvements (reduced text sizes, compact grid)
+- Fixed Plisio "Expired Deposit" display issue
+- Ercaspay Payment Gateway Integration
+- Added payment provider logos
 
 ## Prioritized Backlog
 
@@ -107,9 +109,12 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 ### P1 - High Priority
 - Referral Program page functionality
 - Profile Settings page (password change)
+- Admin-editable Image Banners (convert hardcoded banner to admin-managed)
 
 ### P2 - Medium Priority
 - Dark mode CSS theming (currently only toggles class, needs CSS vars)
+- Fix "Total OTP Volume" metric in admin dashboard
+- Fix "Bank Accounts" page showing no data
 
 ### P3 - Low Priority / Tech Debt
 - Refactor `server.py` into modular routes (admin.py, payments.py, etc.)
@@ -132,8 +137,9 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 
 ### Key Files
 - `/app/backend/server.py` - Main backend (monolithic, ~5000 lines)
-- `/app/frontend/src/pages/NewDashboard.js` - User dashboard
-- `/app/frontend/src/pages/AdminPanel.js` - Admin interface
+- `/app/frontend/src/pages/Landing.js` - Redesigned landing page
+- `/app/frontend/src/pages/NewDashboard.js` - User dashboard (redesigned)
+- `/app/frontend/src/pages/AdminPanel.js` - Admin interface (with Payment Gateway Controls)
 - `/app/frontend/src/components/VirtualNumbersSection.js` - OTP purchase UI
 
 ## Database Collections
@@ -142,27 +148,44 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
 - `transactions` - All financial transactions
 - `crypto_invoices` - Plisio crypto deposits
 - `ercaspay_payments` - Ercaspay card/bank payments
-- `pricing_config` - Global configuration
+- `pricing_config` - Global configuration (includes payment gateway toggles)
 - `promo_codes` - Discount codes
 - `notifications` - System notifications
 - `notification_receipts` - User notification read/dismiss status
 - `admin_audit_logs` - Admin action audit trail
 
+## PricingConfig Schema (Updated)
+```json
+{
+  "enable_paymentpoint": true,
+  "enable_plisio": true,
+  "enable_ercaspay": true,
+  // ... other fields
+}
+```
+
 ## API Endpoints Summary
 
 ### User Endpoints
+- `GET /api/user/page-toggles` - Get page and payment gateway toggles
 - `GET /api/notifications` - Get user notifications
 - `GET /api/notifications/login-popups` - Get login popup notifications
-- `POST /api/notifications/{id}/read` - Mark notification as read
-- `POST /api/notifications/{id}/dismiss` - Dismiss notification
 
 ### Admin Endpoints
+- `PUT /api/admin/pricing` - Update pricing config (includes payment gateway toggles)
 - `GET /api/admin/users/{user_id}` - Get single user details
 - `PUT /api/admin/users/{user_id}` - Update user details
 - `POST /api/admin/notifications` - Create notification
 - `PUT /api/admin/notifications/{id}` - Update notification
 - `DELETE /api/admin/notifications/{id}` - Delete notification
-- `GET /api/admin/notifications` - List all notifications
 
 ## Testing Credentials
 - Admin: `admin@smsrelay.com` / `admin123`
+
+## Design System (Updated)
+- **Primary Color**: Purple (#6366f1)
+- **Secondary Color**: Emerald (#10b981)
+- **Accent Colors**: Orange, Blue, Pink
+- **Background**: White (#ffffff) with Gray-50 (#f9fafb) sections
+- **Border Radius**: 2xl (16px) for cards, xl (12px) for buttons
+- **Shadow**: shadow-lg shadow-purple-200 for primary elements
