@@ -983,7 +983,7 @@ const NewDashboard = () => {
                   <span className="text-xs text-gray-400">vs previous month</span>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="hidden sm:flex gap-2">
                 <button 
                   onClick={() => setActiveSection('fund-wallet')}
                   className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
@@ -999,6 +999,24 @@ const NewDashboard = () => {
                   History
                 </button>
               </div>
+            </div>
+
+            {/* Mobile buttons - stacked */}
+            <div className="flex sm:hidden gap-2 mt-3">
+              <button 
+                onClick={() => setActiveSection('fund-wallet')}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
+              >
+                <Plus className="w-4 h-4" />
+                Add Money
+              </button>
+              <button 
+                onClick={() => setActiveSection('transactions')}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors"
+              >
+                <History className="w-4 h-4" />
+                History
+              </button>
             </div>
 
             {/* Currency Toggle */}
