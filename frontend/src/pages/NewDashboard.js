@@ -933,187 +933,262 @@ const NewDashboard = () => {
       return () => clearInterval(interval);
     }, []);
 
-    // Image Banner Carousel Component
-    const ImageBannerCarousel = () => (
-      <div className="relative overflow-hidden rounded-xl">
-        <div 
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
-        >
-          {bannerImages.map((banner) => (
-            <div 
-              key={banner.id}
-              className="min-w-full cursor-pointer"
-              onClick={banner.action}
-            >
-              <img 
-                src={banner.image} 
-                alt={banner.alt}
-                className="w-full h-28 sm:h-36 lg:h-44 object-cover rounded-xl"
-              />
-            </div>
-          ))}
-        </div>
-        {/* Dots indicator */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-          {bannerImages.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setBannerIndex(i)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                i === bannerIndex ? 'bg-white' : 'bg-white/50'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    );
+    // Service cards inspired by Screenshot 3 with arrow buttons
+    const serviceCards = [
+      { name: 'Virtual Numbers', color: 'text-purple-600', bgIcon: 'bg-purple-50', action: () => setActiveSection('virtual-numbers'), icon: Phone },
+      { name: 'Internet Data', color: 'text-emerald-600', bgIcon: 'bg-emerald-50', action: () => setActiveSection('buy-data'), icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+        </svg>
+      )},
+      { name: 'TV Sub', color: 'text-pink-600', bgIcon: 'bg-pink-50', action: () => setActiveSection('buy-data'), icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      )},
+      { name: 'Airtime', color: 'text-purple-600', bgIcon: 'bg-purple-50', action: () => setActiveSection('airtime'), icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+        </svg>
+      )},
+      { name: 'Electricity', color: 'text-emerald-600', bgIcon: 'bg-emerald-50', action: () => setActiveSection('buy-data'), icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      )},
+      { name: 'Virtual Cards', color: 'text-gray-700', bgIcon: 'bg-gray-50', action: () => setActiveSection('virtual-cards'), icon: CreditCard },
+    ];
 
     return (
-      <div className="space-y-4 sm:space-y-5">
-        {/* Welcome Card with Balance */}
-        <div className="bg-gradient-to-br from-[#005E3A] via-emerald-700 to-emerald-900 text-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6">
-          <div className="flex items-center gap-3 mb-3 sm:mb-4">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-sm sm:text-base font-bold">{getUserInitials()}</span>
+      <div className="space-y-5 sm:space-y-6">
+        {/* Top Row: Balance Card + My Card (Desktop) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          {/* Balance Card - Redesigned like Screenshot 1 */}
+          <div className="lg:col-span-2 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-500">Total Balance</h3>
+              <button className="text-xs text-purple-600 font-medium hover:underline">Manage Wallet</button>
             </div>
-            <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold truncate">{getUserDisplayName()}</h2>
-              <p className="text-white/80 text-xs">{branding.brand_name || 'UltraCloud Sms'}</p>
+
+            <div className="flex items-end justify-between mb-5">
+              <div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                  {dashboardCurrency === 'NGN' 
+                    ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
+                    : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+                  <span className="text-sm font-normal text-gray-400 ml-2">{dashboardCurrency}</span>
+                </h1>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">+0.00%</span>
+                  <span className="text-xs text-gray-400">vs previous month</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setActiveSection('fund-wallet')}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-semibold text-sm hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Money
+                </button>
+                <button 
+                  onClick={() => setActiveSection('transactions')}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors"
+                >
+                  <History className="w-4 h-4" />
+                  History
+                </button>
+              </div>
+            </div>
+
+            {/* Currency Toggle */}
+            <div className="flex items-center gap-2">
+              <div className="flex bg-gray-100 rounded-xl p-1">
+                <button 
+                  onClick={() => setDashboardCurrency('NGN')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    dashboardCurrency === 'NGN' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  NGN
+                </button>
+                <button 
+                  onClick={() => setDashboardCurrency('USD')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    dashboardCurrency === 'USD' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  USD
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="mb-3">
-            <p className="text-white/70 text-xs mb-1">{dashboardCurrency === 'NGN' ? '₦' : '$'} Balance</p>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">
-              {dashboardCurrency === 'NGN' 
-                ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
-                : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setActiveSection('fund-wallet')}
-              className="flex-1 bg-white text-[#005E3A] px-3 py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5 text-xs sm:text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Add Money
-            </button>
-            <div className="flex bg-white/20 rounded-lg p-0.5">
+          {/* My Card - Gradient Card Design like Screenshot 1 */}
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-500">My Cards</h3>
               <button 
-                onClick={() => setDashboardCurrency('NGN')}
-                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded font-semibold text-xs transition-colors ${
-                  dashboardCurrency === 'NGN' ? 'bg-white text-[#005E3A]' : 'text-white hover:bg-white/10'
-                }`}
+                onClick={() => setActiveSection('virtual-cards')}
+                className="text-xs text-purple-600 font-medium hover:underline"
               >
-                NGN
-              </button>
-              <button 
-                onClick={() => setDashboardCurrency('USD')}
-                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded font-semibold text-xs transition-colors ${
-                  dashboardCurrency === 'USD' ? 'bg-white text-[#005E3A]' : 'text-white hover:bg-white/10'
-                }`}
-              >
-                USD
+                Manage Cards
               </button>
             </div>
+
+            {/* Gradient Card Visual */}
+            <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden">
+              {/* Card pattern overlay */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
+              </div>
+              
+              <div className="relative">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-white/80 text-xs font-medium">Debit</span>
+                  <span className="text-white/80 text-xs">•••• 1234</span>
+                </div>
+                <div className="mb-4">
+                  <p className="text-2xl sm:text-3xl font-bold">
+                    ${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                  </p>
+                  <p className="text-white/70 text-xs mt-1">Your Balance</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/90 font-semibold text-lg">{branding.brand_name || 'UltraCloud'}</span>
+                  <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-red-500 opacity-80"></div>
+                    <div className="w-8 h-8 rounded-full bg-orange-400 opacity-80"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-xs text-gray-400 mt-3">1/1 Cards</p>
           </div>
         </div>
 
-        {/* Image Banner Carousel - Mobile (after balance) */}
-        <div className="lg:hidden">
-          <ImageBannerCarousel />
+        {/* Banner Carousel */}
+        <div className="relative overflow-hidden rounded-2xl">
+          <div 
+            className="flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
+          >
+            {bannerImages.map((banner) => (
+              <div 
+                key={banner.id}
+                className="min-w-full cursor-pointer"
+                onClick={banner.action}
+              >
+                <img 
+                  src={banner.image} 
+                  alt={banner.alt}
+                  className="w-full h-32 sm:h-40 lg:h-48 object-cover rounded-2xl"
+                />
+              </div>
+            ))}
+          </div>
+          {/* Dots indicator */}
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
+            {bannerImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setBannerIndex(i)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  i === bannerIndex ? 'bg-white w-6' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Quick Services */}
+        {/* Quick Services - Grid Cards like Screenshot 3 */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm sm:text-base font-bold text-gray-900">Quick Services</h3>
-            <a href="#" className="text-xs text-[#005E3A] font-semibold hover:underline">View all →</a>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Quick Services</h3>
+            <button className="text-sm text-purple-600 font-medium hover:underline">View all</button>
           </div>
 
-          {/* Grid: 4 columns on mobile, 4 columns on tablet, 4 columns on desktop */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
-            {/* Fund */}
-            <div onClick={() => setActiveSection('fund-wallet')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            {serviceCards.map((service, index) => (
+              <div 
+                key={index}
+                onClick={service.action}
+                className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
+              >
+                {/* Background Icon */}
+                <div className={`absolute -bottom-2 -right-2 opacity-10 ${service.bgIcon}`}>
+                  {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-16 h-16" />}
+                </div>
+                
+                <h4 className={`text-sm sm:text-base font-bold ${service.color} mb-8 sm:mb-12 relative z-10`}>
+                  {service.name}
+                </h4>
+                
+                <button className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${service.color} border-current flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all relative z-10`}>
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Fund</span>
-            </div>
-
-            {/* SMS */}
-            <div onClick={() => setActiveSection('virtual-numbers')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <Phone className="w-4 h-4 sm:w-6 sm:h-6 text-[#005E3A]" />
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">SMS</span>
-            </div>
-
-            {/* Cards */}
-            <div onClick={() => setActiveSection('virtual-cards')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <CreditCard className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" />
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Cards</span>
-            </div>
-
-            {/* Data */}
-            <div onClick={() => setActiveSection('buy-data')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Data</span>
-            </div>
-
-            {/* Airtime */}
-            <div onClick={() => setActiveSection('airtime')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Airtime</span>
-            </div>
-
-            {/* Refer */}
-            <div onClick={() => setActiveSection('referral')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <Gift className="w-4 h-4 sm:w-6 sm:h-6 text-pink-600" />
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Refer</span>
-            </div>
-
-            {/* W2W */}
-            <div onClick={() => setActiveSection('fund-wallet')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">W2W</span>
-            </div>
-
-            {/* Betting */}
-            <div onClick={() => setActiveSection('betting')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
-                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Betting</span>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Image Banner Carousel - Desktop (below services) */}
-        <div className="hidden lg:block">
-          <ImageBannerCarousel />
+        {/* Recent Transactions */}
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Recent Transactions</h3>
+            <button 
+              onClick={() => setActiveSection('transactions')}
+              className="text-sm text-purple-600 font-medium hover:underline"
+            >
+              View All
+            </button>
+          </div>
+          
+          {transactions.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Receipt className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 text-sm">No transactions yet</p>
+              <p className="text-gray-400 text-xs mt-1">Your transaction history will appear here</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transactions.slice(0, 5).map((tx, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      tx.type === 'deposit' ? 'bg-emerald-100 text-emerald-600' :
+                      tx.type === 'purchase' ? 'bg-purple-100 text-purple-600' :
+                      tx.type === 'refund' ? 'bg-amber-100 text-amber-600' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {tx.type === 'deposit' ? <Plus className="w-5 h-5" /> :
+                       tx.type === 'purchase' ? <Phone className="w-5 h-5" /> :
+                       tx.type === 'refund' ? <RefreshCw className="w-5 h-5" /> :
+                       <Wallet className="w-5 h-5" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 capitalize">{tx.type}</p>
+                      <p className="text-xs text-gray-500">{new Date(tx.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${tx.type === 'deposit' || tx.type === 'refund' ? 'text-emerald-600' : 'text-gray-900'}`}>
+                      {tx.type === 'deposit' || tx.type === 'refund' ? '+' : '-'}
+                      {tx.currency === 'NGN' ? '₦' : '$'}{tx.amount?.toLocaleString() || '0'}
+                    </p>
+                    <p className={`text-xs ${tx.status === 'completed' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                      {tx.status}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
