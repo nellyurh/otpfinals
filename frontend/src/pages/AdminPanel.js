@@ -1467,7 +1467,22 @@ const AdminPanel = ({ user, setUser }) => {
                       value={pricing.fivesim_api_key}
                       onChange={(val) => setPricing({ ...pricing, fivesim_api_key: val })}
                     />
-                    <p className="text-[10px] text-slate-500 mt-1">Tip: leave a key blank if you do not want to update it.</p>
+                    <ApiKeyField
+                      label="Plisio Secret Key (env only)"
+                      value={pricing.plisio_configured ? '********' : ''}
+                      onChange={() => {}}
+                    />
+                    <ApiKeyField
+                      label="PaymentPoint API Key (env only)"
+                      value={pricing.paymentpoint_configured ? '********' : ''}
+                      onChange={() => {}}
+                    />
+                    <ApiKeyField
+                      label="Payscribe API Key (env only)"
+                      value={pricing.payscribe_configured ? '********' : ''}
+                      onChange={() => {}}
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">Tip: leave a key blank if you do not want to update it. Env-based keys (Plisio, PaymentPoint, Payscribe) are managed outside this dashboard.</p>
                   </CardContent>
                 </Card>
               </section>
