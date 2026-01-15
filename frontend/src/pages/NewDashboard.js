@@ -51,7 +51,7 @@ const selectStyles = {
 const NewDashboard = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [user, setUser] = useState({ email: '', full_name: '', ngn_balance: 0, usd_balance: 0, is_admin: false });
   const [loading, setLoading] = useState(false);
   const [pageToggles, setPageToggles] = useState({
@@ -69,6 +69,17 @@ const NewDashboard = () => {
     enable_profile: true,
     enable_support: true
   });
+  
+  // Notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [loginPopups, setLoginPopups] = useState([]);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [currentPopupIndex, setCurrentPopupIndex] = useState(0);
+  
+  // Dark mode state
+  const [darkMode, setDarkMode] = useState(false);
   
   // Virtual Numbers state
   const [selectedServer, setSelectedServer] = useState(null);
