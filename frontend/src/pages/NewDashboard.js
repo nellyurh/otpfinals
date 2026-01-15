@@ -1321,6 +1321,7 @@ const NewDashboard = () => {
                   ₦
                 </span>
                 <input
+                  id="ercaspay-amount-input"
                   type="number"
                   min="100"
                   step="100"
@@ -1329,6 +1330,7 @@ const NewDashboard = () => {
                   placeholder="Enter amount (min ₦100)"
                   className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm"
                   disabled={ercaspayLoading}
+                  autoComplete="off"
                 />
               </div>
               <p className="mt-1 text-[11px] text-gray-500">
