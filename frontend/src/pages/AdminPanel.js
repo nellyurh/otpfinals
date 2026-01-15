@@ -1339,36 +1339,30 @@ const AdminPanel = ({ user, setUser }) => {
                       <thead>
                         <tr className="border-b text-xs text-slate-500">
                           <th className="text-left py-2 px-2">User</th>
-                          <th className="text-left py-2 px-2">Account Number</th>
-                          <th className="text-left py-2 px-2">Account Name</th>
+                          <th className="text-left py-2 px-2">Account</th>
                           <th className="text-left py-2 px-2">Bank</th>
-                          <th className="text-left py-2 px-2">Provider Ref</th>
-                          <th className="text-left py-2 px-2">Created At</th>
+                          <th className="text-left py-2 px-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {adminVirtualAccounts.map((acc, idx) => (
                           <tr key={acc.id || acc.account_number || idx} className="border-b last:border-b-0 hover:bg-slate-50">
-                            <td className="py-2 px-2 text-xs">
-                              <div className="font-medium text-slate-900">{acc.user_full_name || acc.user_email || acc.user_id}</div>
-                              {acc.user_email && (
-                                <div className="text-[11px] text-slate-500">{acc.user_email}</div>
-                              )}
+                            <td className="py-2 px-2 text-[10px]">
+                              <div className="font-medium text-slate-900 truncate max-w-[80px]">{acc.user_full_name || acc.user_email || acc.user_id}</div>
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-900 font-mono">
+                            <td className="py-2 px-2 text-[10px] text-slate-900 font-mono">
                               {acc.account_number || acc.virtual_account_number || '-'}
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-700">
-                              {acc.account_name || acc.virtual_account_name || '-'}
-                            </td>
-                            <td className="py-2 px-2 text-xs text-slate-700">
+                            <td className="py-2 px-2 text-[10px] text-slate-700 truncate max-w-[80px]">
                               {acc.bank_name || acc.virtual_bank_name || '-'}
                             </td>
-                            <td className="py-2 px-2 text-xs text-slate-600">
-                              {acc.provider_reference || acc.paymentpoint_ref || '-'}
-                            </td>
-                            <td className="py-2 px-2 text-xs text-slate-600">
-                              {acc.created_at ? new Date(acc.created_at).toLocaleString() : '-'}
+                            <td className="py-2 px-2">
+                              <button
+                                onClick={() => { setSelectedTransaction(acc); setShowTransactionModal(true); }}
+                                className="text-emerald-600 hover:underline text-[10px] font-medium"
+                              >
+                                View
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -1383,10 +1377,10 @@ const AdminPanel = ({ user, setUser }) => {
 
             {activeSection === 'transactions' && (
               <section className="space-y-4">
-                <h2 className="text-lg font-semibold text-slate-900">All User Transactions</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                <h2 className="text-base font-semibold text-slate-900">All User Transactions</h2>
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 overflow-x-auto">
                   {adminTransactions?.length ? (
-                    <table className="w-full text-sm">
+                    <table className="w-full text-[10px]">
                       <thead>
                         <tr className="border-b text-xs text-slate-500">
                           <th className="text-left py-2 px-2">Date</th>
