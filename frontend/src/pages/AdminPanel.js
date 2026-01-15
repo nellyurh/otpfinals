@@ -509,6 +509,12 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'transactions'}
               onClick={() => setActiveSection('transactions')}
             />
+            <SidebarItem
+              icon={CreditCard}
+              label="Ercaspay Payments"
+              active={activeSection === 'ercaspay'}
+              onClick={() => setActiveSection('ercaspay')}
+            />
           </nav>
 
           <div className="border-t border-slate-200 px-4 py-3 text-[11px] text-slate-500">
