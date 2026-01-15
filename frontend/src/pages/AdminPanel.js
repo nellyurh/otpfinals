@@ -1953,6 +1953,36 @@ const AdminPanel = ({ user, setUser }) => {
                       </div>
                       <p className="text-[10px] text-slate-500 mt-2">Disabled pages remain visible to users but show “Maintenance in progress”.</p>
                     </div>
+                    {/* Payment Gateway Toggles */}
+                    <div className="border border-purple-200 rounded-xl p-4 bg-purple-50/30">
+                      <div className="text-xs font-semibold text-purple-800 mb-3 flex items-center gap-2">
+                        <CreditCard className="w-4 h-4" />
+                        Payment Gateway Controls
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        {[
+                          ['enable_ercaspay', 'Ercaspay (Card/Bank)', 'bg-orange-100 border-orange-200', 'text-orange-700'],
+                          ['enable_paymentpoint', 'PaymentPoint (NGN)', 'bg-emerald-100 border-emerald-200', 'text-emerald-700'],
+                          ['enable_plisio', 'Plisio (Crypto)', 'bg-blue-100 border-blue-200', 'text-blue-700'],
+                        ].map(([key, label, bg, text]) => (
+                          <div key={key} className={`flex items-center justify-between rounded-xl border px-4 py-3 ${bg}`}>
+                            <div className="flex items-center gap-2">
+                              {key === 'enable_ercaspay' && <img src="https://merchant.ercaspay.com/logo.png" alt="Ercaspay" className="w-5 h-5 object-contain" />}
+                              {key === 'enable_paymentpoint' && <img src="https://www.paymentpoint.co/assets/pdark-rbg-cf3cced4.png" alt="PaymentPoint" className="w-5 h-5 object-contain" />}
+                              {key === 'enable_plisio' && <img src="https://plisio.net/v2/images/logo-color.svg" alt="Plisio" className="w-5 h-5 object-contain" />}
+                              <span className={`font-medium ${text}`}>{label}</span>
+                            </div>
+                            <Switch
+                              checked={pageToggles[key]}
+                              onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, [key]: val }))}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-purple-600 mt-2">
+                        ⚠️ Disabling a gateway will hide it from the user's "Fund Wallet" page. Active deposits will not be affected.
+                      </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-1">
