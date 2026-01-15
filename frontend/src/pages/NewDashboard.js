@@ -295,6 +295,16 @@ const NewDashboard = () => {
     
     setResellerLoading(true);
     try {
+      // Fetch API base URL from public branding
+      try {
+        const brandingRes = await axios.get(`${API}/api/public/branding`);
+        if (brandingRes.data.reseller_api_base_url) {
+          setResellerApiBaseUrl(brandingRes.data.reseller_api_base_url);
+        }
+      } catch (e) {
+        console.error('Failed to fetch branding for API URL');
+      }
+      
       // Fetch profile
       try {
         const profileRes = await axios.get(`${API}/api/reseller/profile`, axiosConfig);
