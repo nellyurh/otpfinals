@@ -1837,6 +1837,123 @@ const AdminPanel = ({ user, setUser }) => {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Expanded Color Options - Landing Page */}
+                      <div className="border-t border-slate-200 pt-4 mt-4">
+                        <h4 className="text-xs font-semibold text-slate-700 mb-3">Landing Page Colors</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-semibold text-slate-500">Button/CTA Color</Label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={branding.button_color_hex || '#7c3aed'}
+                                onChange={(e) => setBranding({ ...branding, button_color_hex: e.target.value })}
+                                className="w-8 h-8 rounded border border-slate-200 cursor-pointer"
+                              />
+                              <Input
+                                value={branding.button_color_hex || '#7c3aed'}
+                                onChange={(e) => setBranding({ ...branding, button_color_hex: e.target.value })}
+                                className="h-8 text-xs bg-slate-50 border-slate-200 flex-1"
+                              />
+                            </div>
+                            <p className="text-[9px] text-slate-400">Sign Up, Order Now buttons</p>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-semibold text-slate-500">Accent Color</Label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={branding.accent_color_hex || '#7c3aed'}
+                                onChange={(e) => setBranding({ ...branding, accent_color_hex: e.target.value })}
+                                className="w-8 h-8 rounded border border-slate-200 cursor-pointer"
+                              />
+                              <Input
+                                value={branding.accent_color_hex || '#7c3aed'}
+                                onChange={(e) => setBranding({ ...branding, accent_color_hex: e.target.value })}
+                                className="h-8 text-xs bg-slate-50 border-slate-200 flex-1"
+                              />
+                            </div>
+                            <p className="text-[9px] text-slate-400">Service cards, features</p>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-semibold text-slate-500">Header Background</Label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={branding.header_bg_color_hex || '#ffffff'}
+                                onChange={(e) => setBranding({ ...branding, header_bg_color_hex: e.target.value })}
+                                className="w-8 h-8 rounded border border-slate-200 cursor-pointer"
+                              />
+                              <Input
+                                value={branding.header_bg_color_hex || '#ffffff'}
+                                onChange={(e) => setBranding({ ...branding, header_bg_color_hex: e.target.value })}
+                                className="h-8 text-xs bg-slate-50 border-slate-200 flex-1"
+                              />
+                            </div>
+                            <p className="text-[9px] text-slate-400">Navigation bar</p>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-semibold text-slate-500">Hero Gradient Start</Label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={branding.hero_gradient_from || '#10b981'}
+                                onChange={(e) => setBranding({ ...branding, hero_gradient_from: e.target.value })}
+                                className="w-8 h-8 rounded border border-slate-200 cursor-pointer"
+                              />
+                              <Input
+                                value={branding.hero_gradient_from || '#10b981'}
+                                onChange={(e) => setBranding({ ...branding, hero_gradient_from: e.target.value })}
+                                className="h-8 text-xs bg-slate-50 border-slate-200 flex-1"
+                              />
+                            </div>
+                            <p className="text-[9px] text-slate-400">Hero section image bg</p>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-semibold text-slate-500">Hero Gradient End</Label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={branding.hero_gradient_to || '#06b6d4'}
+                                onChange={(e) => setBranding({ ...branding, hero_gradient_to: e.target.value })}
+                                className="w-8 h-8 rounded border border-slate-200 cursor-pointer"
+                              />
+                              <Input
+                                value={branding.hero_gradient_to || '#06b6d4'}
+                                onChange={(e) => setBranding({ ...branding, hero_gradient_to: e.target.value })}
+                                className="h-8 text-xs bg-slate-50 border-slate-200 flex-1"
+                              />
+                            </div>
+                            <p className="text-[9px] text-slate-400">Hero section image bg</p>
+                          </div>
+                        </div>
+                        
+                        {/* Color Preview */}
+                        <div className="mt-4 p-3 bg-slate-100 rounded-lg">
+                          <p className="text-[10px] text-slate-500 mb-2 font-semibold">Preview:</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div 
+                              className="px-3 py-1.5 rounded-full text-white text-[10px] font-semibold"
+                              style={{ backgroundColor: branding.button_color_hex || '#7c3aed' }}
+                            >
+                              Sign Up Button
+                            </div>
+                            <div 
+                              className="px-3 py-1.5 rounded-full text-white text-[10px] font-semibold"
+                              style={{ backgroundColor: branding.primary_color_hex || '#059669' }}
+                            >
+                              Primary
+                            </div>
+                            <div 
+                              className="w-20 h-8 rounded-lg"
+                              style={{ 
+                                background: `linear-gradient(135deg, ${branding.hero_gradient_from || '#10b981'}, ${branding.hero_gradient_to || '#06b6d4'})`
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                       {branding.brand_logo_url && (
                         <div className="mt-3 p-3 bg-slate-50 rounded-lg">
                           <p className="text-[10px] text-slate-500 mb-2">Logo Preview:</p>
