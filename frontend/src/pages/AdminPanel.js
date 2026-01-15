@@ -423,6 +423,11 @@ const AdminPanel = ({ user, setUser }) => {
         banner_images: response.data.banner_images || [],
       });
 
+      // Reseller API URL
+      if (response.data.reseller_api_base_url) {
+        setResellerApiUrl(response.data.reseller_api_base_url);
+      }
+
       setPageToggles({
         enable_dashboard: response.data.enable_dashboard !== false,
         enable_transactions: response.data.enable_transactions !== false,
