@@ -1344,10 +1344,12 @@ const NewDashboard = () => {
             </div>
           </div>
         </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* NGN Funding Card with PaymentPoint Logo */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-[#005E3A] rounded-2xl p-6 shadow-lg">
+          {/* NGN Funding Card with PaymentPoint Logo - Conditionally rendered */}
+          {pageToggles.enable_paymentpoint && (
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-green-200 p-1">
                 <img src="https://www.paymentpoint.co/assets/pdark-rbg-cf3cced4.png" alt="PaymentPoint" className="w-full h-full object-contain" />
@@ -1363,7 +1365,7 @@ const NewDashboard = () => {
                 <div className="bg-white rounded-xl p-4 border border-green-200">
                   <p className="text-xs text-gray-600 mb-2">Account Number</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-2xl font-bold text-[#005E3A] tracking-wider">
+                    <p className="text-2xl font-bold text-emerald-700 tracking-wider">
                       {user.virtual_account_number}
                     </p>
                     <button
