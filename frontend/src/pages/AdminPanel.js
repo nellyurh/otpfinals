@@ -150,7 +150,13 @@ const AdminPanel = ({ user, setUser }) => {
   const [otpStatusFilter, setOtpStatusFilter] = useState('');
   const [selectedOtpOrder, setSelectedOtpOrder] = useState(null);
 
-  const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications | resellers | otp-sales
+  // Reseller Sales state
+  const [resellerSalesOrders, setResellerSalesOrders] = useState([]);
+  const [resellerSalesStats, setResellerSalesStats] = useState(null);
+  const [resellerSalesStatusFilter, setResellerSalesStatusFilter] = useState('');
+  const [selectedResellerOrder, setSelectedResellerOrder] = useState(null);
+
+  const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications | resellers | otp-sales | reseller-sales
   const [periodPreset, setPeriodPreset] = useState('7d');
   const [customRange, setCustomRange] = useState({ start: '', end: '' }); // YYYY-MM-DD
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
