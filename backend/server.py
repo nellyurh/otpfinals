@@ -251,12 +251,21 @@ class PricingConfig(BaseModel):
     carrier_markup: float = 20.0    # DaisySMS adds 20% for carrier
     # Branding (admin editable)
     brand_name: str = "UltraCloud Sms"
+    brand_logo_url: str = "https://cloudsmsservice.org/img/social_logo.png"
     landing_hero_title: str = "Cheapest and Fastest\nOnline SMS Verification"
     landing_hero_subtitle: str = (
         "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms "
         "and calls and also prevent your identity from fraudsters"
     )
-    primary_color_hex: str = "#059669"  # emerald-600
+    primary_color_hex: str = "#059669"  # emerald-600 (green)
+    secondary_color_hex: str = "#10b981"  # emerald-500
+
+    # Banner images (admin editable)
+    banner_images: list = Field(default_factory=lambda: [
+        {"id": "1", "image_url": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=300&fit=crop", "link": "", "active": True},
+        {"id": "2", "image_url": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=300&fit=crop", "link": "", "active": True},
+        {"id": "3", "image_url": "https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=300&fit=crop", "link": "", "active": True}
+    ])
 
     # Manual coin->USD rates (admin editable) for volatile coins
     btc_usd_rate: float = 1420.0
