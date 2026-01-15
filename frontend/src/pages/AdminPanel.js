@@ -34,6 +34,13 @@ import {
   Edit,
   X,
   Menu,
+  ToggleLeft,
+  Tag,
+  Palette,
+  Server,
+  Image,
+  Percent,
+  Copy,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
