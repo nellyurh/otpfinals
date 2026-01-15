@@ -1758,8 +1758,8 @@ const AdminPanel = ({ user, setUser }) => {
                   <CardContent className="space-y-5">
                     {/* Branding */}
                     <div className="border border-slate-100 rounded-xl p-4">
-                      <div className="text-xs font-semibold text-slate-800 mb-3">Branding</div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="text-xs font-semibold text-slate-800 mb-3">Branding & Colors</div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="space-y-1">
                           <Label className="text-xs font-semibold text-slate-600">Brand Name</Label>
                           <Input
@@ -1769,7 +1769,132 @@ const AdminPanel = ({ user, setUser }) => {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs font-semibold text-slate-600">Landing Hero Title</Label>
+                          <Label className="text-xs font-semibold text-slate-600">Logo URL</Label>
+                          <Input
+                            value={branding.brand_logo_url}
+                            onChange={(e) => setBranding({ ...branding, brand_logo_url: e.target.value })}
+                            placeholder="https://..."
+                            className="h-9 text-sm bg-slate-50 border-slate-200"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-600">Primary Color</Label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={branding.primary_color_hex}
+                              onChange={(e) => setBranding({ ...branding, primary_color_hex: e.target.value })}
+                              className="w-10 h-9 rounded border border-slate-200 cursor-pointer"
+                            />
+                            <Input
+                              value={branding.primary_color_hex}
+                              onChange={(e) => setBranding({ ...branding, primary_color_hex: e.target.value })}
+                              className="h-9 text-sm bg-slate-50 border-slate-200 flex-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-600">Secondary Color</Label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={branding.secondary_color_hex}
+                              onChange={(e) => setBranding({ ...branding, secondary_color_hex: e.target.value })}
+                              className="w-10 h-9 rounded border border-slate-200 cursor-pointer"
+                            />
+                            <Input
+                              value={branding.secondary_color_hex}
+                              onChange={(e) => setBranding({ ...branding, secondary_color_hex: e.target.value })}
+                              className="h-9 text-sm bg-slate-50 border-slate-200 flex-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      {branding.brand_logo_url && (
+                        <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                          <p className="text-[10px] text-slate-500 mb-2">Logo Preview:</p>
+                          <img src={branding.brand_logo_url} alt="Logo Preview" className="h-12 object-contain" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Banner Images Management */}
+                    <div className="border border-blue-200 rounded-xl p-4 bg-blue-50/30">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-xs font-semibold text-blue-800">Dashboard Banners</div>
+                        <Button 
+                          size="sm" 
+                          className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700"
+                          onClick={() => {
+                            const newBanner = { id: String(Date.now()), image_url: '', link: '', active: true };
+                            setBranding({ ...branding, banner_images: [...(branding.banner_images || []), newBanner] });
+                          }}
+                        >
+                          + Add Banner
+                        </Button>
+                      </div>
+                      
+                      {(!branding.banner_images || branding.banner_images.length === 0) ? (
+                        <p className="text-xs text-slate-500">No banners configured. Add banners to display on the user dashboard.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {branding.banner_images.map((banner, idx) => (
+                            <div key={banner.id || idx} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-blue-100">
+                              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="md:col-span-2">
+                                  <Label className="text-[10px] text-slate-500">Image URL</Label>
+                                  <Input
+                                    value={banner.image_url}
+                                    onChange={(e) => {
+                                      const updated = [...branding.banner_images];
+                                      updated[idx].image_url = e.target.value;
+                                      setBranding({ ...branding, banner_images: updated });
+                                    }}
+                                    placeholder="https://..."
+                                    className="h-8 text-xs bg-slate-50"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] text-slate-500">Link (optional)</Label>
+                                  <Input
+                                    value={banner.link || ''}
+                                    onChange={(e) => {
+                                      const updated = [...branding.banner_images];
+                                      updated[idx].link = e.target.value;
+                                      setBranding({ ...branding, banner_images: updated });
+                                    }}
+                                    placeholder="https://..."
+                                    className="h-8 text-xs bg-slate-50"
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={banner.active !== false}
+                                  onCheckedChange={(val) => {
+                                    const updated = [...branding.banner_images];
+                                    updated[idx].active = val;
+                                    setBranding({ ...branding, banner_images: updated });
+                                  }}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-500 hover:bg-red-50"
+                                  onClick={() => {
+                                    const updated = branding.banner_images.filter((_, i) => i !== idx);
+                                    setBranding({ ...branding, banner_images: updated });
+                                  }}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-[10px] text-blue-600 mt-2">Banners are displayed as a carousel on the user dashboard. Recommended size: 800x300px</p>
+                    </div>
 
               {/* Promo Codes */}
               <section className="mt-6 grid grid-cols-1 gap-6">
