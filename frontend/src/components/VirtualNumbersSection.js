@@ -656,7 +656,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 {selectedServer.value === 'server1' && selectedService && selectedService.pools &&
                   selectedService.pools.length > 0 && (
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
                         Select Pool (optional)
                       </label>
                       <Select
@@ -696,23 +696,23 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 <button
                   type="button"
                   onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
                 >
-                  <span className="text-sm font-semibold text-blue-900">
-                    {showAdvancedOptions ? '▼' : '▶'} Advanced Options (Carrier, Area Code, Number)
+                  <span className="text-[10px] sm:text-xs font-semibold text-blue-900">
+                    {showAdvancedOptions ? '▼' : '▶'} Advanced Options
                   </span>
-                  <span className="text-xs text-blue-700">+35% each</span>
+                  <span className="text-[9px] sm:text-[10px] text-blue-600">+35% each</span>
                 </button>
               </div>
             )}
 
             {/* Advanced Options Fields */}
             {showAdvancedOptions && selectedServer && selectedServer.value === 'us_server' && (
-              <div className="bg-blue-50 rounded-xl p-4 space-y-4 border-2 border-blue-200">
+              <div className="bg-blue-50 rounded-xl p-3 space-y-3 border border-blue-200">
                 {/* Carrier Selection */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Carrier (Optional) <span className="text-blue-600">+35%</span>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Carrier <span className="text-blue-600">+35%</span>
                   </label>
                   <Select
                     menuPortalTarget={document.body}
