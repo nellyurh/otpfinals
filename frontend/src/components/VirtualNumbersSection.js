@@ -855,7 +855,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="font-medium">Promo "{estimatedPrice.promo.code}" applied! Saving ₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}</span>
+                  <span className="font-medium">Promo &quot;{estimatedPrice.promo.code}&quot; applied! Saving ₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}</span>
                 </div>
               )}
             </div>
@@ -892,7 +892,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span className="text-[10px] font-semibold text-green-700">
-                        Promo "{estimatedPrice.promo.code}" applied!
+                        Promo &quot;{estimatedPrice.promo.code}&quot; applied!
                       </span>
                     </div>
                     <span className="text-[10px] font-bold text-green-700">
