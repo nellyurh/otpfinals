@@ -2169,7 +2169,7 @@ const AdminPanel = ({ user, setUser }) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">Branding & Banners</h2>
-                    <p className="text-xs text-slate-500 mt-1">Customize your site's appearance and landing page</p>
+                    <p className="text-xs text-slate-500 mt-1">Customize your site&apos;s appearance and landing page</p>
                   </div>
                   <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
