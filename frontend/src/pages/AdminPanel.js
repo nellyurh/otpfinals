@@ -606,21 +606,44 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'dashboard'}
               onClick={() => { setActiveSection('dashboard'); setAdminSidebarOpen(false); }}
             />
+            
             <div className="mt-3 text-[9px] font-semibold text-slate-500 uppercase tracking-wide px-2">
-              Settings
+              Configuration
             </div>
             <SidebarItem
-              icon={Wallet}
-              label="Wallet & Pricing"
-              active={activeSection === 'settings'}
-              onClick={() => { setActiveSection('settings'); setAdminSidebarOpen(false); }}
+              icon={ToggleLeft}
+              label="Page Toggles"
+              active={activeSection === 'page-toggles'}
+              onClick={() => { setActiveSection('page-toggles'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
-              icon={Settings}
-              label="Providers"
-              active={activeSection === 'providers'}
-              onClick={() => { setActiveSection('providers'); setAdminSidebarOpen(false); }}
+              icon={CreditCard}
+              label="Payment Gateways"
+              active={activeSection === 'payment-gateways'}
+              onClick={() => { setActiveSection('payment-gateways'); setAdminSidebarOpen(false); }}
             />
+            <SidebarItem
+              icon={Tag}
+              label="Promo Codes"
+              active={activeSection === 'promo-codes'}
+              onClick={() => { setActiveSection('promo-codes'); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
+              icon={Palette}
+              label="Branding & Banners"
+              active={activeSection === 'branding'}
+              onClick={() => { setActiveSection('branding'); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
+              icon={Server}
+              label="SMS Providers"
+              active={activeSection === 'sms-providers'}
+              onClick={() => { setActiveSection('sms-providers'); setAdminSidebarOpen(false); }}
+            />
+            
+            <div className="mt-3 text-[9px] font-semibold text-slate-500 uppercase tracking-wide px-2">
+              Management
+            </div>
             <SidebarItem
               icon={Users}
               label="Users"
