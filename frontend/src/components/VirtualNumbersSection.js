@@ -797,7 +797,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           toast.error('Invalid or expired promo code');
                         }
                       } catch (error) {
-                        const errorMsg = error.response?.data?.detail || 'Invalid promo code';
+                        // Handle error - detail might be a string or an array of validation errors
+                        let errorMsg = 'Invalid promo code';
+                        const detail = error.response?.data?.detail;
+                        if (typeof detail === 'string') {
+                          errorMsg = detail;
+                        } else if (Array.isArray(detail) && detail.length > 0) {
+                          errorMsg = detail[0]?.msg || 'Validation error';
+                        } else if (detail && typeof detail === 'object' && detail.msg) {
+                          errorMsg = detail.msg;
+                        }
                         toast.error(errorMsg);
                       }
                     }}
