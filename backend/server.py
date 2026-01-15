@@ -196,9 +196,15 @@ class Notification(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     message: str
-    type: str = 'announcement'  # 'announcement' | 'transaction' | 'update'
+    type: str = 'announcement'  # 'announcement' | 'transaction' | 'update' | 'popup'
+    popup_type: Optional[str] = None  # 'promo' | 'support' | 'deposit_bonus' | 'downtime' | 'custom'
+    action_url: Optional[str] = None  # Link for "Learn More" or action button
+    action_text: Optional[str] = None  # Text for action button
+    image_url: Optional[str] = None  # Optional image for popup
     active: bool = True
     show_on_login: bool = False
+    priority: int = 0  # Higher = shown first
+    expires_at: Optional[str] = None  # ISO datetime string
     created_by: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -211,6 +217,17 @@ class NotificationReceipt(BaseModel):
     read_at: Optional[str] = None
     dismissed_at: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AdminUserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    ngn_balance: Optional[float] = None
+    usd_balance: Optional[float] = None
+    is_suspended: Optional[bool] = None
+    is_blocked: Optional[bool] = None
+    is_admin: Optional[bool] = None
 
 
 class PricingConfig(BaseModel):
