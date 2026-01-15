@@ -83,9 +83,17 @@ Build a full-stack OTP (One-Time Password) service platform, "UltraCloud Sms," t
    - Added "Apply" button next to promo code input
    - Shows success message with discount amount when valid
    - Green border/background when promo is applied
-   - Improved error handling with backend error messages
+   - **Fixed error handling** - properly handles object/array error responses
 
-8. **Previous Session Tasks:**
+8. **Mobile UI Improvements**
+   - **Reduced text sizes** for mobile devices
+   - **Smaller, compact Quick Services grid** (4 columns on mobile, 8 on desktop)
+   - **Removed large promotional cards** (Hot Deals, Pay with Ease, Need a number?)
+   - **Added flowing banner carousel** with auto-rotate every 5 seconds
+   - Banner appears after balance card on mobile, below Quick Services on desktop
+   - Dot indicators for banner navigation
+
+9. **Previous Session Tasks:**
    - Fixed Plisio "Expired Deposit" display issue
    - Ercaspay Payment Gateway Integration (orange theme, logos)
    - Added payment provider logos (Ercaspay, PaymentPoint, Plisio)
