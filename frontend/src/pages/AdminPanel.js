@@ -1468,6 +1468,262 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* Popup Notifications Management */}
+            {activeSection === 'notifications' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">Popup Notifications</h2>
+                    <p className="text-xs text-slate-500">Create and manage user popup notifications (promo codes, support links, deposit bonuses, downtimes)</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setEditingNotif(null);
+                      setNotifForm({
+                        title: '',
+                        message: '',
+                        type: 'popup',
+                        popup_type: 'custom',
+                        action_url: '',
+                        action_text: '',
+                        image_url: '',
+                        active: true,
+                        show_on_login: true,
+                        priority: 0,
+                      });
+                      setShowNotifModal(true);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Create Notification
+                  </Button>
+                </div>
+
+                {/* Notification List */}
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="p-4 border-b border-slate-200 bg-slate-50">
+                    <h3 className="text-sm font-semibold text-slate-800">All Notifications</h3>
+                  </div>
+                  {adminNotifications && adminNotifications.length > 0 ? (
+                    <div className="divide-y divide-slate-100">
+                      {adminNotifications.map((notif) => (
+                        <div key={notif.id} className="p-4 hover:bg-slate-50">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="text-sm font-semibold text-slate-800">{notif.title}</h4>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                  notif.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {notif.active ? 'Active' : 'Inactive'}
+                                </span>
+                                {notif.show_on_login && (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
+                                    Login Popup
+                                  </span>
+                                )}
+                                {notif.popup_type && (
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                    notif.popup_type === 'promo' ? 'bg-green-100 text-green-700' :
+                                    notif.popup_type === 'support' ? 'bg-blue-100 text-blue-700' :
+                                    notif.popup_type === 'deposit_bonus' ? 'bg-purple-100 text-purple-700' :
+                                    notif.popup_type === 'downtime' ? 'bg-red-100 text-red-700' :
+                                    'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {notif.popup_type}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-600 line-clamp-2">{notif.message}</p>
+                              {notif.action_url && (
+                                <p className="text-[10px] text-blue-600 mt-1 truncate">
+                                  Link: {notif.action_url}
+                                </p>
+                              )}
+                              <p className="text-[10px] text-slate-400 mt-1">
+                                Created: {new Date(notif.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingNotif(notif);
+                                  setNotifForm({
+                                    title: notif.title || '',
+                                    message: notif.message || '',
+                                    type: notif.type || 'announcement',
+                                    popup_type: notif.popup_type || 'custom',
+                                    action_url: notif.action_url || '',
+                                    action_text: notif.action_text || '',
+                                    image_url: notif.image_url || '',
+                                    active: notif.active ?? true,
+                                    show_on_login: notif.show_on_login ?? false,
+                                    priority: notif.priority || 0,
+                                  });
+                                  setShowNotifModal(true);
+                                }}
+                                className="text-xs"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteNotification(notif.id)}
+                                className="text-xs text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
+                              >
+                                <Trash className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 py-8">
+                      No notifications yet. Create one to send announcements to users.
+                    </div>
+                  )}
+                </div>
+
+                {/* Create/Edit Modal */}
+                {showNotifModal && (
+                  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                      <div className="p-4 border-b border-slate-200">
+                        <h3 className="text-lg font-semibold text-slate-800">
+                          {editingNotif ? 'Edit Notification' : 'Create Notification'}
+                        </h3>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600">Title</Label>
+                          <Input
+                            value={notifForm.title}
+                            onChange={(e) => setNotifForm({...notifForm, title: e.target.value})}
+                            placeholder="e.g., 🎉 Special Offer!"
+                            className="text-sm"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600">Message</Label>
+                          <textarea
+                            value={notifForm.message}
+                            onChange={(e) => setNotifForm({...notifForm, message: e.target.value})}
+                            placeholder="Enter your notification message..."
+                            rows={4}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-600">Popup Type</Label>
+                            <select
+                              value={notifForm.popup_type}
+                              onChange={(e) => setNotifForm({...notifForm, popup_type: e.target.value})}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                            >
+                              <option value="promo">Promo Code</option>
+                              <option value="support">Support Link</option>
+                              <option value="deposit_bonus">Deposit Bonus</option>
+                              <option value="downtime">Downtime Notice</option>
+                              <option value="custom">Custom</option>
+                            </select>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold text-slate-600">Priority (0-10)</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="10"
+                              value={notifForm.priority}
+                              onChange={(e) => setNotifForm({...notifForm, priority: parseInt(e.target.value) || 0})}
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600">Action URL (optional)</Label>
+                          <Input
+                            value={notifForm.action_url}
+                            onChange={(e) => setNotifForm({...notifForm, action_url: e.target.value})}
+                            placeholder="https://t.me/yoursupport or /fund-wallet"
+                            className="text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600">Action Button Text</Label>
+                          <Input
+                            value={notifForm.action_text}
+                            onChange={(e) => setNotifForm({...notifForm, action_text: e.target.value})}
+                            placeholder="e.g., Fund Now, Contact Support"
+                            className="text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-600">Image URL (optional)</Label>
+                          <Input
+                            value={notifForm.image_url}
+                            onChange={(e) => setNotifForm({...notifForm, image_url: e.target.value})}
+                            placeholder="https://example.com/promo-banner.jpg"
+                            className="text-sm"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={notifForm.active}
+                              onChange={(e) => setNotifForm({...notifForm, active: e.target.checked})}
+                              className="w-4 h-4 rounded border-slate-300"
+                            />
+                            <span className="text-xs text-slate-600">Active</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={notifForm.show_on_login}
+                              onChange={(e) => setNotifForm({...notifForm, show_on_login: e.target.checked})}
+                              className="w-4 h-4 rounded border-slate-300"
+                            />
+                            <span className="text-xs text-slate-600">Show as Login Popup</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="p-4 border-t border-slate-200 flex items-center justify-end gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowNotifModal(false);
+                            setEditingNotif(null);
+                          }}
+                          className="text-xs"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleCreateNotification}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                        >
+                          {editingNotif ? 'Update' : 'Create'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
 
             {/* Provider & pricing configuration */}
             {activeSection === 'settings' && (
