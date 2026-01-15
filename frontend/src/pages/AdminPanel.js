@@ -28,6 +28,10 @@ import {
   Receipt,
   CreditCard,
   RefreshCw,
+  Bell,
+  Plus,
+  Trash,
+  Edit,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
