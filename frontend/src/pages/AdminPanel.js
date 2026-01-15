@@ -528,6 +528,12 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'ercaspay'}
               onClick={() => setActiveSection('ercaspay')}
             />
+            <SidebarItem
+              icon={Bell}
+              label="Popup Notifications"
+              active={activeSection === 'notifications'}
+              onClick={() => setActiveSection('notifications')}
+            />
           </nav>
 
           <div className="border-t border-slate-200 px-4 py-3 text-[11px] text-slate-500">
