@@ -158,6 +158,15 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const fetchErcaspayPayments = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/ercaspay/payments`, axiosConfig);
+      setErcaspayPayments(resp.data.payments || []);
+    } catch (e) {
+      console.error('Failed to fetch ercaspay payments');
+    }
+  };
+
   const token = localStorage.getItem('token');
   const axiosConfig = {
     headers: { Authorization: `Bearer ${token}` },
