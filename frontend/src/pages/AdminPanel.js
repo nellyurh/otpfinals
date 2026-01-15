@@ -1980,7 +1980,7 @@ const AdminPanel = ({ user, setUser }) => {
                         ))}
                       </div>
                       <p className="text-[10px] text-purple-600 mt-2">
-                        ⚠️ Disabling a gateway will hide it from the user's "Fund Wallet" page. Active deposits will not be affected.
+                        ⚠️ Disabling a gateway will hide it from the user&apos;s &quot;Fund Wallet&quot; page. Active deposits will not be affected.
                       </p>
                     </div>
 
