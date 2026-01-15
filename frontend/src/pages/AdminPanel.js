@@ -3219,6 +3219,184 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* OTP Sales Section */}
+            {activeSection === 'otp-sales' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">OTP Sales</h2>
+                    <p className="text-xs text-slate-500 mt-1">View all OTP orders and sales statistics</p>
+                  </div>
+                  <Button onClick={() => { fetchOtpOrders(); fetchOtpStats(); }} variant="outline" className="h-9 px-3 text-xs">
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    Refresh
+                  </Button>
+                </div>
+
+                {/* Stats Cards */}
+                {otpStats && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200">
+                      <CardContent className="p-4">
+                        <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Total Orders</p>
+                        <p className="text-2xl font-bold text-emerald-700 mt-1">{otpStats.total_orders?.toLocaleString()}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
+                      <CardContent className="p-4">
+                        <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Total Revenue</p>
+                        <p className="text-2xl font-bold text-blue-700 mt-1">₦{otpStats.total_revenue_ngn?.toLocaleString()}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
+                      <CardContent className="p-4">
+                        <p className="text-[10px] font-semibold text-purple-600 uppercase tracking-wide">Today&apos;s Orders</p>
+                        <p className="text-2xl font-bold text-purple-700 mt-1">{otpStats.today_orders?.toLocaleString()}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-gradient-to-br from-amber-50 to-amber-100/50 border-amber-200">
+                      <CardContent className="p-4">
+                        <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Today&apos;s Revenue</p>
+                        <p className="text-2xl font-bold text-amber-700 mt-1">₦{otpStats.today_revenue_ngn?.toLocaleString()}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Status Breakdown */}
+                {otpStats?.status_breakdown && (
+                  <Card className="border border-slate-200 shadow-sm bg-white">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold">Order Status Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3">
+                        {Object.entries(otpStats.status_breakdown).map(([status, count]) => (
+                          <div key={status} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg">
+                            <span className={`w-2 h-2 rounded-full ${
+                              status === 'completed' ? 'bg-green-500' :
+                              status === 'active' ? 'bg-blue-500' :
+                              status === 'cancelled' ? 'bg-red-500' :
+                              status === 'refunded' ? 'bg-orange-500' :
+                              'bg-slate-400'
+                            }`} />
+                            <span className="text-xs font-medium text-slate-700 capitalize">{status}</span>
+                            <span className="text-xs font-bold text-slate-900">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Orders Table */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm font-semibold">All OTP Orders</CardTitle>
+                        <CardDescription className="text-xs">View order details and user information</CardDescription>
+                      </div>
+                      <select
+                        value={otpStatusFilter}
+                        onChange={(e) => { setOtpStatusFilter(e.target.value); setTimeout(fetchOtpOrders, 100); }}
+                        className="h-8 px-2 text-xs border border-slate-200 rounded-lg"
+                      >
+                        <option value="">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="active">Active</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="refunded">Refunded</option>
+                        <option value="expired">Expired</option>
+                      </select>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {otpOrders.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MessageSquare className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                        <p className="text-sm text-slate-500">No OTP orders found</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="border-b border-slate-200 bg-slate-50">
+                            <tr>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">User</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Service</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Phone</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">OTP</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Price</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Provider</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Status</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Date</th>
+                              <th className="text-left px-3 py-2 font-semibold text-slate-600">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {otpOrders.map((order) => (
+                              <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
+                                <td className="px-3 py-2.5">
+                                  <div>
+                                    <p className="font-medium text-slate-800">{order.user_email || 'N/A'}</p>
+                                    <p className="text-[10px] text-slate-400">{order.user_name}</p>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="font-medium text-slate-700">{order.service?.toUpperCase() || 'N/A'}</span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="font-mono text-slate-600">{order.phone_number || 'N/A'}</span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  {order.otp_code ? (
+                                    <span className="font-mono font-bold text-emerald-600">{order.otp_code}</span>
+                                  ) : (
+                                    <span className="text-slate-400">—</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="font-semibold text-slate-800">₦{order.price_ngn?.toLocaleString()}</span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className="text-slate-600">{order.provider}</span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <Badge className={`text-[10px] ${
+                                    order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                    order.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                    order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                    order.status === 'refunded' ? 'bg-orange-100 text-orange-700' :
+                                    'bg-slate-100 text-slate-700'
+                                  }`}>
+                                    {order.status}
+                                  </Badge>
+                                </td>
+                                <td className="px-3 py-2.5 text-slate-500">
+                                  {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    onClick={() => setSelectedOtpOrder(order)}
+                                  >
+                                    <Eye className="w-3 h-3 mr-1" />
+                                    View
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
           </main>
         </div>
       </div>
