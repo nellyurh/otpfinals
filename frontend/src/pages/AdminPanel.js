@@ -1321,7 +1321,7 @@ const AdminPanel = ({ user, setUser }) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => fetchAdminData()}
+                    onClick={() => fetchErcaspayPayments()}
                     className="text-xs"
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
