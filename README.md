@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://smsultra.preview.emergentagent.com/api
-- **Frontend**: https://smsultra.preview.emergentagent.com
+- **Backend**: https://ultracloud.preview.emergentagent.com/api
+- **Frontend**: https://ultracloud.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 
