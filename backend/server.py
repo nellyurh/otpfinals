@@ -3987,6 +3987,12 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.carrier_markup is not None:
         update_fields['carrier_markup'] = data.carrier_markup
 
+    # Ercaspay keys
+    if data.ercaspay_secret_key is not None:
+        update_fields['ercaspay_secret_key'] = data.ercaspay_secret_key
+    if data.ercaspay_api_key is not None:
+        update_fields['ercaspay_api_key'] = data.ercaspay_api_key
+
     # Branding
     if data.brand_name is not None:
         update_fields['brand_name'] = data.brand_name
