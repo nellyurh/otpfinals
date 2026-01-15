@@ -1455,60 +1455,57 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
 
                 <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  <div className="p-4 border-b border-slate-200 bg-slate-50">
-                    <h3 className="text-sm font-semibold text-slate-800">Payment History</h3>
+                  <div className="p-3 border-b border-slate-200 bg-slate-50">
+                    <h3 className="text-xs font-semibold text-slate-800">Payment History</h3>
                   </div>
                   {ercaspayPayments && ercaspayPayments.length > 0 ? (
-                    <table className="w-full text-xs">
-                      <thead className="bg-slate-50 text-slate-600 uppercase text-[10px]">
-                        <tr>
-                          <th className="py-2 px-2 text-left">Date</th>
-                          <th className="py-2 px-2 text-left">User</th>
-                          <th className="py-2 px-2 text-left">Amount</th>
-                          <th className="py-2 px-2 text-left">Method</th>
-                          <th className="py-2 px-2 text-left">Status</th>
-                          <th className="py-2 px-2 text-left">Reference</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {ercaspayPayments.map((p) => (
-                          <tr key={p.id} className="hover:bg-slate-50">
-                            <td className="py-2 px-2 text-slate-600">
-                              {new Date(p.created_at).toLocaleDateString()}
-                            </td>
-                            <td className="py-2 px-2 text-slate-800 font-medium">
-                              {p.user_id?.slice(0, 8)}...
-                            </td>
-                            <td className="py-2 px-2 font-semibold text-emerald-600">
-                              ₦{(p.amount || 0).toLocaleString()}
-                            </td>
-                            <td className="py-2 px-2">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                p.payment_method === 'card'
-                                  ? 'bg-purple-100 text-purple-700'
-                                  : 'bg-indigo-100 text-indigo-700'
-                              }`}>
-                                {p.payment_method === 'card' ? 'Card' : 'Bank Transfer'}
-                              </span>
-                            </td>
-                            <td className="py-2 px-2">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                p.status === 'paid'
-                                  ? 'bg-green-100 text-green-700'
-                                  : p.status === 'failed'
-                                  ? 'bg-red-100 text-red-700'
-                                  : 'bg-yellow-100 text-yellow-700'
-                              }`}>
-                                {p.status}
-                              </span>
-                            </td>
-                            <td className="py-2 px-2 text-slate-600 font-mono text-[10px]">
-                              {p.payment_reference || p.transaction_reference || '-'}
-                            </td>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px]">
+                        <thead className="bg-slate-50 text-slate-600 uppercase text-[9px]">
+                          <tr>
+                            <th className="py-2 px-2 text-left">Date</th>
+                            <th className="py-2 px-2 text-left">User</th>
+                            <th className="py-2 px-2 text-left">Amount</th>
+                            <th className="py-2 px-2 text-left">Status</th>
+                            <th className="py-2 px-2 text-left">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {ercaspayPayments.map((p) => (
+                            <tr key={p.id} className="hover:bg-slate-50">
+                              <td className="py-2 px-2 text-slate-600">
+                                {new Date(p.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="py-2 px-2 text-slate-800 font-medium truncate max-w-[80px]">
+                                {p.user_id?.slice(0, 8)}...
+                              </td>
+                              <td className="py-2 px-2 font-semibold text-emerald-600">
+                                ₦{(p.amount || 0).toLocaleString()}
+                              </td>
+                              <td className="py-2 px-2">
+                                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${
+                                  p.status === 'paid'
+                                    ? 'bg-green-100 text-green-700'
+                                    : p.status === 'failed'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {p.status}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2">
+                                <button
+                                  onClick={() => { setSelectedTransaction(p); setShowTransactionModal(true); }}
+                                  className="text-emerald-600 hover:underline text-[10px] font-medium"
+                                >
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   ) : (
                     <div className="text-center text-xs text-slate-500 py-6">No Ercaspay payments found</div>
                   )}
@@ -1518,11 +1515,11 @@ const AdminPanel = ({ user, setUser }) => {
 
             {/* Popup Notifications Management */}
             {activeSection === 'notifications' && (
-              <section className="space-y-6">
+              <section className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Popup Notifications</h2>
-                    <p className="text-xs text-slate-500">Create and manage user popup notifications (promo codes, support links, deposit bonuses, downtimes)</p>
+                    <h2 className="text-base font-semibold text-slate-900">Popup Notifications</h2>
+                    <p className="text-[10px] text-slate-500">Create notifications shown to users at login</p>
                   </div>
                   <Button
                     onClick={() => {
