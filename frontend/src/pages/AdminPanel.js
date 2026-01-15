@@ -136,7 +136,13 @@ const AdminPanel = ({ user, setUser }) => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
 
-  const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications
+  // Reseller management state
+  const [resellers, setResellers] = useState([]);
+  const [resellerPlans, setResellerPlans] = useState([]);
+  const [editingReseller, setEditingReseller] = useState(null);
+  const [editingPlan, setEditingPlan] = useState(null);
+
+  const [activeSection, setActiveSection] = useState('dashboard'); // dashboard | page-toggles | payment-gateways | promo-codes | branding | sms-providers | users | deposits | bank-accounts | transactions | ercaspay | notifications | resellers
   const [periodPreset, setPeriodPreset] = useState('7d');
   const [customRange, setCustomRange] = useState({ start: '', end: '' }); // YYYY-MM-DD
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
