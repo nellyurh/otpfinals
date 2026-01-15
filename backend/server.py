@@ -5185,24 +5185,43 @@ async def reseller_get_services(request: Request, server: str, country: Optional
         markup = pricing.get('smspool_markup', 20)
         if smspool_key:
             try:
-                resp = requests.get(
+                # Fetch pricing data
+                pricing_resp = requests.post(
+                    'https://api.smspool.net/request/pricing',
+                    data={'country': country},
+                    headers={'Authorization': f'Bearer {smspool_key}'},
+                    timeout=15
+                )
+                # Fetch service names
+                services_resp = requests.get(
                     f'https://api.smspool.net/service/retrieve_all?country={country}',
                     headers={'Authorization': f'Bearer {smspool_key}'},
                     timeout=15
                 )
-                if resp.ok:
-                    data = resp.json()
-                    for svc in data:
-                        base_usd = float(svc.get('price', 0))
+                
+                pricing_list = pricing_resp.json() if pricing_resp.ok else []
+                services_list = services_resp.json() if services_resp.ok else []
+                
+                # Build service ID -> name map
+                services_map = {}
+                for s in services_list:
+                    sid = str(s.get('ID', ''))
+                    if sid:
+                        services_map[sid] = s.get('name', f'Service {sid}')
+                
+                # Process pricing data
+                for item in pricing_list:
+                    service_id = str(item.get('ID', ''))
+                    base_usd = float(item.get('price', 0) or 0)
+                    if base_usd > 0:
                         base_ngn = base_usd * ngn_rate
                         reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
                         services.append({
-                            'code': str(svc.get('ID', '')),
-                            'name': svc.get('name', ''),
+                            'code': service_id,
+                            'name': services_map.get(service_id, item.get('name', f'Service {service_id}')),
                             'price_ngn': round(reseller_price, 2),
                             'price_usd': round(reseller_price / ngn_rate, 4),
                             'available': True,
-                            'pools': svc.get('pools', [])
                         })
             except Exception as e:
                 logger.error(f"SMS-pool services error: {e}")
