@@ -538,21 +538,43 @@ const NewDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-white border-r h-screen sticky top-0 overflow-hidden`}>
+      <aside className={`
+        fixed lg:sticky top-0 left-0 h-screen z-50
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        w-64 bg-white border-r transition-transform duration-300 ease-in-out
+        overflow-y-auto
+      `}>
         <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: branding.primary_color_hex || '#005E3A' }}>
-              <Phone className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: branding.primary_color_hex || '#005E3A' }}>
+                <Phone className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</h1>
+                <p className="text-xs text-gray-500">Virtual SMS Platform</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</h1>
-              <p className="text-xs text-gray-500">Virtual SMS Platform</p>
-            </div>
+            {/* Close button for mobile */}
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
         </div>
 
-        <nav className="px-3 space-y-6">
+        <nav className="px-3 space-y-6 pb-32">
           {menuItems.map((section, idx) => (
             <div key={idx}>
               <p className="text-xs font-semibold text-gray-400 px-3 mb-2">{section.category}</p>
@@ -560,7 +582,10 @@ const NewDashboard = () => {
                 {section.items.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setActiveSection(item.id)}
+                    onClick={() => {
+                      setActiveSection(item.id);
+                      setSidebarOpen(false); // Close sidebar on mobile after selection
+                    }}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
                       activeSection === item.id
                         ? 'text-white'
@@ -588,7 +613,7 @@ const NewDashboard = () => {
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t space-y-2">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t space-y-2 bg-white">
           {user.is_admin && (
             <a
               href="/admin"
