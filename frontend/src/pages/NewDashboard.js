@@ -897,77 +897,65 @@ const NewDashboard = () => {
       return user.email?.split('@')[0] || 'User';
     };
 
-    // Banner data - can be managed from admin later
-    const banners = [
+    // Banner images - these will be managed from admin
+    const bannerImages = [
       {
         id: 1,
-        title: 'Get Hot Deals',
-        subtitle: 'Save on Airtime & Data',
-        buttonText: 'Get Now!',
-        gradient: 'from-orange-500 to-red-500',
-        action: () => setActiveSection('airtime')
+        image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=300&fit=crop',
+        alt: 'Promo Banner 1',
+        action: () => setActiveSection('fund-wallet')
       },
       {
         id: 2,
-        title: 'SMS Verification',
-        subtitle: 'Virtual numbers from $2',
-        buttonText: 'Buy Now',
-        gradient: 'from-emerald-500 to-teal-500',
+        image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=300&fit=crop',
+        alt: 'Promo Banner 2',
         action: () => setActiveSection('virtual-numbers')
       },
       {
         id: 3,
-        title: 'Fund Your Wallet',
-        subtitle: 'Card, Bank & Crypto',
-        buttonText: 'Top Up',
-        gradient: 'from-purple-500 to-indigo-500',
-        action: () => setActiveSection('fund-wallet')
+        image: 'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=300&fit=crop',
+        alt: 'Promo Banner 3',
+        action: () => setActiveSection('airtime')
       }
     ];
 
     // Auto-rotate banners
     useEffect(() => {
       const interval = setInterval(() => {
-        setBannerIndex((prev) => (prev + 1) % banners.length);
+        setBannerIndex((prev) => (prev + 1) % bannerImages.length);
       }, 5000);
       return () => clearInterval(interval);
     }, []);
 
-    // Flowing Banner Component
-    const FlowingBanner = () => (
+    // Image Banner Carousel Component
+    const ImageBannerCarousel = () => (
       <div className="relative overflow-hidden rounded-xl">
         <div 
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
         >
-          {banners.map((banner) => (
+          {bannerImages.map((banner) => (
             <div 
               key={banner.id}
-              className={`min-w-full bg-gradient-to-r ${banner.gradient} p-4 sm:p-5`}
+              className="min-w-full cursor-pointer"
+              onClick={banner.action}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-white font-bold text-sm sm:text-base">{banner.title}</h4>
-                  <p className="text-white/80 text-xs sm:text-sm">{banner.subtitle}</p>
-                </div>
-                <button 
-                  onClick={banner.action}
-                  className="bg-white/20 backdrop-blur-sm text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/30 transition-colors"
-                >
-                  {banner.buttonText}
-                </button>
-              </div>
+              <img 
+                src={banner.image} 
+                alt={banner.alt}
+                className="w-full h-28 sm:h-36 lg:h-44 object-cover rounded-xl"
+              />
             </div>
           ))}
         </div>
         {/* Dots indicator */}
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-          {banners.map((_, i) => (
+          {bannerImages.map((_, i) => (
             <button
               key={i}
               onClick={() => setBannerIndex(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                i === bannerIndex ? 'bg-white' : 'bg-white/40'
+              className={`w-2 h-2 rounded-full transition-colors ${
+                i === bannerIndex ? 'bg-white' : 'bg-white/50'
               }`}
             />
           ))}
@@ -976,40 +964,40 @@ const NewDashboard = () => {
     );
 
     return (
-      <div className="space-y-4 sm:space-y-6">
-        {/* Welcome Card with Balance - Mobile optimized */}
-        <div className="bg-gradient-to-br from-[#005E3A] via-emerald-700 to-emerald-900 text-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8">
-          <div className="flex items-center gap-3 mb-4 sm:mb-6">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-base sm:text-lg lg:text-xl font-bold">{getUserInitials()}</span>
+      <div className="space-y-4 sm:space-y-5">
+        {/* Welcome Card with Balance */}
+        <div className="bg-gradient-to-br from-[#005E3A] via-emerald-700 to-emerald-900 text-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6">
+          <div className="flex items-center gap-3 mb-3 sm:mb-4">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-sm sm:text-base font-bold">{getUserInitials()}</span>
             </div>
-            <div>
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">{getUserDisplayName()}</h2>
-              <p className="text-white/80 text-xs sm:text-sm">{branding.brand_name || 'UltraCloud Sms'}</p>
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold truncate">{getUserDisplayName()}</h2>
+              <p className="text-white/80 text-xs">{branding.brand_name || 'UltraCloud Sms'}</p>
             </div>
           </div>
 
-          <div className="mb-3 sm:mb-4">
-            <p className="text-white/70 text-xs sm:text-sm mb-1 sm:mb-2">{dashboardCurrency === 'NGN' ? '₦' : '$'} Balance</p>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-4">
+          <div className="mb-3">
+            <p className="text-white/70 text-xs mb-1">{dashboardCurrency === 'NGN' ? '₦' : '$'} Balance</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">
               {dashboardCurrency === 'NGN' 
                 ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
                 : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
             </h1>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => setActiveSection('fund-wallet')}
-              className="flex-1 bg-white text-[#005E3A] px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm"
+              className="flex-1 bg-white text-[#005E3A] px-3 py-2 sm:py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5 text-xs sm:text-sm"
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Plus className="w-4 h-4" />
               Add Money
             </button>
-            <div className="flex gap-1 bg-white/20 rounded-lg p-0.5 sm:p-1">
+            <div className="flex bg-white/20 rounded-lg p-0.5">
               <button 
                 onClick={() => setDashboardCurrency('NGN')}
-                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded font-semibold text-xs sm:text-sm transition-colors ${
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded font-semibold text-xs transition-colors ${
                   dashboardCurrency === 'NGN' ? 'bg-white text-[#005E3A]' : 'text-white hover:bg-white/10'
                 }`}
               >
@@ -1017,7 +1005,7 @@ const NewDashboard = () => {
               </button>
               <button 
                 onClick={() => setDashboardCurrency('USD')}
-                className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded font-semibold text-xs sm:text-sm transition-colors ${
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded font-semibold text-xs transition-colors ${
                   dashboardCurrency === 'USD' ? 'bg-white text-[#005E3A]' : 'text-white hover:bg-white/10'
                 }`}
               >
@@ -1027,98 +1015,99 @@ const NewDashboard = () => {
           </div>
         </div>
 
-        {/* Flowing Banner - Shows on Mobile after balance card */}
-        <div className="block lg:hidden">
-          <FlowingBanner />
+        {/* Image Banner Carousel - Mobile (after balance) */}
+        <div className="lg:hidden">
+          <ImageBannerCarousel />
         </div>
 
-        {/* Quick Services - Mobile optimized grid */}
+        {/* Quick Services */}
         <div>
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">Quick Services</h3>
-            <a href="#" className="text-xs sm:text-sm text-[#005E3A] font-semibold hover:underline">View all →</a>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm sm:text-base font-bold text-gray-900">Quick Services</h3>
+            <a href="#" className="text-xs text-[#005E3A] font-semibold hover:underline">View all →</a>
           </div>
 
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 lg:gap-4">
-            {/* Transfer */}
-            <div onClick={() => setActiveSection('fund-wallet')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-green-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Grid: 4 columns on mobile, 4 columns on tablet, 4 columns on desktop */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            {/* Fund */}
+            <div onClick={() => setActiveSection('fund-wallet')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Fund</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Fund</span>
             </div>
 
-            {/* SMS Verify */}
-            <div onClick={() => setActiveSection('virtual-numbers')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-emerald-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <Phone className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-[#005E3A]" />
+            {/* SMS */}
+            <div onClick={() => setActiveSection('virtual-numbers')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <Phone className="w-4 h-4 sm:w-6 sm:h-6 text-[#005E3A]" />
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">SMS</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">SMS</span>
             </div>
 
-            {/* Virtual Cards */}
-            <div onClick={() => setActiveSection('virtual-cards')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-purple-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-purple-600" />
+            {/* Cards */}
+            <div onClick={() => setActiveSection('virtual-cards')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <CreditCard className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" />
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Cards</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Cards</span>
             </div>
 
-            {/* Data Bundle */}
-            <div onClick={() => setActiveSection('buy-data')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Data */}
+            <div onClick={() => setActiveSection('buy-data')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Data</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Data</span>
             </div>
 
             {/* Airtime */}
-            <div onClick={() => setActiveSection('airtime')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-cyan-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div onClick={() => setActiveSection('airtime')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Airtime</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Airtime</span>
             </div>
 
-            {/* Refer & Earn */}
-            <div onClick={() => setActiveSection('referral')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-pink-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <Gift className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-pink-600" />
+            {/* Refer */}
+            <div onClick={() => setActiveSection('referral')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <Gift className="w-4 h-4 sm:w-6 sm:h-6 text-pink-600" />
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Refer</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Refer</span>
             </div>
 
             {/* W2W */}
-            <div onClick={() => setActiveSection('fund-wallet')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-orange-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div onClick={() => setActiveSection('fund-wallet')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">W2W</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">W2W</span>
             </div>
 
             {/* Betting */}
-            <div onClick={() => setActiveSection('betting')} className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 border hover:shadow-lg transition-shadow cursor-pointer flex flex-col items-center text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-yellow-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div onClick={() => setActiveSection('betting')} className="bg-white rounded-xl p-2.5 sm:p-4 border hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-1.5 sm:mb-2">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Betting</h4>
+              <span className="font-medium text-gray-900 text-[10px] sm:text-xs">Betting</span>
             </div>
           </div>
         </div>
 
-        {/* Flowing Banner - Shows on Desktop */}
+        {/* Image Banner Carousel - Desktop (below services) */}
         <div className="hidden lg:block">
-          <FlowingBanner />
+          <ImageBannerCarousel />
         </div>
       </div>
     );
