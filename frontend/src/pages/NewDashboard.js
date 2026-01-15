@@ -1995,28 +1995,176 @@ const NewDashboard = () => {
   }
 
   function ProfileSection() {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [savingPassword, setSavingPassword] = useState(false);
+    const [fullName, setFullName] = useState(user.full_name || '');
+    const [phone, setPhone] = useState(user.phone || '');
+    const [savingProfile, setSavingProfile] = useState(false);
+
+    const primaryColor = branding.primary_color_hex || '#059669';
+
+    const handleUpdateProfile = async () => {
+      if (!fullName.trim()) {
+        toast.error('Full name is required');
+        return;
+      }
+      setSavingProfile(true);
+      try {
+        const response = await axios.put(`${API}/api/user/profile`, { full_name: fullName, phone: phone }, axiosConfig);
+        setUser({ ...user, full_name: fullName, phone: phone });
+        toast.success('Profile updated successfully');
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to update profile');
+      } finally {
+        setSavingProfile(false);
+      }
+    };
+
+    const handleChangePassword = async () => {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error('All password fields are required');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        toast.error('New passwords do not match');
+        return;
+      }
+      if (newPassword.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
+      setSavingPassword(true);
+      try {
+        await axios.put(`${API}/api/user/change-password`, { 
+          current_password: currentPassword, 
+          new_password: newPassword 
+        }, axiosConfig);
+        toast.success('Password changed successfully');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to change password');
+      } finally {
+        setSavingPassword(false);
+      }
+    };
+
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
-        <div className="bg-white p-6 rounded-xl border shadow-sm">
-          <div className="space-y-4">
+        
+        {/* Profile Info Card */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': primaryColor }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <input
                 type="email"
                 value={user.email}
                 disabled
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-50"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">NGN Balance</label>
-              <div className="text-2xl font-bold text-[#005E3A]">₦{user.ngn_balance?.toLocaleString()}</div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">USD Balance</label>
-              <div className="text-2xl font-bold text-blue-600">${user.usd_balance?.toLocaleString()}</div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Account Tier</label>
+              <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
+                <span className="font-semibold" style={{ color: primaryColor }}>Tier {user.tier || 1}</span>
+                <span className="text-gray-500 text-sm ml-2">
+                  (Limit: ₦{user.tier === 3 ? '1,000,000' : user.tier === 2 ? '100,000' : '10,000'})
+                </span>
+              </div>
             </div>
+          </div>
+          <button
+            onClick={handleUpdateProfile}
+            disabled={savingProfile}
+            className="mt-4 px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
+            style={{ backgroundColor: primaryColor }}
+          >
+            {savingProfile ? 'Saving...' : 'Save Profile'}
+          </button>
+        </div>
+
+        {/* Balance Card */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Wallet Balances</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl" style={{ backgroundColor: `${primaryColor}10` }}>
+              <p className="text-sm text-gray-600">NGN Balance</p>
+              <p className="text-3xl font-bold" style={{ color: primaryColor }}>₦{(user.ngn_balance || 0).toLocaleString()}</p>
+            </div>
+            <div className="p-4 bg-blue-50 rounded-xl">
+              <p className="text-sm text-gray-600">USD Balance</p>
+              <p className="text-3xl font-bold text-blue-600">${(user.usd_balance || 0).toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Change Password Card */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
+          <div className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                placeholder="Enter current password"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                placeholder="Enter new password"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                placeholder="Confirm new password"
+              />
+            </div>
+            <button
+              onClick={handleChangePassword}
+              disabled={savingPassword}
+              className="px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {savingPassword ? 'Changing...' : 'Change Password'}
+            </button>
           </div>
         </div>
       </div>
@@ -2024,13 +2172,95 @@ const NewDashboard = () => {
   }
 
   function ReferralSection() {
+    const primaryColor = branding.primary_color_hex || '#059669';
+    const referralCode = user.referral_code || user.email?.split('@')[0]?.toUpperCase() || 'NOCODE';
+    const referralLink = `${window.location.origin}?ref=${referralCode}`;
+    
+    const copyReferralLink = () => {
+      navigator.clipboard.writeText(referralLink);
+      toast.success('Referral link copied!');
+    };
+
+    const copyReferralCode = () => {
+      navigator.clipboard.writeText(referralCode);
+      toast.success('Referral code copied!');
+    };
+
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Referral Program</h2>
-        <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
-          <Gift className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">Refer friends and earn rewards</p>
-          <p className="text-sm text-gray-400 mt-2">Coming soon!</p>
+        
+        {/* Referral Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <p className="text-3xl font-bold" style={{ color: primaryColor }}>{user.referral_count || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">Total Referrals</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <p className="text-3xl font-bold text-amber-500">₦{(user.referral_earnings || 0).toLocaleString()}</p>
+            <p className="text-sm text-gray-500 mt-1">Total Earnings</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <p className="text-3xl font-bold text-blue-500">5%</p>
+            <p className="text-sm text-gray-500 mt-1">Commission Rate</p>
+          </div>
+        </div>
+        
+        {/* Referral Code Card */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Referral Code</h3>
+          
+          <div className="p-4 rounded-xl mb-4" style={{ backgroundColor: `${primaryColor}10` }}>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold tracking-wider" style={{ color: primaryColor }}>{referralCode}</span>
+              <button 
+                onClick={copyReferralCode}
+                className="px-4 py-2 text-white rounded-lg text-sm font-semibold"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Copy Code
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Referral Link</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={referralLink}
+                readOnly
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm"
+              />
+              <button 
+                onClick={copyReferralLink}
+                className="px-4 py-3 text-white rounded-xl text-sm font-semibold"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">How It Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { step: '1', title: 'Share Your Link', desc: 'Share your unique referral link with friends' },
+              { step: '2', title: 'They Sign Up', desc: 'When they register using your link' },
+              { step: '3', title: 'Earn Rewards', desc: 'Get 5% of their first deposit as bonus!' }
+            ].map((item, idx) => (
+              <div key={idx} className="text-center p-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-white font-bold" style={{ backgroundColor: primaryColor }}>
+                  {item.step}
+                </div>
+                <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
