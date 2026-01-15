@@ -67,7 +67,11 @@ const NewDashboard = () => {
     enable_account_upgrade: true,
     enable_referral: true,
     enable_profile: true,
-    enable_support: true
+    enable_support: true,
+    // Payment gateway toggles
+    enable_paymentpoint: true,
+    enable_plisio: true,
+    enable_ercaspay: true
   });
   
   // Notifications state
