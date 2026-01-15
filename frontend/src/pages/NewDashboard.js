@@ -889,85 +889,62 @@ const NewDashboard = () => {
   function DashboardOverview() {
     const [bannerIndex, setBannerIndex] = useState(0);
     
-    const getUserInitials = () => {
-      if (!user.full_name && !user.email) return 'U';
-      if (user.full_name) {
-        const nameParts = user.full_name.trim().split(' ');
-        if (nameParts.length > 1) {
-          return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
-        }
-        return user.full_name.slice(0, 2).toUpperCase();
-      }
-      return user.email.slice(0, 2).toUpperCase();
-    };
-
-    const getUserDisplayName = () => {
-      if (user.full_name) return user.full_name;
-      return user.email?.split('@')[0] || 'User';
-    };
-
-    // Banner images - these will be managed from admin
-    const bannerImages = [
-      {
-        id: 1,
-        image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=300&fit=crop',
-        alt: 'Promo Banner 1',
-        action: () => setActiveSection('fund-wallet')
-      },
-      {
-        id: 2,
-        image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=300&fit=crop',
-        alt: 'Promo Banner 2',
-        action: () => setActiveSection('virtual-numbers')
-      },
-      {
-        id: 3,
-        image: 'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=300&fit=crop',
-        alt: 'Promo Banner 3',
-        action: () => setActiveSection('airtime')
-      }
-    ];
+    // Get banner images from branding (admin editable) or use defaults
+    const bannerImages = (branding.banner_images && branding.banner_images.length > 0 
+      ? branding.banner_images.filter(b => b.active !== false)
+      : [
+        { id: '1', image_url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=300&fit=crop', link: '' },
+        { id: '2', image_url: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=300&fit=crop', link: '' },
+        { id: '3', image_url: 'https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=800&h=300&fit=crop', link: '' }
+      ]).map(b => ({
+        id: b.id,
+        image: b.image_url,
+        link: b.link || '',
+        action: b.link ? () => window.open(b.link, '_blank') : () => setActiveSection('fund-wallet')
+      }));
 
     // Auto-rotate banners
     useEffect(() => {
+      if (bannerImages.length <= 1) return;
       const interval = setInterval(() => {
         setBannerIndex((prev) => (prev + 1) % bannerImages.length);
       }, 5000);
       return () => clearInterval(interval);
-    }, []);
+    }, [bannerImages.length]);
 
-    // Service cards inspired by Screenshot 3 with arrow buttons
+    // Service cards with dynamic colors from branding
+    const primaryColor = branding.primary_color_hex || '#059669';
     const serviceCards = [
-      { name: 'Virtual Numbers', color: 'text-purple-600', bgIcon: 'bg-purple-50', action: () => setActiveSection('virtual-numbers'), icon: Phone },
-      { name: 'Internet Data', color: 'text-emerald-600', bgIcon: 'bg-emerald-50', action: () => setActiveSection('buy-data'), icon: () => (
+      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: Phone },
+      { name: 'Internet Data', action: () => setActiveSection('buy-data'), icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
         </svg>
       )},
-      { name: 'TV Sub', color: 'text-pink-600', bgIcon: 'bg-pink-50', action: () => setActiveSection('buy-data'), icon: () => (
+      { name: 'TV Sub', action: () => setActiveSection('buy-data'), icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       )},
-      { name: 'Airtime', color: 'text-purple-600', bgIcon: 'bg-purple-50', action: () => setActiveSection('airtime'), icon: () => (
+      { name: 'Airtime', action: () => setActiveSection('airtime'), icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
         </svg>
       )},
-      { name: 'Electricity', color: 'text-emerald-600', bgIcon: 'bg-emerald-50', action: () => setActiveSection('buy-data'), icon: () => (
+      { name: 'Electricity', action: () => setActiveSection('buy-data'), icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       )},
-      { name: 'Virtual Cards', color: 'text-gray-700', bgIcon: 'bg-gray-50', action: () => setActiveSection('virtual-cards'), icon: CreditCard },
+      { name: 'Virtual Cards', action: () => setActiveSection('virtual-cards'), icon: CreditCard },
     ];
 
     return (
       <div className="space-y-5 sm:space-y-6">
         {/* Top Row: Balance Card + My Card (Desktop) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Balance Card - Redesigned like Screenshot 1 */}
-          <div className="lg:col-span-2 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+          {/* Balance Card - with border and dynamic color */}
+          <div className="lg:col-span-2 bg-white rounded-2xl p-5 sm:p-6 border-2 shadow-sm" style={{ borderColor: primaryColor }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">Total Balance</h3>
               <button className="text-xs text-purple-600 font-medium hover:underline">Manage Wallet</button>
