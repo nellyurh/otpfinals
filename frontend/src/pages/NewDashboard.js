@@ -642,40 +642,40 @@ const NewDashboard = () => {
         />
       )}
 
-      {/* Sidebar - Clean white design */}
+      {/* Sidebar - Clean white design with reduced font sizes */}
       <aside className={`
         fixed lg:sticky top-0 left-0 h-screen z-50
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        w-64 bg-white border-r border-gray-100 transition-transform duration-300 ease-in-out
+        w-56 lg:w-60 bg-white border-r border-gray-100 transition-transform duration-300 ease-in-out
         overflow-y-auto shadow-sm
       `}>
-        <div className="p-5">
+        <div className="p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               {/* Logo - use image if available */}
               {branding.brand_logo_url ? (
-                <img src={branding.brand_logo_url} alt="Logo" className="w-10 h-10 rounded-xl object-contain" />
+                <img src={branding.brand_logo_url} alt="Logo" className="h-8 object-contain" />
               ) : (
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: branding.primary_color_hex || '#059669' }}>
-                  <Phone className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow" style={{ backgroundColor: branding.primary_color_hex || '#059669' }}>
+                  <Phone className="w-4 h-4 text-white" />
                 </div>
               )}
             </div>
             {/* Close button for mobile */}
             <button 
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+              className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-4 h-4 text-gray-600" />
             </button>
           </div>
         </div>
 
-        <nav className="px-3 space-y-5 pb-32">
+        <nav className="px-2 space-y-4 pb-28">
           {menuItems.map((section, idx) => (
             <div key={idx}>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">{section.category}</p>
-              <div className="space-y-1">
+              <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-1.5">{section.category}</p>
+              <div className="space-y-0.5">
                 {section.items.map((item) => (
                   <button
                     key={item.id}
