@@ -4143,6 +4143,10 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         'enable_referral',
         'enable_profile',
         'enable_support',
+        # Payment gateway toggles
+        'enable_paymentpoint',
+        'enable_plisio',
+        'enable_ercaspay',
     ]:
         val = getattr(data, key, None)
         if val is not None:
