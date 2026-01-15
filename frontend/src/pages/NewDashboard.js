@@ -652,13 +652,14 @@ const NewDashboard = () => {
         <div className="p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600 shadow-lg shadow-purple-200">
-                <Phone className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</h1>
-                <p className="text-[10px] text-gray-500">Virtual SMS Platform</p>
-              </div>
+              {/* Logo - use image if available */}
+              {branding.brand_logo_url ? (
+                <img src={branding.brand_logo_url} alt="Logo" className="w-10 h-10 rounded-xl object-contain" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: branding.primary_color_hex || '#059669' }}>
+                  <Phone className="w-5 h-5 text-white" />
+                </div>
+              )}
             </div>
             {/* Close button for mobile */}
             <button 
@@ -684,9 +685,10 @@ const NewDashboard = () => {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all ${
                       activeSection === item.id
-                        ? 'bg-purple-600 text-white shadow-md shadow-purple-200'
+                        ? 'text-white shadow-md'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }`}
+                    style={activeSection === item.id ? { backgroundColor: branding.primary_color_hex || '#059669' } : undefined}
                   >
                     <div className="flex items-center gap-3">
                       <item.icon className="w-5 h-5" />
@@ -696,8 +698,8 @@ const NewDashboard = () => {
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
                         activeSection === item.id 
                           ? 'bg-white/20 text-white' 
-                          : 'bg-purple-100 text-purple-600'
-                      }`}>
+                          : ''
+                      }`} style={activeSection !== item.id ? { backgroundColor: `${branding.primary_color_hex || '#059669'}20`, color: branding.primary_color_hex || '#059669' } : undefined}>
                         {item.badge}
                       </span>
                     )}
@@ -712,7 +714,8 @@ const NewDashboard = () => {
           {user.is_admin && (
             <a
               href="/admin"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-purple-600 hover:bg-purple-50 transition-colors font-medium"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+              style={{ color: branding.primary_color_hex || '#059669' }}
             >
               <Settings className="w-5 h-5" />
               <span className="text-sm">Admin Panel</span>
