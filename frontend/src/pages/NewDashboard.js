@@ -2698,7 +2698,9 @@ const NewDashboard = () => {
     const [showApiKey, setShowApiKey] = useState(false);
     const [registering, setRegistering] = useState(false);
     const [upgrading, setUpgrading] = useState(false);
-    const [showDocs, setShowDocs] = useState(false);
+    // Use parent state for showDocs to persist across navigations
+    const showDocs = showResellerDocs;
+    const setShowDocs = setShowResellerDocs;
 
     // Fetch reseller data when section mounts (only if not already fetched)
     useEffect(() => {
