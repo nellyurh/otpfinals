@@ -4745,6 +4745,862 @@ async def paymentpoint_webhook(request: Request, paymentpoint_signature: Optiona
         logger.error(f"PaymentPoint webhook error: {str(e)}")
         return {'status': 'error', 'message': str(e)}
 
+
+# ============ RESELLER API ENDPOINTS ============
+
+# Server mapping for resellers (hides provider names)
+RESELLER_SERVER_MAP = {
+    'usa': {'provider': 'daisysms', 'scope': 'US_ONLY', 'description': 'United States numbers only'},
+    'all_country_1': {'provider': 'smspool', 'scope': 'GLOBAL', 'description': 'All countries - Primary server'},
+    'all_country_2': {'provider': '5sim', 'scope': 'GLOBAL', 'description': 'All countries - Secondary server'},
+}
+
+async def get_reseller_by_api_key(api_key: str) -> Optional[dict]:
+    """Get reseller by API key"""
+    reseller = await db.resellers.find_one({'api_key': api_key, 'status': 'active'}, {'_id': 0})
+    return reseller
+
+async def verify_reseller_api_key(request: Request) -> dict:
+    """Verify reseller API key from header or query param"""
+    api_key = request.headers.get('X-API-KEY') or request.query_params.get('api_key')
+    if not api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    reseller = await get_reseller_by_api_key(api_key)
+    if not reseller:
+        raise HTTPException(status_code=401, detail="Invalid or inactive API key")
+    
+    return reseller
+
+def calculate_reseller_price(base_price_ngn: float, markup_percent: float, reseller: dict, pricing_config: dict) -> float:
+    """Calculate the price for a reseller based on their plan"""
+    # Get the reseller's markup multiplier
+    multiplier = reseller.get('custom_markup_multiplier')
+    if multiplier is None:
+        # Use plan multiplier
+        plan_multipliers = {
+            'Free': 1.0,      # Same as normal users (100% markup)
+            'Basic': 0.5,     # 50% of normal markup
+            'Pro': 0.3,       # 30% of normal markup
+            'Enterprise': 0.2 # 20% of normal markup (custom)
+        }
+        multiplier = plan_multipliers.get(reseller.get('plan_name', 'Free'), 1.0)
+    
+    # Calculate: base_price + (markup * multiplier)
+    markup_amount = base_price_ngn * (markup_percent / 100)
+    reseller_markup = markup_amount * multiplier
+    return base_price_ngn + reseller_markup
+
+
+# Reseller API v1 endpoints
+@api_router.get("/reseller/v1/balance")
+async def reseller_get_balance(request: Request):
+    """Get reseller wallet balance"""
+    reseller = await verify_reseller_api_key(request)
+    user = await db.users.find_one({'id': reseller['user_id']}, {'_id': 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        'success': True,
+        'balance_ngn': user.get('ngn_balance', 0),
+        'balance_usd': user.get('usd_balance', 0),
+        'currency': 'NGN',
+        'plan': reseller.get('plan_name', 'Free')
+    }
+
+
+@api_router.get("/reseller/v1/servers")
+async def reseller_get_servers(request: Request):
+    """Get available servers for reseller"""
+    reseller = await verify_reseller_api_key(request)
+    
+    servers = []
+    for key, info in RESELLER_SERVER_MAP.items():
+        servers.append({
+            'key': key,
+            'scope': info['scope'],
+            'description': info['description']
+        })
+    
+    return {
+        'success': True,
+        'servers': servers
+    }
+
+
+@api_router.get("/reseller/v1/countries")
+async def reseller_get_countries(request: Request, server: str):
+    """Get available countries for a server"""
+    reseller = await verify_reseller_api_key(request)
+    
+    if server not in RESELLER_SERVER_MAP:
+        raise HTTPException(status_code=400, detail="Invalid server key")
+    
+    provider = RESELLER_SERVER_MAP[server]['provider']
+    pricing = await db.pricing_config.find_one({}, {'_id': 0})
+    
+    countries = []
+    
+    if server == 'usa':
+        # DaisySMS is US only
+        countries = [{'code': '187', 'name': 'United States', 'flag': '🇺🇸'}]
+    elif server == 'all_country_1':
+        # SMS-pool countries
+        smspool_key = pricing.get('smspool_api_key') if pricing else None
+        if smspool_key:
+            try:
+                resp = requests.get(
+                    'https://api.sms-pool.com/country/retrieve_all',
+                    headers={'Authorization': f'Bearer {smspool_key}'},
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    for c in data:
+                        countries.append({
+                            'code': str(c.get('ID') or c.get('short_name', '')),
+                            'name': c.get('name', ''),
+                            'flag': ''
+                        })
+            except Exception as e:
+                logger.error(f"SMS-pool countries error: {e}")
+    elif server == 'all_country_2':
+        # 5sim countries
+        fivesim_key = pricing.get('fivesim_api_key') if pricing else None
+        if fivesim_key:
+            try:
+                resp = requests.get(
+                    'https://5sim.net/v1/guest/countries',
+                    headers={'Authorization': f'Bearer {fivesim_key}'},
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    for code, info in data.items():
+                        countries.append({
+                            'code': code,
+                            'name': info.get('text_en', code),
+                            'flag': ''
+                        })
+            except Exception as e:
+                logger.error(f"5sim countries error: {e}")
+    
+    return {
+        'success': True,
+        'server': server,
+        'countries': countries
+    }
+
+
+@api_router.get("/reseller/v1/services")
+async def reseller_get_services(request: Request, server: str, country: Optional[str] = None):
+    """Get available services with reseller pricing"""
+    reseller = await verify_reseller_api_key(request)
+    
+    if server not in RESELLER_SERVER_MAP:
+        raise HTTPException(status_code=400, detail="Invalid server key")
+    
+    provider = RESELLER_SERVER_MAP[server]['provider']
+    pricing = await db.pricing_config.find_one({}, {'_id': 0}) or {}
+    
+    services = []
+    ngn_rate = pricing.get('ngn_to_usd_rate', 1500)
+    
+    if server == 'usa':
+        # DaisySMS
+        daisy_key = pricing.get('daisysms_api_key')
+        markup = pricing.get('daisysms_markup', 20)
+        if daisy_key:
+            try:
+                resp = requests.get(
+                    f'https://daisysms.com/stubs/handler_api.php?api_key={daisy_key}&action=getPricesVerification&country=187',
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    for service_code, info in data.get('187', {}).items():
+                        base_usd = float(info.get('cost', 0))
+                        base_ngn = base_usd * ngn_rate
+                        reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                        services.append({
+                            'code': service_code,
+                            'name': info.get('name', service_code),
+                            'price_ngn': round(reseller_price, 2),
+                            'price_usd': round(reseller_price / ngn_rate, 4),
+                            'available': True
+                        })
+            except Exception as e:
+                logger.error(f"DaisySMS services error: {e}")
+                
+    elif server == 'all_country_1':
+        # SMS-pool
+        if not country:
+            raise HTTPException(status_code=400, detail="Country required for this server")
+        smspool_key = pricing.get('smspool_api_key')
+        markup = pricing.get('smspool_markup', 20)
+        if smspool_key:
+            try:
+                resp = requests.get(
+                    f'https://api.sms-pool.com/service/retrieve_all?country={country}',
+                    headers={'Authorization': f'Bearer {smspool_key}'},
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    for svc in data:
+                        base_usd = float(svc.get('price', 0))
+                        base_ngn = base_usd * ngn_rate
+                        reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                        services.append({
+                            'code': str(svc.get('ID', '')),
+                            'name': svc.get('name', ''),
+                            'price_ngn': round(reseller_price, 2),
+                            'price_usd': round(reseller_price / ngn_rate, 4),
+                            'available': True,
+                            'pools': svc.get('pools', [])
+                        })
+            except Exception as e:
+                logger.error(f"SMS-pool services error: {e}")
+                
+    elif server == 'all_country_2':
+        # 5sim
+        if not country:
+            raise HTTPException(status_code=400, detail="Country required for this server")
+        fivesim_key = pricing.get('fivesim_api_key')
+        markup = pricing.get('tigersms_markup', 20)  # Uses same field as tigersms
+        coin_rate = pricing.get('fivesim_coin_per_usd', 77.44)
+        if fivesim_key:
+            try:
+                resp = requests.get(
+                    f'https://5sim.net/v1/guest/products/{country}/any',
+                    headers={'Authorization': f'Bearer {fivesim_key}'},
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    for service_code, info in data.items():
+                        coin_price = float(info.get('Price', 0))
+                        base_usd = coin_price / coin_rate
+                        base_ngn = base_usd * ngn_rate
+                        reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                        services.append({
+                            'code': service_code,
+                            'name': service_code.replace('_', ' ').title(),
+                            'price_ngn': round(reseller_price, 2),
+                            'price_usd': round(reseller_price / ngn_rate, 4),
+                            'available': True,
+                            'operators': list(info.get('operators', {}).keys()) if isinstance(info.get('operators'), dict) else []
+                        })
+            except Exception as e:
+                logger.error(f"5sim services error: {e}")
+    
+    return {
+        'success': True,
+        'server': server,
+        'country': country,
+        'services': services
+    }
+
+
+@api_router.post("/reseller/v1/buy")
+async def reseller_buy_number(request: Request):
+    """Purchase a number through reseller API"""
+    reseller = await verify_reseller_api_key(request)
+    
+    try:
+        body = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    
+    server = body.get('server')
+    service = body.get('service')
+    country = body.get('country')
+    price = body.get('price')
+    client_order_ref = body.get('client_order_ref')
+    
+    if not server or not service:
+        raise HTTPException(status_code=400, detail="server and service are required")
+    
+    if server not in RESELLER_SERVER_MAP:
+        raise HTTPException(status_code=400, detail="Invalid server key")
+    
+    if server != 'usa' and not country:
+        raise HTTPException(status_code=400, detail="country is required for this server")
+    
+    provider = RESELLER_SERVER_MAP[server]['provider']
+    pricing = await db.pricing_config.find_one({}, {'_id': 0}) or {}
+    ngn_rate = pricing.get('ngn_to_usd_rate', 1500)
+    
+    # Get user balance
+    user = await db.users.find_one({'id': reseller['user_id']}, {'_id': 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_balance = user.get('ngn_balance', 0)
+    
+    # Calculate reseller price based on their plan
+    if price:
+        reseller_price = float(price)
+    else:
+        raise HTTPException(status_code=400, detail="price is required")
+    
+    if user_balance < reseller_price:
+        raise HTTPException(status_code=400, detail=f"Insufficient balance. Required: ₦{reseller_price:.2f}, Available: ₦{user_balance:.2f}")
+    
+    # Execute purchase with provider
+    provider_order_id = None
+    phone_number = None
+    provider_cost = 0
+    
+    try:
+        if provider == 'daisysms':
+            daisy_key = pricing.get('daisysms_api_key')
+            if not daisy_key:
+                raise HTTPException(status_code=500, detail="Provider not configured")
+            
+            params = {
+                'api_key': daisy_key,
+                'action': 'getNumber',
+                'service': service,
+                'country': '187'
+            }
+            resp = requests.get('https://daisysms.com/stubs/handler_api.php', params=params, timeout=30)
+            
+            if resp.ok and resp.text.startswith('ACCESS_NUMBER'):
+                parts = resp.text.split(':')
+                provider_order_id = parts[1]
+                phone_number = parts[2]
+            else:
+                raise HTTPException(status_code=400, detail=f"Provider error: {resp.text}")
+                
+        elif provider == 'smspool':
+            smspool_key = pricing.get('smspool_api_key')
+            if not smspool_key:
+                raise HTTPException(status_code=500, detail="Provider not configured")
+            
+            resp = requests.post(
+                'https://api.sms-pool.com/purchase/sms',
+                headers={'Authorization': f'Bearer {smspool_key}'},
+                data={'country': country, 'service': service},
+                timeout=30
+            )
+            if resp.ok:
+                data = resp.json()
+                if data.get('success') == 1:
+                    provider_order_id = str(data.get('order_id'))
+                    phone_number = data.get('phonenumber') or data.get('number')
+                else:
+                    raise HTTPException(status_code=400, detail=data.get('message', 'Purchase failed'))
+            else:
+                raise HTTPException(status_code=400, detail="Provider error")
+                
+        elif provider == '5sim':
+            fivesim_key = pricing.get('fivesim_api_key')
+            if not fivesim_key:
+                raise HTTPException(status_code=500, detail="Provider not configured")
+            
+            resp = requests.get(
+                f'https://5sim.net/v1/user/buy/activation/{country}/any/{service}',
+                headers={'Authorization': f'Bearer {fivesim_key}'},
+                timeout=30
+            )
+            if resp.ok:
+                data = resp.json()
+                provider_order_id = str(data.get('id'))
+                phone_number = data.get('phone')
+            else:
+                raise HTTPException(status_code=400, detail="Provider error")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Reseller buy error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    # Deduct balance
+    await db.users.update_one(
+        {'id': reseller['user_id']},
+        {'$inc': {'ngn_balance': -reseller_price}}
+    )
+    
+    # Create reseller order record
+    order = ResellerOrder(
+        reseller_id=reseller['id'],
+        user_id=reseller['user_id'],
+        client_order_ref=client_order_ref,
+        server=server,
+        provider=provider,
+        service=service,
+        country=country or '187',
+        phone_number=phone_number,
+        provider_order_id=provider_order_id,
+        status='active',
+        cost_ngn=reseller_price,
+        reseller_price_ngn=reseller_price,
+        provider_cost=provider_cost
+    )
+    order_dict = order.model_dump()
+    order_dict['created_at'] = order_dict['created_at'].isoformat()
+    if order_dict.get('expires_at'):
+        order_dict['expires_at'] = order_dict['expires_at'].isoformat()
+    await db.reseller_orders.insert_one(order_dict)
+    
+    # Update reseller stats
+    await db.resellers.update_one(
+        {'id': reseller['id']},
+        {'$inc': {'total_orders': 1, 'total_revenue_ngn': reseller_price}}
+    )
+    
+    return {
+        'success': True,
+        'order_id': order.id,
+        'provider_order_id': provider_order_id,
+        'phone_number': phone_number,
+        'server': server,
+        'service': service,
+        'country': country,
+        'price_charged_ngn': reseller_price,
+        'status': 'active'
+    }
+
+
+@api_router.get("/reseller/v1/status")
+async def reseller_get_status(request: Request, provider_order_id: str):
+    """Check order status and get OTP if received"""
+    reseller = await verify_reseller_api_key(request)
+    
+    # Find the order
+    order = await db.reseller_orders.find_one({
+        'reseller_id': reseller['id'],
+        'provider_order_id': provider_order_id
+    }, {'_id': 0})
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    pricing = await db.pricing_config.find_one({}, {'_id': 0}) or {}
+    provider = order.get('provider')
+    otp = order.get('otp')
+    sms_text = order.get('sms_text')
+    status = order.get('status')
+    
+    # Check provider for OTP if not already received
+    if not otp and status == 'active':
+        try:
+            if provider == 'daisysms':
+                daisy_key = pricing.get('daisysms_api_key')
+                resp = requests.get(
+                    f'https://daisysms.com/stubs/handler_api.php?api_key={daisy_key}&action=getStatus&id={provider_order_id}',
+                    timeout=15
+                )
+                if resp.ok:
+                    text = resp.text
+                    if text.startswith('STATUS_OK:'):
+                        otp = text.split(':')[1]
+                        status = 'completed'
+                        
+            elif provider == 'smspool':
+                smspool_key = pricing.get('smspool_api_key')
+                resp = requests.post(
+                    'https://api.sms-pool.com/sms/check',
+                    headers={'Authorization': f'Bearer {smspool_key}'},
+                    data={'order_id': provider_order_id},
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    if data.get('sms'):
+                        otp = data.get('sms')
+                        sms_text = data.get('full_sms')
+                        status = 'completed'
+                        
+            elif provider == '5sim':
+                fivesim_key = pricing.get('fivesim_api_key')
+                resp = requests.get(
+                    f'https://5sim.net/v1/user/check/{provider_order_id}',
+                    headers={'Authorization': f'Bearer {fivesim_key}'},
+                    timeout=15
+                )
+                if resp.ok:
+                    data = resp.json()
+                    sms_list = data.get('sms', [])
+                    if sms_list:
+                        otp = sms_list[0].get('code')
+                        sms_text = sms_list[0].get('text')
+                        status = 'completed'
+            
+            # Update order if OTP received
+            if otp:
+                await db.reseller_orders.update_one(
+                    {'id': order['id']},
+                    {'$set': {'otp': otp, 'sms_text': sms_text, 'status': status}}
+                )
+        except Exception as e:
+            logger.error(f"Status check error: {e}")
+    
+    return {
+        'success': True,
+        'order_id': order.get('id'),
+        'provider_order_id': provider_order_id,
+        'phone_number': order.get('phone_number'),
+        'status': status,
+        'otp': otp,
+        'sms_text': sms_text
+    }
+
+
+@api_router.post("/reseller/v1/cancel")
+async def reseller_cancel_order(request: Request):
+    """Cancel order and refund"""
+    reseller = await verify_reseller_api_key(request)
+    
+    try:
+        body = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+    
+    provider_order_id = body.get('provider_order_id')
+    if not provider_order_id:
+        raise HTTPException(status_code=400, detail="provider_order_id is required")
+    
+    # Find the order
+    order = await db.reseller_orders.find_one({
+        'reseller_id': reseller['id'],
+        'provider_order_id': provider_order_id
+    }, {'_id': 0})
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if order.get('status') != 'active':
+        raise HTTPException(status_code=400, detail="Order cannot be cancelled")
+    
+    if order.get('otp'):
+        raise HTTPException(status_code=400, detail="Cannot cancel order with received OTP")
+    
+    pricing = await db.pricing_config.find_one({}, {'_id': 0}) or {}
+    provider = order.get('provider')
+    cancelled = False
+    
+    try:
+        if provider == 'daisysms':
+            daisy_key = pricing.get('daisysms_api_key')
+            resp = requests.get(
+                f'https://daisysms.com/stubs/handler_api.php?api_key={daisy_key}&action=setStatus&id={provider_order_id}&status=8',
+                timeout=15
+            )
+            if resp.ok and 'ACCESS_CANCEL' in resp.text:
+                cancelled = True
+                
+        elif provider == 'smspool':
+            smspool_key = pricing.get('smspool_api_key')
+            resp = requests.post(
+                'https://api.sms-pool.com/sms/cancel',
+                headers={'Authorization': f'Bearer {smspool_key}'},
+                data={'order_id': provider_order_id},
+                timeout=15
+            )
+            if resp.ok:
+                data = resp.json()
+                if data.get('success') == 1:
+                    cancelled = True
+                    
+        elif provider == '5sim':
+            fivesim_key = pricing.get('fivesim_api_key')
+            resp = requests.get(
+                f'https://5sim.net/v1/user/cancel/{provider_order_id}',
+                headers={'Authorization': f'Bearer {fivesim_key}'},
+                timeout=15
+            )
+            if resp.ok:
+                cancelled = True
+    except Exception as e:
+        logger.error(f"Cancel error: {e}")
+    
+    if cancelled:
+        # Refund balance
+        refund_amount = order.get('cost_ngn', 0)
+        await db.users.update_one(
+            {'id': reseller['user_id']},
+            {'$inc': {'ngn_balance': refund_amount}}
+        )
+        
+        # Update order status
+        await db.reseller_orders.update_one(
+            {'id': order['id']},
+            {'$set': {'status': 'refunded'}}
+        )
+        
+        return {
+            'success': True,
+            'message': 'Order cancelled and refunded',
+            'refund_amount_ngn': refund_amount
+        }
+    else:
+        raise HTTPException(status_code=400, detail="Failed to cancel order with provider")
+
+
+# ============ RESELLER DASHBOARD API ============
+
+@api_router.post("/reseller/register")
+async def register_as_reseller(user: dict = Depends(get_current_user)):
+    """Register current user as a reseller with Free plan"""
+    # Check if already a reseller
+    existing = await db.resellers.find_one({'user_id': user['id']}, {'_id': 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already registered as reseller")
+    
+    # Get Free plan
+    free_plan = await db.reseller_plans.find_one({'name': 'Free'}, {'_id': 0})
+    if not free_plan:
+        # Create default plans if not exist
+        default_plans = [
+            ResellerPlan(name='Free', monthly_fee_ngn=0, markup_multiplier=1.0, 
+                        description='Same markup as regular users', features=['API Access', '100 orders/day']),
+            ResellerPlan(name='Basic', monthly_fee_ngn=10000, markup_multiplier=0.5, 
+                        description='50% lower markup', features=['API Access', '500 orders/day', 'Priority Support']),
+            ResellerPlan(name='Pro', monthly_fee_ngn=50000, markup_multiplier=0.3, 
+                        description='70% lower markup', features=['API Access', 'Unlimited orders', 'Priority Support', 'Dedicated Manager']),
+            ResellerPlan(name='Enterprise', monthly_fee_ngn=100000, markup_multiplier=0.2, 
+                        description='80% lower markup', features=['API Access', 'Unlimited orders', 'Priority Support', 'Dedicated Manager', 'Custom Integration']),
+        ]
+        for plan in default_plans:
+            plan_dict = plan.model_dump()
+            plan_dict['created_at'] = plan_dict['created_at'].isoformat()
+            await db.reseller_plans.insert_one(plan_dict)
+        free_plan = await db.reseller_plans.find_one({'name': 'Free'}, {'_id': 0})
+    
+    reseller = Reseller(
+        user_id=user['id'],
+        plan_id=free_plan['id'],
+        plan_name='Free'
+    )
+    reseller_dict = reseller.model_dump()
+    reseller_dict['created_at'] = reseller_dict['created_at'].isoformat()
+    if reseller_dict.get('subscription_start'):
+        reseller_dict['subscription_start'] = reseller_dict['subscription_start'].isoformat()
+    if reseller_dict.get('subscription_end'):
+        reseller_dict['subscription_end'] = reseller_dict['subscription_end'].isoformat()
+    await db.resellers.insert_one(reseller_dict)
+    
+    return {
+        'success': True,
+        'message': 'Registered as reseller',
+        'api_key': reseller.api_key,
+        'plan': 'Free'
+    }
+
+
+@api_router.get("/reseller/profile")
+async def get_reseller_profile(user: dict = Depends(get_current_user)):
+    """Get current user's reseller profile"""
+    reseller = await db.resellers.find_one({'user_id': user['id']}, {'_id': 0})
+    if not reseller:
+        return {'is_reseller': False}
+    
+    # Get plan details
+    plan = await db.reseller_plans.find_one({'id': reseller['plan_id']}, {'_id': 0})
+    
+    return {
+        'is_reseller': True,
+        'api_key': reseller.get('api_key'),
+        'plan': reseller.get('plan_name'),
+        'plan_details': plan,
+        'status': reseller.get('status'),
+        'total_orders': reseller.get('total_orders', 0),
+        'total_revenue_ngn': reseller.get('total_revenue_ngn', 0),
+        'custom_markup_multiplier': reseller.get('custom_markup_multiplier')
+    }
+
+
+@api_router.get("/reseller/orders")
+async def get_reseller_orders(user: dict = Depends(get_current_user), limit: int = 50, skip: int = 0):
+    """Get reseller's orders"""
+    reseller = await db.resellers.find_one({'user_id': user['id']}, {'_id': 0})
+    if not reseller:
+        raise HTTPException(status_code=404, detail="Not a reseller")
+    
+    orders = await db.reseller_orders.find(
+        {'reseller_id': reseller['id']},
+        {'_id': 0}
+    ).sort('created_at', -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await db.reseller_orders.count_documents({'reseller_id': reseller['id']})
+    
+    return {
+        'success': True,
+        'orders': orders,
+        'total': total
+    }
+
+
+@api_router.get("/reseller/plans")
+async def get_reseller_plans():
+    """Get available reseller plans"""
+    plans = await db.reseller_plans.find({'active': True}, {'_id': 0}).to_list(100)
+    return {'success': True, 'plans': plans}
+
+
+@api_router.post("/reseller/upgrade")
+async def upgrade_reseller_plan(plan_name: str, user: dict = Depends(get_current_user)):
+    """Upgrade reseller plan (payment to be implemented)"""
+    reseller = await db.resellers.find_one({'user_id': user['id']}, {'_id': 0})
+    if not reseller:
+        raise HTTPException(status_code=404, detail="Not a reseller")
+    
+    plan = await db.reseller_plans.find_one({'name': plan_name, 'active': True}, {'_id': 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    
+    # Check balance for monthly fee
+    user_data = await db.users.find_one({'id': user['id']}, {'_id': 0})
+    if user_data.get('ngn_balance', 0) < plan.get('monthly_fee_ngn', 0):
+        raise HTTPException(status_code=400, detail="Insufficient balance for plan upgrade")
+    
+    # Deduct fee and upgrade
+    if plan.get('monthly_fee_ngn', 0) > 0:
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'ngn_balance': -plan['monthly_fee_ngn']}}
+        )
+    
+    await db.resellers.update_one(
+        {'id': reseller['id']},
+        {'$set': {
+            'plan_id': plan['id'],
+            'plan_name': plan['name'],
+            'subscription_start': datetime.now(timezone.utc).isoformat(),
+            'subscription_end': (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+        }}
+    )
+    
+    return {'success': True, 'message': f'Upgraded to {plan_name} plan'}
+
+
+# ============ ADMIN RESELLER MANAGEMENT ============
+
+@api_router.get("/admin/resellers")
+async def admin_get_resellers(user: dict = Depends(get_current_user)):
+    """Get all resellers (admin only)"""
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    resellers = await db.resellers.find({}, {'_id': 0}).to_list(1000)
+    
+    # Enrich with user info
+    for r in resellers:
+        u = await db.users.find_one({'id': r['user_id']}, {'_id': 0, 'email': 1, 'full_name': 1, 'ngn_balance': 1})
+        if u:
+            r['user_email'] = u.get('email')
+            r['user_name'] = u.get('full_name')
+            r['user_balance_ngn'] = u.get('ngn_balance', 0)
+    
+    return {'success': True, 'resellers': resellers}
+
+
+@api_router.put("/admin/resellers/{reseller_id}")
+async def admin_update_reseller(reseller_id: str, user: dict = Depends(get_current_user)):
+    """Update reseller settings (admin only)"""
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    from fastapi import Body
+    # This is a workaround - in production you'd use proper request body parsing
+    # For now, we'll handle this differently
+    raise HTTPException(status_code=501, detail="Use the JSON body endpoint")
+
+
+@api_router.post("/admin/resellers/{reseller_id}/update")
+async def admin_update_reseller_post(reseller_id: str, request: Request, user: dict = Depends(get_current_user)):
+    """Update reseller settings (admin only)"""
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        body = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    
+    reseller = await db.resellers.find_one({'id': reseller_id}, {'_id': 0})
+    if not reseller:
+        raise HTTPException(status_code=404, detail="Reseller not found")
+    
+    update_fields = {}
+    if 'custom_markup_multiplier' in body:
+        update_fields['custom_markup_multiplier'] = body['custom_markup_multiplier']
+    if 'status' in body:
+        update_fields['status'] = body['status']
+    if 'plan_name' in body:
+        plan = await db.reseller_plans.find_one({'name': body['plan_name']}, {'_id': 0})
+        if plan:
+            update_fields['plan_id'] = plan['id']
+            update_fields['plan_name'] = plan['name']
+    
+    if update_fields:
+        await db.resellers.update_one({'id': reseller_id}, {'$set': update_fields})
+    
+    return {'success': True, 'message': 'Reseller updated'}
+
+
+@api_router.get("/admin/reseller-plans")
+async def admin_get_reseller_plans(user: dict = Depends(get_current_user)):
+    """Get all reseller plans (admin only)"""
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    plans = await db.reseller_plans.find({}, {'_id': 0}).to_list(100)
+    return {'success': True, 'plans': plans}
+
+
+@api_router.post("/admin/reseller-plans")
+async def admin_create_reseller_plan(request: Request, user: dict = Depends(get_current_user)):
+    """Create or update reseller plan (admin only)"""
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        body = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    
+    plan_name = body.get('name')
+    if not plan_name:
+        raise HTTPException(status_code=400, detail="Plan name required")
+    
+    existing = await db.reseller_plans.find_one({'name': plan_name}, {'_id': 0})
+    
+    if existing:
+        # Update existing plan
+        update_fields = {}
+        if 'monthly_fee_ngn' in body:
+            update_fields['monthly_fee_ngn'] = body['monthly_fee_ngn']
+        if 'markup_multiplier' in body:
+            update_fields['markup_multiplier'] = body['markup_multiplier']
+        if 'description' in body:
+            update_fields['description'] = body['description']
+        if 'features' in body:
+            update_fields['features'] = body['features']
+        if 'active' in body:
+            update_fields['active'] = body['active']
+        
+        await db.reseller_plans.update_one({'name': plan_name}, {'$set': update_fields})
+        return {'success': True, 'message': 'Plan updated'}
+    else:
+        # Create new plan
+        plan = ResellerPlan(
+            name=plan_name,
+            monthly_fee_ngn=body.get('monthly_fee_ngn', 0),
+            markup_multiplier=body.get('markup_multiplier', 1.0),
+            description=body.get('description'),
+            features=body.get('features', []),
+            active=body.get('active', True)
+        )
+        plan_dict = plan.model_dump()
+        plan_dict['created_at'] = plan_dict['created_at'].isoformat()
+        await db.reseller_plans.insert_one(plan_dict)
+        return {'success': True, 'message': 'Plan created'}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
