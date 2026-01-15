@@ -733,8 +733,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Area Codes */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Area Codes (Optional) <span className="text-blue-600">+35%</span>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Area Codes <span className="text-blue-600">+35%</span>
                   </label>
                   <Select
                     menuPortalTarget={document.body}
@@ -763,8 +763,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Preferred Number */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Preferred Number (Optional) <span className="text-blue-600">+35%</span>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Preferred Number <span className="text-blue-600">+35%</span>
                   </label>
                   <input
                     type="text"
@@ -774,16 +774,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       setPreferredNumber(e.target.value.replace(/\D/g, '').slice(0, 11))
                     }
                     maxLength={11}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:outline-none text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-emerald-600 focus:outline-none text-xs text-gray-900"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Enter full number without +1</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5">Enter full number without +1</p>
                 </div>
               </div>
             )}
 
             {/* Promo Code with Validation */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Promo Code (optional)</label>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Promo Code (optional)</label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -796,7 +796,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       setEstimatedPrice(prev => ({ ...prev, promo: null }));
                     }
                   }}
-                  className={`flex-1 px-4 py-3 border-2 rounded-xl focus:outline-none text-gray-900 ${
+                  className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-gray-900 ${
                     estimatedPrice?.promo 
                       ? 'border-green-400 bg-green-50' 
                       : 'border-gray-200 focus:border-emerald-600'
