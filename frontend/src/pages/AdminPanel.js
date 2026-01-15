@@ -551,85 +551,111 @@ const AdminPanel = ({ user, setUser }) => {
     return map[s] || service;
   };
 
+  // Admin sidebar state
+  const [adminSidebarOpen, setAdminSidebarOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900">
       <div className="flex min-h-screen w-full">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
-          <div className="flex items-center h-16 px-6 border-b border-slate-200">
-            <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-lg">
-              U
+        {/* Mobile overlay */}
+        {adminSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setAdminSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar - responsive */}
+        <aside className={`
+          fixed lg:sticky top-0 left-0 h-screen z-50
+          ${adminSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          w-56 lg:w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300
+        `}>
+          <div className="flex items-center justify-between h-14 px-4 border-b border-slate-200">
+            <div className="flex items-center">
+              {branding.brand_logo_url ? (
+                <img src={branding.brand_logo_url} alt="Logo" className="h-7 object-contain" />
+              ) : (
+                <div className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: branding.primary_color_hex || '#059669' }}>
+                  U
+                </div>
+              )}
+              <div className="ml-2">
+                <div className="text-xs font-semibold text-slate-800">Admin Panel</div>
+              </div>
             </div>
-            <div className="ml-3">
-              <div className="text-sm font-semibold">{branding.brand_name || 'UltraCloud Sms'}</div>
-              <div className="text-[11px] text-slate-500">Admin Dashboard</div>
-            </div>
+            <button 
+              onClick={() => setAdminSidebarOpen(false)}
+              className="lg:hidden p-1.5 hover:bg-gray-100 rounded"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
           </div>
 
-          <nav className="flex-1 px-3 py-4 space-y-2 text-sm">
+          <nav className="flex-1 px-2 py-3 space-y-1 text-xs overflow-y-auto">
             <SidebarItem
               icon={LayoutDashboard}
               label="Dashboard"
               active={activeSection === 'dashboard'}
-              onClick={() => setActiveSection('dashboard')}
+              onClick={() => { setActiveSection('dashboard'); setAdminSidebarOpen(false); }}
             />
-            <div className="mt-4 text-[11px] font-semibold text-slate-500 uppercase tracking-wide px-3">
+            <div className="mt-3 text-[9px] font-semibold text-slate-500 uppercase tracking-wide px-2">
               Settings
             </div>
             <SidebarItem
               icon={Wallet}
               label="Wallet & Pricing"
               active={activeSection === 'settings'}
-              onClick={() => setActiveSection('settings')}
+              onClick={() => { setActiveSection('settings'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={Settings}
               label="Providers"
               active={activeSection === 'providers'}
-              onClick={() => setActiveSection('providers')}
+              onClick={() => { setActiveSection('providers'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={Users}
               label="Users"
               active={activeSection === 'users'}
-              onClick={() => setActiveSection('users')}
+              onClick={() => { setActiveSection('users'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={Wallet}
               label="Deposits"
               active={activeSection === 'deposits'}
-              onClick={() => setActiveSection('deposits')}
+              onClick={() => { setActiveSection('deposits'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={Wallet}
               label="Bank Accounts"
               active={activeSection === 'bank-accounts'}
-              onClick={() => setActiveSection('bank-accounts')}
+              onClick={() => { setActiveSection('bank-accounts'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={Receipt}
               label="All Transactions"
               active={activeSection === 'transactions'}
-              onClick={() => setActiveSection('transactions')}
+              onClick={() => { setActiveSection('transactions'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={CreditCard}
               label="Ercaspay Payments"
               active={activeSection === 'ercaspay'}
-              onClick={() => setActiveSection('ercaspay')}
+              onClick={() => { setActiveSection('ercaspay'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
               icon={Bell}
               label="Popup Notifications"
               active={activeSection === 'notifications'}
-              onClick={() => setActiveSection('notifications')}
+              onClick={() => { setActiveSection('notifications'); setAdminSidebarOpen(false); }}
             />
           </nav>
 
-          <div className="border-t border-slate-200 px-4 py-3 text-[11px] text-slate-500">
+          <div className="border-t border-slate-200 px-3 py-2 text-[10px] text-slate-500">
             <div className="flex items-center justify-between">
-              <span>Signed in as</span>
-              <span className="font-semibold text-slate-800 text-xs truncate max-w-[120px]" title={user?.email}>
+              <span>Signed in:</span>
+              <span className="font-semibold text-slate-800 truncate max-w-[100px]" title={user?.email}>
                 {user?.email}
               </span>
             </div>
@@ -637,26 +663,32 @@ const AdminPanel = ({ user, setUser }) => {
         </aside>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col">
-          {/* Top bar */}
-          <header className="h-16 flex items-center justify-between px-8 border-b border-slate-200 bg-white/80 backdrop-blur">
-            <div className="flex items-center gap-3">
+        <div className="flex-1 flex flex-col lg:ml-0">
+          {/* Top bar - responsive */}
+          <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-30">
+            <div className="flex items-center gap-2">
+              {/* Hamburger for mobile */}
+              <button
+                onClick={() => setAdminSidebarOpen(true)}
+                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/dashboard')}
-                className="text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                className="text-slate-500 hover:text-slate-900 hover:bg-slate-100 text-xs"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
-                Back to app
+                <span className="hidden sm:inline">Back</span>
               </Button>
-              <div>
-                <div className="text-xs text-slate-500">Admin control center</div>
-                <div className="text-base font-semibold">Dashboard</div>
+              <div className="hidden sm:block">
+                <div className="text-[10px] text-slate-500">Admin control center</div>
+                <div className="text-sm font-semibold">Dashboard</div>
                 {periodRange && (
-                  <div className="text-[10px] text-slate-400 mt-0.5">
-                    Period: {new Date(periodRange.start).toLocaleDateString()} -{' '}
-                    {new Date(periodRange.end).toLocaleDateString()}
+                  <div className="text-[9px] text-slate-400">
+                    {new Date(periodRange.start).toLocaleDateString()} - {new Date(periodRange.end).toLocaleDateString()}
                   </div>
                 )}
               </div>
