@@ -491,6 +491,11 @@ class UpdatePricingRequest(BaseModel):
     landing_hero_subtitle: Optional[str] = None
     primary_color_hex: Optional[str] = None
     secondary_color_hex: Optional[str] = None
+    button_color_hex: Optional[str] = None
+    accent_color_hex: Optional[str] = None
+    header_bg_color_hex: Optional[str] = None
+    hero_gradient_from: Optional[str] = None
+    hero_gradient_to: Optional[str] = None
     
     # Banner images
     banner_images: Optional[list] = None
