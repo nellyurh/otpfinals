@@ -95,6 +95,10 @@ const AdminPanel = ({ user, setUser }) => {
     enable_referral: true,
     enable_profile: true,
     enable_support: true,
+    // Payment gateway toggles
+    enable_paymentpoint: true,
+    enable_plisio: true,
+    enable_ercaspay: true,
   });
 
   const [promoCodes, setPromoCodes] = useState(null);
