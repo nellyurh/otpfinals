@@ -3475,16 +3475,16 @@ print_r(json_decode($response, true));`,
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Start</h3>
           <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
             <pre className="text-xs text-green-400 whitespace-pre-wrap">{`# 1. Get your balance
-curl "${API}/api/reseller/v1/balance?api_key=${resellerProfile.api_key}"
+curl "${resellerApiBaseUrl}/api/reseller/v1/balance?api_key=${resellerProfile.api_key}"
 
 # 2. List servers
-curl "${API}/api/reseller/v1/servers?api_key=${resellerProfile.api_key}"
+curl "${resellerApiBaseUrl}/api/reseller/v1/servers?api_key=${resellerProfile.api_key}"
 
 # 3. Get services for USA server
-curl "${API}/api/reseller/v1/services?server=usa&api_key=${resellerProfile.api_key}"
+curl "${resellerApiBaseUrl}/api/reseller/v1/services?server=usa&api_key=${resellerProfile.api_key}"
 
 # 4. Buy a number
-curl -X POST "${API}/api/reseller/v1/buy" \\
+curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
   -H "X-API-KEY: ${resellerProfile.api_key}" \\
   -H "Content-Type: application/json" \\
   -d '{"server":"usa","service":"wa","price":850}'`}</pre>
