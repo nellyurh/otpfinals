@@ -844,15 +844,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         toast.error(errorMsg);
                       }
                     }}
-                    className="px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm"
+                    className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors text-xs"
                   >
                     Apply
                   </button>
                 )}
               </div>
               {estimatedPrice?.promo && (
-                <div className="mt-2 flex items-center gap-2 text-green-600 text-sm">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mt-1.5 flex items-center gap-1.5 text-green-600 text-[10px]">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="font-medium">Promo "{estimatedPrice.promo.code}" applied! Saving ₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}</span>
@@ -862,22 +862,22 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
             {/* Price Display */}
             {estimatedPrice && (
-              <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-white border border-green-200 rounded-2xl p-4 space-y-3 shadow-sm">
-                <div className="flex items-center justify-between mb-1">
+              <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-white border border-green-200 rounded-xl p-3 space-y-2 shadow-sm">
+                <div className="flex items-center justify-between">
                   <div>
-                    <span className="block text-xs font-semibold text-emerald-700 uppercase tracking-wide">
+                    <span className="block text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">
                       Total Cost
                     </span>
-                    <span className="block text-[10px] text-gray-500">
-                      Includes all markups and fees
+                    <span className="block text-[9px] text-gray-400">
+                      Includes all fees
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="block text-2xl font-extrabold text-emerald-700 leading-tight">
+                    <span className="block text-lg sm:text-xl font-extrabold text-emerald-700 leading-tight">
                       ₦{estimatedPrice.final_ngn?.toFixed(2)}
                     </span>
                     {estimatedPrice.final_usd && (
-                      <span className="block text-xs text-gray-500">
+                      <span className="block text-[10px] text-gray-400">
                         ≈ ${estimatedPrice.final_usd.toFixed(2)} USD
                       </span>
                     )}
@@ -886,16 +886,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Promo Applied Badge */}
                 {estimatedPrice.promo && (
-                  <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-2 py-1.5">
+                    <div className="flex items-center gap-1">
+                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="text-xs font-semibold text-green-700">
+                      <span className="text-[10px] font-semibold text-green-700">
                         Promo "{estimatedPrice.promo.code}" applied!
                       </span>
                     </div>
-                    <span className="text-xs font-bold text-green-700">
+                    <span className="text-[10px] font-bold text-green-700">
                       -₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}
                     </span>
                   </div>
@@ -903,7 +903,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Show selected pool for SMS-pool when chosen */}
                 {selectedServer?.value === 'server1' && selectedService && selectedService.pools && (
-                  <div className="flex items-center justify-between text-xs text-gray-600">
+                  <div className="flex items-center justify-between text-[10px] text-gray-500">
                     <span>Pool:</span>
                     <span className="font-semibold">
                       {selectedPool
@@ -914,13 +914,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 )}
 
                 {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-green-200">
-                    <p className="text-[11px] text-gray-600 font-semibold mb-1">Price breakdown</p>
-                    <div className="space-y-1">
+                  <div className="pt-1.5 border-t border-green-200">
+                    <p className="text-[9px] text-gray-500 font-semibold mb-0.5">Price breakdown</p>
+                    <div className="space-y-0.5">
                       {estimatedPrice.breakdown.map((item, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between text-[11px] text-gray-600"
+                          className="flex items-center justify-between text-[9px] text-gray-500"
                         >
                           <span className="truncate max-w-[70%]">• {item}</span>
                         </div>
@@ -928,7 +928,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     </div>
                   </div>
                 )}
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[9px] text-gray-400">
                   💡 Paid from NGN balance only. Convert USD to NGN if needed.
                 </p>
               </div>
@@ -938,9 +938,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             <button
               onClick={handlePurchaseNumber}
               disabled={!selectedService || !estimatedPrice || purchasing}
-              className="w-full py-3 bg-emerald-600 text-white rounded-full font-semibold text-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-emerald-600 text-white rounded-full font-semibold text-xs hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              <Phone className="w-4 h-4" />
+              <Phone className="w-3.5 h-3.5" />
               {purchasing ? 'Purchasing...' : 'Purchase Number'}
             </button>
           </div>
