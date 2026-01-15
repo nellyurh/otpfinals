@@ -358,6 +358,10 @@ const AdminPanel = ({ user, setUser }) => {
         enable_referral: response.data.enable_referral !== false,
         enable_profile: response.data.enable_profile !== false,
         enable_support: response.data.enable_support !== false,
+        // Payment gateway toggles
+        enable_ercaspay: response.data.enable_ercaspay !== false,
+        enable_paymentpoint: response.data.enable_paymentpoint !== false,
+        enable_plisio: response.data.enable_plisio !== false,
       });
     } catch (error) {
       console.error('Failed to fetch pricing');
