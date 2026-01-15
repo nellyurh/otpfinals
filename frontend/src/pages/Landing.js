@@ -189,13 +189,17 @@ const Landing = ({ setUser }) => {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
                 <button
                   onClick={() => { setShowAuth(true); setIsLogin(false); }}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-base sm:text-lg transition-all bg-purple-600 text-white hover:bg-purple-700 shadow-xl shadow-purple-200"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-base sm:text-lg transition-all text-white shadow-xl"
+                  style={{ backgroundColor: buttonColor, boxShadow: `0 10px 25px -5px ${buttonColor}40` }}
                 >
                   Our Services
                 </button>
                 <button
                   onClick={() => { setShowAuth(true); setIsLogin(false); }}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-base sm:text-lg border-2 border-gray-200 text-gray-700 hover:border-purple-300 hover:text-purple-600 transition-all bg-white"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold text-base sm:text-lg border-2 border-gray-200 text-gray-700 transition-all bg-white"
+                  style={{ '--hover-border-color': buttonColor }}
+                  onMouseEnter={(e) => { e.target.style.borderColor = buttonColor; e.target.style.color = buttonColor; }}
+                  onMouseLeave={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.color = '#374151'; }}
                 >
                   Become an Agent
                 </button>
@@ -206,7 +210,10 @@ const Landing = ({ setUser }) => {
             <div className="relative order-1 lg:order-2">
               <div className="relative mx-auto max-w-md lg:max-w-none">
                 {/* Main hero image container with gradient background */}
-                <div className="relative bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 rounded-3xl p-4 sm:p-6 lg:p-8">
+                <div 
+                  className="relative rounded-3xl p-4 sm:p-6 lg:p-8"
+                  style={{ background: `linear-gradient(135deg, ${heroGradientFrom}, ${heroGradientTo})` }}
+                >
                   <img 
                     src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=500&fit=crop"
                     alt="Happy customer using phone"
@@ -215,18 +222,18 @@ const Landing = ({ setUser }) => {
                   
                   {/* Floating badges - inspired by Space Pay */}
                   <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white rounded-xl px-3 sm:px-4 py-2 shadow-lg flex items-center gap-2">
-                    <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
+                    <Wifi className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: primaryColor }} />
                     <span className="text-xs sm:text-sm font-semibold text-gray-800">Data</span>
                   </div>
                   
                   <div className="absolute top-1/3 -right-2 sm:right-0 bg-white rounded-xl px-3 sm:px-4 py-2 shadow-lg flex items-center gap-2">
-                    <Tv className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500" />
-                    <span className="text-xs sm:text-sm font-semibold text-pink-600">TV-Sub</span>
+                    <Tv className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: accentColor }} />
+                    <span className="text-xs sm:text-sm font-semibold" style={{ color: accentColor }}>TV-Sub</span>
                   </div>
                   
                   <div className="absolute top-1/2 -left-2 sm:left-0 bg-white rounded-xl px-3 sm:px-4 py-2 shadow-lg flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
-                    <span className="text-xs sm:text-sm font-semibold text-purple-600">Airtime</span>
+                    <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: accentColor }} />
+                    <span className="text-xs sm:text-sm font-semibold" style={{ color: accentColor }}>Airtime</span>
                   </div>
                   
                   <div className="absolute bottom-12 sm:bottom-16 left-4 sm:left-8 bg-white rounded-xl px-3 sm:px-4 py-2 shadow-lg flex items-center gap-2">
@@ -247,7 +254,7 @@ const Landing = ({ setUser }) => {
             {/* Left: Section Title */}
             <div className="lg:col-span-1">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }}></div>
                 <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                 <div className="w-2 h-2 bg-purple-300 rounded-full"></div>
               </div>
