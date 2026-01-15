@@ -2343,7 +2343,7 @@ const NewDashboard = () => {
             <div className="w-20 h-20 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
               <Check className="w-12 h-12 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">You're All Set!</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">You&apos;re All Set!</h3>
             <p className="text-gray-700 mb-4">Your account is verified with Tier 3 Premium access.</p>
             <p className="text-lg font-semibold text-[#005E3A]">Wallet Limit: ₦1,000,000</p>
           </div>
