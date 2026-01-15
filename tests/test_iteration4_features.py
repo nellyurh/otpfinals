@@ -124,24 +124,24 @@ class TestPromoCodeValidation:
         assert "detail" in data
         print(f"✓ Invalid promo code returns error: {data.get('detail')}")
     
-    def test_calculate_price_with_promo_code(self, user_token):
-        """Test calculate-price endpoint accepts promo_code parameter"""
+    def test_calculate_price_with_invalid_promo_code(self, user_token):
+        """Test calculate-price endpoint validates promo_code and returns error for invalid codes"""
         headers = {"Authorization": f"Bearer {user_token}"}
         
-        # Test calculate-price with promo_code (even if invalid, endpoint should accept it)
+        # Test calculate-price with invalid promo_code - should return 400
         response = requests.post(f"{BASE_URL}/api/orders/calculate-price", 
                                 json={
                                     "server": "us_server",
                                     "service": "wa",
-                                    "promo_code": "TEST_PROMO"
+                                    "promo_code": "INVALID_TEST_PROMO"
                                 },
                                 headers=headers)
-        # Should return 200 (promo just won't apply if invalid)
-        assert response.status_code == 200, f"Calculate price failed: {response.text}"
+        # Should return 400 for invalid promo code (validation is working)
+        assert response.status_code == 400, f"Expected 400 for invalid promo, got {response.status_code}"
         data = response.json()
-        assert "success" in data
-        assert "final_price_ngn" in data
-        print(f"✓ Calculate-price accepts promo_code parameter, price: ₦{data.get('final_price_ngn')}")
+        assert "detail" in data
+        assert "Invalid promo code" in data.get("detail", "")
+        print(f"✓ Calculate-price validates promo_code and rejects invalid codes")
 
 
 class TestAdminOtpSales:
