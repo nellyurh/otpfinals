@@ -593,7 +593,7 @@ const AdminPanel = ({ user, setUser }) => {
                   </div>
                 )}
 
-            {activeSection === 'deposits' && (
+            {false && activeSection === 'deposits' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
@@ -658,7 +658,7 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
-            {activeSection === 'bank-accounts' && (
+            {false && activeSection === 'bank-accounts' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Bank Accounts (PaymentPoint Virtual Accounts)</h2>
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
@@ -709,7 +709,7 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
-            {activeSection === 'transactions' && (
+            {false && activeSection === 'transactions' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">All User Transactions</h2>
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
