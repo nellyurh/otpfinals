@@ -2948,6 +2948,41 @@ const AdminPanel = ({ user, setUser }) => {
                   </Button>
                 </div>
 
+                {/* Reseller API Settings */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">API Documentation Settings</CardTitle>
+                    <CardDescription className="text-xs">Configure the base URL shown in reseller API documentation</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-3 items-end">
+                      <div className="flex-1">
+                        <Label className="text-xs text-slate-600">API Base URL</Label>
+                        <Input
+                          value={resellerApiUrl}
+                          onChange={(e) => setResellerApiUrl(e.target.value)}
+                          placeholder="https://yoursite.com"
+                          className="h-9 text-sm mt-1"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">This URL is shown in reseller API documentation. Include protocol (https://)</p>
+                      </div>
+                      <Button
+                        onClick={async () => {
+                          try {
+                            await axios.put(`${API}/admin/pricing`, { reseller_api_base_url: resellerApiUrl }, axiosConfig);
+                            toast.success('API URL updated!');
+                          } catch (e) {
+                            toast.error('Failed to update API URL');
+                          }
+                        }}
+                        className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        Save URL
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Plans Management */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
