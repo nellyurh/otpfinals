@@ -1182,51 +1182,47 @@ const NewDashboard = () => {
           </div>
 
           {/* USD / Crypto Funding Card (Plisio) */}
-          <div className="bg-white p-6 rounded-2xl border shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Fund with Crypto (USD)</h3>
-                <p className="text-xs text-gray-600">Pay in USDT, USDC, BTC and more via Plisio</p>
+          {/* Crypto (Plisio) Funding Card - Clean modern design */}
+          <div className="bg-white rounded-2xl border-2 border-blue-200 shadow-lg overflow-hidden">
+            {/* Header with Plisio logo */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-blue-100">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-blue-200 p-1.5">
+                  <img src="https://plisio.net/v2/images/logo-color.svg" alt="Plisio" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Fund with Crypto (USD)</h3>
+                  <p className="text-xs text-gray-600">Pay in USDT, BTC, ETH and more • Powered by Plisio</p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {/* Amount + currency selection */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Amount in USD
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700">
-                      $
-                    </span>
+            <div className="p-5 space-y-4">
+              {/* Amount + currency selection - Cleaner layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Amount in USD</label>
+                  <div className="flex items-center">
+                    <span className="px-4 py-3 bg-blue-100 border border-r-0 border-blue-200 rounded-l-lg text-sm font-bold text-blue-700">$</span>
                     <input
                       type="number"
-                      min="1"
+                      min="5.10"
                       step="0.01"
                       value={cryptoAmountUsd}
                       onChange={(e) => setCryptoAmountUsd(e.target.value)}
-                      placeholder="Enter amount (e.g. 10)"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-sm"
+                      placeholder="Min $5.10"
+                      className="flex-1 px-4 py-3 border border-blue-200 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
                     />
                   </div>
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    Funds will be credited in USD to your UltraCloud Sms wallet.
-                  </p>
+                  <p className="mt-1.5 text-[11px] text-gray-500">Minimum: $5.10 USD</p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Crypto currency
-                  </label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Cryptocurrency</label>
                   <select
                     value={cryptoCurrency}
                     onChange={(e) => setCryptoCurrency(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-sm"
+                    className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm bg-white"
                   >
                     <option value="USDT">USDT (Tether)</option>
                     <option value="USDC">USDC (USD Coin)</option>
@@ -1238,31 +1234,22 @@ const NewDashboard = () => {
                   </select>
 
                   {cryptoCurrency === 'USDT' && (
-                    <div className="mt-2">
-                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                        USDT Network
-                      </label>
-                      <select
-                        value={cryptoNetwork}
-                        onChange={(e) => setCryptoNetwork(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs"
-                      >
-                        <option value="TRON">TRON (TRC20)</option>
-                        <option value="BSC">Binance Smart Chain (BEP20)</option>
-                      </select>
-                    </div>
+                    <select
+                      value={cryptoNetwork}
+                      onChange={(e) => setCryptoNetwork(e.target.value)}
+                      className="mt-2 w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-xs bg-white"
+                    >
+                      <option value="TRON">TRON (TRC20)</option>
+                      <option value="BSC">Binance Smart Chain (BEP20)</option>
+                    </select>
                   )}
-
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    Powered by Plisio secure payments.
-                  </p>
                 </div>
               </div>
 
               <button
                 onClick={handleCreateCryptoInvoice}
                 disabled={creatingDeposit}
-                className="w-full py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
               >
                 {creatingDeposit ? (
                   <>
@@ -1274,137 +1261,122 @@ const NewDashboard = () => {
                 )}
               </button>
 
+              {/* Active Deposit Card - Modern clean design inspired by screenshot */}
               {currentDeposit && (
-                <div className="mt-2 text-xs text-gray-600 space-y-1">
-                  {cryptoCountdown !== null && (
-                    <p>
-                      Time left: <span className="font-semibold">{cryptoCountdown > 0 ? `${Math.floor(cryptoCountdown / 60)}m ${cryptoCountdown % 60}s` : 'Expired'}</span>
-                    </p>
-                  )}
-                  <p className="text-[11px] text-gray-500">
-                    This deposit link is valid for about 10 minutes. After expiry, please create a new one.
-                  </p>
-                </div>
-              )}
-
-              {/* Current deposit details */}
-              {currentDeposit && (
-                <div className="mt-2 bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-xs font-semibold text-blue-900 mb-1">Deposit reference</p>
-                      <p className="text-sm font-mono text-blue-900">{currentDeposit.id}</p>
+                <div className="mt-4 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-blue-200 overflow-hidden">
+                  {/* Order Summary Header */}
+                  <div className="bg-white px-4 py-3 border-b border-blue-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+                      <span className="text-sm font-semibold text-gray-800">
+                        {currentDeposit.status === 'paid' ? 'Payment Received' : 'Awaiting Payment...'}
+                      </span>
                     </div>
-                    <span
-                      className={`px-3 py-1 text-[11px] font-semibold rounded-full ${
-                        currentDeposit.status === 'paid'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}
-                    >
-                      {currentDeposit.status === 'paid' ? 'Paid / Credited' : 'Pending payment'}
+                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                      currentDeposit.status === 'paid'
+                        ? 'bg-green-100 text-green-700'
+                        : currentDeposit.status === 'expired'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {currentDeposit.status?.toUpperCase()}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-xs text-gray-600 mb-1">Amount to send</p>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {currentDeposit.amount_crypto || currentDeposit.amount_usd}{' '}
-                        {currentDeposit.currency || cryptoCurrency}
+                  <div className="p-4 space-y-4">
+                    {/* Amount Display */}
+                    <div className="text-center">
+                      <p className="text-3xl font-bold text-blue-700">
+                        {currentDeposit.amount_crypto || currentDeposit.amount_usd} {currentDeposit.currency || cryptoCurrency}
                       </p>
+                      <p className="text-sm text-gray-500 mt-1">≈ ${currentDeposit.amount_usd} USD</p>
                       {currentDeposit.currency === 'USDT' && currentDeposit.network && (
-                        <p className="mt-1 text-[11px] text-gray-500">
-                          Network: <span className="font-semibold">{currentDeposit.network}</span>
-                        </p>
-                      )}
-                      {currentDeposit.address && (
-                        <div className="mt-2">
-                    <div className="flex flex-col items-end gap-1">
-                      <span
-                        className={`px-3 py-1 text-[11px] font-semibold rounded-full ${
-                          currentDeposit.status === 'paid'
-                            ? 'bg-green-100 text-green-700'
-                            : currentDeposit.status === 'expired' || currentDeposit.status === 'cancelled'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}
-                      >
-                        {currentDeposit.status === 'paid'
-                          ? 'Paid / Credited'
-                          : currentDeposit.status === 'expired'
-                          ? 'Expired'
-                          : currentDeposit.status === 'cancelled'
-                          ? 'Cancelled'
-                          : 'Pending payment'}
-                      </span>
-
-                      {currentDeposit.plisio_status && (
-                        <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
-                          Plisio: {currentDeposit.plisio_status}
+                        <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                          Network: {currentDeposit.network}
                         </span>
                       )}
                     </div>
 
-                          <p className="text-[11px] text-gray-500 mb-1">Destination address</p>
-                          <div className="flex items-center gap-2">
-                            <span className="flex-1 break-all text-xs bg-white px-2 py-1 rounded border border-gray-200">
-                              {currentDeposit.address}
-                            </span>
-                            <button
-                              onClick={() => copyToClipboard(currentDeposit.address)}
-                              className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50"
-                              title="Copy address"
-                            >
-                              <Copy className="w-4 h-4 text-gray-600" />
-                            </button>
+                    {/* Timer */}
+                    {cryptoCountdown !== null && (
+                      <div className="flex items-center justify-center gap-2 text-sm">
+                        <Clock className="w-4 h-4 text-gray-500" />
+                        <span className={`font-semibold ${cryptoCountdown > 60 ? 'text-gray-700' : 'text-red-600'}`}>
+                          {cryptoCountdown > 0 ? `${Math.floor(cryptoCountdown / 60)}m ${cryptoCountdown % 60}s remaining` : 'Expired'}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* QR Code and Address */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {currentDeposit.qr && (
+                        <div className="flex flex-col items-center">
+                          <p className="text-xs text-gray-500 mb-2">Scan with wallet app</p>
+                          <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                            <img
+                              src={currentDeposit.qr}
+                              alt="Payment QR"
+                              className="w-36 h-36 object-contain"
+                            />
                           </div>
                         </div>
                       )}
-                    </div>
 
-                    <div className="space-y-2">
-                      {currentDeposit.invoice_url && (
-                        <a
-                          href={currentDeposit.invoice_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center px-4 py-2.5 bg-white border border-blue-300 rounded-lg text-sm font-semibold text-blue-700 hover:bg-blue-50 w-full"
-                        >
-                          Open payment page
-                        </a>
-                      )}
-                      {currentDeposit.qr && (
-                        <div className="mt-2 text-center">
-                          <p className="text-[11px] text-gray-500 mb-1">Scan QR with your wallet app</p>
-                          <img
-                            src={currentDeposit.qr}
-                            alt="Payment QR"
-                            className="mx-auto w-32 h-32 object-contain bg-white rounded-lg border border-gray-200"
-                          />
-                        </div>
-                      )}
-
-                      <button
-                        onClick={handleRefreshCryptoStatus}
-                        disabled={checkingStatus}
-                        className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
-                      >
-                        {checkingStatus ? (
-                          <>
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>Checking status...</span>
-                          </>
-                        ) : (
-                          <span>Refresh status</span>
+                      <div className="space-y-3">
+                        {currentDeposit.address && (
+                          <div>
+                            <p className="text-xs font-semibold text-gray-600 mb-1">Destination Address</p>
+                            <div className="flex items-center gap-2">
+                              <span className="flex-1 text-xs font-mono bg-white px-3 py-2 rounded-lg border border-gray-200 break-all">
+                                {currentDeposit.address}
+                              </span>
+                              <button
+                                onClick={() => copyToClipboard(currentDeposit.address)}
+                                className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                                title="Copy"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </button>
+                            </div>
+                          </div>
                         )}
-                      </button>
-                    </div>
-                  </div>
 
-                  <p className="text-[11px] text-gray-500">
-                    Once payment is confirmed on-chain, your USD wallet balance will be updated automatically.
-                  </p>
+                        {currentDeposit.invoice_url && (
+                          <a
+                            href={currentDeposit.invoice_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Open Payment Page
+                          </a>
+                        )}
+
+                        <button
+                          onClick={handleRefreshCryptoStatus}
+                          disabled={checkingStatus}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 transition-colors"
+                        >
+                          {checkingStatus ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              <span>Checking...</span>
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-4 h-4" />
+                              <span>Refresh Status</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-gray-500 text-center pt-2 border-t border-gray-200">
+                      Transaction ID: <span className="font-mono">{currentDeposit.id}</span>
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
