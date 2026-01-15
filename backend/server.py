@@ -3080,6 +3080,115 @@ async def validate_promo_code(payload: dict, user: dict = Depends(get_current_us
         if datetime.now(timezone.utc) > exp:
             raise HTTPException(status_code=400, detail="Promo code expired")
 
+    # Check usage limits
+    max_total = promo.get('max_total_uses')
+    if max_total:
+        used = await db.promo_redemptions.count_documents({"promo_id": promo['id']})
+        if used >= max_total:
+            raise HTTPException(status_code=400, detail="Promo code usage limit reached")
+
+    if promo.get('one_time_per_user', True):
+        prior = await db.promo_redemptions.find_one({"promo_id": promo['id'], "user_id": user['id']}, {"_id": 0})
+        if prior:
+            raise HTTPException(status_code=400, detail="Promo code already used")
+
+    return {
+        "success": True,
+        "valid": True,
+        "code": promo.get('code'),
+        "discount_type": promo.get('discount_type'),
+        "discount_value": promo.get('discount_value'),
+    }
+
+
+# ============ Admin OTP Orders ============
+@api_router.get("/admin/otp-orders")
+async def get_admin_otp_orders(
+    admin: dict = Depends(require_admin),
+    limit: int = 100,
+    skip: int = 0,
+    status: Optional[str] = None,
+    user_id: Optional[str] = None,
+):
+    """Get all OTP orders for admin view."""
+    query = {}
+    if status:
+        query['status'] = status
+    if user_id:
+        query['user_id'] = user_id
+    
+    orders_cursor = db.sms_orders.find(query, {'_id': 0}).sort('created_at', -1).skip(skip).limit(limit)
+    orders = await orders_cursor.to_list(limit)
+    
+    total_count = await db.sms_orders.count_documents(query)
+    
+    # Enrich with user emails
+    user_ids = list(set(o.get('user_id') for o in orders if o.get('user_id')))
+    users_map = {}
+    if user_ids:
+        users_cursor = db.users.find({'id': {'$in': user_ids}}, {'_id': 0, 'id': 1, 'email': 1, 'full_name': 1})
+        users_list = await users_cursor.to_list(len(user_ids))
+        for u in users_list:
+            users_map[u['id']] = {'email': u.get('email'), 'full_name': u.get('full_name')}
+    
+    for order in orders:
+        uid = order.get('user_id')
+        if uid and uid in users_map:
+            order['user_email'] = users_map[uid].get('email')
+            order['user_name'] = users_map[uid].get('full_name')
+    
+    return {
+        "success": True,
+        "orders": orders,
+        "total": total_count,
+        "limit": limit,
+        "skip": skip
+    }
+
+
+@api_router.get("/admin/otp-stats")
+async def get_admin_otp_stats(admin: dict = Depends(require_admin)):
+    """Get OTP sales statistics."""
+    # Total orders by status
+    status_counts = {}
+    for status in ['active', 'completed', 'cancelled', 'expired', 'refunded']:
+        status_counts[status] = await db.sms_orders.count_documents({'status': status})
+    
+    # Total revenue (completed orders)
+    revenue_cursor = db.sms_orders.aggregate([
+        {'$match': {'status': 'completed'}},
+        {'$group': {'_id': None, 'total_ngn': {'$sum': '$price_ngn'}, 'total_usd': {'$sum': '$price_usd'}}}
+    ])
+    revenue = await revenue_cursor.to_list(1)
+    total_revenue_ngn = revenue[0]['total_ngn'] if revenue else 0
+    total_revenue_usd = revenue[0]['total_usd'] if revenue else 0
+    
+    # Today's orders
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_orders = await db.sms_orders.count_documents({
+        'created_at': {'$gte': today_start.isoformat()}
+    })
+    
+    # Today's revenue
+    today_revenue_cursor = db.sms_orders.aggregate([
+        {'$match': {'status': 'completed', 'created_at': {'$gte': today_start.isoformat()}}},
+        {'$group': {'_id': None, 'total_ngn': {'$sum': '$price_ngn'}}}
+    ])
+    today_revenue = await today_revenue_cursor.to_list(1)
+    today_revenue_ngn = today_revenue[0]['total_ngn'] if today_revenue else 0
+    
+    return {
+        "success": True,
+        "stats": {
+            "total_orders": sum(status_counts.values()),
+            "status_breakdown": status_counts,
+            "total_revenue_ngn": total_revenue_ngn,
+            "total_revenue_usd": total_revenue_usd,
+            "today_orders": today_orders,
+            "today_revenue_ngn": today_revenue_ngn
+        }
+    }
+
 
 
 @api_router.get('/admin/provider-balances')
