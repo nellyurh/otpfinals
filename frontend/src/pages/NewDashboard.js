@@ -634,35 +634,45 @@ const NewDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div className="flex-1 lg:ml-0">
         {/* Top Bar */}
-        <header className="bg-white border-b px-8 py-4 sticky top-0 z-10">
+        <header className="bg-white border-b px-4 lg:px-8 py-4 sticky top-0 z-30">
           <div className="flex items-center justify-between">
-            <div />
+            {/* Hamburger menu for mobile */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <Menu className="w-6 h-6 text-gray-600" />
+            </button>
             
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+            {/* Desktop: empty div for spacing */}
+            <div className="hidden lg:block" />
+            
+            <div className="flex items-center gap-2 lg:gap-4">
+              {/* Dark mode toggle - will be implemented */}
+              <button className="hidden sm:block p-2 hover:bg-gray-100 rounded-lg" title="Toggle theme">
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
               </button>
 
-              {/* Notifications bell (placeholder UI; wired in next phase) */}
+              {/* Notifications bell */}
               <button className="relative p-2 hover:bg-gray-100 rounded-lg" title="Notifications">
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
+                <Bell className="w-5 h-5 text-gray-600" />
                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5">0</span>
               </button>
               
-              <div className="flex items-center gap-2 text-white px-4 py-2 rounded-lg" style={{ background: branding.primary_color_hex || '#005E3A' }}>
-                <Wallet className="w-4 h-4" />
-                <span className="font-bold">₦{(user.ngn_balance || 0).toFixed(2)}</span>
-                <div className="w-px h-4 bg-white/30 mx-1"></div>
+              {/* Balance display - responsive */}
+              <div className="flex items-center gap-1 lg:gap-2 text-white px-2 lg:px-4 py-2 rounded-lg text-xs lg:text-sm" style={{ background: branding.primary_color_hex || '#005E3A' }}>
+                <Wallet className="w-4 h-4 hidden sm:block" />
+                <span className="font-bold">₦{(user.ngn_balance || 0).toLocaleString()}</span>
+                <div className="w-px h-4 bg-white/30 mx-0.5 lg:mx-1"></div>
                 <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
               </div>
               
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold" style={{ background: branding.primary_color_hex || '#005E3A' }}>
+              {/* User avatar - hidden on very small screens */}
+              <div className="hidden sm:flex w-10 h-10 rounded-full items-center justify-center text-white font-semibold" style={{ background: branding.primary_color_hex || '#005E3A' }}>
                 {user.email?.slice(0, 2).toUpperCase() || 'NG'}
               </div>
             </div>
@@ -670,7 +680,7 @@ const NewDashboard = () => {
         </header>
 
         {/* Content Area */}
-        <main className="px-5 py-6">
+        <main className="px-3 lg:px-5 py-4 lg:py-6">
           <div className="w-full">
             {activeSection === 'virtual-numbers' && (
               isPageEnabled('virtual-numbers') ? (
