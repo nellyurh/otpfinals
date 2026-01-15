@@ -5,6 +5,18 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 15, 2026)
 
+### Admin Color Settings Expansion
+1. **Button/CTA Color** - Controls Sign Up, Order Now buttons on landing page
+2. **Accent Color** - Controls service cards, features section styling
+3. **Header Background** - Customizable navigation bar color
+4. **Hero Gradient Start/End** - Hero section background gradient colors
+5. **Live Preview** - Color preview shows how buttons will look
+
+### Virtual SMS Mobile Responsiveness Fix
+1. **Card Layout for Mobile** - Verification table replaced with stacked cards on mobile
+2. **Text Size Reduction** - All labels, prices, and buttons use smaller fonts
+3. **Compact Purchase Form** - Reduced padding and spacing throughout
+
 ### Mobile Responsiveness Fixes
 1. **Virtual SMS as Default Page** - Users now land on the SMS page instead of Dashboard
 2. **My Cards Hidden on Mobile** - Removed card section on mobile for cleaner view
@@ -19,6 +31,8 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 ### Features Implemented
 1. **Branding Controls** (Admin)
    - Brand Name, Logo URL, Primary Color, Secondary Color
+   - Button/CTA Color, Accent Color, Header Background
+   - Hero Gradient Colors (Start/End)
    - Live logo preview
 
 2. **Dashboard Banners** (Admin)
@@ -44,9 +58,10 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 - Ercaspay amount field cursor issue fixed
 - Mobile horizontal scrolling fixed
 - Balance card border added
+- Virtual SMS verification card responsiveness fixed
 
 ## Current State Summary
-- ✅ Landing page with dynamic green color
+- ✅ Landing page with dynamic admin colors
 - ✅ Dashboard with green theme
 - ✅ Mobile-responsive sidebar with hamburger menu
 - ✅ Admin panel mobile-responsive
