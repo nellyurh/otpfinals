@@ -124,9 +124,75 @@ const AdminPanel = ({ user, setUser }) => {
   const [adminVirtualAccounts, setAdminVirtualAccounts] = useState([]);
   const [ercaspayPayments, setErcaspayPayments] = useState([]);
 
+  // Notification management state
+  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [editingNotif, setEditingNotif] = useState(null);
+  const [notifForm, setNotifForm] = useState({
+    title: '',
+    message: '',
+    type: 'announcement',
+    popup_type: 'custom',
+    action_url: '',
+    action_text: '',
+    image_url: '',
+    active: true,
+    show_on_login: false,
+    priority: 0,
+  });
+
   const [providerBalances, setProviderBalances] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editUser, setEditUser] = useState(null);
+
+  const fetchAdminNotifications = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/notifications`, axiosConfig);
+      setAdminNotifications(resp.data.notifications || []);
+    } catch (e) {
+      console.error('Failed to fetch admin notifications');
+    }
+  };
+
+  const handleCreateNotification = async () => {
+    try {
+      if (editingNotif) {
+        await axios.put(`${API}/admin/notifications/${editingNotif.id}`, notifForm, axiosConfig);
+        toast.success('Notification updated');
+      } else {
+        await axios.post(`${API}/admin/notifications`, notifForm, axiosConfig);
+        toast.success('Notification created');
+      }
+      setShowNotifModal(false);
+      setEditingNotif(null);
+      setNotifForm({
+        title: '',
+        message: '',
+        type: 'announcement',
+        popup_type: 'custom',
+        action_url: '',
+        action_text: '',
+        image_url: '',
+        active: true,
+        show_on_login: false,
+        priority: 0,
+      });
+      fetchAdminNotifications();
+    } catch (e) {
+      toast.error('Failed to save notification');
+    }
+  };
+
+  const handleDeleteNotification = async (id) => {
+    if (!window.confirm('Delete this notification?')) return;
+    try {
+      await axios.delete(`${API}/admin/notifications/${id}`, axiosConfig);
+      toast.success('Notification deleted');
+      fetchAdminNotifications();
+    } catch (e) {
+      toast.error('Failed to delete notification');
+    }
+  };
 
   const fetchProviderBalances = async () => {
     try {
