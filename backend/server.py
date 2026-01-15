@@ -65,6 +65,11 @@ PLISIO_SECRET_KEY = os.environ.get('PLISIO_SECRET_KEY')
 PLISIO_WEBHOOK_SECRET = os.environ.get('PLISIO_WEBHOOK_SECRET')
 PLISIO_BASE_URL = 'https://api.plisio.net/api/v1'
 
+# Ercaspay Config
+ERCASPAY_SECRET_KEY = os.environ.get('ERCASPAY_SECRET_KEY', '')
+ERCASPAY_API_KEY = os.environ.get('ERCASPAY_API_KEY', '')
+ERCASPAY_BASE_URL = 'https://api.ercaspay.com/api/v1'
+
 FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
