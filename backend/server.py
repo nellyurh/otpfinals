@@ -4261,6 +4261,17 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['secondary_color_hex'] = data.secondary_color_hex
     if data.banner_images is not None:
         update_fields['banner_images'] = data.banner_images
+    # Extended branding colors
+    if data.button_color_hex is not None:
+        update_fields['button_color_hex'] = data.button_color_hex
+    if data.accent_color_hex is not None:
+        update_fields['accent_color_hex'] = data.accent_color_hex
+    if data.header_bg_color_hex is not None:
+        update_fields['header_bg_color_hex'] = data.header_bg_color_hex
+    if data.hero_gradient_from is not None:
+        update_fields['hero_gradient_from'] = data.hero_gradient_from
+    if data.hero_gradient_to is not None:
+        update_fields['hero_gradient_to'] = data.hero_gradient_to
 
     # Manual coin->USD rates
     for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
