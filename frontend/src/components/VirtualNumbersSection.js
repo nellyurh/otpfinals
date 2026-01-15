@@ -559,14 +559,25 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
             {/* Service Search - Show after country is selected (or for US server which doesn't need country) */}
             {selectedServer && ((selectedServer.value === 'us_server') || selectedCountry) && (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Search Service
                   </label>
                   <Select
                     menuPortalTarget={document.body}
-                    styles={selectStyles}
+                    styles={{
+                      ...selectStyles,
+                      control: (base) => ({
+                        ...base,
+                        minHeight: '40px',
+                        borderWidth: '2px',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '0.75rem',
+                        fontSize: '0.8rem',
+                        '&:hover': { borderColor: '#10b981' }
+                      }),
+                    }}
                     value={selectedService}
                     onMenuOpen={() => setServiceMenuOpen(true)}
                     onMenuClose={() => setServiceMenuOpen(false)}
@@ -585,7 +596,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     isDisabled={servicesLoading}
                     isLoading={servicesLoading}
                     placeholder={
-                      servicesLoading ? 'Loading services...' : 'Search for a service...'
+                      servicesLoading ? 'Loading...' : 'Search service...'
                     }
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -594,15 +605,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     formatOptionLabel={(option) => (
                       <div className="flex items-center justify-between w-full">
                         <div className="flex flex-col">
-                          <span>{option.label || option.name}</span>
+                          <span className="text-xs sm:text-sm">{option.label || option.name}</span>
                           {option.pools && option.pools.length > 0 && (
-                            <span className="text-xs text-gray-400">
-                              {option.pools.length} pool{option.pools.length > 1 ? 's' : ''} available
+                            <span className="text-[10px] text-gray-400">
+                              {option.pools.length} pool{option.pools.length > 1 ? 's' : ''}
                             </span>
                           )}
                           {option.operators && option.operators.length > 0 && (
-                            <span className="text-xs text-gray-400">
-                              {option.operators.length} operator{option.operators.length > 1 ? 's' : ''} available
+                            <span className="text-[10px] text-gray-400">
+                              {option.operators.length} operator{option.operators.length > 1 ? 's' : ''}
             {/* 5sim Operator selection (similar to pools) */}
             {selectedServer?.value === 'server2' && selectedService?.operators && selectedService.operators.length > 0 && (
               <div>
