@@ -3438,6 +3438,94 @@ const AdminPanel = ({ user, setUser }) => {
           </div>
         </div>
       )}
+
+      {/* OTP Order Detail Modal */}
+      {selectedOtpOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedOtpOrder(null)}>
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-900">OTP Order Details</h3>
+              <button onClick={() => setSelectedOtpOrder(null)} className="text-slate-400 hover:text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Order ID</p>
+                  <p className="text-sm font-mono text-slate-800">{selectedOtpOrder.id}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Status</p>
+                  <Badge className={`text-xs ${
+                    selectedOtpOrder.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    selectedOtpOrder.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                    selectedOtpOrder.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>
+                    {selectedOtpOrder.status}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">User</p>
+                  <p className="text-sm text-slate-800">{selectedOtpOrder.user_email || 'N/A'}</p>
+                  <p className="text-xs text-slate-500">{selectedOtpOrder.user_name}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Provider</p>
+                  <p className="text-sm text-slate-800">{selectedOtpOrder.provider}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Service</p>
+                  <p className="text-sm font-semibold text-slate-800">{selectedOtpOrder.service?.toUpperCase()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Country</p>
+                  <p className="text-sm text-slate-800">{selectedOtpOrder.country || 'USA'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Phone Number</p>
+                  <p className="text-sm font-mono text-slate-800">{selectedOtpOrder.phone_number || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">OTP Code</p>
+                  <p className="text-lg font-mono font-bold text-emerald-600">{selectedOtpOrder.otp_code || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Price (NGN)</p>
+                  <p className="text-sm font-semibold text-slate-800">₦{selectedOtpOrder.price_ngn?.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Price (USD)</p>
+                  <p className="text-sm text-slate-800">${selectedOtpOrder.price_usd?.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Activation ID</p>
+                  <p className="text-sm font-mono text-slate-800">{selectedOtpOrder.activation_id || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold">Created</p>
+                  <p className="text-sm text-slate-800">{selectedOtpOrder.created_at ? new Date(selectedOtpOrder.created_at).toLocaleString() : 'N/A'}</p>
+                </div>
+              </div>
+              {selectedOtpOrder.sms_text && (
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase font-semibold mb-1">SMS Text</p>
+                  <p className="text-sm text-slate-800 bg-slate-50 p-3 rounded-lg border">{selectedOtpOrder.sms_text}</p>
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-slate-200 bg-slate-50">
+              <button
+                onClick={() => setSelectedOtpOrder(null)}
+                className="w-full py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
