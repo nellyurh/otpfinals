@@ -401,6 +401,10 @@ class UpdatePricingRequest(BaseModel):
     doge_usd_rate: Optional[float] = None
     bnb_usd_rate: Optional[float] = None
 
+    # Ercaspay keys
+    ercaspay_secret_key: Optional[str] = None
+    ercaspay_api_key: Optional[str] = None
+
     # Page toggles
     enable_dashboard: Optional[bool] = None
     enable_transactions: Optional[bool] = None
@@ -415,6 +419,10 @@ class UpdatePricingRequest(BaseModel):
     enable_referral: Optional[bool] = None
     enable_profile: Optional[bool] = None
     enable_support: Optional[bool] = None
+
+class ErcaspayInitiateRequest(BaseModel):
+    amount: float  # NGN amount
+    payment_method: str  # 'card' or 'bank-transfer'
 
 class BillPaymentRequest(BaseModel):
     service_type: str
