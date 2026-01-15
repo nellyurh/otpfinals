@@ -113,9 +113,9 @@ const AdminPanel = ({ user, setUser }) => {
   const [users, setUsers] = useState(null);
   const [topServices, setTopServices] = useState(null);
 
-  const [adminDeposits, setAdminDeposits] = useState(null);
-  const [adminTransactions, setAdminTransactions] = useState(null);
-  const [adminVirtualAccounts, setAdminVirtualAccounts] = useState(null);
+  const [adminDeposits, setAdminDeposits] = useState([]);
+  const [adminTransactions, setAdminTransactions] = useState([]);
+  const [adminVirtualAccounts, setAdminVirtualAccounts] = useState([]);
 
   const [providerBalances, setProviderBalances] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
