@@ -307,6 +307,46 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const fetchResellers = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/resellers`, axiosConfig);
+      if (resp.data.success) setResellers(resp.data.resellers || []);
+    } catch (e) {
+      console.error('Failed to fetch resellers');
+    }
+  };
+
+  const fetchResellerPlans = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/reseller-plans`, axiosConfig);
+      if (resp.data.success) setResellerPlans(resp.data.plans || []);
+    } catch (e) {
+      console.error('Failed to fetch reseller plans');
+    }
+  };
+
+  const handleUpdateReseller = async (resellerId, updates) => {
+    try {
+      await axios.post(`${API}/admin/resellers/${resellerId}/update`, updates, axiosConfig);
+      toast.success('Reseller updated');
+      fetchResellers();
+      setEditingReseller(null);
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to update reseller');
+    }
+  };
+
+  const handleUpdateResellerPlan = async (plan) => {
+    try {
+      await axios.post(`${API}/admin/reseller-plans`, plan, axiosConfig);
+      toast.success('Plan updated');
+      fetchResellerPlans();
+      setEditingPlan(null);
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to update plan');
+    }
+  };
+
   const fetchStats = async () => {
     try {
       const params = {};
