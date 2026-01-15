@@ -936,6 +936,10 @@ const NewDashboard = () => {
     const [showAccountDetails, setShowAccountDetails] = useState(false);
     const [copied, setCopied] = useState(false);
     const [generatingAccount, setGeneratingAccount] = useState(false);
+    
+    // Ercaspay states
+    const [ercaspayAmount, setErcaspayAmount] = useState('');
+    const [ercaspayLoading, setErcaspayLoading] = useState(false);
 
     const copyToClipboard = async (text) => {
       if (!text) return;
@@ -970,11 +974,116 @@ const NewDashboard = () => {
       }
     };
 
+    const handleErcaspayPayment = async (paymentMethod) => {
+      const amount = parseFloat(ercaspayAmount);
+      if (!amount || amount < 100) {
+        toast.error('Minimum deposit amount is ₦100');
+        return;
+      }
+
+      setErcaspayLoading(true);
+      try {
+        const response = await axios.post(
+          `${API}/api/ercaspay/initiate`,
+          {
+            amount: amount,
+            payment_method: paymentMethod
+          },
+          axiosConfig
+        );
+
+        if (response.data.success && response.data.checkout_url) {
+          toast.success('Redirecting to payment page...');
+          window.location.href = response.data.checkout_url;
+        } else {
+          toast.error('Failed to initiate payment');
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to initiate payment');
+      } finally {
+        setErcaspayLoading(false);
+      }
+    };
+
     return (
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Fund Your Wallet</h2>
           <p className="text-sm text-gray-600">Choose your preferred payment method</p>
+        </div>
+
+        {/* Ercaspay Card/Bank Transfer Section */}
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl p-6 shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+              <CreditCard className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Pay with Card or Bank Transfer</h3>
+              <p className="text-xs text-gray-600">Instant funding via Ercaspay</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Amount Input */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">
+                Amount (NGN)
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-3 bg-purple-100 border border-purple-200 rounded-lg text-sm font-semibold text-purple-700">
+                  ₦
+                </span>
+                <input
+                  type="number"
+                  min="100"
+                  step="100"
+                  value={ercaspayAmount}
+                  onChange={(e) => setErcaspayAmount(e.target.value)}
+                  placeholder="Enter amount (min ₦100)"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 text-sm"
+                  disabled={ercaspayLoading}
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-gray-500">
+                Minimum deposit: ₦100
+              </p>
+            </div>
+
+            {/* Payment Method Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleErcaspayPayment('card')}
+                disabled={ercaspayLoading || !ercaspayAmount}
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {ercaspayLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CreditCard className="w-4 h-4" />
+                )}
+                Pay with Card
+              </button>
+              <button
+                onClick={() => handleErcaspayPayment('bank-transfer')}
+                disabled={ercaspayLoading || !ercaspayAmount}
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {ercaspayLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Wallet className="w-4 h-4" />
+                )}
+                Bank Transfer
+              </button>
+            </div>
+
+            <div className="bg-purple-100 border border-purple-200 rounded-xl p-3">
+              <p className="text-xs text-purple-800">
+                <span className="font-semibold">Secure Payment:</span> Powered by Ercaspay. Your card details are encrypted and secure.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
