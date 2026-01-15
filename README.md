@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://otpcloud.preview.emergentagent.com/api
-- **Frontend**: https://otpcloud.preview.emergentagent.com
+- **Backend**: https://onetimepass.preview.emergentagent.com/api
+- **Frontend**: https://onetimepass.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 
