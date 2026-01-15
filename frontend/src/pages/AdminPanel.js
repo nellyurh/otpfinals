@@ -355,6 +355,27 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  // OTP Sales fetch functions
+  const fetchOtpOrders = async () => {
+    try {
+      const params = { limit: 100 };
+      if (otpStatusFilter) params.status = otpStatusFilter;
+      const resp = await axios.get(`${API}/admin/otp-orders`, { ...axiosConfig, params });
+      if (resp.data.success) setOtpOrders(resp.data.orders || []);
+    } catch (e) {
+      console.error('Failed to fetch OTP orders');
+    }
+  };
+
+  const fetchOtpStats = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/otp-stats`, axiosConfig);
+      if (resp.data.success) setOtpStats(resp.data.stats);
+    } catch (e) {
+      console.error('Failed to fetch OTP stats');
+    }
+  };
+
   const fetchStats = async () => {
     try {
       const params = {};
