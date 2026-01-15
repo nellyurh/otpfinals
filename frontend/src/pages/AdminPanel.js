@@ -1989,23 +1989,6 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
               </section>
 
-                          <Input
-                            value={branding.landing_hero_title}
-                            onChange={(e) => setBranding({ ...branding, landing_hero_title: e.target.value })}
-                            className="h-9 text-sm bg-slate-50 border-slate-200"
-                          />
-                        </div>
-                        <div className="space-y-1 md:col-span-2">
-                          <Label className="text-xs font-semibold text-slate-600">Landing Hero Subtitle</Label>
-                          <Input
-                            value={branding.landing_hero_subtitle}
-                            onChange={(e) => setBranding({ ...branding, landing_hero_subtitle: e.target.value })}
-                            className="h-9 text-sm bg-slate-50 border-slate-200"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Provider balances */}
                     <div className="border border-slate-100 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
