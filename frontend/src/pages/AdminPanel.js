@@ -32,6 +32,8 @@ import {
   Plus,
   Trash,
   Edit,
+  X,
+  Menu,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
