@@ -783,6 +783,23 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   </div>
                 </div>
 
+                {/* Promo Applied Badge */}
+                {estimatedPrice.promo && (
+                  <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-green-700">
+                        Promo "{estimatedPrice.promo.code}" applied!
+                      </span>
+                    </div>
+                    <span className="text-xs font-bold text-green-700">
+                      -₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
                 {/* Show selected pool for SMS-pool when chosen */}
                 {selectedServer?.value === 'server1' && selectedService && selectedService.pools && (
                   <div className="flex items-center justify-between text-xs text-gray-600">
