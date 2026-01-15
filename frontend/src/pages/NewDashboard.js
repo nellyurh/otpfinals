@@ -1137,7 +1137,12 @@ const NewDashboard = () => {
                   {service.name}
                 </h4>
                 
-                <button className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${service.color} border-current flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white group-hover:border-purple-600 transition-all relative z-10`}>
+                <button 
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center transition-all relative z-10 group-hover:text-white"
+                  style={{ borderColor: primaryColor, color: primaryColor }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = primaryColor; }}
+                >
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -1153,7 +1158,8 @@ const NewDashboard = () => {
             <h3 className="text-base sm:text-lg font-bold text-gray-900">Recent Transactions</h3>
             <button 
               onClick={() => setActiveSection('transactions')}
-              className="text-sm text-purple-600 font-medium hover:underline"
+              className="text-sm font-medium hover:underline"
+              style={{ color: primaryColor }}
             >
               View All
             </button>
