@@ -1460,8 +1460,53 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'virtual_bank_name': user.get('virtual_bank_name'),
         'tier': user.get('tier', 1),
         'kyc_status': user.get('kyc_status', 'pending'),
-        'payscribe_customer_id': user.get('payscribe_customer_id')
+        'payscribe_customer_id': user.get('payscribe_customer_id'),
+        'referral_code': user.get('referral_code', user['email'].split('@')[0].upper()),
+        'referral_count': user.get('referral_count', 0),
+        'referral_earnings': user.get('referral_earnings', 0)
     }
+
+class UpdateProfileRequest(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+
+@api_router.put("/user/profile")
+async def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_user)):
+    """Update user profile (full name, phone)."""
+    update_fields = {}
+    if data.full_name is not None:
+        update_fields['full_name'] = data.full_name
+    if data.phone is not None:
+        update_fields['phone'] = data.phone
+    
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    await db.users.update_one({'id': user['id']}, {'$set': update_fields})
+    return {"success": True, "message": "Profile updated"}
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@api_router.put("/user/change-password")
+async def change_password(data: ChangePasswordRequest, user: dict = Depends(get_current_user)):
+    """Change user password."""
+    # Verify current password
+    db_user = await db.users.find_one({'id': user['id']})
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not verify_password(data.current_password, db_user['password_hash']):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    new_hash = get_password_hash(data.new_password)
+    await db.users.update_one({'id': user['id']}, {'$set': {'password_hash': new_hash}})
+    
+    return {"success": True, "message": "Password changed successfully"}
 
 @api_router.get("/user/virtual-accounts")
 async def get_virtual_accounts(user: dict = Depends(get_current_user)):
