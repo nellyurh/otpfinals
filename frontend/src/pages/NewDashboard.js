@@ -146,6 +146,13 @@ const NewDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
   
+  // Reseller state (moved to parent to persist across section changes)
+  const [resellerProfile, setResellerProfile] = useState(null);
+  const [resellerPlans, setResellerPlans] = useState([]);
+  const [resellerOrders, setResellerOrders] = useState([]);
+  const [resellerLoading, setResellerLoading] = useState(true);
+  const [resellerFetched, setResellerFetched] = useState(false);
+  
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
