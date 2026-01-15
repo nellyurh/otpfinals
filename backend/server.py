@@ -2804,6 +2804,16 @@ async def dismiss_notification(notification_id: str, user: dict = Depends(get_cu
     return {'success': True}
 
 
+@api_router.delete('/admin/notifications/{notification_id}')
+async def admin_delete_notification(notification_id: str, admin: dict = Depends(require_admin)):
+    result = await db.notifications.delete_one({'id': notification_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    # Also delete related receipts
+    await db.notification_receipts.delete_many({'notification_id': notification_id})
+    return {'success': True}
+
+
 @api_router.get('/notifications/login-popups')
 async def get_login_popups(user: dict = Depends(get_current_user)):
     # Only those marked show_on_login, not dismissed
