@@ -76,9 +76,13 @@ const AdminPanel = ({ user, setUser }) => {
 
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
+    brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
+    primary_color_hex: '#059669',
+    secondary_color_hex: '#10b981',
     landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
     landing_hero_subtitle:
-      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters'
+      'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
+    banner_images: []
   });
 
   const [pageToggles, setPageToggles] = useState({
@@ -114,6 +118,9 @@ const AdminPanel = ({ user, setUser }) => {
     expires_at: ''
   });
 
+  // Transaction detail modal
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
 
   const [activeSection, setActiveSection] = useState('dashboard'); // 'dashboard' | 'settings' | 'providers' | 'users'
   const [periodPreset, setPeriodPreset] = useState('7d');
