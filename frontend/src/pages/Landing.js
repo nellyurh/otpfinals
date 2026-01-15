@@ -33,6 +33,11 @@ const Landing = ({ setUser }) => {
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
     primary_color_hex: '#059669',
     secondary_color_hex: '#10b981',
+    accent_color_hex: '#7c3aed',
+    button_color_hex: '#7c3aed',
+    header_bg_color_hex: '#ffffff',
+    hero_gradient_from: '#10b981',
+    hero_gradient_to: '#06b6d4',
     landing_hero_title: 'Pay Your Utility Bills\nHassle-Free!',
     landing_hero_subtitle:
       'Buy virtual numbers, top up airtime and internet data, pay for TV subscriptions, and do more with our all-in-one platform.'
