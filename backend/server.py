@@ -4987,8 +4987,8 @@ async def reseller_get_countries(request: Request, server: str):
         # DaisySMS is US only
         countries = [{'code': '187', 'name': 'United States', 'flag': '🇺🇸'}]
     elif server == 'all_country_1':
-        # SMS-pool countries
-        smspool_key = pricing.get('smspool_api_key') if pricing else None
+        # SMS-pool countries - use environment variable
+        smspool_key = SMSPOOL_API_KEY
         if smspool_key:
             try:
                 resp = requests.get(
@@ -5007,8 +5007,8 @@ async def reseller_get_countries(request: Request, server: str):
             except Exception as e:
                 logger.error(f"SMS-pool countries error: {e}")
     elif server == 'all_country_2':
-        # 5sim countries
-        fivesim_key = pricing.get('fivesim_api_key') if pricing else None
+        # 5sim countries - use environment variable
+        fivesim_key = FIVESIM_API_KEY
         if fivesim_key:
             try:
                 resp = requests.get(
