@@ -147,10 +147,87 @@ const NewDashboard = () => {
     fetchTransactions();
     fetchPageToggles();
     fetchBranding();
+    fetchNotifications();
+    fetchLoginPopups();
+    
+    // Load dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.documentElement.classList.add('dark');
+    }
     
     const interval = setInterval(fetchOrders, 10000);
-    return () => clearInterval(interval);
+    const notifInterval = setInterval(fetchNotifications, 30000);
+    return () => {
+      clearInterval(interval);
+      clearInterval(notifInterval);
+    };
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get(`${API}/api/notifications`, axiosConfig);
+      setNotifications(response.data.notifications || []);
+      setUnreadCount(response.data.unread_count || 0);
+    } catch (error) {
+      console.error('Failed to fetch notifications');
+    }
+  };
+
+  const fetchLoginPopups = async () => {
+    try {
+      const response = await axios.get(`${API}/api/notifications/login-popups`, axiosConfig);
+      const popups = response.data.popups || [];
+      if (popups.length > 0) {
+        setLoginPopups(popups);
+        setShowLoginPopup(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch login popups');
+    }
+  };
+
+  const markNotificationRead = async (notificationId) => {
+    try {
+      await axios.post(`${API}/api/notifications/${notificationId}/read`, {}, axiosConfig);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to mark notification as read');
+    }
+  };
+
+  const dismissNotification = async (notificationId) => {
+    try {
+      await axios.post(`${API}/api/notifications/${notificationId}/dismiss`, {}, axiosConfig);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to dismiss notification');
+    }
+  };
+
+  const dismissLoginPopup = async () => {
+    if (loginPopups[currentPopupIndex]) {
+      await dismissNotification(loginPopups[currentPopupIndex].id);
+    }
+    if (currentPopupIndex < loginPopups.length - 1) {
+      setCurrentPopupIndex(currentPopupIndex + 1);
+    } else {
+      setShowLoginPopup(false);
+      setCurrentPopupIndex(0);
+    }
+  };
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode.toString());
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const fetchPageToggles = async () => {
     try {
