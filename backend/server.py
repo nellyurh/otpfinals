@@ -442,6 +442,11 @@ class UpdatePricingRequest(BaseModel):
     enable_profile: Optional[bool] = None
     enable_support: Optional[bool] = None
 
+    # Payment gateway toggles
+    enable_paymentpoint: Optional[bool] = None
+    enable_plisio: Optional[bool] = None
+    enable_ercaspay: Optional[bool] = None
+
 class ErcaspayInitiateRequest(BaseModel):
     amount: float  # NGN amount
     payment_method: str  # 'card' or 'bank-transfer'
