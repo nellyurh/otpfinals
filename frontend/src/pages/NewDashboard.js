@@ -808,7 +808,7 @@ const NewDashboard = () => {
                             onClick={() => markNotificationRead(notif.id)}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read_at ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
+                              <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: !notif.read_at ? branding.primary_color_hex || '#059669' : '#d1d5db' }}></div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900">{notif.title}</p>
                                 <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
@@ -834,16 +834,22 @@ const NewDashboard = () => {
                 )}
               </div>
               
-              {/* Balance display - Modern pill design */}
-              <div className="flex items-center gap-1.5 lg:gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-3 lg:px-4 py-2 rounded-xl text-xs lg:text-sm shadow-lg shadow-purple-200">
+              {/* Balance display - Modern pill design with dynamic color */}
+              <div 
+                className="flex items-center gap-1.5 lg:gap-2 text-white px-3 lg:px-4 py-2 rounded-xl text-xs lg:text-sm shadow-lg"
+                style={{ backgroundColor: branding.primary_color_hex || '#059669' }}
+              >
                 <Wallet className="w-4 h-4 hidden sm:block" />
                 <span className="font-bold">₦{(user.ngn_balance || 0).toLocaleString()}</span>
                 <div className="w-px h-4 bg-white/30"></div>
                 <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
               </div>
               
-              {/* User avatar - Modern design */}
-              <div className="hidden sm:flex w-10 h-10 rounded-xl items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-purple-200">
+              {/* User avatar - Modern design with dynamic color */}
+              <div 
+                className="hidden sm:flex w-10 h-10 rounded-xl items-center justify-center text-white font-semibold text-sm shadow-lg"
+                style={{ backgroundColor: branding.primary_color_hex || '#059669' }}
+              >
                 {user.email?.slice(0, 2).toUpperCase() || 'U'}
               </div>
             </div>
