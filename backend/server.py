@@ -3152,6 +3152,9 @@ async def get_admin_otp_orders(
         if uid and uid in users_map:
             order['user_email'] = users_map[uid].get('email')
             order['user_name'] = users_map[uid].get('full_name')
+        # Add server name for display
+        if 'provider' in order:
+            order['server_name'] = get_server_name(order['provider'])
     
     return {
         "success": True,
