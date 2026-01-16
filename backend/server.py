@@ -22,14 +22,25 @@ import shutil
 import phpserialize
 import json
 
+# Setup logging first
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB connection with error handling
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'sms_relay_db')]
+logger.info(f"Connecting to MongoDB: {mongo_url[:30]}...")  # Log first 30 chars only for security
+
+try:
+    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+    db = client[os.environ.get('DB_NAME', 'sms_relay_db')]
+    logger.info("MongoDB client initialized")
+except Exception as e:
+    logger.error(f"MongoDB connection error: {e}")
+    client = None
+    db = None
 
 # Create the main app
 app = FastAPI()
