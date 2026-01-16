@@ -5,32 +5,45 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 16, 2026)
 
-### Session 7 - Bug Fixes & Verification
+### Session 7 - Bug Fixes & UI Improvements
 
 **Bug Fixes:**
 
-1. **Ercaspay Input Losing Focus - FIXED** ✅
-   - Root cause: Nested function component `FundWalletSection()` was redefined on every render
-   - Solution: Changed from controlled input (value/onChange) to uncontrolled input (defaultValue/onBlur) pattern using useRef
-   - Input now maintains focus when typing multiple digits
+1. **Promo Code Not Reducing Total - FIXED** ✅
+   - Root cause: Backend returns `final_price_ngn` but frontend expected `final_ngn`
+   - Solution: Added mapping in VirtualNumbersSection.js to correctly use `final_price_ngn`
+   - Verified: SAVE40 promo reduces price by 40% (₦2,475 → ₦1,485)
 
-2. **Promo Code Creation Error - FIXED** ✅
-   - Root cause: MongoDB `insert_one()` mutates the dictionary and adds `_id` (ObjectId), which is not JSON serializable
-   - Solution: Added `doc.pop('_id', None)` after insert to remove the ObjectId before returning
-   - Promo codes now create successfully via admin panel
+2. **Ercaspay Input Clearing - FIXED** ✅
+   - Root cause: Nested function component causing re-renders
+   - Solution: Changed to uncontrolled input with useRef, defaultValue/onBlur pattern
+   - Input now maintains value during typing
 
-3. **Bank Accounts Page - VERIFIED WORKING** ✅
-   - Backend `/api/admin/virtual-accounts` endpoint returns correct data
-   - Frontend displays 4 virtual accounts with User, Account, Bank columns
-   - Issue was likely temporary or data-related in previous session
+3. **Promo Code Creation Error - FIXED** ✅
+   - Root cause: MongoDB `insert_one()` adds `_id` (ObjectId) which isn't JSON serializable
+   - Solution: Added `doc.pop('_id', None)` after insert
 
-4. **Total OTP Volume Metric - VERIFIED WORKING** ✅
-   - Admin dashboard displays correct ₦25,155 from `money_flow.total_sales_ngn`
-   - Backend `/api/admin/stats` endpoint returns accurate data
+**UI Improvements:**
 
-5. **Canceled Order Income Logic - CONFIRMED CORRECT** ✅
-   - When order is canceled/refunded, revenue is DECREMENTED (standard accounting)
-   - Code: `{'$inc': {'total_revenue_ngn': -refund_amount, 'total_orders': -1}}`
+4. **Quick Service Cards - ENHANCED** ✅
+   - Added colorful gradient backgrounds for each service:
+     - Virtual Numbers: Green gradient (emerald)
+     - Internet Data: Blue gradient (sky)
+     - TV Sub: Purple gradient (violet)
+     - Airtime: Orange gradient (amber)
+     - Electricity: Yellow gradient
+     - Virtual Cards: Pink gradient (rose)
+
+5. **History Tables - ENHANCED** ✅
+   - Added View buttons to Transactions table with proper styling
+   - Added View buttons to SMS History table with service icons
+   - Improved status badges with color coding
+   - Added header row background
+
+6. **Form Field Styling - UPDATED** ✅
+   - Airtime page: Updated to rounded-xl inputs with emerald focus colors
+   - Buy Data page: Updated to rounded-xl inputs with emerald focus colors
+   - Select dropdowns: Improved with rounded corners and emerald theme
 
 ### Session 6 - Reseller API Fixes & Branding
 
