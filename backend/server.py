@@ -50,7 +50,13 @@ api_router = APIRouter(prefix="/api")
 @api_router.get("/health")
 async def health_check():
     """Health check endpoint for deployment platforms."""
-    return {"status": "healthy", "service": "ultracloud-sms-api"}
+    mongo_status = "connected" if client else "disconnected"
+    return {
+        "status": "healthy", 
+        "service": "ultracloud-sms-api",
+        "mongodb": mongo_status,
+        "mongo_url_set": bool(os.environ.get('MONGO_URL'))
+    }
 
 # Database Seed Endpoint - Creates admin user and default config
 @api_router.get("/seed-database")
