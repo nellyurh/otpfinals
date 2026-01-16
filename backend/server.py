@@ -5567,7 +5567,7 @@ async def reseller_cancel_order(request: Request):
     
     try:
         if provider == 'daisysms':
-            daisy_key = pricing.get('daisysms_api_key')
+            daisy_key = DAISYSMS_API_KEY
             resp = requests.get(
                 f'https://daisysms.com/stubs/handler_api.php?api_key={daisy_key}&action=setStatus&id={provider_order_id}&status=8',
                 timeout=15
@@ -5576,9 +5576,9 @@ async def reseller_cancel_order(request: Request):
                 cancelled = True
                 
         elif provider == 'smspool':
-            smspool_key = pricing.get('smspool_api_key')
+            smspool_key = SMSPOOL_API_KEY
             resp = requests.post(
-                'https://api.sms-pool.com/sms/cancel',
+                'https://api.smspool.net/sms/cancel',
                 headers={'Authorization': f'Bearer {smspool_key}'},
                 data={'order_id': provider_order_id},
                 timeout=15
@@ -5589,7 +5589,7 @@ async def reseller_cancel_order(request: Request):
                     cancelled = True
                     
         elif provider == '5sim':
-            fivesim_key = pricing.get('fivesim_api_key')
+            fivesim_key = FIVESIM_API_KEY
             resp = requests.get(
                 f'https://5sim.net/v1/user/cancel/{provider_order_id}',
                 headers={'Authorization': f'Bearer {fivesim_key}'},
