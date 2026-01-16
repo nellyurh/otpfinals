@@ -58,6 +58,18 @@ FIVESIM_BASE_URL = 'https://5sim.net/v1'
 
 FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 
+# Provider to Server Name Mapping (for user-friendly display)
+PROVIDER_TO_SERVER = {
+    'daisysms': 'US Server',
+    'smspool': 'Server 1',
+    '5sim': 'Server 2',
+    'tigersms': 'Server 3'
+}
+
+def get_server_name(provider: str) -> str:
+    """Convert internal provider name to user-friendly server name."""
+    return PROVIDER_TO_SERVER.get(provider, provider)
+
 # Logging
 
 
