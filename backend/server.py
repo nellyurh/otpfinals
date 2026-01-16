@@ -5471,7 +5471,7 @@ async def reseller_get_status(request: Request, provider_order_id: str):
     if not otp and status == 'active':
         try:
             if provider == 'daisysms':
-                daisy_key = pricing.get('daisysms_api_key')
+                daisy_key = DAISYSMS_API_KEY
                 resp = requests.get(
                     f'https://daisysms.com/stubs/handler_api.php?api_key={daisy_key}&action=getStatus&id={provider_order_id}',
                     timeout=15
@@ -5483,9 +5483,9 @@ async def reseller_get_status(request: Request, provider_order_id: str):
                         status = 'completed'
                         
             elif provider == 'smspool':
-                smspool_key = pricing.get('smspool_api_key')
+                smspool_key = SMSPOOL_API_KEY
                 resp = requests.post(
-                    'https://api.sms-pool.com/sms/check',
+                    'https://api.smspool.net/sms/check',
                     headers={'Authorization': f'Bearer {smspool_key}'},
                     data={'order_id': provider_order_id},
                     timeout=15
@@ -5498,7 +5498,7 @@ async def reseller_get_status(request: Request, provider_order_id: str):
                         status = 'completed'
                         
             elif provider == '5sim':
-                fivesim_key = pricing.get('fivesim_api_key')
+                fivesim_key = FIVESIM_API_KEY
                 resp = requests.get(
                     f'https://5sim.net/v1/user/check/{provider_order_id}',
                     headers={'Authorization': f'Bearer {fivesim_key}'},
