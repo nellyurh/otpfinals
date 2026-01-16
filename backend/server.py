@@ -2516,7 +2516,7 @@ async def purchase_number(
         # Use 5sim buy activation API
         if not FIVESIM_API_KEY:
             logger.error("FIVESIM_API_KEY not configured")
-            raise HTTPException(status_code=500, detail="5sim API key not configured")
+            raise HTTPException(status_code=500, detail="Server API not configured")
         headers = {
             'Authorization': f'Bearer {FIVESIM_API_KEY}',
             'Accept': 'application/json'
@@ -2539,7 +2539,7 @@ async def purchase_number(
         try:
             result = resp.json()
         except Exception:
-            raise HTTPException(status_code=400, detail="Unexpected 5sim response")
+            raise HTTPException(status_code=400, detail="Unexpected server response")
         activation_id = str(result.get('id'))
         phone_number = str(result.get('phone'))
         # 5sim price is in coins
