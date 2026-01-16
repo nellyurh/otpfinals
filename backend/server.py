@@ -5580,7 +5580,7 @@ async def reseller_cancel_order(request: Request):
             resp = requests.post(
                 'https://api.smspool.net/sms/cancel',
                 headers={'Authorization': f'Bearer {smspool_key}'},
-                data={'order_id': provider_order_id},
+                data={'orderid': provider_order_id},
                 timeout=15
             )
             if resp.ok:
