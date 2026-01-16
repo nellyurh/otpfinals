@@ -1398,6 +1398,7 @@ const NewDashboard = () => {
                 </span>
                 <input
                   ref={ercaspayInputRef}
+                  key="ercaspay-input-stable"
                   id="ercaspay-amount-input"
                   data-testid="ercaspay-amount-input"
                   type="number"
@@ -1410,8 +1411,14 @@ const NewDashboard = () => {
                       setErcaspayAmount(e.target.value);
                     }
                   }}
+                  onChange={(e) => {
+                    // Also update ref value on change to persist across re-renders
+                    if (ercaspayInputRef.current) {
+                      ercaspayInputRef.current.value = e.target.value;
+                    }
+                  }}
                   placeholder="Enter amount (min ₦100)"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500 text-sm"
                   disabled={ercaspayLoading}
                   autoComplete="off"
                 />
