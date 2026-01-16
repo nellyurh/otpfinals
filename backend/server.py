@@ -365,8 +365,8 @@ class PricingConfig(BaseModel):
     enable_profile: bool = True
     enable_support: bool = True
 
-    # Reseller API Settings
-    reseller_api_base_url: str = "https://smsrelay-7.preview.emergentagent.com"
+    # Reseller API Settings - reads from environment, can be overridden in admin
+    reseller_api_base_url: str = Field(default_factory=lambda: os.environ.get('RESELLER_API_BASE_URL', ''))
 
     # Ercaspay keys (admin editable)
     ercaspay_secret_key: str = ""
