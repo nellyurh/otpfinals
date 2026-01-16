@@ -6,14 +6,17 @@ import Select from 'react-select';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Shared Select styles
+// Shared Select styles - Updated with rounded styling
 const selectStyles = {
   control: (base) => ({
     ...base,
     minHeight: '48px',
-    borderWidth: '2px',
+    borderWidth: '1px',
     borderColor: '#e5e7eb',
-    '&:hover': { borderColor: '#10b981' }
+    borderRadius: '12px',
+    boxShadow: 'none',
+    '&:hover': { borderColor: '#10b981' },
+    '&:focus-within': { borderColor: '#10b981', boxShadow: '0 0 0 1px #10b981' }
   }),
   placeholder: (base) => ({
     ...base,
@@ -32,12 +35,19 @@ const selectStyles = {
     ...base,
     zIndex: 9999
   }),
+  menu: (base) => ({
+    ...base,
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+  }),
   option: (base, state) => ({
     ...base,
-    backgroundColor: state.isFocused ? '#eff6ff' : state.isSelected ? '#dbeafe' : 'white',
+    backgroundColor: state.isFocused ? '#ecfdf5' : state.isSelected ? '#d1fae5' : 'white',
     color: '#1f2937',
     cursor: 'pointer',
-    fontWeight: state.isSelected ? '600' : '400'
+    fontWeight: state.isSelected ? '600' : '400',
+    padding: '12px 16px'
   })
 };
 
