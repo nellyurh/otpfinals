@@ -5487,7 +5487,7 @@ async def reseller_get_status(request: Request, provider_order_id: str):
                 resp = requests.post(
                     'https://api.smspool.net/sms/check',
                     headers={'Authorization': f'Bearer {smspool_key}'},
-                    data={'order_id': provider_order_id},
+                    data={'orderid': provider_order_id},
                     timeout=15
                 )
                 if resp.ok:
