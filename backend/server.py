@@ -5358,12 +5358,12 @@ async def reseller_buy_number(request: Request):
                 raise HTTPException(status_code=400, detail=f"Failed to purchase number")
                 
         elif provider == 'smspool':
-            smspool_key = pricing.get('smspool_api_key')
+            smspool_key = SMSPOOL_API_KEY
             if not smspool_key:
-                raise HTTPException(status_code=500, detail="Provider not configured")
+                raise HTTPException(status_code=500, detail="Server not configured")
             
             resp = requests.post(
-                'https://api.sms-pool.com/purchase/sms',
+                'https://api.smspool.net/purchase/sms',
                 headers={'Authorization': f'Bearer {smspool_key}'},
                 data={'country': country, 'service': service},
                 timeout=30
@@ -5376,12 +5376,12 @@ async def reseller_buy_number(request: Request):
                 else:
                     raise HTTPException(status_code=400, detail=data.get('message', 'Purchase failed'))
             else:
-                raise HTTPException(status_code=400, detail="Provider error")
+                raise HTTPException(status_code=400, detail="Failed to purchase number")
                 
         elif provider == '5sim':
-            fivesim_key = pricing.get('fivesim_api_key')
+            fivesim_key = FIVESIM_API_KEY
             if not fivesim_key:
-                raise HTTPException(status_code=500, detail="Provider not configured")
+                raise HTTPException(status_code=500, detail="Server not configured")
             
             resp = requests.get(
                 f'https://5sim.net/v1/user/buy/activation/{country}/any/{service}',
@@ -5393,7 +5393,7 @@ async def reseller_buy_number(request: Request):
                 provider_order_id = str(data.get('id'))
                 phone_number = data.get('phone')
             else:
-                raise HTTPException(status_code=400, detail="Provider error")
+                raise HTTPException(status_code=400, detail="Failed to purchase number")
     except HTTPException:
         raise
     except Exception as e:
