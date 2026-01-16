@@ -1207,27 +1207,23 @@ const NewDashboard = () => {
               <div 
                 key={index}
                 onClick={service.action}
-                className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
+                className={`${service.bgColor} rounded-2xl p-4 sm:p-5 border border-white/50 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden`}
               >
-                {/* Background Icon */}
-                <div className="absolute -bottom-2 -right-2 opacity-10">
-                  {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-16 h-16" />}
+                {/* Icon Circle */}
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${service.iconBg} rounded-xl flex items-center justify-center mb-3 text-white shadow-lg`}>
+                  {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-5 h-5 sm:w-6 sm:h-6" />}
                 </div>
                 
-                <h4 className="text-sm sm:text-base font-bold mb-8 sm:mb-12 relative z-10" style={{ color: primaryColor }}>
+                <h4 className="text-sm sm:text-base font-bold text-gray-800 mb-2">
                   {service.name}
                 </h4>
                 
-                <button 
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center transition-all relative z-10 group-hover:text-white"
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = 'white'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = primaryColor; }}
-                >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center text-xs text-gray-600 group-hover:text-gray-800 transition-colors">
+                  <span>Get started</span>
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                </button>
+                </div>
               </div>
             ))}
           </div>
