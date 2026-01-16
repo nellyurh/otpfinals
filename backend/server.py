@@ -41,6 +41,68 @@ async def health_check():
     """Health check endpoint for deployment platforms."""
     return {"status": "healthy", "service": "ultracloud-sms-api"}
 
+# Database Seed Endpoint - Creates admin user and default config
+@api_router.get("/seed-database")
+async def seed_database():
+    """One-time database setup - creates admin user and default config."""
+    try:
+        results = []
+        
+        # Create admin user
+        admin_exists = await db.users.find_one({'email': 'admin@smsrelay.com'})
+        if not admin_exists:
+            admin = {
+                'id': str(uuid.uuid4()),
+                'email': 'admin@smsrelay.com',
+                'password_hash': pwd_context.hash('admin123'),
+                'full_name': 'Admin User',
+                'is_admin': True,
+                'ngn_balance': 100000.0,
+                'usd_balance': 100.0,
+                'referral_code': 'ADMIN',
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+            await db.users.insert_one(admin)
+            results.append("✅ Admin user created: admin@smsrelay.com / admin123")
+        else:
+            results.append("ℹ️ Admin user already exists")
+        
+        # Create default pricing config
+        config_exists = await db.pricing_config.find_one({})
+        if not config_exists:
+            config = {
+                'ngn_to_usd_rate': 1500.0,
+                'base_markup_percent': 30.0,
+                'enable_virtual_numbers': True,
+                'enable_fund_wallet': True,
+                'enable_paymentpoint': True,
+                'enable_ercaspay': True,
+                'enable_crypto': True,
+                'enable_reseller': True,
+                'enable_airtime': True,
+                'enable_data': True,
+                'brand_name': 'UltraCloud SMS',
+                'primary_color_hex': '#059669',
+                'secondary_color_hex': '#10b981',
+                'accent_color_hex': '#7c3aed'
+            }
+            await db.pricing_config.insert_one(config)
+            results.append("✅ Default pricing config created")
+        else:
+            results.append("ℹ️ Pricing config already exists")
+        
+        return {
+            "success": True,
+            "message": "Database seeded successfully!",
+            "results": results,
+            "login": {
+                "email": "admin@smsrelay.com",
+                "password": "admin123"
+            }
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Security
 security = HTTPBearer()
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
