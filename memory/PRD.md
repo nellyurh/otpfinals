@@ -14,12 +14,17 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
    - Solution: Added mapping in VirtualNumbersSection.js to correctly use `final_price_ngn`
    - Verified: SAVE40 promo reduces price by 40% (₦2,475 → ₦1,485)
 
-2. **Ercaspay Input Clearing - FIXED** ✅
-   - Root cause: Nested function component causing re-renders
-   - Solution: Changed to uncontrolled input with useRef, defaultValue/onBlur pattern
-   - Input now maintains value during typing
+2. **Ercaspay Input Clearing After ~10 Seconds - FIXED** ✅
+   - Root cause: `FundWalletSection` was a nested function component inside `NewDashboard`, recreated every 10 seconds when polling updated state
+   - Solution: Extracted `FundWalletSection` to `/app/frontend/src/components/FundWalletSection.js`
+   - Component now maintains its own local state that persists across parent re-renders
+   - Verified: Input value '5000' persisted after 15+ seconds
 
-3. **Promo Code Creation Error - FIXED** ✅
+3. **Promo Code Reverting - VERIFIED WORKING** ✅
+   - `VirtualNumbersSection` was already a separate component file
+   - Promo code state is local and persists correctly
+
+4. **Promo Code Creation Error - FIXED** ✅
    - Root cause: MongoDB `insert_one()` adds `_id` (ObjectId) which isn't JSON serializable
    - Solution: Added `doc.pop('_id', None)` after insert
 
