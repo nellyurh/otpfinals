@@ -2532,10 +2532,10 @@ async def purchase_number(
             text = resp.text
             logger.error(f"5sim purchase error {resp.status_code}: {text}")
             if 'no free phones' in text.lower():
-                raise HTTPException(status_code=400, detail="5sim: no free phones for this service/country")
+                raise HTTPException(status_code=400, detail="No available numbers for this service/country")
             if 'not enough user balance' in text.lower():
-                raise HTTPException(status_code=400, detail="5sim account balance is insufficient")
-            raise HTTPException(status_code=400, detail="Failed to purchase number from 5sim")
+                raise HTTPException(status_code=400, detail="Provider balance insufficient")
+            raise HTTPException(status_code=400, detail="Failed to purchase number from server")
         try:
             result = resp.json()
         except Exception:
