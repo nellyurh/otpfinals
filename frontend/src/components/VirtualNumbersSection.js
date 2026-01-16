@@ -244,7 +244,39 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       }
 
       // For DaisySMS (US server), calculate price in NGN with advanced options
+      // If promo code is entered, use backend to calculate discounted price
       if (selectedServer.value === 'us_server' && selectedService.price_ngn) {
+        if (promoCode) {
+          // When promo code exists, call backend to get discounted price
+          try {
+            const response = await axios.post(
+              `${API}/api/orders/calculate-price`,
+              {
+                server: selectedServer.value,
+                service: selectedService.value,
+                country: '187', // DaisySMS is US-only
+                promo_code: promoCode,
+                area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+                carrier: selectedCarrier?.value,
+              },
+              axiosConfig
+            );
+
+            if (response.data.success) {
+              setEstimatedPrice({
+                ...response.data,
+                final_ngn: response.data.final_price_ngn,
+                final_usd: response.data.final_price_usd,
+              });
+              return; // Exit early, price is set
+            }
+          } catch (error) {
+            console.error('Failed to calculate promo price:', error);
+            // Fall through to client-side calculation if API fails
+          }
+        }
+        
+        // Client-side calculation (no promo)
         let baseNGN = selectedService.price_ngn;
         let additionalCost = 0;
         const breakdown = [`Base: ₦${baseNGN.toFixed(2)}`];
