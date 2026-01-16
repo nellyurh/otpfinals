@@ -310,7 +310,12 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           );
 
           if (response.data.success) {
-            setEstimatedPrice(response.data);
+            // Map backend response to frontend expected format
+            setEstimatedPrice({
+              ...response.data,
+              final_ngn: response.data.final_price_ngn,
+              final_usd: response.data.final_price_usd,
+            });
           }
         } catch (error) {
           console.error('Failed to calculate price:', error);
