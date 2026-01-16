@@ -153,7 +153,7 @@ const NewDashboard = () => {
   const [resellerLoading, setResellerLoading] = useState(true);
   const [resellerFetched, setResellerFetched] = useState(false);
   const [showResellerDocs, setShowResellerDocs] = useState(false); // Persist docs view
-  const [resellerApiBaseUrl, setResellerApiBaseUrl] = useState('https://ultracloud.preview.emergentagent.com'); // Admin-configurable
+  const [resellerApiBaseUrl, setResellerApiBaseUrl] = useState('https://smsrelay-7.preview.emergentagent.com'); // Admin-configurable
   
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };

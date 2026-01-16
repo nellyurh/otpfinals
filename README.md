@@ -50,8 +50,8 @@ USD Balance: $100
 ```
 
 ### API Endpoints
-- **Backend**: https://ultracloud.preview.emergentagent.com/api
-- **Frontend**: https://ultracloud.preview.emergentagent.com
+- **Backend**: https://smsrelay-7.preview.emergentagent.com/api
+- **Frontend**: https://smsrelay-7.preview.emergentagent.com
 
 ## 📋 Key Business Logic
 

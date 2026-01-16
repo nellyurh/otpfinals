@@ -142,7 +142,7 @@ const AdminPanel = ({ user, setUser }) => {
   const [resellerPlans, setResellerPlans] = useState([]);
   const [editingReseller, setEditingReseller] = useState(null);
   const [editingPlan, setEditingPlan] = useState(null);
-  const [resellerApiUrl, setResellerApiUrl] = useState('https://ultracloud.preview.emergentagent.com');
+  const [resellerApiUrl, setResellerApiUrl] = useState('https://smsrelay-7.preview.emergentagent.com');
 
   // OTP Sales state
   const [otpOrders, setOtpOrders] = useState([]);
