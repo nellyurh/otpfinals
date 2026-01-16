@@ -829,10 +829,19 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           axiosConfig
                         );
                         if (response.data.success && response.data.promo) {
-                          setEstimatedPrice(response.data);
+                          // Map backend response to frontend expected format
+                          setEstimatedPrice({
+                            ...response.data,
+                            final_ngn: response.data.final_price_ngn,
+                            final_usd: response.data.final_price_usd,
+                          });
                           toast.success(`Promo "${promoCode}" applied! You save ₦${response.data.promo.discount_ngn.toFixed(2)}`);
                         } else if (response.data.success) {
-                          setEstimatedPrice(response.data);
+                          setEstimatedPrice({
+                            ...response.data,
+                            final_ngn: response.data.final_price_ngn,
+                            final_usd: response.data.final_price_usd,
+                          });
                           toast.error('Invalid or expired promo code');
                         }
                       } catch (error) {
