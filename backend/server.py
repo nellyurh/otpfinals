@@ -44,17 +44,17 @@ JWT_ALGORITHM = 'HS256'
 PAYMENTPOINT_API_KEY = os.environ.get('PAYMENTPOINT_API_KEY', '17a9ea11d2f19173303f47028f19ec242f7f9739')
 PAYMENTPOINT_SECRET = os.environ.get('PAYMENTPOINT_SECRET', '99cb613937f1b0b7dcd8da8cec390113d9fb39e5f3313695dc5b84f7b4a9ae4e3dbfc3a41d306df37e1ad77efe9e8ecfc93fdddc58bebd18de11e840')
 PAYMENTPOINT_BUSINESS_ID = os.environ.get('PAYMENTPOINT_BUSINESS_ID', '143218f0fc1633fb89c021690d53bc710a4f4d27')
-PAYMENTPOINT_BASE_URL = 'https://api.paymentpoint.co/api/v1'
+PAYMENTPOINT_BASE_URL = os.environ.get('PAYMENTPOINT_BASE_URL', 'https://api.paymentpoint.co/api/v1')
 
 # Payscribe Config
 PAYSCRIBE_API_KEY = os.environ.get('PAYSCRIBE_API_KEY', 'ps_pk_live_oKnMH2WiHbLlWfC7ZAXzhGcGk5R5N2Zq7ME')
-PAYSCRIBE_BASE_URL = 'https://api.payscribe.ng/api/v1'
+PAYSCRIBE_BASE_URL = os.environ.get('PAYSCRIBE_BASE_URL', 'https://api.payscribe.ng/api/v1')
 
 # SMS Provider Configs
 SMSPOOL_API_KEY = os.environ.get('SMSPOOL_API_KEY', 'ZNrdIWUS06ftzyb7ALO9XVWsfNhKmJT6')
 DAISYSMS_API_KEY = os.environ.get('DAISYSMS_API_KEY', 'eOIwvtJezbjbhLh7vz948uWMHgfELv')
 TIGERSMS_API_KEY = os.environ.get('TIGERSMS_API_KEY', 'mZGp2NQJswCEVaSISSUy0IHT1lwSrOVO')
-FIVESIM_BASE_URL = 'https://5sim.net/v1'
+FIVESIM_BASE_URL = os.environ.get('FIVESIM_BASE_URL', 'https://5sim.net/v1')
 
 FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 
@@ -76,12 +76,12 @@ def get_server_name(provider: str) -> str:
 # Plisio (Crypto) Config
 PLISIO_SECRET_KEY = os.environ.get('PLISIO_SECRET_KEY')
 PLISIO_WEBHOOK_SECRET = os.environ.get('PLISIO_WEBHOOK_SECRET')
-PLISIO_BASE_URL = 'https://api.plisio.net/api/v1'
+PLISIO_BASE_URL = os.environ.get('PLISIO_BASE_URL', 'https://api.plisio.net/api/v1')
 
 # Ercaspay Config
 ERCASPAY_SECRET_KEY = os.environ.get('ERCASPAY_SECRET_KEY', '')
 ERCASPAY_API_KEY = os.environ.get('ERCASPAY_API_KEY', '')
-ERCASPAY_BASE_URL = 'https://api.ercaspay.com/api/v1'
+ERCASPAY_BASE_URL = os.environ.get('ERCASPAY_BASE_URL', 'https://api.ercaspay.com/api/v1')
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 
