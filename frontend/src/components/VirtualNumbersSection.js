@@ -853,7 +853,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           {
                             server: selectedServer.value,
                             service: selectedService.value,
-                            country: selectedCountry?.value,
+                            // For US server (DaisySMS), country is always 187
+                            country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value,
                             promo_code: promoCode,
                             area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
                             carrier: selectedCarrier?.value,
