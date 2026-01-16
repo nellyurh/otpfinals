@@ -1332,11 +1332,15 @@ const NewDashboard = () => {
     };
 
     const handleErcaspayPayment = async (paymentMethod) => {
-      const amount = parseFloat(ercaspayAmount);
+      // Get amount from ref if available, fallback to state
+      const inputValue = ercaspayInputRef.current?.value || ercaspayAmount;
+      const amount = parseFloat(inputValue);
       if (!amount || amount < 100) {
         toast.error('Minimum deposit amount is ₦100');
         return;
       }
+      // Update state with the current value
+      setErcaspayAmount(inputValue);
 
       setErcaspayLoading(true);
       try {
