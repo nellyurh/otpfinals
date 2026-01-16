@@ -945,7 +945,15 @@ const NewDashboard = () => {
               )
             )}
 
-            {activeSection === 'fund-wallet' && (isPageEnabled('fund-wallet') ? <FundWalletSection /> : maintenanceContent("Fund Wallet"))}
+            {activeSection === 'fund-wallet' && (isPageEnabled('fund-wallet') ? (
+              <FundWalletSection 
+                user={user}
+                axiosConfig={axiosConfig}
+                fetchProfile={fetchProfile}
+                pageToggles={pageToggles}
+                transactions={transactions}
+              />
+            ) : maintenanceContent("Fund Wallet"))}
             {activeSection === 'buy-data' && (isPageEnabled('buy-data') ? <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Buy Data Bundle"))}
             {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Airtime Top-Up"))}
             {activeSection === 'betting' && (isPageEnabled('betting') ? <BettingSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Betting"))}
