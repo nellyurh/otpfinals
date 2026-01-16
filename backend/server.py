@@ -46,7 +46,13 @@ except Exception as e:
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
-# Health Check Endpoint for Railway/Render deployments
+# Root-level health check for Kubernetes (required - checks /health not /api/health)
+@app.get("/health")
+async def root_health_check():
+    """Root health check for Kubernetes."""
+    return {"status": "healthy"}
+
+# API-level Health Check Endpoint
 @api_router.get("/health")
 async def health_check():
     """Health check endpoint for deployment platforms."""
