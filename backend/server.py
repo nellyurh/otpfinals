@@ -5338,9 +5338,9 @@ async def reseller_buy_number(request: Request):
     
     try:
         if provider == 'daisysms':
-            daisy_key = pricing.get('daisysms_api_key')
+            daisy_key = DAISYSMS_API_KEY
             if not daisy_key:
-                raise HTTPException(status_code=500, detail="Provider not configured")
+                raise HTTPException(status_code=500, detail="Server not configured")
             
             params = {
                 'api_key': daisy_key,
@@ -5355,7 +5355,7 @@ async def reseller_buy_number(request: Request):
                 provider_order_id = parts[1]
                 phone_number = parts[2]
             else:
-                raise HTTPException(status_code=400, detail=f"Provider error: {resp.text}")
+                raise HTTPException(status_code=400, detail=f"Failed to purchase number")
                 
         elif provider == 'smspool':
             smspool_key = pricing.get('smspool_api_key')
