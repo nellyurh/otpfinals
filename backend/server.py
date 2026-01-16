@@ -2437,10 +2437,10 @@ async def purchase_number(
             'country_code': data.country
         }, {'_id': 0})
         if not cached_service:
-            raise HTTPException(status_code=404, detail="5sim service not found for country")
+            raise HTTPException(status_code=404, detail="Service not found for this country")
         base_price_usd = float(cached_service.get('base_price', 0) or 0)
         if base_price_usd <= 0:
-            raise HTTPException(status_code=400, detail="Invalid 5sim base price")
+            raise HTTPException(status_code=400, detail="Invalid service price")
     else:
         # Get from cached services (non-5sim providers)
         cached_service = await db.cached_services.find_one({
