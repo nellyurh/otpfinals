@@ -3037,6 +3037,8 @@ async def create_promo_code(payload: dict, admin: dict = Depends(require_admin))
     doc = promo.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     await db.promo_codes.insert_one(doc)
+    # Remove _id added by MongoDB to avoid ObjectId serialization issues
+    doc.pop('_id', None)
     return {"success": True, "promo": doc}
 
 
