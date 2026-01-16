@@ -140,8 +140,8 @@ export function BuyDataSection({ axiosConfig, fetchProfile, fetchTransactions })
         <p className="text-gray-600">Purchase data bundles for all networks</p>
       </div>
 
-      <div className="bg-white rounded-xl p-6 border shadow-sm ">
-        <div className="space-y-4">
+      <div className="bg-white rounded-2xl p-6 border shadow-sm">
+        <div className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
             <Select
@@ -186,7 +186,7 @@ export function BuyDataSection({ axiosConfig, fetchProfile, fetchTransactions })
               placeholder="08012345678"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none text-gray-900 transition-colors"
             />
           </div>
 
