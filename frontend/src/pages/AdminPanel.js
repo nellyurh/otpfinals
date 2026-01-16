@@ -3692,7 +3692,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Provider</p>
-                  <p className="text-sm text-slate-800">{selectedOtpOrder.provider}</p>
+                  <p className="text-sm text-slate-800">{selectedOtpOrder.server_name || selectedOtpOrder.provider}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Service</p>
@@ -3780,7 +3780,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Provider</p>
-                  <p className="text-sm text-slate-800">{selectedResellerOrder.provider}</p>
+                  <p className="text-sm text-slate-800">{selectedResellerOrder.server_name || selectedResellerOrder.provider}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Service</p>
