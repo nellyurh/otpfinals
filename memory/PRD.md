@@ -3,50 +3,54 @@
 ## Original Problem Statement
 Build a full-stack OTP service platform with JWT auth, wallet system, multiple payment gateways, and admin panel.
 
-## Latest Updates (January 15, 2026)
+## Latest Updates (January 16, 2026)
 
-### Session 5 - Reseller Sales Page & API Fixes
-
-**New Features:**
-
-1. **Admin Reseller Sales Page - IMPLEMENTED** ✅
-   - New "Reseller Sales" section in admin sidebar
-   - Stats cards: Total Orders, Total Revenue, Today's Orders, Total Resellers, Active Resellers
-   - Order Status Breakdown: Active, Completed, Cancelled, Expired, Refunded
-   - All Reseller Orders table with View modal
-   - Status filter functionality
-   - Backend endpoints: `/admin/reseller-orders`, `/admin/reseller-sales-stats`
+### Session 6 - Reseller API Fixes & Branding
 
 **Bug Fixes:**
 
-2. **Reseller Countries Endpoint Returning Empty - FIXED** ✅
-   - Root cause: Used `api.sms-pool.com` instead of `api.smspool.net`
-   - Also used database API keys instead of environment variables
-   - Fixed to use `SMSPOOL_API_KEY` and `FIVESIM_API_KEY` from environment
-   - Now returns 151 countries for SMS-pool, 154 countries for 5sim
+1. **SMS-pool Services Prices Were 0.0 - FIXED** ✅
+   - Root cause: `/service/retrieve_all` endpoint doesn't return prices
+   - Solution: Use `/request/pricing` endpoint which returns prices
+   - Now returns 1187 services with proper prices
 
-3. **Reseller Services Endpoint (USA/DaisySMS) Returning Empty - FIXED** ✅
-   - Root cause: Wrong JSON parsing - looking for `data.get('187')` but format is `data[service_code]['187']`
-   - Fixed to iterate correctly over DaisySMS response format
-   - Now returns 442 services for USA server
+2. **Reseller API Using Database Keys Instead of Env Vars - FIXED** ✅
+   - Updated all reseller endpoints to use `SMSPOOL_API_KEY`, `FIVESIM_API_KEY`, `DAISYSMS_API_KEY` from environment
+   - Affected endpoints: `/countries`, `/services`, `/buy`, `/status`, `/cancel`
 
-**Reseller API Status - ALL WORKING:**
-- ✅ `/api/reseller/v1/balance` - Returns balance, currency, plan
-- ✅ `/api/reseller/v1/servers` - Returns 3 servers (usa, all_country_1, all_country_2)
-- ✅ `/api/reseller/v1/countries?server=all_country_1` - Returns 151 countries (SMS-pool)
-- ✅ `/api/reseller/v1/countries?server=all_country_2` - Returns 154 countries (5sim)
-- ✅ `/api/reseller/v1/services?server=usa` - Returns 442 services (DaisySMS)
-- ✅ `/api/reseller/v1/services?server=all_country_1&country=1` - Returns 1187 services (SMS-pool)
-- ✅ `/api/reseller/v1/buy` - Purchase number
-- ✅ `/api/reseller/v1/status` - Check order/get OTP
-- ✅ `/api/reseller/v1/cancel` - Cancel order
+3. **SMS-pool Parameter Names Wrong - FIXED** ✅
+   - Changed `order_id` to `orderid` for `/sms/check` and `/sms/cancel` endpoints
 
-### Previous Session Fixes (Still Working)
-- ✅ API Documentation page persistence (showResellerDocs at parent level)
+4. **Provider Names Exposed to Users - FIXED** ✅
+   - Added `PROVIDER_TO_SERVER` mapping: daisysms→"US Server", smspool→"Server 1", 5sim→"Server 2"
+   - Added `get_server_name()` helper function
+   - All order responses now include `server_name` field
+   - Frontend admin panels display `server_name` instead of `provider`
+
+5. **Error Messages Exposing Provider Names - FIXED** ✅
+   - Changed "5sim: no free phones" → "No available numbers for this service/country"
+   - Changed "5sim account balance insufficient" → "Provider balance insufficient"
+   - Changed "Failed to purchase from 5sim" → "Failed to purchase number from server"
+
+**Reseller API Tested & Working:**
+- ✅ `/buy` - Successfully purchases numbers (tested with SMS-pool)
+- ✅ `/status` - Returns order status and OTP when received
+- ✅ `/cancel` - Successfully cancels and refunds
+- ✅ `/services` - Returns proper prices (1187 for SMS-pool, 442 for DaisySMS)
+- ✅ `/countries` - Returns 151 (SMS-pool) and 154 (5sim) countries
+
+### Previous Session Work
+- ✅ Admin Reseller Sales page with stats and orders
+- ✅ Admin OTP Sales page
+- ✅ API Documentation persistence
 - ✅ Admin-configurable API URL
-- ✅ Promo code validation
-- ✅ 5sim phone number parsing
-- ✅ OTP Sales admin page
+
+## Provider to Server Mapping
+| Provider | Server Name |
+|----------|-------------|
+| daisysms | US Server |
+| smspool | Server 1 |
+| 5sim | Server 2 |
 
 ## Admin Panel Sections (9 total)
 1. Dashboard
@@ -57,15 +61,15 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 6. SMS Providers
 7. Resellers (with API URL setting)
 8. OTP Sales
-9. **Reseller Sales** (NEW)
+9. Reseller Sales
 
 ## Testing Credentials
 - Admin: `admin@smsrelay.com` / `admin123`
 - Test Reseller API Key: `rsk_9cdb16694e964427991ff3209e029a38`
 
 ## Key Files Modified
-- `/app/backend/server.py` - Fixed reseller endpoints, added reseller-orders/stats admin endpoints
-- `/app/frontend/src/pages/AdminPanel.js` - Added Reseller Sales section
+- `/app/backend/server.py` - Provider mapping, env var usage, API fixes
+- `/app/frontend/src/pages/AdminPanel.js` - server_name display
 
 ## Upcoming Tasks (P1)
 - Complete Profile Settings functionality
