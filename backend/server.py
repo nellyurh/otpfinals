@@ -170,9 +170,6 @@ ERCASPAY_BASE_URL = os.environ.get('ERCASPAY_BASE_URL', 'https://api.ercaspay.co
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 # ============ Models ============
 
 class UserRegister(BaseModel):
