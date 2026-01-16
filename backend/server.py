@@ -3249,6 +3249,9 @@ async def get_admin_reseller_orders(
         if rid and rid in resellers_map:
             order['reseller_email'] = resellers_map[rid].get('email')
             order['reseller_name'] = resellers_map[rid].get('full_name')
+        # Add server name for display
+        if 'provider' in order:
+            order['server_name'] = get_server_name(order['provider'])
     
     return {
         "success": True,
