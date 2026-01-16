@@ -2054,43 +2054,59 @@ const NewDashboard = () => {
 
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">SMS History</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">SMS History</h2>
+            <p className="text-sm text-gray-600">Track your OTP requests</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg font-medium">{orders.length}</span>
+            <span>Total Orders</span>
+          </div>
+        </div>
         
         {orders.length > 0 ? (
           <div className="bg-white p-6 rounded-xl border shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-black">
                 <thead>
-                  <tr style={{borderBottom: '1px solid #e5e7eb'}}>
-                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Service</th>
-                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Phone Number</th>
-                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Code</th>
-                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Status</th>
-                    <th style={{textAlign: 'left', padding: '12px 16px', fontSize: '14px', fontWeight: '600', color: '#6b7280'}}>Date</th>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Phone Number</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Code</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map((order) => (
-                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                      <td className="py-4 px-4 font-medium text-gray-900">
-                        {getServiceName(order.service)}
+                    <tr key={order.id} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <span className="text-emerald-600 text-xs font-bold">{(order.service || '?')[0].toUpperCase()}</span>
+                          </div>
+                          <span className="font-medium text-gray-900">{getServiceName(order.service)}</span>
+                        </div>
                       </td>
                       <td className="py-4 px-4 font-mono text-sm text-gray-900">
                         {order.phone_number}
                       </td>
                       <td className="py-4 px-4 text-gray-900">
                         {order.otp || order.otp_code ? (
-                          <span className="font-mono text-lg font-bold text-[#005E3A]">
+                          <span className="font-mono text-lg font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">
                             {order.otp || order.otp_code}
                           </span>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400 italic">Waiting...</span>
                         )}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                          order.status === 'active' ? 'bg-green-100 text-green-700' :
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          order.status === 'active' || order.status === 'RECEIVED' ? 'bg-emerald-100 text-emerald-700' :
+                          order.status === 'cancelled' || order.status === 'CANCELED' ? 'bg-red-100 text-red-700' :
+                          order.status === 'pending' || order.status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {order.status}
@@ -2098,6 +2114,14 @@ const NewDashboard = () => {
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-600">
                         {new Date(order.created_at).toLocaleString()}
+                      </td>
+                      <td className="py-4 px-4">
+                        <button 
+                          onClick={() => toast.info(`Order ID: ${order.id}\nServer: ${order.server_name || order.provider || 'N/A'}\nCountry: ${order.country || 'N/A'}\nPrice: ₦${order.price_ngn || 0}`)}
+                          className="px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                        >
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -2108,7 +2132,14 @@ const NewDashboard = () => {
         ) : (
           <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
             <History className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">Your SMS history will appear here</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No SMS History</h3>
+            <p className="text-gray-500 mb-6">Your OTP request history will appear here</p>
+            <button 
+              onClick={() => setActiveSection('virtual-numbers')}
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+            >
+              Get Virtual Number
+            </button>
           </div>
         )}
       </div>
