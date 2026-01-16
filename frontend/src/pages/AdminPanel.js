@@ -3394,7 +3394,7 @@ const AdminPanel = ({ user, setUser }) => {
                                   <span className="font-semibold text-slate-800">₦{order.price_ngn?.toLocaleString()}</span>
                                 </td>
                                 <td className="px-3 py-2.5">
-                                  <span className="text-slate-600">{order.provider}</span>
+                                  <span className="text-slate-600">{order.server_name || order.provider}</span>
                                 </td>
                                 <td className="px-3 py-2.5">
                                   <Badge className={`text-[10px] ${
@@ -3578,7 +3578,7 @@ const AdminPanel = ({ user, setUser }) => {
                                   <span className="font-semibold text-slate-800">₦{order.cost_ngn?.toLocaleString()}</span>
                                 </td>
                                 <td className="px-3 py-2.5">
-                                  <span className="text-slate-600">{order.provider}</span>
+                                  <span className="text-slate-600">{order.server_name || order.provider}</span>
                                 </td>
                                 <td className="px-3 py-2.5">
                                   <Badge className={`text-[10px] ${
