@@ -9,10 +9,12 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 **Bug Fixes:**
 
-1. **Promo Code Not Reducing Total - FIXED** ✅
-   - Root cause: Backend returns `final_price_ngn` but frontend expected `final_ngn`
-   - Solution: Added mapping in VirtualNumbersSection.js to correctly use `final_price_ngn`
-   - Verified: SAVE40 promo reduces price by 40% (₦2,475 → ₦1,485)
+1. **Promo Code Not Reducing Total (ADDING instead) - FIXED** ✅
+   - Root cause: For US Server (DaisySMS), the frontend calculated price CLIENT-SIDE without calling backend API, thus ignoring promo codes
+   - The `useEffect` with `promoCode` dependency would then OVERWRITE any applied promo with non-discounted client-side price
+   - Solution: Now when `promoCode` exists for `us_server`, frontend calls `/api/orders/calculate-price` endpoint
+   - Verified: Without promo ₦2,475 → With SAVE40 ₦1,485 (40% off = ₦990 saved)
+   - Also fixed: Apply Promo button now sends correct `country: '187'` for US Server
 
 2. **Ercaspay Input Clearing After ~10 Seconds - FIXED** ✅
    - Root cause: `FundWalletSection` was a nested function component inside `NewDashboard`, recreated every 10 seconds when polling updated state
