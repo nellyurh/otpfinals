@@ -2,15 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install only required packages
+RUN pip install fastapi uvicorn
 
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 8001
-
-# Start command - Railway sets PORT env variable automatically
-CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-8001}"]
+# Start command
+CMD ["sh", "-c", "python -m uvicorn test_app:app --host 0.0.0.0 --port ${PORT:-8001}"]
