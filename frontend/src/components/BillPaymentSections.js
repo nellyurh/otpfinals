@@ -281,13 +281,13 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
         <p className="text-gray-600">Recharge airtime instantly for any network</p>
       </div>
 
-      <div className="bg-white rounded-xl p-6 border shadow-sm ">
+      <div className="bg-white rounded-2xl p-6 border shadow-sm">
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setAirtimeType('local')}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
+            className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
               airtimeType === 'local' 
-                ? 'bg-[#005E3A] text-white' 
+                ? 'bg-emerald-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -295,9 +295,9 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
           </button>
           <button
             onClick={() => setAirtimeType('international')}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
+            className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
               airtimeType === 'international' 
-                ? 'bg-[#005E3A] text-white' 
+                ? 'bg-emerald-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -305,7 +305,7 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Select Network</label>
             <Select
@@ -329,7 +329,7 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
               placeholder={airtimeType === 'local' ? '08012345678' : '+1234567890'}
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none text-gray-900 transition-colors"
             />
           </div>
 
@@ -344,7 +344,7 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
                 placeholder="Minimum ₦50"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none text-gray-900 transition-colors"
               />
             </div>
           </div>
@@ -355,7 +355,11 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
                 <button
                   key={preset}
                   onClick={() => setAmount(preset)}
-                  className="py-2 border-2 border-gray-200 rounded-lg hover:border-[#005E3A] hover:bg-green-50 transition-colors font-semibold text-sm text-gray-900"
+                  className={`py-2.5 border rounded-xl transition-all font-semibold text-sm ${
+                    amount === preset 
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700' 
+                      : 'border-gray-200 text-gray-700 hover:border-emerald-500 hover:bg-emerald-50'
+                  }`}
                 >
                   ₦{preset}
                 </button>
@@ -365,7 +369,7 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 
           <button 
             onClick={handleBuyAirtime}
-            className="w-full py-4 bg-[#005E3A] text-white rounded-lg font-semibold text-lg hover:bg-[#004A2D] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-emerald-600 text-white rounded-xl font-semibold text-lg hover:bg-emerald-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             disabled={!network || !phoneNumber || !amount || processing}
           >
             {processing ? 'Processing...' : 'Buy Airtime'}
@@ -373,8 +377,8 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4 ">
-        <p className="text-sm text-green-800">
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+        <p className="text-sm text-emerald-800">
           ⚡ <strong>Instant Delivery:</strong> Airtime is delivered within seconds. No delays!
         </p>
       </div>
