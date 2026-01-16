@@ -14,16 +14,21 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
    - Solution: Changed from controlled input (value/onChange) to uncontrolled input (defaultValue/onBlur) pattern using useRef
    - Input now maintains focus when typing multiple digits
 
-2. **Bank Accounts Page - VERIFIED WORKING** ✅
+2. **Promo Code Creation Error - FIXED** ✅
+   - Root cause: MongoDB `insert_one()` mutates the dictionary and adds `_id` (ObjectId), which is not JSON serializable
+   - Solution: Added `doc.pop('_id', None)` after insert to remove the ObjectId before returning
+   - Promo codes now create successfully via admin panel
+
+3. **Bank Accounts Page - VERIFIED WORKING** ✅
    - Backend `/api/admin/virtual-accounts` endpoint returns correct data
    - Frontend displays 4 virtual accounts with User, Account, Bank columns
    - Issue was likely temporary or data-related in previous session
 
-3. **Total OTP Volume Metric - VERIFIED WORKING** ✅
+4. **Total OTP Volume Metric - VERIFIED WORKING** ✅
    - Admin dashboard displays correct ₦25,155 from `money_flow.total_sales_ngn`
    - Backend `/api/admin/stats` endpoint returns accurate data
 
-4. **Canceled Order Income Logic - CONFIRMED CORRECT** ✅
+5. **Canceled Order Income Logic - CONFIRMED CORRECT** ✅
    - When order is canceled/refunded, revenue is DECREMENTED (standard accounting)
    - Code: `{'$inc': {'total_revenue_ngn': -refund_amount, 'total_orders': -1}}`
 
