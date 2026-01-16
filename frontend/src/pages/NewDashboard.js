@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Receipt, Wallet, CreditCard, History, UserCircle, 
   MessageSquare, Gift, Settings, ChevronDown, Search, Phone, Plus,
