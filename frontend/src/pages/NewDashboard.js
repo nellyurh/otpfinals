@@ -1969,23 +1969,53 @@ const NewDashboard = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
+                  <tr className="border-b bg-gray-50">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((txn) => (
-                    <tr key={txn.id} className="border-b hover:bg-gray-50">
-                      <td className="py-4 px-4 text-sm">{new Date(txn.created_at).toLocaleDateString()}</td>
-                      <td className="py-4 px-4 capitalize">{txn.type}</td>
-                      <td className="py-4 px-4 font-semibold">{txn.currency} {txn.amount}</td>
+                    <tr key={txn.id} className="border-b hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-4 text-sm text-gray-700">{new Date(txn.created_at).toLocaleDateString()}</td>
                       <td className="py-4 px-4">
-                        <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${
+                          txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {txn.type.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`font-semibold ${
+                          txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
+                            ? 'text-green-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' ? '+' : '-'}
+                          {txn.currency === 'NGN' ? '₦' : '$'}{txn.amount?.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                          txn.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                          txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
                           {txn.status}
                         </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <button 
+                          onClick={() => toast.info(`Transaction ID: ${txn.id}\nRef: ${txn.reference || 'N/A'}\nDescription: ${txn.description || 'N/A'}`)}
+                          className="px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                        >
+                          View
+                        </button>
                       </td>
                     </tr>
                   ))}
