@@ -113,11 +113,6 @@ const NewDashboard = () => {
   const [cryptoCountdown, setCryptoCountdown] = useState(null);
   const [cryptoNetwork, setCryptoNetwork] = useState('TRON');
 
-  // Ercaspay funding state (at parent level to prevent reload)
-  const [ercaspayAmount, setErcaspayAmount] = useState('');
-  const [ercaspayLoading, setErcaspayLoading] = useState(false);
-  const ercaspayInputRef = useRef(null);
-
   // Public branding (used for brand text + primary green accents)
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
