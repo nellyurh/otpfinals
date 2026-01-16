@@ -1425,7 +1425,7 @@ const NewDashboard = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleErcaspayPayment('card')}
-                disabled={ercaspayLoading || !ercaspayAmount}
+                disabled={ercaspayLoading}
                 className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {ercaspayLoading ? (
@@ -1437,7 +1437,7 @@ const NewDashboard = () => {
               </button>
               <button
                 onClick={() => handleErcaspayPayment('bank-transfer')}
-                disabled={ercaspayLoading || !ercaspayAmount}
+                disabled={ercaspayLoading}
                 className="flex items-center justify-center gap-2 py-3 px-4 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {ercaspayLoading ? (
