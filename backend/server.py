@@ -2808,7 +2808,6 @@ async def list_orders(user: dict = Depends(get_current_user)):
         'user_id': 1,
         'activation_id': 1,
         'server': 1,
-        'provider': 1,
         'service': 1,
         'country': 1,
         'phone_number': 1,
@@ -2830,10 +2829,15 @@ async def list_orders(user: dict = Depends(get_current_user)):
         .sort('created_at', -1)
         .to_list(100)
     )
-    # Map provider names to user-friendly server names
+    # Map server to user-friendly server names (without exposing provider)
+    server_names = {
+        'server1': 'Server 1',
+        'server2': 'Global Server', 
+        'us_server': 'US Server'
+    }
     for order in orders:
-        if 'provider' in order:
-            order['server_name'] = get_server_name(order['provider'])
+        server = order.get('server', '')
+        order['server_name'] = server_names.get(server, server.replace('_', ' ').title())
     return {'orders': orders}
 
 @api_router.get("/orders/{order_id}")
