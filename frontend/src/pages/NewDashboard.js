@@ -335,7 +335,9 @@ const NewDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/');
+    localStorage.removeItem('user');
+    setUser(null);
+    window.location.href = '/';
   };
 
   // Crypto funding functions
