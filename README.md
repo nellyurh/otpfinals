@@ -1,99 +1,87 @@
-# SMS Relay - Virtual Number OTP Service Platform
+# UltraCloud SMS - OTP Service Platform
 
 A comprehensive platform for purchasing temporary phone numbers and receiving OTPs from multiple SMS service providers worldwide.
 
-## 🌟 Features
+## Project Structure
 
-### User Features
-- **Dual Balance System**: Support for both Nigerian Naira (NGN) and US Dollar (USD) balances
-- **Multiple SMS Providers**: Integration with TigerSMS, DaisySMS, and SMS-pool
-- **Virtual Numbers**: Purchase temporary numbers from 150+ countries
-- **Real-time OTP Polling**: Automatic OTP retrieval with 10-second polling interval
-- **Flexible Deposits**: 
-  - NGN deposits via PaymentPoint virtual accounts
-  - USD deposits via Payscribe stablecoin (coming soon)
-- **Currency Conversion**: Convert NGN to USD at configurable rates
-- **Order Management**: Track active orders, view history, and cancel within refund window
-- **Transaction History**: Complete audit trail of all financial activities
-
-### Admin Features
-- **Pricing Configuration**: Set markup percentages for each SMS provider
-- **Conversion Rate Management**: Update NGN to USD exchange rates
-- **Platform Statistics**: View total users, orders, revenue, and active orders
-- **Provider Management**: Monitor status of all integrated services
-
-## 🏗️ Architecture
-
-### Backend Stack
-- **Framework**: FastAPI (Python)
-- **Database**: MongoDB with Motor (async driver)
-- **Authentication**: JWT with bcrypt password hashing
-- **Payment Processing**: PaymentPoint & Payscribe integrations
-- **SMS Providers**: TigerSMS, DaisySMS, SMS-pool
-
-### Frontend Stack
-- **Framework**: React 19
-- **UI Components**: Shadcn/UI with Radix primitives
-- **Styling**: Tailwind CSS with custom theming
-- **Routing**: React Router v7
-- **State Management**: React Hooks
-- **Notifications**: Sonner toast notifications
-
-## 🚀 Quick Start
-
-### Test Admin Account
 ```
-Email: admin@smsrelay.com
-Password: admin123
-NGN Balance: ₦10,000
-USD Balance: $100
+/
+├── backend/          # FastAPI backend
+│   ├── server.py     # Main application
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/         # React frontend
+│   ├── src/
+│   ├── package.json
+│   └── Dockerfile
+└── .do/
+    └── app.yaml      # Digital Ocean App Platform config
 ```
 
-### API Endpoints
-- **Backend**: https://otp-relay-2.preview.emergentagent.com/api
-- **Frontend**: https://otp-relay-2.preview.emergentagent.com
+## Deployment
 
-## 📋 Key Business Logic
+### Digital Ocean App Platform
 
-### OTP Polling System
-- **Polling Interval**: Every 10 seconds
-- **Maximum Wait Time**: 8 minutes
-- **Cancellation Window**: After 5 minutes if no OTP received
-- **Auto-expiry**: Orders expire after 8 minutes
+1. Connect your GitHub repository to Digital Ocean
+2. The `.do/app.yaml` file will auto-configure your deployment
+3. Set the following environment variables in Digital Ocean:
+   - `MONGO_URL` - MongoDB Atlas connection string
+   - `JWT_SECRET` - Secret key for JWT tokens
+   - `SMSPOOL_API_KEY`, `FIVESIM_API_KEY`, `DAISYSMS_API_KEY` - SMS provider keys
+   - `PAYMENTPOINT_API_KEY`, `ERCASPAY_SECRET_KEY` - Payment provider keys
 
-### Refund Policy
-- Refunds processed only if OTP not received
-- Cancellation allowed after 5-minute grace period
-- Full refund of purchase amount to USD balance
+### Railway
 
-### Pricing Model
+1. Create two services: `backend` and `frontend`
+2. Set root directory for each service
+3. Both services use Dockerfile for deployment
+4. Set `REACT_APP_BACKEND_URL` build arg for frontend
+
+### Manual Deployment
+
+**Backend:**
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn server:app --host 0.0.0.0 --port 8001
 ```
-Final Price = Provider Cost × (1 + Markup Percentage / 100)
+
+**Frontend:**
+```bash
+cd frontend
+yarn install
+yarn build
+npx serve -s build -l 3000
 ```
 
-## 🔐 Security Features
+## Environment Variables
 
-- **JWT Authentication**: Secure token-based auth with 7-day expiry
-- **Password Hashing**: Bcrypt with salt
-- **Webhook Verification**: HMAC signature validation
-- **Admin Protection**: Role-based access control
+### Backend (.env)
+- `MONGO_URL` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret
+- `SMSPOOL_API_KEY` - SMS-pool API key
+- `FIVESIM_API_KEY` - 5sim API key
+- `DAISYSMS_API_KEY` - DaisySMS API key
+- `PAYMENTPOINT_API_KEY` - PaymentPoint API key
+- `ERCASPAY_SECRET_KEY` - Ercaspay secret key
 
-## 📊 Database Collections
+### Frontend (.env)
+- `REACT_APP_BACKEND_URL` - Full URL to backend API
 
-- **users**: Authentication, balances, profiles
-- **virtual_accounts**: PaymentPoint accounts
-- **sms_orders**: Number purchases and OTPs
-- **transactions**: Financial activity log
-- **pricing_config**: Admin-configurable rates
+## Tech Stack
 
-## 🎨 UI Highlights
+- **Backend**: FastAPI, Python 3.11, Motor (MongoDB)
+- **Frontend**: React 19, Tailwind CSS, Shadcn/UI
+- **Database**: MongoDB Atlas
+- **Payments**: PaymentPoint, Ercaspay, Plisio
+- **SMS Providers**: DaisySMS, SMS-pool, 5sim
 
-- Modern dark theme with glass-morphism effects
-- Responsive design for all devices
-- Real-time updates and notifications
-- Intuitive tab-based navigation
-- Color-coded status indicators
+## Test Credentials
 
----
+```
+Admin: admin@smsrelay.com / admin123
+```
 
-**Built with ❤️ for seamless OTP service delivery**
+## First-Time Setup
+
+After deployment, visit `/api/seed-database` to create the admin user and default configuration.
