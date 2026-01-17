@@ -1028,38 +1028,66 @@ const NewDashboard = () => {
       <div className="space-y-5 sm:space-y-6">
         {/* Top Row: Balance Card + My Card (Desktop) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Balance Card - with border and dynamic color */}
-          <div className="lg:col-span-2 bg-white rounded-2xl p-5 sm:p-6 border-2 shadow-sm" style={{ borderColor: primaryColor }}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-500">Total Balance</h3>
-              <button className="text-xs text-purple-600 font-medium hover:underline">Manage Wallet</button>
-            </div>
+          {/* Balance Card - Solid gradient background */}
+          <div 
+            className="lg:col-span-2 rounded-2xl p-5 sm:p-6 shadow-lg relative overflow-hidden"
+            style={{ 
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 50%, ${primaryColor}bb 100%)` 
+            }}
+          >
+            {/* Decorative circles */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-medium text-white/80">Total Balance</h3>
+                <button className="text-xs text-white/90 font-medium hover:text-white hover:underline">Manage Wallet</button>
+              </div>
 
-            <div className="flex items-end justify-between mb-5">
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                  {dashboardCurrency === 'NGN' 
-                    ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
-                    : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-                  <span className="text-sm font-normal text-gray-400 ml-2">{dashboardCurrency}</span>
-                </h1>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>+0.00%</span>
-                  <span className="text-xs text-gray-400">vs previous month</span>
+              <div className="flex items-end justify-between mb-5">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+                    {dashboardCurrency === 'NGN' 
+                      ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
+                      : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+                    <span className="text-sm font-normal text-white/60 ml-2">{dashboardCurrency}</span>
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/20 text-white">+0.00%</span>
+                    <span className="text-xs text-white/60">vs previous month</span>
+                  </div>
+                </div>
+                <div className="hidden sm:flex gap-2">
+                  <button 
+                    onClick={() => setActiveSection('fund-wallet')}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-800 rounded-xl font-semibold text-sm transition-colors shadow-lg hover:bg-gray-100"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Money
+                  </button>
+                  <button 
+                    onClick={() => setActiveSection('transactions')}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white/20 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-colors"
+                  >
+                    <History className="w-4 h-4" />
+                    History
+                  </button>
                 </div>
               </div>
-              <div className="hidden sm:flex gap-2">
+
+              {/* Mobile buttons - stacked */}
+              <div className="flex sm:hidden gap-2 mt-3">
                 <button 
                   onClick={() => setActiveSection('fund-wallet')}
-                  className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg"
-                  style={{ backgroundColor: primaryColor }}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white text-gray-800 rounded-xl font-semibold text-sm transition-colors shadow-lg hover:bg-gray-100"
                 >
                   <Plus className="w-4 h-4" />
                   Add Money
                 </button>
                 <button 
                   onClick={() => setActiveSection('transactions')}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white/20 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-colors"
                 >
                   <History className="w-4 h-4" />
                   History
@@ -1067,27 +1095,8 @@ const NewDashboard = () => {
               </div>
             </div>
 
-            {/* Mobile buttons - stacked */}
-            <div className="flex sm:hidden gap-2 mt-3">
-              <button 
-                onClick={() => setActiveSection('fund-wallet')}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <Plus className="w-4 h-4" />
-                Add Money
-              </button>
-              <button 
-                onClick={() => setActiveSection('transactions')}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 transition-colors"
-              >
-                <History className="w-4 h-4" />
-                History
-              </button>
-            </div>
-
             {/* Currency Toggle - pushed to left on mobile */}
-            <div className="flex items-center mt-4">
+            <div className="flex items-center mt-4 relative z-10">
               <div className="flex bg-gray-100 rounded-xl p-1">
                 <button 
                   onClick={() => setDashboardCurrency('NGN')}
