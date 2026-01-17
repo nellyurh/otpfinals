@@ -1154,7 +1154,6 @@ const AdminPanel = ({ user, setUser }) => {
                   />
                   <KpiCard
                     title="Total Sales (OTP spend)"
-
                     value={
                       stats && stats.money_flow
                         ? `₦${Math.round(
@@ -1164,6 +1163,27 @@ const AdminPanel = ({ user, setUser }) => {
                     }
                     icon={TrendingUp}
                     accent="text-sky-700 bg-sky-50"
+                  />
+                  <KpiCard
+                    title="Total Refunds"
+                    value={
+                      stats && stats.money_flow
+                        ? `₦${Math.round(stats.money_flow.total_refunds_ngn || 0).toLocaleString()}`
+                        : '₦0'
+                    }
+                    subtitle={stats?.money_flow?.cancelled_orders ? `${stats.money_flow.cancelled_orders} cancelled` : undefined}
+                    icon={RefreshCw}
+                    accent="text-orange-700 bg-orange-50"
+                  />
+                  <KpiCard
+                    title="Net Sales (Sales - Refunds)"
+                    value={
+                      stats && stats.money_flow
+                        ? `₦${Math.round(stats.money_flow.net_sales_ngn || 0).toLocaleString()}`
+                        : '₦0'
+                    }
+                    icon={TrendingUp}
+                    accent="text-emerald-700 bg-emerald-50"
                   />
                   <KpiCard
                     title="Gross Profit (Sales – API)"
