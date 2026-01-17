@@ -3028,6 +3028,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <tr>
                               <th className="px-2 py-1 font-semibold text-slate-600">Email</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">Full Name</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Phone</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">NGN Balance</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">USD Balance</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">Created At</th>
@@ -3040,6 +3041,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 whitespace-nowrap">{u.email}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">{u.full_name || '-'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">{u.phone || '-'}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">₦{(u.ngn_balance || 0).toLocaleString()}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">${(u.usd_balance || 0).toLocaleString()}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">{u.created_at ? new Date(u.created_at).toLocaleString() : '-'}</td>
@@ -3073,11 +3075,15 @@ const AdminPanel = ({ user, setUser }) => {
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
                                               <Label className="text-xs">Full name</Label>
-                                              <Input value={editUser?.full_name || u.full_name || ''} onChange={(e) => setEditUser({ ...(editUser || {}), full_name: e.target.value, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Input value={editUser?.full_name || u.full_name || ''} onChange={(e) => setEditUser({ ...(editUser || {}), full_name: e.target.value, email: editUser?.email ?? u.email, phone: editUser?.phone ?? u.phone, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
                                             </div>
                                             <div>
                                               <Label className="text-xs">Email</Label>
-                                              <Input value={editUser?.email || u.email || ''} onChange={(e) => setEditUser({ ...(editUser || {}), email: e.target.value, full_name: editUser?.full_name ?? u.full_name, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Input value={editUser?.email || u.email || ''} onChange={(e) => setEditUser({ ...(editUser || {}), email: e.target.value, full_name: editUser?.full_name ?? u.full_name, phone: editUser?.phone ?? u.phone, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                            </div>
+                                            <div>
+                                              <Label className="text-xs">Phone</Label>
+                                              <Input value={editUser?.phone || u.phone || ''} onChange={(e) => setEditUser({ ...(editUser || {}), phone: e.target.value, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} placeholder="+234..." />
                                             </div>
                                             <div>
                                               <Label className="text-xs">NGN balance</Label>
