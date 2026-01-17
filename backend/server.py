@@ -4781,6 +4781,41 @@ async def get_admin_stats(
     api_cost_rows = await api_cost_cursor.to_list(1)
     api_cost_usd = float(api_cost_rows[0].get('total_cost_usd', 0) or 0) if api_cost_rows else 0.0
 
+    # Calculate total refunds from refund transactions
+    refund_cursor = db.transactions.aggregate([
+        {
+            '$match': {
+                **period_match,
+                'type': 'refund',
+                'status': 'completed',
+            }
+        },
+        {
+            '$group': {
+                '_id': '$currency',
+                'total': {'$sum': '$amount'},
+            }
+        },
+    ])
+    refund_totals = await refund_cursor.to_list(5)
+    total_refunds_ngn = 0.0
+    total_refunds_usd = 0.0
+    for row in refund_totals:
+        cur = row.get('_id')
+        amt = float(row.get('total', 0) or 0)
+        if cur == 'USD':
+            total_refunds_usd += amt
+            total_refunds_ngn += amt * ngn_rate
+        elif cur == 'NGN':
+            total_refunds_usd += amt / ngn_rate
+            total_refunds_ngn += amt
+
+    # Count cancelled/refunded orders
+    cancelled_orders = await db.sms_orders.count_documents({
+        'created_at': {'$gte': start.isoformat(), '$lte': end.isoformat()},
+        'status': {'$in': ['cancelled', 'refunded']}
+    })
+
     # ================= Additional metrics for ads, users & risk =================
 
     # Fetch new and old users for the period
