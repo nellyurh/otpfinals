@@ -4,10 +4,10 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json ./
-COPY yarn.lock* ./
+COPY yarn.lock* package-lock.json* ./
 
-# Install dependencies
-RUN yarn install
+# Install dependencies (prefer yarn if available, fallback to npm)
+RUN if [ -f yarn.lock ]; then yarn install; else npm install; fi
 
 # Copy application code
 COPY . .
@@ -17,7 +17,7 @@ ARG REACT_APP_BACKEND_URL
 ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 
 # Build the app
-RUN yarn build
+RUN if [ -f yarn.lock ]; then yarn build; else npm run build; fi
 
 # Install serve
 RUN npm install -g serve
