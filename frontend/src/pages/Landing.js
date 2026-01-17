@@ -369,6 +369,86 @@ const Landing = ({ setUser }) => {
         </div>
       </section>
 
+      {/* Telco Services - Easy Process */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Easy Telco Services</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Beyond OTP verification, we make it incredibly easy to access all your telco needs in one place</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { 
+                icon: '📱', 
+                title: 'Instant Airtime', 
+                desc: 'Top up any mobile number in seconds. MTN, GLO, Airtel, 9Mobile - all networks supported with instant delivery.',
+                highlight: '⚡ Instant delivery',
+                color: 'border-orange-200 hover:border-orange-400'
+              },
+              { 
+                icon: '📡', 
+                title: 'Data Bundles', 
+                desc: 'Purchase affordable data bundles for any network. Daily, weekly, or monthly plans at the best rates.',
+                highlight: '💰 Up to 40% cheaper',
+                color: 'border-blue-200 hover:border-blue-400'
+              },
+              { 
+                icon: '📺', 
+                title: 'TV Subscriptions', 
+                desc: 'Renew your DSTV, GOtv, StarTimes subscriptions without leaving home. Quick and hassle-free.',
+                highlight: '🎯 No delays',
+                color: 'border-purple-200 hover:border-purple-400'
+              },
+              { 
+                icon: '💡', 
+                title: 'Electricity Bills', 
+                desc: 'Pay PHCN bills for all DisCos. EKEDC, IKEDC, AEDC, PHED - all supported. Get token instantly.',
+                highlight: '✅ Instant tokens',
+                color: 'border-yellow-200 hover:border-yellow-400'
+              },
+              { 
+                icon: '🔢', 
+                title: 'Virtual Numbers', 
+                desc: 'Get real phone numbers from 100+ countries for OTP verification. Works with WhatsApp, Telegram, Google & more.',
+                highlight: '🌍 100+ countries',
+                color: 'border-emerald-200 hover:border-emerald-400'
+              },
+              { 
+                icon: '💳', 
+                title: 'Virtual Cards', 
+                desc: 'Create virtual dollar cards for online payments. Shop on Amazon, Netflix, Spotify - anywhere!',
+                highlight: '🛒 Shop globally',
+                color: 'border-pink-200 hover:border-pink-400'
+              },
+            ].map((service, index) => (
+              <div 
+                key={index}
+                onClick={() => setShowAuth(true)}
+                className={`bg-white p-6 rounded-2xl border-2 ${service.color} transition-all cursor-pointer hover:shadow-lg hover:-translate-y-1`}
+              >
+                <div className="text-3xl mb-4">{service.icon}</div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">{service.title}</h3>
+                <p className="text-gray-600 text-sm mb-4">{service.desc}</p>
+                <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                  {service.highlight}
+                </span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8">
+            <button 
+              onClick={() => setShowAuth(true)}
+              className="px-8 py-3 text-white rounded-full font-semibold transition-all transform hover:scale-105"
+              style={{ backgroundColor: buttonColor }}
+            >
+              Get Started Now - It's Free
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6">
