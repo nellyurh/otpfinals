@@ -1158,12 +1158,15 @@ async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Opti
 
 async def poll_otp_5sim(order_id: str) -> Optional[str]:
     """Poll 5sim for OTP using order ID."""
-    if not FIVESIM_API_KEY:
+    # Get key from config first, then env
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
+    if not fivesim_key:
         logger.error("FIVESIM_API_KEY not configured")
         return None
     try:
         headers = {
-            'Authorization': f'Bearer {FIVESIM_API_KEY}',
+            'Authorization': f'Bearer {fivesim_key}',
             'Accept': 'application/json'
         }
         async with httpx.AsyncClient() as client:
