@@ -413,6 +413,79 @@ const Landing = ({ setUser }) => {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">What Our Users Say</h2>
+            <p className="text-gray-600">Trusted by thousands of satisfied customers</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { name: 'Chinedu O.', role: 'App Developer', quote: 'Best OTP service I have used. Fast delivery and reliable numbers. Highly recommended!', rating: 5 },
+              { name: 'Fatima A.', role: 'Freelancer', quote: 'I use this daily for my business. The prices are unbeatable and support is excellent.', rating: 5 },
+              { name: 'Emeka K.', role: 'Entrepreneur', quote: 'Finally found a service that works in Nigeria. Funding is easy and OTPs come through instantly.', rating: 5 },
+            ].map((testimonial, index) => (
+              <div key={index} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-gray-600 text-sm mb-4 italic">"{testimonial.quote}"</p>
+                <div>
+                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                  <p className="text-xs text-gray-500">{testimonial.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Frequently Asked Questions</h2>
+            <p className="text-gray-600">Got questions? We've got answers</p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            {[
+              { q: 'How do I fund my wallet?', a: 'You can fund your wallet via bank transfer, card payment, or cryptocurrency. Go to Dashboard > Fund Wallet to see all available options.' },
+              { q: 'Are the phone numbers real?', a: 'Yes! We provide real, non-VoIP phone numbers from trusted carriers worldwide. These numbers work for most verification services.' },
+              { q: 'How fast will I receive the OTP?', a: 'Most OTPs are received within 10-60 seconds after purchase. Our system automatically polls for messages and displays them in real-time.' },
+              { q: 'What if I don\'t receive an OTP?', a: 'If no OTP is received within the time limit, your order will be automatically cancelled and your balance refunded.' },
+              { q: 'Can I get a refund?', a: 'Yes, if no SMS is received, you get a full refund. Cancelled orders are refunded instantly to your wallet balance.' },
+            ].map((faq, index) => (
+              <div key={index} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-2">{faq.q}</h3>
+                <p className="text-sm text-gray-600">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 sm:py-16" style={{ background: `linear-gradient(135deg, ${buttonColor}15, ${accentColor}15)` }}>
+        <div className="container mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
+          <p className="text-gray-600 mb-6 max-w-xl mx-auto">Join thousands of users who trust us for their OTP verification needs. Sign up today and get instant access.</p>
+          <button 
+            onClick={() => setShowAuth(true)}
+            className="px-8 py-3 text-white rounded-full font-semibold transition-all transform hover:scale-105"
+            style={{ backgroundColor: buttonColor }}
+          >
+            Create Free Account
+          </button>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-6 sm:py-8 bg-gray-50 border-t border-gray-100">
         <div className="container mx-auto px-4 sm:px-6 text-center text-gray-500 text-sm">
