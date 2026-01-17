@@ -3870,7 +3870,7 @@ const SidebarItem = ({ icon: Icon, label, active, disabled, onClick }) => (
   </button>
 );
 
-const KpiCard = ({ title, value, icon: Icon, accent }) => (
+const KpiCard = ({ title, value, subtitle, icon: Icon, accent }) => (
   <Card className="border border-slate-200 shadow-sm bg-white">
     <CardHeader className="flex flex-row items-center justify-between pb-2">
       <CardTitle className="text-xs font-medium text-slate-500">{title}</CardTitle>
@@ -3880,6 +3880,7 @@ const KpiCard = ({ title, value, icon: Icon, accent }) => (
     </CardHeader>
     <CardContent>
       <div className="text-xl font-semibold text-slate-900">{value}</div>
+      {subtitle && <div className="text-[10px] text-slate-500 mt-0.5">{subtitle}</div>}
     </CardContent>
   </Card>
 );
