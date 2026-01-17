@@ -1,0 +1,82 @@
+{
+  "summary": "Completed testing of iteration 4 features. All 6 reported features/bugs verified: 1) API docs page persistence via parent state working, 2) Admin API Base URL setting in Resellers section working, 3) Promo code validation endpoint working, 4) 5sim phone parsing fix verified in code, 5) Admin OTP Sales page with stats/orders/filtering working, 6) OTP Sales status filter working. Backend: 17/17 tests passed. Frontend: All features verified via Playwright.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Admin login works correctly",
+    "Public branding returns reseller_api_base_url field",
+    "Admin can update reseller_api_base_url via /admin/pricing endpoint",
+    "/promo/validate endpoint exists and validates empty code",
+    "/promo/validate returns error for invalid promo codes",
+    "calculate-price endpoint validates promo codes and rejects invalid ones",
+    "/admin/otp-orders endpoint returns orders list with user info",
+    "/admin/otp-orders status filter works for all statuses (completed, active, cancelled, expired, refunded)",
+    "/admin/otp-stats endpoint returns statistics (total_orders, status_breakdown, total_revenue_ngn, today_orders, today_revenue_ngn)",
+    "/admin/otp-stats includes status breakdown for all statuses",
+    "/admin/otp-orders requires admin authentication",
+    "/admin/otp-stats requires admin authentication",
+    "calculate-price works without country parameter for DaisySMS (us_server)",
+    "calculate-price works with country parameter",
+    "Reseller profile endpoint works",
+    "Reseller plans endpoint returns plans",
+    "Public branding includes all required fields",
+    "UI: Reseller Portal loads correctly",
+    "UI: API Documentation page accessible and shows correct API URL",
+    "UI: API Documentation persists when navigating away and back",
+    "UI: Admin OTP Sales page shows stats cards (Total Orders, Total Revenue, Today's Orders, Today's Revenue)",
+    "UI: Admin OTP Sales shows Order Status Breakdown",
+    "UI: Admin OTP Sales shows orders table with View button",
+    "UI: Admin OTP Sales has status filter dropdown",
+    "UI: Admin Resellers section has API Documentation Settings card",
+    "UI: Admin Resellers shows API Base URL input with Save URL button",
+    "UI: Virtual Numbers page has Promo Code input field with Apply button"
+  ],
+
+  "test_report_links": [
+    "/app/tests/test_iteration4_features.py",
+    "/app/test_reports/pytest/pytest_results_iter4.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "API docs persistence: showResellerDocs state correctly moved to parent NewDashboard component level",
+    "Admin API URL: reseller_api_base_url field added to PricingConfig model and exposed via /admin/pricing and /public/branding endpoints",
+    "Promo validation: /promo/validate endpoint returns proper validation result with discount_type and discount_value",
+    "5sim parsing: Code at line 2545-2548 correctly extracts phone number from 5sim response using result.get('phone')",
+    "OTP Sales: /admin/otp-orders and /admin/otp-stats endpoints properly implemented with status filtering and user enrichment",
+    "Country field: CalculatePriceRequest model has country as Optional[str] = None (line 469)"
+  ],
+
+  "updated_files": [
+    "/app/tests/test_iteration4_features.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (17/17 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+
+  "test_credentials": {
+    "admin_user": "admin@smsrelay.com",
+    "admin_password": "admin123"
+  },
+
+  "seed_data_creation": "None - used existing admin account",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "All iteration 4 features verified working: 1) API docs persistence via showResellerDocs parent state, 2) Admin-configurable API URL in Resellers section with Save URL button, 3) Promo code validation via /promo/validate and calculate-price endpoints, 4) 5sim phone parsing fixed in purchase endpoint, 5) Admin OTP Sales page with stats cards, status breakdown, orders table with View button, and status filter dropdown, 6) Country field made optional in CalculatePriceRequest. Backend has 17 passing tests in /app/tests/test_iteration4_features.py."
+}

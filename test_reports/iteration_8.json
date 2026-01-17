@@ -1,0 +1,60 @@
+{
+  "summary": "Verified SAVE40 promo code fix for US Server (DaisySMS). Backend API correctly applies 40% discount: ₦2,475 → ₦1,485. Frontend code fix reviewed - now calls backend API when promo code exists for us_server instead of client-side calculation. All 5 backend tests pass.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Backend: calculate-price without promo returns ₦2,475.00 for WhatsApp on US Server",
+    "Backend: calculate-price with SAVE40 promo returns ₦1,485.00 (40% discount applied correctly)",
+    "Backend: Invalid promo code correctly rejected with 400 status",
+    "Backend: SAVE40 promo works with different services (wa, tg, go)",
+    "Backend: Multiple price calculations with promo return consistent results (no reverting)",
+    "Code Review: VirtualNumbersSection.js lines 248-277 correctly calls backend API when promoCode exists for us_server",
+    "Code Review: promoCode is in useEffect dependencies (line 374) ensuring recalculation on promo change"
+  ],
+
+  "test_report_links": [
+    "/app/tests/test_promo_code.py",
+    "/app/test_reports/pytest/pytest_promo_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "FIX VERIFIED: VirtualNumbersSection.js now calls backend API for us_server when promoCode exists (lines 249-276)",
+    "The root cause was client-side price calculation ignoring promo codes - now fixed by calling /api/orders/calculate-price",
+    "useEffect dependency array includes promoCode ensuring price recalculates when promo changes"
+  ],
+
+  "updated_files": [
+    "/app/tests/test_promo_code.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (5/5 tests passed)",
+    "frontend": "Code review verified - UI testing limited due to react-select dropdown complexity"
+  },
+
+  "test_credentials": {
+    "admin_user": "admin@smsrelay.com",
+    "admin_password": "admin123",
+    "promo_code": "SAVE40"
+  },
+
+  "seed_data_creation": "None - used existing admin account and SAVE40 promo code",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": true,
+
+  "context_for_next_testing_agent": "Promo code fix verified via backend API tests. The fix ensures that for US Server (DaisySMS), when a promo code is entered, the frontend calls the backend /api/orders/calculate-price endpoint instead of calculating client-side. This ensures promo discounts are applied correctly. Backend returns: without promo ₦2,475 → with SAVE40 ₦1,485 (40% off). UI testing with Playwright was challenging due to react-select dropdown interactions - recommend manual verification of the full flow: Select US Server → Select WhatsApp → Enter SAVE40 → Click Apply → Verify price shows ₦1,485 and persists."
+}

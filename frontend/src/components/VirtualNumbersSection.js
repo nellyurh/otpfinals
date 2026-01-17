@@ -1,0 +1,1192 @@
+import { useState, useEffect } from 'react';
+import Select from 'react-select';
+import { Phone, Plus, ChevronDown, RefreshCw, Copy } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'sonner';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+// Shared Select styles to prevent blurry text and ensure dark, visible text
+const selectStyles = {
+  control: (base) => ({
+    ...base,
+    minHeight: '44px',
+    borderWidth: '2px',
+    borderColor: '#e5e7eb',
+    borderRadius: 9999,
+    '&:hover': { borderColor: '#10b981' }
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: '#9ca3af',
+    fontSize: '0.8rem',
+    fontWeight: 500
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: '#1f2937',
+    fontWeight: 600,
+    fontSize: '0.85rem'
+  }),
+  input: (base) => ({
+    ...base,
+    color: '#1f2937'
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? '#f9fafb' : state.isSelected ? '#e5f9f0' : 'white',
+    color: '#111827',
+    cursor: 'pointer',
+    fontWeight: state.isSelected ? 700 : 500,
+    fontSize: '0.8rem',
+    borderBottom: '1px solid #f3f4f6',
+    borderRadius: 0
+  })
+};
+
+// Virtual Numbers (DaisySMS + SMS-pool + Tiger placeholder)
+// Extracted into its own component to prevent remounts that caused dropdown
+// menus to close while users were typing.
+export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, fetchProfile }) {
+  const [, setTick] = useState(0);
+
+  // Virtual Numbers state (local to this component)
+  const [selectedServer, setSelectedServer] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [availableServices, setAvailableServices] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [serviceMenuOpen, setServiceMenuOpen] = useState(false);
+  const [estimatedPrice, setEstimatedPrice] = useState(null);
+  const [selectedPool, setSelectedPool] = useState(null);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [selectedOperator, setSelectedOperator] = useState(null);
+
+  const [selectedCarrier, setSelectedCarrier] = useState(null);
+  const [selectedAreaCodes, setSelectedAreaCodes] = useState([]);
+  const [preferredNumber, setPreferredNumber] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [purchaseExpanded, setPurchaseExpanded] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
+
+  // Service code to full name mapping
+  const serviceNames = {
+    wa: 'WhatsApp',
+    tg: 'Telegram',
+    go: 'Google',
+    fb: 'Facebook',
+    ig: 'Instagram',
+    tw: 'Twitter',
+    ds: 'Discord',
+    tt: 'TikTok',
+    oa: 'OpenAI/ChatGPT',
+    ub: 'Uber',
+    pp: 'PayPal',
+    am: 'Amazon',
+    cb: 'Coinbase',
+    sn: 'Snapchat',
+    ca: 'Cash App'
+  };
+
+ 
+
+  const getCountryFlagUrl = (countryValue) => {
+    if (!countryValue) return null;
+    const key = String(countryValue).toLowerCase().replace(/\s+/g, '');
+
+    // Common overrides
+    const known = {
+      usa: 'us',
+      unitedstates: 'us',
+      nigeria: 'ng',
+      unitedkingdom: 'gb',
+      uk: 'gb',
+      canada: 'ca',
+      india: 'in',
+    };
+
+    const iso2 = known[key] || (/^[a-z]{2}$/.test(key) ? key : null);
+    if (!iso2) return null;
+
+    // Use svg for better compatibility
+    return `https://flagcdn.com/${iso2}.svg`;
+  };
+
+  const getServiceName = (code) => {
+    return serviceNames[code] || (code ? code.toUpperCase() : '');
+  };
+
+  // Update timer every second (for countdown in active orders)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((t) => t + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch services for selected server
+  const fetchServicesForServer = async (serverValue) => {
+    if (!serverValue) {
+      setAvailableServices([]);
+      setAvailableCountries([]);
+      return;
+    }
+
+    setServicesLoading(true);
+    try {
+      const serverMap = {
+        us_server: 'daisysms',
+        server1: 'smspool',
+        server2: '5sim'
+      };
+
+      const provider = serverMap[serverValue];
+
+      if (provider === 'daisysms') {
+        // DaisySMS - US only, fetch services directly
+        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+        if (response.data.success) {
+          const services = (response.data.services || []).map((service) => ({
+            value: service.value,
+            label: service.name,
+            name: service.name,
+            price_usd: service.final_price,
+            price_ngn: service.final_price * 1500,
+            count: service.count
+          }));
+          setAvailableServices(services);
+          setAvailableCountries([{ value: '187', label: 'United States' }]);
+        }
+      } else if (provider === 'smspool') {
+        // SMS-pool - fetch countries first
+        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+        if (response.data.success && response.data.countries) {
+          setAvailableCountries(response.data.countries);
+          setAvailableServices([]); // Services loaded after country selection
+        }
+      } else {
+        // 5sim Global server - first load countries via /services/5sim
+        const response = await axios.get(`${API}/api/services/5sim`, axiosConfig);
+        if (response.data.success && response.data.countries) {
+          setAvailableCountries(response.data.countries);
+          setAvailableServices([]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      toast.error('Failed to load services');
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  // Fetch services when country changes (for SMS-pool)
+  useEffect(() => {
+    const fetchServicesForCountry = async () => {
+      // For SMS-pool (International server), services should reload ONLY
+      // when the selected country actually changes.
+      // SMS-pool (server1): load services for selected country
+      if (selectedServer?.value === 'server1' && selectedCountry) {
+        setServicesLoading(true);
+        try {
+          const response = await axios.get(
+            `${API}/api/services/smspool?country=${selectedCountry.value}`,
+            axiosConfig
+          );
+
+          if (response.data.success && response.data.services) {
+            setAvailableServices(response.data.services);
+          }
+        } catch (error) {
+          console.error('Failed to fetch services for country:', error);
+          toast.error('Failed to load services');
+        } finally {
+          setServicesLoading(false);
+        }
+      }
+
+      // 5sim (server2): load services/operators for selected country
+      if (selectedServer?.value === 'server2' && selectedCountry) {
+        setServicesLoading(true);
+        try {
+          const response = await axios.get(
+            `${API}/api/services/5sim?country=${selectedCountry.value}`,
+            axiosConfig
+          );
+          if (response.data.success && response.data.services) {
+            setAvailableServices(response.data.services);
+          }
+        } catch (error) {
+          console.error('Failed to fetch 5sim services for country:', error);
+          toast.error('Failed to load 5sim services');
+        } finally {
+          setServicesLoading(false);
+        }
+      }
+    };
+
+    fetchServicesForCountry();
+    // IMPORTANT: Depend ONLY on selectedCountry and selectedServer so
+    // services reload when country/server changes, not on every parent re-render.
+  }, [selectedServer, selectedCountry]);
+
+  // Calculate estimated price when selection changes
+  useEffect(() => {
+    const calculatePrice = async () => {
+      if (!selectedServer || !selectedService) {
+        setEstimatedPrice(null);
+        return;
+      }
+
+      // For DaisySMS (US server), calculate price in NGN with advanced options
+      // If promo code is entered, use backend to calculate discounted price
+      if (selectedServer.value === 'us_server' && selectedService.price_ngn) {
+        if (promoCode) {
+          // When promo code exists, call backend to get discounted price
+          try {
+            const response = await axios.post(
+              `${API}/api/orders/calculate-price`,
+              {
+                server: selectedServer.value,
+                service: selectedService.value,
+                country: '187', // DaisySMS is US-only
+                promo_code: promoCode,
+                area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+                carrier: selectedCarrier?.value,
+              },
+              axiosConfig
+            );
+
+            if (response.data.success) {
+              setEstimatedPrice({
+                ...response.data,
+                final_ngn: response.data.final_price_ngn,
+                final_usd: response.data.final_price_usd,
+              });
+              return; // Exit early, price is set
+            }
+          } catch (error) {
+            console.error('Failed to calculate promo price:', error);
+            // Fall through to client-side calculation if API fails
+          }
+        }
+        
+        // Client-side calculation (no promo)
+        let baseNGN = selectedService.price_ngn;
+        let additionalCost = 0;
+        const breakdown = [`Base: ₦${baseNGN.toFixed(2)}`];
+
+        // Add 35% for each advanced option selected
+        if (selectedCarrier) {
+          additionalCost += baseNGN * 0.35;
+          breakdown.push(`Carrier (${selectedCarrier.label}): +₦${(baseNGN * 0.35).toFixed(2)}`);
+        }
+        if (selectedAreaCodes && selectedAreaCodes.length > 0) {
+          additionalCost += baseNGN * 0.35;
+          const codes = selectedAreaCodes.map((c) => c.value).join(', ');
+          breakdown.push(`Area Code (${codes}): +₦${(baseNGN * 0.35).toFixed(2)}`);
+        }
+        if (preferredNumber) {
+          additionalCost += baseNGN * 0.35;
+          breakdown.push(`Preferred Number: +₦${(baseNGN * 0.35).toFixed(2)}`);
+        }
+
+        const totalNGN = baseNGN + additionalCost;
+        const totalUSD = totalNGN / 1500;
+
+        setEstimatedPrice({
+          final_usd: totalUSD,
+          final_ngn: totalNGN,
+          breakdown
+        });
+      } else if (selectedServer.value === 'server1' && selectedService.price_ngn) {
+        // SMS-pool (International server): allow user to select a specific pool.
+        let poolToUse = null;
+        if (selectedService.pools && selectedService.pools.length > 0) {
+          // If a specific pool is selected, use that; otherwise default to the
+          // cheapest pool (already reflected in price_ngn on the service).
+          poolToUse = selectedPool || null;
+        }
+
+        const baseNGN = poolToUse?.price_ngn || selectedService.price_ngn;
+        const breakdown = [`Base (selected pool): ₦${baseNGN.toFixed(2)}`];
+
+        if (selectedService.pools && selectedService.pools.length > 0) {
+          breakdown.push(`Pools available: ${selectedService.pools.length}`);
+        }
+
+        setEstimatedPrice({
+          final_usd: null,
+          final_ngn: baseNGN,
+          breakdown
+        });
+      } else if (selectedCountry && selectedServer.value !== 'server2') {
+        // For DaisySMS and SMS-pool, use backend price calculator
+        try {
+          const response = await axios.post(
+            `${API}/api/orders/calculate-price`,
+            {
+              server: selectedServer.value,
+              service: selectedService.value,
+              country: selectedCountry?.value,
+              promo_code: promoCode || undefined,
+              area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+              carrier: selectedCarrier?.value,
+            },
+            axiosConfig
+          );
+
+          if (response.data.success) {
+            // Map backend response to frontend expected format
+            setEstimatedPrice({
+              ...response.data,
+              final_ngn: response.data.final_price_ngn,
+              final_usd: response.data.final_price_usd,
+            });
+          }
+        } catch (error) {
+          console.error('Failed to calculate price:', error);
+        }
+      } else if (selectedServer.value === 'server2' && selectedService && selectedCountry) {
+        // For 5sim, backend already returns NGN price per service/operator
+        const baseNGN = selectedOperator?.price_ngn || selectedService.price_ngn || 0;
+        setEstimatedPrice({
+          final_usd: selectedService.price_usd || null,
+          final_ngn: baseNGN,
+          breakdown: [`Base: ₦${baseNGN.toFixed(2)}`],
+        });
+      }
+    };
+
+    calculatePrice();
+  }, [
+    selectedServer,
+    selectedService,
+    selectedCountry,
+    selectedCarrier,
+    selectedAreaCodes,
+    preferredNumber,
+    promoCode,
+    axiosConfig
+  ]);
+
+  const handlePurchaseNumber = async () => {
+    if (!selectedService) {
+      toast.error('Please select a service');
+      return;
+    }
+
+    // Balance check is still done by backend; client-side check can be misleading with promo discounts.
+
+    setPurchasing(true);
+    try {
+      const payload = {
+        server: selectedServer.value,
+        service: selectedService.value,
+        service_name: selectedService.name || selectedService.label,
+        // For now DaisySMS is US-only so country is fixed to 187;
+        // for other providers, country comes from selectedCountry
+        country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value,
+        promo_code: promoCode || undefined,
+        area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+        carrier: selectedCarrier?.value
+      };
+
+      // For SMS-pool, include selected pool (if any)
+      if (selectedServer.value === 'server1' && selectedPool) {
+        payload.pool = selectedPool.id;
+      }
+
+      // For 5sim, include selected operator (if any)
+      if (selectedServer.value === 'server2' && selectedOperator) {
+        payload.operator = selectedOperator.value;
+      }
+
+      // Add advanced options if selected (DaisySMS only)
+      if (selectedCarrier) {
+        payload.carrier = selectedCarrier.value;
+      }
+      if (selectedAreaCodes && selectedAreaCodes.length > 0) {
+        payload.area_codes = selectedAreaCodes.map((a) => a.value).join(',');
+      }
+      if (preferredNumber) {
+        payload.preferred_number = preferredNumber;
+      }
+
+      const response = await axios.post(`${API}/api/orders/purchase`, payload, axiosConfig);
+
+      if (response.data.success) {
+        toast.success('Number purchased successfully!');
+        setSelectedService(null);
+        setSelectedCarrier(null);
+        setSelectedAreaCodes([]);
+        setPreferredNumber('');
+        setShowAdvancedOptions(false);
+        fetchOrders();
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.detail || 'Purchase failed');
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const response = await axios.post(`${API}/api/orders/${orderId}/cancel`, {}, axiosConfig);
+      if (response.data.success) {
+        const refunded = response.data.refunded?.toFixed(2) || '0.00';
+        toast.success(`Order cancelled and refunded ₦${refunded}`);
+        fetchOrders();
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.detail || 'Cancel failed');
+    }
+  };
+
+  const copyToClipboard = async (text, message = 'Copied to clipboard!') => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(message);
+    } catch (err) {
+      console.error('Clipboard write failed', err);
+      toast.error('Unable to copy to clipboard in this browser.');
+    }
+  };
+
+  const copyOTP = (code) => {
+    copyToClipboard(code, 'OTP copied to clipboard!');
+  };
+
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <div className="text-center mb-3 sm:mb-4">
+        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-0.5">Virtual SMS</h1>
+        <p className="text-[10px] sm:text-xs text-gray-500">Get premium virtual numbers for verification</p>
+      </div>
+
+      {/* Server Selection */}
+      <div className="bg-white rounded-xl p-3 sm:p-4 border shadow-sm">
+        <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Server</label>
+        <Select
+          menuPortalTarget={document.body}
+          styles={{
+            ...selectStyles,
+            control: (base) => ({
+              ...base,
+              minHeight: '36px',
+              borderWidth: '2px',
+              borderColor: '#e5e7eb',
+              borderRadius: '0.75rem',
+              fontSize: '0.75rem',
+              '&:hover': { borderColor: '#10b981' }
+            }),
+            placeholder: (base) => ({
+              ...base,
+              color: '#9ca3af',
+              fontSize: '0.7rem',
+              fontWeight: 500
+            }),
+            singleValue: (base) => ({
+              ...base,
+              color: '#1f2937',
+              fontWeight: 600,
+              fontSize: '0.75rem'
+            }),
+          }}
+          value={selectedServer}
+          onChange={(option) => {
+            setSelectedServer(option);
+            setSelectedService(null);
+            setSelectedCountry(null);
+            setEstimatedPrice(null);
+            if (option) {
+              fetchServicesForServer(option.value);
+            } else {
+              setAvailableServices([]);
+              setAvailableCountries([]);
+            }
+          }}
+          options={[
+            { value: 'us_server', label: '🇺🇸 US Server' },
+            { value: 'server1', label: '🌍 International' },
+            { value: 'server2', label: '🌐 Global' }
+          ]}
+          placeholder="Choose server"
+          className="react-select-container"
+          classNamePrefix="react-select"
+          isClearable
+        />
+      </div>
+
+      {/* Purchase New Number */}
+      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <button
+          onClick={() => setPurchaseExpanded(!purchaseExpanded)}
+          className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Plus
+              className={`w-3 h-3 sm:w-4 sm:h-4 text-emerald-600 transition-transform ${
+                purchaseExpanded ? 'rotate-45' : ''
+              }`}
+            />
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Purchase Number</h3>
+          </div>
+          <ChevronDown
+            className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform ${
+              purchaseExpanded ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+
+        {purchaseExpanded && (
+          <div className="p-3 sm:p-4 pt-0 space-y-2.5 border-t">
+            {/* Country Selection - Show for International & Global servers */}
+            {selectedServer &&
+              (selectedServer.value === 'server1' || selectedServer.value === 'server2') && (
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Select Country
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={selectStyles}
+                    value={selectedCountry}
+                    onChange={(option) => {
+                      setSelectedCountry(option);
+                      setSelectedService(null); // Reset service when country changes
+                    }}
+                    options={availableCountries}
+                    formatOptionLabel={(option) => {
+                      const flagUrl = getCountryFlagUrl(option.value || option.short_name || option.label);
+                      return (
+                        <div className="flex items-center gap-2">
+                          {flagUrl && (
+                            <img
+                              src={flagUrl}
+                              alt={option.label}
+                              className="w-5 h-5 rounded-full border border-gray-200 object-cover"
+                            />
+                          )}
+                          <span className="text-xs font-semibold text-gray-800">{option.label}</span>
+                        </div>
+                      );
+                    }}
+                    isDisabled={!selectedServer || servicesLoading}
+                    isLoading={servicesLoading}
+                    placeholder="Choose country..."
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                    isSearchable
+                  />
+                </div>
+              )}
+
+            {/* Service Search - Show after country is selected (or for US server which doesn't need country) */}
+            {selectedServer && ((selectedServer.value === 'us_server') || selectedCountry) && (
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Search Service
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={{
+                      ...selectStyles,
+                      control: (base) => ({
+                        ...base,
+                        minHeight: '36px',
+                        borderWidth: '2px',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '0.75rem',
+                        fontSize: '0.75rem',
+                        '&:hover': { borderColor: '#10b981' }
+                      }),
+                    }}
+                    value={selectedService}
+                    onMenuOpen={() => setServiceMenuOpen(true)}
+                    onMenuClose={() => setServiceMenuOpen(false)}
+                    onInputChange={(value, { action }) => {
+                      // Only keep menu open while typing, avoid closing on blur
+                      if (action === 'input-change' && !serviceMenuOpen) {
+                        setServiceMenuOpen(true);
+                      }
+                    }}
+                    menuIsOpen={serviceMenuOpen}
+                    onChange={(option) => {
+                      setSelectedService(option);
+                      setSelectedPool(null);
+                    }}
+                    options={availableServices}
+                    isDisabled={servicesLoading}
+                    isLoading={servicesLoading}
+                    placeholder={
+                      servicesLoading ? 'Loading...' : 'Search service...'
+                    }
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                    isSearchable
+                    formatOptionLabel={(option) => (
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] sm:text-xs">{option.label || option.name}</span>
+                          {option.pools && option.pools.length > 0 && (
+                            <span className="text-[9px] text-gray-400">
+                              {option.pools.length} pool{option.pools.length > 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {option.operators && option.operators.length > 0 && (
+                            <span className="text-[9px] text-gray-400">
+                              {option.operators.length} operator{option.operators.length > 1 ? 's' : ''}
+            {/* 5sim Operator selection (similar to pools) */}
+            {selectedServer?.value === 'server2' && selectedService?.operators && selectedService.operators.length > 0 && (
+              <div>
+                <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                  Select Operator
+                </label>
+                <Select
+                  menuPortalTarget={document.body}
+                  styles={selectStyles}
+                  value={selectedOperator}
+                  onChange={(option) => setSelectedOperator(option)}
+                  options={selectedService.operators.map((op) => ({
+                    value: op.name,
+                    label: `${op.name} (₦${op.price_ngn.toFixed(2)})`,
+                    price_ngn: op.price_ngn
+                  }))}
+                  isDisabled={!selectedService}
+                  placeholder="Choose operator (default is cheapest)"
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  isClearable
+                />
+              </div>
+            )}
+
+                            </span>
+                          )}
+                        </div>
+                        {option.price_ngn && (
+                          <span className="text-gray-700 font-semibold text-xs">
+                            ₦{option.price_ngn.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+
+                {/* SMS-pool: allow user to pick a specific pool for the selected service */}
+                {selectedServer.value === 'server1' && selectedService && selectedService.pools &&
+                  selectedService.pools.length > 0 && (
+                    <div>
+                      <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                        Select Pool (optional)
+                      </label>
+                      <Select
+                        menuPortalTarget={document.body}
+                        styles={selectStyles}
+                        value={selectedPool && {
+                          value: selectedPool.id,
+                          label: `${selectedPool.name} - ₦${selectedPool.price_ngn.toFixed(2)}`
+                        }}
+                        onChange={(option) => {
+                          if (!option) {
+                            setSelectedPool(null);
+                            return;
+                          }
+                          const poolObj = selectedService.pools.find(
+                            (p) => String(p.id) === String(option.value)
+                          ) || null;
+                          setSelectedPool(poolObj);
+                        }}
+                        options={selectedService.pools.map((p) => ({
+                          value: p.id,
+                          label: `${p.name} - ₦${p.price_ngn.toFixed(2)}`
+                        }))}
+                        placeholder="Cheapest pool (default)"
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        isClearable
+                      />
+                    </div>
+                  )}
+              </div>
+            )}
+
+            {/* Advanced Options Toggle - US Server Only */}
+            {selectedServer && selectedServer.value === 'us_server' && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <span className="text-[10px] sm:text-xs font-semibold text-blue-900">
+                    {showAdvancedOptions ? '▼' : '▶'} Advanced Options
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-blue-600">+35% each</span>
+                </button>
+              </div>
+            )}
+
+            {/* Advanced Options Fields */}
+            {showAdvancedOptions && selectedServer && selectedServer.value === 'us_server' && (
+              <div className="bg-blue-50 rounded-xl p-3 space-y-3 border border-blue-200">
+                {/* Carrier Selection */}
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Carrier <span className="text-blue-600">+35%</span>
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={selectStyles}
+                    value={selectedCarrier}
+                    onChange={(option) => setSelectedCarrier(option)}
+                    options={[
+                      { value: 'tmo', label: 'T-Mobile' },
+                      { value: 'vz', label: 'Verizon' },
+                      { value: 'att', label: 'AT&T' }
+                    ]}
+                    placeholder="Any carrier"
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isClearable
+                  />
+                </div>
+
+                {/* Area Codes */}
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Area Codes <span className="text-blue-600">+35%</span>
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={selectStyles}
+                    value={selectedAreaCodes}
+                    onChange={(options) => setSelectedAreaCodes(options || [])}
+                    options={[
+                      { value: '212', label: '212 - New York' },
+                      { value: '718', label: '718 - New York' },
+                      { value: '213', label: '213 - Los Angeles' },
+                      { value: '310', label: '310 - Los Angeles' },
+                      { value: '312', label: '312 - Chicago' },
+                      { value: '773', label: '773 - Chicago' },
+                      { value: '415', label: '415 - San Francisco' },
+                      { value: '305', label: '305 - Miami' },
+                      { value: '713', label: '713 - Houston' },
+                      { value: '202', label: '202 - Washington DC' }
+                    ]}
+                    placeholder="Any area code"
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    isMulti
+                    isClearable
+                  />
+                </div>
+
+                {/* Preferred Number */}
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Preferred Number <span className="text-blue-600">+35%</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 11112223344"
+                    value={preferredNumber}
+                    onChange={(e) =>
+                      setPreferredNumber(e.target.value.replace(/\D/g, '').slice(0, 11))
+                    }
+                    maxLength={11}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-emerald-600 focus:outline-none text-xs text-gray-900"
+                  />
+                  <p className="text-[9px] text-gray-400 mt-0.5">Enter full number without +1</p>
+                </div>
+              </div>
+            )}
+
+            {/* Promo Code with Validation */}
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Promo Code (optional)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter promo code"
+                  value={promoCode || ''}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase());
+                    // Reset estimated price to recalculate with new promo code
+                    if (estimatedPrice?.promo) {
+                      setEstimatedPrice(prev => ({ ...prev, promo: null }));
+                    }
+                  }}
+                  className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-gray-900 ${
+                    estimatedPrice?.promo 
+                      ? 'border-green-400 bg-green-50' 
+                      : 'border-gray-200 focus:border-emerald-600'
+                  }`}
+                />
+                {promoCode && (
+                  <button
+                    onClick={async () => {
+                      if (!selectedService || !selectedServer) {
+                        toast.error('Please select a service first');
+                        return;
+                      }
+                      // Trigger price recalculation which validates promo
+                      try {
+                        const response = await axios.post(
+                          `${API}/api/orders/calculate-price`,
+                          {
+                            server: selectedServer.value,
+                            service: selectedService.value,
+                            // For US server (DaisySMS), country is always 187
+                            country: selectedServer.value === 'us_server' ? '187' : selectedCountry?.value,
+                            promo_code: promoCode,
+                            area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+                            carrier: selectedCarrier?.value,
+                          },
+                          axiosConfig
+                        );
+                        if (response.data.success && response.data.promo) {
+                          // Map backend response to frontend expected format
+                          setEstimatedPrice({
+                            ...response.data,
+                            final_ngn: response.data.final_price_ngn,
+                            final_usd: response.data.final_price_usd,
+                          });
+                          toast.success(`Promo "${promoCode}" applied! You save ₦${response.data.promo.discount_ngn.toFixed(2)}`);
+                        } else if (response.data.success) {
+                          setEstimatedPrice({
+                            ...response.data,
+                            final_ngn: response.data.final_price_ngn,
+                            final_usd: response.data.final_price_usd,
+                          });
+                          toast.error('Invalid or expired promo code');
+                        }
+                      } catch (error) {
+                        // Handle error - detail might be a string or an array of validation errors
+                        let errorMsg = 'Invalid promo code';
+                        const detail = error.response?.data?.detail;
+                        if (typeof detail === 'string') {
+                          errorMsg = detail;
+                        } else if (Array.isArray(detail) && detail.length > 0) {
+                          errorMsg = detail[0]?.msg || 'Validation error';
+                        } else if (detail && typeof detail === 'object' && detail.msg) {
+                          errorMsg = detail.msg;
+                        }
+                        toast.error(errorMsg);
+                      }
+                    }}
+                    className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors text-xs"
+                  >
+                    Apply
+                  </button>
+                )}
+              </div>
+              {estimatedPrice?.promo && (
+                <div className="mt-1.5 flex items-center gap-1.5 text-green-600 text-[10px]">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">Promo &quot;{estimatedPrice.promo.code}&quot; applied! Saving ₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Price Display */}
+            {estimatedPrice && (
+              <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-white border border-green-200 rounded-xl p-3 space-y-2 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="block text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">
+                      Total Cost
+                    </span>
+                    <span className="block text-[9px] text-gray-400">
+                      Includes all fees
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-lg sm:text-xl font-extrabold text-emerald-700 leading-tight">
+                      ₦{estimatedPrice.final_ngn?.toFixed(2)}
+                    </span>
+                    {estimatedPrice.final_usd && (
+                      <span className="block text-[10px] text-gray-400">
+                        ≈ ${estimatedPrice.final_usd.toFixed(2)} USD
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Promo Applied Badge */}
+                {estimatedPrice.promo && (
+                  <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-2 py-1.5">
+                    <div className="flex items-center gap-1">
+                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-[10px] font-semibold text-green-700">
+                        Promo &quot;{estimatedPrice.promo.code}&quot; applied!
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-green-700">
+                      -₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Show selected pool for SMS-pool when chosen */}
+                {selectedServer?.value === 'server1' && selectedService && selectedService.pools && (
+                  <div className="flex items-center justify-between text-[10px] text-gray-500">
+                    <span>Pool:</span>
+                    <span className="font-semibold">
+                      {selectedPool
+                        ? `${selectedPool.name} (₦${selectedPool.price_ngn.toFixed(2)})`
+                        : 'Cheapest available'}
+                    </span>
+                  </div>
+                )}
+
+                {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 0 && (
+                  <div className="pt-1.5 border-t border-green-200">
+                    <p className="text-[9px] text-gray-500 font-semibold mb-0.5">Price breakdown</p>
+                    <div className="space-y-0.5">
+                      {estimatedPrice.breakdown.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-[9px] text-gray-500"
+                        >
+                          <span className="truncate max-w-[70%]">• {item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[9px] text-gray-400">
+                  💡 Paid from NGN balance only. Convert USD to NGN if needed.
+                </p>
+              </div>
+            )}
+
+            {/* Purchase Button */}
+            <button
+              onClick={handlePurchaseNumber}
+              disabled={!selectedService || !estimatedPrice || purchasing}
+              className="w-full py-2.5 bg-emerald-600 text-white rounded-full font-semibold text-xs hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              {purchasing ? 'Purchasing...' : 'Purchase Number'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Your Verifications - Mobile-first responsive design */}
+      <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 md:p-6">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Your Verifications</h3>
+
+        {orders.filter((o) => o.status === 'active').length > 0 ? (
+          <>
+            {/* Mobile Card Layout */}
+            <div className="block md:hidden space-y-3">
+              {orders
+                .filter((o) => o.status === 'active')
+                .map((order) => {
+                  const createdAt = new Date(order.created_at);
+                  const now = new Date();
+                  const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+                  const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
+                  const minutes = Math.floor(remainingSeconds / 60);
+                  const seconds = remainingSeconds % 60;
+                  const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
+
+                  return (
+                    <div key={order.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-semibold text-gray-800">
+                          {order.service_name || getServiceName(order.service)}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full">
+                            Active
+                          </span>
+                          <span className="text-[10px] text-gray-500 font-mono">
+                            {minutes}:{seconds.toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] text-gray-500">Phone:</span>
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs text-gray-800">{order.phone_number || 'N/A'}</span>
+                          {order.phone_number && (
+                            <button
+                              onClick={() => copyToClipboard(order.phone_number, 'Phone copied!')}
+                              className="p-0.5 hover:bg-gray-200 rounded"
+                            >
+                              <Copy className="w-3 h-3 text-gray-500" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-gray-500">OTP:</span>
+                        {order.otp || order.otp_code ? (
+                          <div className="flex items-center gap-1">
+                            <span className="font-mono text-sm font-bold text-emerald-600">
+                              {order.otp || order.otp_code}
+                            </span>
+                            <button
+                              onClick={() => copyOTP(order.otp || order.otp_code)}
+                              className="p-0.5 hover:bg-gray-200 rounded"
+                            >
+                              <Copy className="w-3 h-3 text-gray-500" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            Waiting...
+                          </span>
+                        )}
+                      </div>
+
+                      {!(order.otp || order.otp_code) && canCancel && (
+                        <button
+                          onClick={() => handleCancelOrder(order.activation_id || order.id)}
+                          className="w-full mt-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-xs font-semibold"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
+                      {(order.otp || order.otp_code) && (
+                        <div className="text-center mt-2 text-[10px] text-green-600 font-semibold">✓ OTP Received</div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+
+            {/* Desktop Table Layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-black">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Service</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Phone</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Code</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Status</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders
+                    .filter((o) => o.status === 'active')
+                    .map((order) => {
+                      const createdAt = new Date(order.created_at);
+                      const now = new Date();
+                      const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+                      const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
+                      const minutes = Math.floor(remainingSeconds / 60);
+                      const seconds = remainingSeconds % 60;
+                      const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
+
+                      return (
+                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-3">
+                            <span className="text-xs font-medium text-gray-800">
+                              {order.service_name || getServiceName(order.service)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-1">
+                              <span className="font-mono text-xs text-gray-800">{order.phone_number || 'N/A'}</span>
+                              {order.phone_number && (
+                                <button
+                                  onClick={() => copyToClipboard(order.phone_number, 'Phone copied!')}
+                                  className="p-0.5 hover:bg-gray-200 rounded"
+                                >
+                                  <Copy className="w-3 h-3 text-gray-500" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            {order.otp || order.otp_code ? (
+                              <div className="flex items-center gap-1">
+                                <span className="font-mono text-sm font-bold text-emerald-600">
+                                  {order.otp || order.otp_code}
+                                </span>
+                                <button
+                                  onClick={() => copyOTP(order.otp || order.otp_code)}
+                                  className="p-0.5 hover:bg-gray-200 rounded"
+                                >
+                                  <Copy className="w-3 h-3 text-gray-500" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                Waiting...
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full text-center w-fit">
+                                Active
+                              </span>
+                              <span className="text-[10px] text-gray-500 font-mono">
+                                {minutes}:{seconds.toString().padStart(2, '0')}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            {!(order.otp || order.otp_code) && canCancel && (
+                              <button
+                                onClick={() => handleCancelOrder(order.activation_id || order.id)}
+                                className="px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-[10px] font-semibold"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            {!(order.otp || order.otp_code) && !canCancel && (
+                              <span className="text-[10px] text-gray-500">Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
+                            )}
+                            {(order.otp || order.otp_code) && (
+                              <span className="text-[10px] text-green-600 font-semibold">✓ Received</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-8 sm:py-12">
+            <Phone className="w-10 h-10 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-3" />
+            <p className="text-xs sm:text-sm text-gray-500">No active verifications</p>
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-1">Purchase a number to get started</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

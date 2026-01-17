@@ -1,0 +1,59 @@
+{
+  "summary": "Verified fix for Ercaspay input clearing and promo code reverting issue. The FundWalletSection was extracted to a separate component file to prevent re-creation on parent re-renders (every 10 seconds due to polling). Both Ercaspay input and promo code values persist after 15+ seconds. All existing functionality (login, dashboard, fund wallet, virtual numbers, transactions) continues to work correctly.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Ercaspay input value '5000' persisted after 15 seconds (past 10-second polling interval)",
+    "Promo code 'TESTPROMO' persisted after 15 seconds in VirtualNumbersSection",
+    "FundWalletSection is now a separate component file (/app/frontend/src/components/FundWalletSection.js)",
+    "Login functionality works correctly",
+    "Dashboard section loads with balance and quick services",
+    "Fund Wallet section loads with Ercaspay and Virtual Account options",
+    "Virtual Numbers section loads with server selection and promo code input",
+    "Transactions section loads with filter and transaction list"
+  ],
+
+  "test_report_links": [
+    "/app/test_reports/iteration_7.json"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "FundWalletSection.js: Correctly extracted as separate component with local state (lines 15-23) - state won't reset on parent re-render",
+    "FundWalletSection.js: Uses useRef pattern with defaultValue/onBlur for Ercaspay input (lines 119-138) to prevent value clearing",
+    "FundWalletSection.js: Has data-testid='ercaspay-amount-input' for testing (line 123)",
+    "NewDashboard.js: Correctly imports and uses FundWalletSection component (line 13, lines 943-951)",
+    "VirtualNumbersSection.js: Already a separate component, promo code state persists correctly"
+  ],
+
+  "updated_files": [],
+
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (all features verified)"
+  },
+
+  "test_credentials": {
+    "admin_user": "admin@smsrelay.com",
+    "admin_password": "admin123"
+  },
+
+  "seed_data_creation": "None - used existing admin account",
+
+  "retest_needed": false,
+
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Input persistence fix verified: FundWalletSection extracted to /app/frontend/src/components/FundWalletSection.js prevents Ercaspay input from clearing on parent re-renders. VirtualNumbersSection already separate at /app/frontend/src/components/VirtualNumbersSection.js. Both components maintain local state correctly. Note: There's a separate session timeout issue mentioned by main agent that logs users out frequently - this is unrelated to the component re-render fix."
+}
