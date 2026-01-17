@@ -5,59 +5,53 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 17, 2026)
 
-### Session 9 - UI Improvements, Metrics & Deployment Config
+### Session 10 - UI Polish & Landing Page Enhancement
 
 **UI Changes:**
 
-1. **Balance Card Updated** ✅
-   - Removed "History" button
+1. **Balance Card Redesigned** ✅
+   - Removed "History" button 
    - Removed "Manage Wallet" link
-   - Currency switcher (NGN/USD) moved to top right of balance card
-   - Clean, minimal design with only "Add Money" button
+   - Currency switcher (NGN/USD) moved to top right corner
+   - Clean design with only "Add Money" button
+   - Uses admin-configured branding primary color for gradient background
 
-2. **Landing Page Enhanced** ✅
-   - Added Testimonials section with 3 customer reviews
-   - Added FAQ section with 5 common questions
-   - Added CTA section "Ready to Get Started?"
-   - Total sections: Hero, Services, Popular Services, How It Works, Features, Stats, Testimonials, FAQ, CTA, Footer
+2. **Logout Fixed** ✅
+   - Fixed page flickering on logout
+   - Now properly clears localStorage (token + user)
+   - Uses `window.location.href = '/'` for clean redirect to homepage
 
-3. **Promo Code** ✅
-   - Backend verified working correctly (SAVE40 reduces ₦2,475 to ₦1,485)
-   - Frontend correctly displays discounted price
-   - No code changes needed - issue was user understanding
+3. **Auth Popup Logo** ✅
+   - Now displays the brand logo (from admin branding settings)
+   - Falls back to gradient phone icon if no logo configured
 
-**Admin Metrics:**
+4. **Landing Page - New "Easy Telco Services" Section** ✅
+   - Added comprehensive section showcasing all telco services:
+     - Instant Airtime (⚡ Instant delivery)
+     - Data Bundles (💰 Up to 40% cheaper)
+     - TV Subscriptions (🎯 No delays)
+     - Electricity Bills (✅ Instant tokens)
+     - Virtual Numbers (🌍 100+ countries)
+     - Virtual Cards (🛒 Shop globally)
+   - Each card has icon, title, description, and highlight badge
+   - "Get Started Now - It's Free" CTA button
 
-4. **Refund Tracking Added** ✅
-   - New "Total Refunds" KPI card showing total refund amount
-   - Shows cancelled order count as subtitle
-   - New "Net Sales (Sales - Refunds)" KPI card
-   - Backend calculates refunds from transaction history
-   - Cancelled/refunded orders tracked separately
+**Promo Code Status:**
+- Backend verified working correctly (SAVE40: ₦2,475 → ₦1,485)
+- Frontend correctly displays discounted price
+- Discount shows as "-₦900.00" with green checkmark confirmation
 
-**Deployment Configuration:**
+### Previous Session Summary
 
-5. **Digital Ocean App Platform** ✅
-   - Created `.do/app.yaml` configuration file
-   - Auto-configures backend and frontend services
-   - Proper environment variable mapping
-
-6. **README Updated** ✅
-   - Added deployment instructions for Digital Ocean
-   - Added deployment instructions for Railway
-   - Added environment variable documentation
-
-### Previous Sessions Summary
+**Session 9:**
+- Added Testimonials, FAQ, CTA sections to landing page
+- Added refund metrics to admin dashboard (Total Refunds, Net Sales)
+- Created Digital Ocean deployment config (`.do/app.yaml`)
 
 **Session 8:**
 - Fixed Ercaspay/Promo code input reset (removed setInterval polling)
 - Removed Emergent watermark
 - Added manual refresh button
-
-**Session 7:**
-- Fixed promo code calculation for US Server
-- Extracted FundWalletSection component
-- Added colorful service card gradients
 
 ## Completed Features
 
@@ -71,6 +65,7 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 - ✅ Account Upgrade/KYC
 - ✅ Reseller Portal with API documentation
 - ✅ Manual data refresh button
+- ✅ Clean balance card with currency toggle
 
 ### Admin Panel (15 sections)
 1. Dashboard - KPIs including refund metrics
@@ -95,11 +90,12 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 3. Popular Services cards
 4. How It Works (3 steps)
 5. Why Choose Us (features)
-6. Stats banner
-7. Testimonials (3 reviews)
-8. FAQ (5 questions)
-9. CTA section
-10. Footer
+6. **Easy Telco Services (NEW)** - 6 service cards with details
+7. Stats banner
+8. Testimonials (3 reviews)
+9. FAQ (5 questions)
+10. CTA section
+11. Footer
 
 ## Deployment
 
@@ -136,6 +132,8 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 - `/app/frontend/Dockerfile` - Frontend Docker
 
 ## Future Tasks (P2-P3)
+- Admin User Management - Edit user details
+- Verify Popup Notifications edit/delete
 - Refactor server.py into modular structure
 - Refactor large React components
 - Delete deprecated files
