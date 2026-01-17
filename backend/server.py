@@ -4648,11 +4648,23 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.carrier_markup is not None:
         update_fields['carrier_markup'] = data.carrier_markup
 
-    # Ercaspay keys
+    # Payment Gateway Keys
+    if data.paymentpoint_api_key is not None:
+        update_fields['paymentpoint_api_key'] = data.paymentpoint_api_key
+    if data.paymentpoint_secret is not None:
+        update_fields['paymentpoint_secret'] = data.paymentpoint_secret
+    if data.paymentpoint_business_id is not None:
+        update_fields['paymentpoint_business_id'] = data.paymentpoint_business_id
     if data.ercaspay_secret_key is not None:
         update_fields['ercaspay_secret_key'] = data.ercaspay_secret_key
     if data.ercaspay_api_key is not None:
         update_fields['ercaspay_api_key'] = data.ercaspay_api_key
+    if data.plisio_secret_key is not None:
+        update_fields['plisio_secret_key'] = data.plisio_secret_key
+    if data.plisio_webhook_secret is not None:
+        update_fields['plisio_webhook_secret'] = data.plisio_webhook_secret
+    if data.payscribe_api_key is not None:
+        update_fields['payscribe_api_key'] = data.payscribe_api_key
 
     # Branding
     if data.brand_name is not None:
