@@ -193,7 +193,10 @@ const AdminPanel = ({ user, setUser }) => {
   const fetchAdminNotifications = async () => {
     try {
       const resp = await axios.get(`${API}/admin/notifications`, axiosConfig);
-      setAdminNotifications(resp.data.notifications || []);
+      // Filter out transaction notifications - those are auto-generated
+      const allNotifs = resp.data.notifications || [];
+      const popupNotifs = allNotifs.filter(n => n.type !== 'transaction');
+      setAdminNotifications(popupNotifs);
     } catch (e) {
       console.error('Failed to fetch admin notifications');
     }
