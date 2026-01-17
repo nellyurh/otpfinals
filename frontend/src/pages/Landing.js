@@ -505,12 +505,16 @@ const Landing = ({ setUser }) => {
             </button>
 
             <div className="flex items-center gap-3 mb-6 sm:mb-8">
-              <div 
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${buttonColor}, ${accentColor})` }}
-              >
-                <Phone className="w-6 h-6 text-white" />
-              </div>
+              {branding.brand_logo_url ? (
+                <img src={branding.brand_logo_url} alt="Logo" className="h-11 sm:h-12 object-contain" />
+              ) : (
+                <div 
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: `linear-gradient(135deg, ${buttonColor}, ${accentColor})` }}
+                >
+                  <Phone className="w-6 h-6 text-white" />
+                </div>
+              )}
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{branding.brand_name || 'UltraCloud Sms'}</h2>
                 <p className="text-sm text-gray-500">Virtual numbers on demand</p>
