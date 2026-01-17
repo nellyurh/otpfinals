@@ -447,11 +447,20 @@ class AdminUserUpdate(BaseModel):
 class PricingConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    # API Keys
+    # SMS Provider API Keys
     daisysms_api_key: str = ""
     tigersmsms_api_key: str = ""
     smspool_api_key: str = ""
     fivesim_api_key: str = ""
+    # Payment Gateway API Keys
+    paymentpoint_api_key: str = ""
+    paymentpoint_secret: str = ""
+    paymentpoint_business_id: str = ""
+    ercaspay_api_key: str = ""
+    ercaspay_secret_key: str = ""
+    plisio_secret_key: str = ""
+    plisio_webhook_secret: str = ""
+    payscribe_api_key: str = ""
     # Markup percentages
     tigersms_markup: float = 50.0
     daisysms_markup: float = 50.0
