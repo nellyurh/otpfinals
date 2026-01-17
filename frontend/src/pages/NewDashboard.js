@@ -175,12 +175,9 @@ const NewDashboard = () => {
       document.documentElement.classList.add('dark');
     }
     
-    const interval = setInterval(fetchOrders, 10000);
-    const notifInterval = setInterval(fetchNotifications, 30000);
-    return () => {
-      clearInterval(interval);
-      clearInterval(notifInterval);
-    };
+    // Removed setInterval polling to prevent component re-renders
+    // that were causing input values (Ercaspay, promo codes) to reset.
+    // Users can manually refresh data using the refresh buttons.
   }, []);
 
   const fetchNotifications = async () => {
