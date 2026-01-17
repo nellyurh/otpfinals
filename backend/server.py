@@ -1395,8 +1395,16 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
 async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[Dict] = None) -> Optional[Dict]:
     """Generic Payscribe API request"""
     try:
+        # Get key from database first, fallback to env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        payscribe_key = (config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None) or PAYSCRIBE_API_KEY
+        
+        if not payscribe_key:
+            logger.error("Payscribe not configured. Set keys in Admin → Payment Gateways")
+            return None
+            
         headers = {
-            'Authorization': f'Bearer {PAYSCRIBE_API_KEY}',
+            'Authorization': f'Bearer {payscribe_key}',
             'Content-Type': 'application/json'
         }
         
