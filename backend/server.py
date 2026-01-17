@@ -3660,7 +3660,7 @@ async def plisio_webhook(request: Request):
         payload = dict(form)
 
     # best-effort verification (some Plisio configs rely on api_key only)
-    if payload.get('verify_hash') and not _plisio_verify_hash(payload):
+    if payload.get('verify_hash') and not await _plisio_verify_hash(payload):
         raise HTTPException(status_code=400, detail='Invalid signature')
 
     order_number = payload.get('order_number') or payload.get('order') or payload.get('order_id')
