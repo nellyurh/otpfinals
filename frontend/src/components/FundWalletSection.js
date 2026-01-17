@@ -247,8 +247,8 @@ export function FundWalletSection({
         </div>
       )}
 
-      {/* USD Funding Section - Crypto */}
-      {pageToggles?.enable_crypto && (
+      {/* USD Funding Section - Crypto (Plisio) */}
+      {pageToggles?.enable_plisio && (
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
