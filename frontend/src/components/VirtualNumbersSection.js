@@ -74,6 +74,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   const [purchaseExpanded, setPurchaseExpanded] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
 
+  // State for collapsible tips sections
+  const [issuesTipOpen, setIssuesTipOpen] = useState(false);
+  const [buyTipsOpen, setBuyTipsOpen] = useState(false);
+
   // Service code to full name mapping
   const serviceNames = {
     wa: 'WhatsApp',
