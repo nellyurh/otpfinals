@@ -1,0 +1,49 @@
+template_version: 1.0.0
+
+services:
+  - name: backend
+    source_dir: /backend
+    dockerfile_path: backend/Dockerfile
+    http_port: 8001
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /api
+    envs:
+      - key: PORT
+        value: "8001"
+      - key: MONGO_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: SMSPOOL_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: FIVESIM_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: DAISYSMS_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: PAYMENTPOINT_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: ERCASPAY_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+
+  - name: frontend
+    source_dir: /frontend
+    dockerfile_path: frontend/Dockerfile
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
+    build_command: yarn build
+    envs:
+      - key: REACT_APP_BACKEND_URL
+        scope: BUILD_TIME
+        value: ${backend.PUBLIC_URL}
