@@ -2115,6 +2115,121 @@ const AdminPanel = ({ user, setUser }) => {
                   </Card>
                 </div>
 
+                {/* Payment Gateway API Keys */}
+                <Card className="border border-slate-200 shadow-sm bg-white mt-4">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Payment Gateway API Keys</CardTitle>
+                    <p className="text-xs text-slate-500">Enter your API keys for each payment gateway. Keys are stored securely.</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Ercaspay */}
+                    <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
+                      <h4 className="font-semibold text-sm text-orange-900 mb-3">Ercaspay</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Secret Key</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Ercaspay Secret Key"
+                            value={pricing.ercaspay_secret_key || ''}
+                            onChange={(e) => setPricing({ ...pricing, ercaspay_secret_key: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">API Key (Public)</label>
+                          <Input
+                            type="text"
+                            placeholder="Enter Ercaspay API Key"
+                            value={pricing.ercaspay_api_key || ''}
+                            onChange={(e) => setPricing({ ...pricing, ercaspay_api_key: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* PaymentPoint */}
+                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <h4 className="font-semibold text-sm text-emerald-900 mb-3">PaymentPoint</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">API Key</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter API Key"
+                            value={pricing.paymentpoint_api_key || ''}
+                            onChange={(e) => setPricing({ ...pricing, paymentpoint_api_key: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Secret</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Secret"
+                            value={pricing.paymentpoint_secret || ''}
+                            onChange={(e) => setPricing({ ...pricing, paymentpoint_secret: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Business ID</label>
+                          <Input
+                            type="text"
+                            placeholder="Enter Business ID"
+                            value={pricing.paymentpoint_business_id || ''}
+                            onChange={(e) => setPricing({ ...pricing, paymentpoint_business_id: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Plisio */}
+                    <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                      <h4 className="font-semibold text-sm text-blue-900 mb-3">Plisio (Crypto)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Secret Key</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Plisio Secret Key"
+                            value={pricing.plisio_secret_key || ''}
+                            onChange={(e) => setPricing({ ...pricing, plisio_secret_key: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Webhook Secret (Optional)</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Webhook Secret"
+                            value={pricing.plisio_webhook_secret || ''}
+                            onChange={(e) => setPricing({ ...pricing, plisio_webhook_secret: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payscribe */}
+                    <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
+                      <h4 className="font-semibold text-sm text-purple-900 mb-3">Payscribe (Bill Payments)</h4>
+                      <div>
+                        <label className="text-xs font-medium text-slate-700">API Key</label>
+                        <Input
+                          type="password"
+                          placeholder="Enter Payscribe API Key"
+                          value={pricing.payscribe_api_key || ''}
+                          onChange={(e) => setPricing({ ...pricing, payscribe_api_key: e.target.value })}
+                          className="mt-1 h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Crypto Rates */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
