@@ -2771,8 +2771,8 @@ async def purchase_number(
     await _create_transaction_notification(
         user['id'],
         'OTP purchase',
-        f"You purchased a number for {data.service.upper()} ({provider}).",
-        metadata={'reference': order.id, 'type': 'purchase', 'provider': provider},
+        f"You purchased a number for {data.service.upper()}.",
+        metadata={'reference': order.id, 'type': 'purchase'},
     )
     
     # Return order data without MongoDB _id
@@ -2782,7 +2782,6 @@ async def purchase_number(
             'id': order.id,
             'phone_number': phone_number,
             'activation_id': activation_id,
-            'provider': provider,
             'service': data.service,
             'country': data.country,
             'status': 'active',
