@@ -840,12 +840,19 @@ DAISYSMS_PRICES = {
     'ey': 0.80   # EverBank
 }
 
+async def _get_plisio_key():
+    """Get Plisio secret key from database or env"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    key = (config.get('plisio_secret_key') if config and config.get('plisio_secret_key') not in [None, '', '********'] else None) or PLISIO_SECRET_KEY
+    return key
+
 async def _plisio_request(method: str, endpoint: str, params: dict):
-    if not PLISIO_SECRET_KEY:
-        raise HTTPException(status_code=500, detail='Plisio not configured')
+    plisio_key = await _get_plisio_key()
+    if not plisio_key:
+        raise HTTPException(status_code=500, detail='Plisio not configured. Set keys in Admin → Payment Gateways')
     url = f"{PLISIO_BASE_URL}{endpoint}"
     q = dict(params or {})
-    q['api_key'] = PLISIO_SECRET_KEY
+    q['api_key'] = plisio_key
 
     async with httpx.AsyncClient(timeout=30.0) as client_http:
         if method.upper() == 'GET':
@@ -859,7 +866,7 @@ async def _plisio_request(method: str, endpoint: str, params: dict):
         return {'status': 'error', 'data': None, 'raw': r.text, 'http_status': r.status_code}
 
 
-def _plisio_verify_hash(payload: dict) -> bool:
+async def _plisio_verify_hash(payload: dict) -> bool:
     """Verify Plisio callback using JSON-based HMAC (per Node.js example).
 
     Expects the callback to be sent with `?json=true` so that the body is JSON.
@@ -870,7 +877,8 @@ def _plisio_verify_hash(payload: dict) -> bool:
     """
     try:
         verify_hash = payload.get('verify_hash')
-        if not verify_hash or not PLISIO_SECRET_KEY:
+        plisio_key = await _get_plisio_key()
+        if not verify_hash or not plisio_key:
             return False
 
         ordered = dict(payload)
@@ -881,7 +889,7 @@ def _plisio_verify_hash(payload: dict) -> bool:
             ordered['expire_utc'] = str(ordered['expire_utc'])
 
         data_str = json.dumps(ordered, separators=(',', ':'), ensure_ascii=False)
-        digest = hmac.new(PLISIO_SECRET_KEY.encode('utf-8'), data_str.encode('utf-8'), hashlib.sha1).hexdigest()
+        digest = hmac.new(plisio_key.encode('utf-8'), data_str.encode('utf-8'), hashlib.sha1).hexdigest()
         return digest == verify_hash
     except Exception:
         return False
