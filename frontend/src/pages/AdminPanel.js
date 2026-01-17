@@ -563,6 +563,7 @@ const AdminPanel = ({ user, setUser }) => {
         {
           full_name: editUser.full_name,
           email: editUser.email,
+          phone: editUser.phone,
           ngn_balance: parseFloat(editUser.ngn_balance) || 0,
           usd_balance: parseFloat(editUser.usd_balance) || 0,
           is_admin: !!editUser.is_admin,
