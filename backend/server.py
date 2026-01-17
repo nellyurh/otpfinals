@@ -6009,6 +6009,8 @@ async def admin_create_reseller_plan(request: Request, user: dict = Depends(get_
             update_fields['monthly_fee_ngn'] = body['monthly_fee_ngn']
         if 'markup_multiplier' in body:
             update_fields['markup_multiplier'] = body['markup_multiplier']
+        if 'api_rate_limit' in body:
+            update_fields['api_rate_limit'] = body['api_rate_limit']
         if 'description' in body:
             update_fields['description'] = body['description']
         if 'features' in body:
