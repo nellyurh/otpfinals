@@ -1000,9 +1000,19 @@ async def require_admin(user: dict = Depends(get_current_user)):
 async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAccount]:
     """Create virtual accounts for a user via PaymentPoint (PalmPay only)"""
     try:
+        # Get keys from database first, fallback to env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        pp_api_key = (config.get('paymentpoint_api_key') if config and config.get('paymentpoint_api_key') not in [None, '', '********'] else None) or PAYMENTPOINT_API_KEY
+        pp_secret = (config.get('paymentpoint_secret') if config and config.get('paymentpoint_secret') not in [None, '', '********'] else None) or PAYMENTPOINT_SECRET
+        pp_business_id = (config.get('paymentpoint_business_id') if config and config.get('paymentpoint_business_id') not in [None, '', '********'] else None) or PAYMENTPOINT_BUSINESS_ID
+        
+        if not pp_api_key or not pp_secret or not pp_business_id:
+            logger.error("PaymentPoint not configured. Set keys in Admin → Payment Gateways")
+            return None
+            
         headers = {
-            'Authorization': f'Bearer {PAYMENTPOINT_SECRET}',
-            'api-key': PAYMENTPOINT_API_KEY,
+            'Authorization': f'Bearer {pp_secret}',
+            'api-key': pp_api_key,
             'Content-Type': 'application/json'
         }
         
@@ -1011,7 +1021,7 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
             'name': user['full_name'],
             'phoneNumber': user.get('phone', ''),
             'bankCode': ['20946'],  # PalmPay only
-            'businessId': PAYMENTPOINT_BUSINESS_ID
+            'businessId': pp_business_id
         }
         
         async with httpx.AsyncClient() as client:
