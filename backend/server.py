@@ -118,21 +118,6 @@ async def seed_database():
         else:
             results.append("ℹ️ Pricing config already exists")
         
-        # Create default reseller plans
-        plans_exist = await db.reseller_plans.find_one({})
-        if not plans_exist:
-            default_plans = [
-                {'id': str(uuid.uuid4()), 'name': 'Free', 'monthly_fee_ngn': 0, 'markup_multiplier': 1.0, 'api_rate_limit': 10, 'active': True},
-                {'id': str(uuid.uuid4()), 'name': 'Basic', 'monthly_fee_ngn': 10000, 'markup_multiplier': 0.5, 'api_rate_limit': 100, 'active': True},
-                {'id': str(uuid.uuid4()), 'name': 'Pro', 'monthly_fee_ngn': 50000, 'markup_multiplier': 0.3, 'api_rate_limit': 500, 'active': True},
-                {'id': str(uuid.uuid4()), 'name': 'Enterprise', 'monthly_fee_ngn': 100000, 'markup_multiplier': 0.2, 'api_rate_limit': 2000, 'active': True},
-            ]
-            for plan in default_plans:
-                await db.reseller_plans.insert_one(plan)
-            results.append("✅ Default reseller plans created (Free, Basic, Pro, Enterprise)")
-        else:
-            results.append("ℹ️ Reseller plans already exist")
-        
         return {
             "success": True,
             "message": "Database seeded successfully!",
@@ -1173,15 +1158,12 @@ async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Opti
 
 async def poll_otp_5sim(order_id: str) -> Optional[str]:
     """Poll 5sim for OTP using order ID."""
-    # Get key from config first, then env
-    config = await db.pricing_config.find_one({}, {'_id': 0})
-    fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
-    if not fivesim_key:
+    if not FIVESIM_API_KEY:
         logger.error("FIVESIM_API_KEY not configured")
         return None
     try:
         headers = {
-            'Authorization': f'Bearer {fivesim_key}',
+            'Authorization': f'Bearer {FIVESIM_API_KEY}',
             'Accept': 'application/json'
         }
         async with httpx.AsyncClient() as client:
@@ -1287,16 +1269,14 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                 )
                 return 'ACCESS_CANCEL' in response.text
         elif provider == '5sim':
-            config = await db.pricing_config.find_one({}, {'_id': 0})
-            fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
-            if not fivesim_key:
+            if not FIVESIM_API_KEY:
                 logger.error("FIVESIM_API_KEY not configured for cancel")
                 return False
             async with httpx.AsyncClient() as client:
                 resp = await client.get(
                     f"{FIVESIM_BASE_URL}/user/cancel/{activation_id}",
                     headers={
-                        'Authorization': f'Bearer {fivesim_key}',
+                        'Authorization': f'Bearer {FIVESIM_API_KEY}',
                         'Accept': 'application/json'
                     },
                     timeout=10.0
@@ -1311,6 +1291,20 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
+        elif provider == '5sim':
+            if not FIVESIM_API_KEY:
+                logger.error("FIVESIM_API_KEY not configured for cancel")
+                return False
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    f"{FIVESIM_BASE_URL}/user/cancel/{activation_id}",
+                    headers={
+                        'Authorization': f'Bearer {FIVESIM_API_KEY}',
+                        'Accept': 'application/json'
+                    },
+                    timeout=10.0
+                )
+                return resp.status_code == 200
         return False
     except Exception as e:
         logger.error(f"Cancel number error: {str(e)}")
@@ -2611,14 +2605,12 @@ async def purchase_number(
         if result and 'ACCESS_NUMBER' in str(result):
             actual_price = base_price_usd
     elif provider == '5sim':
-        # Use 5sim buy activation API - get key from config first, then env
-        config = await db.pricing_config.find_one({}, {'_id': 0})
-        fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
-        if not fivesim_key:
+        # Use 5sim buy activation API
+        if not FIVESIM_API_KEY:
             logger.error("FIVESIM_API_KEY not configured")
-            raise HTTPException(status_code=500, detail="Server API not configured. Please set 5sim API key in Admin → SMS Providers")
+            raise HTTPException(status_code=500, detail="Server API not configured")
         headers = {
-            'Authorization': f'Bearer {fivesim_key}',
+            'Authorization': f'Bearer {FIVESIM_API_KEY}',
             'Accept': 'application/json'
         }
         operator = data.operator or 'any'
