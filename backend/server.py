@@ -645,9 +645,20 @@ class UpdatePricingRequest(BaseModel):
     ngn_to_usd_rate: Optional[float] = None
     rub_to_usd_rate: Optional[float] = None
     fivesim_coin_per_usd: Optional[float] = None
+    # SMS Provider API Keys
     daisysms_api_key: Optional[str] = None
     smspool_api_key: Optional[str] = None
     fivesim_api_key: Optional[str] = None
+    # Payment Gateway API Keys
+    paymentpoint_api_key: Optional[str] = None
+    paymentpoint_secret: Optional[str] = None
+    paymentpoint_business_id: Optional[str] = None
+    ercaspay_api_key: Optional[str] = None
+    ercaspay_secret_key: Optional[str] = None
+    plisio_secret_key: Optional[str] = None
+    plisio_webhook_secret: Optional[str] = None
+    payscribe_api_key: Optional[str] = None
+    
     area_code_markup: Optional[float] = None
     carrier_markup: Optional[float] = None
 
