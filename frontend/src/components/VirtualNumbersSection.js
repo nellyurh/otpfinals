@@ -479,6 +479,61 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         <p className="text-[10px] sm:text-xs text-gray-500">Get premium virtual numbers for verification</p>
       </div>
 
+      {/* Collapsible Tips Sections */}
+      <div className="space-y-2">
+        {/* Issues Tips */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setIssuesTipOpen(!issuesTipOpen)}
+            className="w-full flex items-center justify-between p-3 text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-amber-600 text-lg">⚠️</span>
+              <span className="font-semibold text-amber-800 text-xs sm:text-sm">Read IF You're Encountering Any Issues</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-amber-600 transition-transform ${issuesTipOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {issuesTipOpen && (
+            <div className="px-3 pb-3 text-xs text-amber-900 space-y-2">
+              <p className="font-semibold text-amber-800">Not receiving OTP/Code?</p>
+              <p>• If you don't receive any OTP/code after 2-7 mins, just cancel the previous number and request for another number.</p>
+              <p>• If you buy any number and it shows that it has been banned (Mostly: WhatsApp/Telegram), just cancel and request for another number.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Buy Tips */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setBuyTipsOpen(!buyTipsOpen)}
+            className="w-full flex items-center justify-between p-3 text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-blue-600 text-lg">💡</span>
+              <span className="font-semibold text-blue-800 text-xs sm:text-sm">Read Before You Buy Numbers</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-blue-600 transition-transform ${buyTipsOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {buyTipsOpen && (
+            <div className="px-3 pb-3 text-xs text-blue-900 space-y-3">
+              <div>
+                <p className="font-semibold text-blue-800 mb-1">📱 Telegram Tips:</p>
+                <p>• Telegram numbers have only 45% percent rate to receive code.</p>
+                <p>• 50/50 to receive code on telegram numbers.</p>
+                <p>• Add Two 2FA authentication after purchasing.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-blue-800 mb-1">💬 WhatsApp Tips:</p>
+                <p>• 50/50 chance for using WhatsApp Business.</p>
+                <p>• Don't text immediately with WhatsApp after purchasing.</p>
+                <p>• Add Two 2FA authentication after purchasing.</p>
+                <p>• Delete and install back your WhatsApp before buying.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Server Selection */}
       <div className="bg-white rounded-xl p-3 sm:p-4 border shadow-sm">
         <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Server</label>
