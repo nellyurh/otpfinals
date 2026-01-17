@@ -3745,7 +3745,7 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
     payment_ref = f"ERCS-{user['id'][:8]}-{str(uuid.uuid4())[:8]}".upper()
     
     # Get frontend URL for redirect
-    frontend_url = os.environ.get('REACT_APP_BACKEND_URL', FRONTEND_URL) or 'https://smsrelay-7.preview.emergentagent.com'
+    frontend_url = os.environ.get('REACT_APP_BACKEND_URL', FRONTEND_URL) or 'https://otp-relay-2.preview.emergentagent.com'
     
     # Prepare Ercaspay initiate checkout request
     checkout_data = {
@@ -4504,7 +4504,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
-        "reseller_api_base_url": config.get("reseller_api_base_url", "https://smsrelay-7.preview.emergentagent.com"),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://otp-relay-2.preview.emergentagent.com"),
     }
 
 @api_router.get("/user/page-toggles")

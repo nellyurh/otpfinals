@@ -79,7 +79,7 @@ class TestResellerApiBaseUrl:
         
         # Restore original
         requests.put(f"{BASE_URL}/api/admin/pricing", 
-                    json={"reseller_api_base_url": original_url or "https://smsrelay-7.preview.emergentagent.com"},
+                    json={"reseller_api_base_url": original_url or "https://otp-relay-2.preview.emergentagent.com"},
                     headers=headers)
         print(f"✓ Restored original URL: {original_url}")
 

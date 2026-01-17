@@ -164,7 +164,7 @@ None.
 *   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (8):** the documentation page exit back to reseller portal after sometime its not supposed to be so the link https://smsrelay-7.preview.emergentagent.com supposed to set from the reseller managemet side on the admin dashboard, promocode validation not working on the front end!... - **(COMPLETED)**
+1.  **User (8):** the documentation page exit back to reseller portal after sometime its not supposed to be so the link https://otp-relay-2.preview.emergentagent.com supposed to set from the reseller managemet side on the admin dashboard, promocode validation not working on the front end!... - **(COMPLETED)**
 2.  **User (9):** we need a page for reseller sales too and the reseller endpoints need to be tested - **(COMPLETED)**
 3.  **Agent:** Investigated and started fixing reseller endpoints.
 4.  **User (10):** first this check that prices in all country 1 isnt availbe ensure that all prices are showed to the reseller with the markup based on thier acoount and test the buy cancel and sms polling logic for resellers and aslo notifications are carring 5sim and other providers some error messages are carring other providers too fixed that with temering the logic... - **(COMPLETED)**
