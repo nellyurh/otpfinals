@@ -21,6 +21,10 @@ export function FundWalletSection({
   const [ercaspayAmount, setErcaspayAmount] = useState('');
   const [ercaspayLoading, setErcaspayLoading] = useState(false);
   const ercaspayInputRef = useRef(null);
+  
+  // Plisio state
+  const [plisioAmount, setPlisioAmount] = useState('');
+  const [plisioLoading, setPlisioLoading] = useState(false);
 
   const copyToClipboard = async (text) => {
     if (!text) return;
