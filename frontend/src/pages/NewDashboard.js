@@ -1054,7 +1054,25 @@ const NewDashboard = () => {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-medium text-white/80">Total Balance</h3>
-                <button className="text-xs text-white/90 font-medium hover:text-white hover:underline">Manage Wallet</button>
+                {/* Currency Toggle - pushed to right */}
+                <div className="flex bg-white/20 rounded-xl p-1">
+                  <button 
+                    onClick={() => setDashboardCurrency('NGN')}
+                    className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${
+                      dashboardCurrency === 'NGN' ? 'bg-white shadow-sm text-gray-800' : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    NGN
+                  </button>
+                  <button 
+                    onClick={() => setDashboardCurrency('USD')}
+                    className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${
+                      dashboardCurrency === 'USD' ? 'bg-white shadow-sm text-gray-800' : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    USD
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-end justify-between mb-5">
@@ -1078,17 +1096,10 @@ const NewDashboard = () => {
                     <Plus className="w-4 h-4" />
                     Add Money
                   </button>
-                  <button 
-                    onClick={() => setActiveSection('transactions')}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white/20 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-colors"
-                  >
-                    <History className="w-4 h-4" />
-                    History
-                  </button>
                 </div>
               </div>
 
-              {/* Mobile buttons - stacked */}
+              {/* Mobile button */}
               <div className="flex sm:hidden gap-2 mt-3">
                 <button 
                   onClick={() => setActiveSection('fund-wallet')}
@@ -1096,37 +1107,6 @@ const NewDashboard = () => {
                 >
                   <Plus className="w-4 h-4" />
                   Add Money
-                </button>
-                <button 
-                  onClick={() => setActiveSection('transactions')}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white/20 text-white rounded-xl font-semibold text-sm hover:bg-white/30 transition-colors"
-                >
-                  <History className="w-4 h-4" />
-                  History
-                </button>
-              </div>
-            </div>
-
-            {/* Currency Toggle - pushed to left on mobile */}
-            <div className="flex items-center mt-4 relative z-10">
-              <div className="flex bg-gray-100 rounded-xl p-1">
-                <button 
-                  onClick={() => setDashboardCurrency('NGN')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                    dashboardCurrency === 'NGN' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                  style={dashboardCurrency === 'NGN' ? { color: primaryColor } : undefined}
-                >
-                  NGN
-                </button>
-                <button 
-                  onClick={() => setDashboardCurrency('USD')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                    dashboardCurrency === 'USD' ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                  style={dashboardCurrency === 'USD' ? { color: primaryColor } : undefined}
-                >
-                  USD
                 </button>
               </div>
             </div>
