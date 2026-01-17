@@ -4535,15 +4535,24 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
 
     # Never expose raw provider API keys in admin GET (security)
     config_sanitized = dict(config)
-    for key in ['daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key', 'ercaspay_secret_key', 'ercaspay_api_key']:
+    for key in [
+        'daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key',
+        'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
+        'ercaspay_secret_key', 'ercaspay_api_key',
+        'plisio_secret_key', 'plisio_webhook_secret',
+        'payscribe_api_key'
+    ]:
         if key in config_sanitized and config_sanitized[key]:
             config_sanitized[key] = '********'  # masked in GET; editable via PUT
 
-    # Expose whether env-based keys are configured (without sending actual secrets)
-    config_sanitized['paymentpoint_configured'] = bool(PAYMENTPOINT_API_KEY and PAYMENTPOINT_SECRET and PAYMENTPOINT_BUSINESS_ID)
-    config_sanitized['payscribe_configured'] = bool(PAYSCRIBE_API_KEY)
-    config_sanitized['plisio_configured'] = bool(PLISIO_SECRET_KEY)
-    config_sanitized['ercaspay_configured'] = bool(ERCASPAY_SECRET_KEY or config.get('ercaspay_secret_key'))
+    # Expose whether keys are configured (from DB or env)
+    config_sanitized['paymentpoint_configured'] = bool(
+        (config.get('paymentpoint_api_key') and config.get('paymentpoint_secret')) or 
+        (PAYMENTPOINT_API_KEY and PAYMENTPOINT_SECRET and PAYMENTPOINT_BUSINESS_ID)
+    )
+    config_sanitized['payscribe_configured'] = bool(config.get('payscribe_api_key') or PAYSCRIBE_API_KEY)
+    config_sanitized['plisio_configured'] = bool(config.get('plisio_secret_key') or PLISIO_SECRET_KEY)
+    config_sanitized['ercaspay_configured'] = bool(config.get('ercaspay_secret_key') or ERCASPAY_SECRET_KEY)
 
     return config_sanitized
 
