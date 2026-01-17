@@ -118,6 +118,21 @@ async def seed_database():
         else:
             results.append("ℹ️ Pricing config already exists")
         
+        # Create default reseller plans
+        plans_exist = await db.reseller_plans.find_one({})
+        if not plans_exist:
+            default_plans = [
+                {'id': str(uuid.uuid4()), 'name': 'Free', 'monthly_fee_ngn': 0, 'markup_multiplier': 1.0, 'api_rate_limit': 10, 'active': True},
+                {'id': str(uuid.uuid4()), 'name': 'Basic', 'monthly_fee_ngn': 10000, 'markup_multiplier': 0.5, 'api_rate_limit': 100, 'active': True},
+                {'id': str(uuid.uuid4()), 'name': 'Pro', 'monthly_fee_ngn': 50000, 'markup_multiplier': 0.3, 'api_rate_limit': 500, 'active': True},
+                {'id': str(uuid.uuid4()), 'name': 'Enterprise', 'monthly_fee_ngn': 100000, 'markup_multiplier': 0.2, 'api_rate_limit': 2000, 'active': True},
+            ]
+            for plan in default_plans:
+                await db.reseller_plans.insert_one(plan)
+            results.append("✅ Default reseller plans created (Free, Basic, Pro, Enterprise)")
+        else:
+            results.append("ℹ️ Reseller plans already exist")
+        
         return {
             "success": True,
             "message": "Database seeded successfully!",
