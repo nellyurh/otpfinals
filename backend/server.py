@@ -81,7 +81,7 @@ async def seed_database():
             admin = {
                 'id': str(uuid.uuid4()),
                 'email': 'admin@smsrelay.com',
-                'password_hash': hash_password('admin123'),
+                'password_hash': _hash_password('admin123'),
                 'full_name': 'Admin User',
                 'is_admin': True,
                 'ngn_balance': 100000.0,
