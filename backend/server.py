@@ -64,6 +64,10 @@ async def health_check():
         "mongo_url_set": bool(os.environ.get('MONGO_URL'))
     }
 
+# Helper function for password hashing (used in seed)
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
 # Database Seed Endpoint - Creates admin user and default config
 @api_router.get("/seed-database")
 async def seed_database():
