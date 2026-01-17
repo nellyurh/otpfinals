@@ -264,14 +264,44 @@ export function FundWalletSection({
             Deposit cryptocurrency to fund your USD wallet. Minimum: $5
           </p>
           
-          <a
-            href={`${API}/api/plisio/create-invoice?amount=10&currency=USD`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full py-3 bg-blue-600 text-white rounded-xl font-semibold text-center hover:bg-blue-700 transition-colors"
-          >
-            Create Crypto Invoice
-          </a>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="number"
+              min="5"
+              placeholder="Amount (USD)"
+              value={plisioAmount || ''}
+              onChange={(e) => setPlisioAmount(e.target.value)}
+              className="flex-1 px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+            <button
+              onClick={async () => {
+                if (!plisioAmount || parseFloat(plisioAmount) < 5) {
+                  toast.error('Minimum amount is $5');
+                  return;
+                }
+                try {
+                  setPlisioLoading(true);
+                  const resp = await axios.post(`${API}/crypto/plisio/create-invoice`, {
+                    amount: parseFloat(plisioAmount),
+                    currency: 'USD'
+                  }, axiosConfig);
+                  if (resp.data.success && resp.data.invoice_url) {
+                    window.open(resp.data.invoice_url, '_blank');
+                  } else {
+                    toast.error(resp.data.message || 'Failed to create invoice');
+                  }
+                } catch (err) {
+                  toast.error(err.response?.data?.detail || 'Failed to create crypto invoice');
+                } finally {
+                  setPlisioLoading(false);
+                }
+              }}
+              disabled={plisioLoading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {plisioLoading ? 'Creating...' : 'Create Invoice'}
+            </button>
+          </div>
         </div>
       )}
 
