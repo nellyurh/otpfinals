@@ -152,6 +152,13 @@ const NewDashboard = () => {
   const [showResellerDocs, setShowResellerDocs] = useState(false); // Persist docs view
   const [resellerApiBaseUrl, setResellerApiBaseUrl] = useState(''); // Set from admin branding config
   
+  // Support channel URLs (from admin branding config)
+  const [supportUrls, setSupportUrls] = useState({
+    whatsapp_support_url: 'https://wa.me/2348000000000',
+    telegram_support_url: 'https://t.me/yoursupport',
+    support_email: 'support@smsrelay.com'
+  });
+  
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
