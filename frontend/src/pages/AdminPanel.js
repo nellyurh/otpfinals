@@ -480,6 +480,8 @@ const AdminPanel = ({ user, setUser }) => {
         paymentpoint_configured: response.data.paymentpoint_configured,
         payscribe_configured: response.data.payscribe_configured,
         plisio_configured: response.data.plisio_configured,
+        wallet_usd_to_ngn_rate: response.data.wallet_usd_to_ngn_rate || 1650,
+        giftcard_usd_to_ngn_rate: response.data.giftcard_usd_to_ngn_rate || 1650,
       }));
 
       setBranding({
