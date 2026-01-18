@@ -4767,6 +4767,16 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.support_email is not None:
         update_fields['support_email'] = data.support_email
 
+    # Gift Cards Provider settings
+    if data.reloadly_client_id is not None:
+        update_fields['reloadly_client_id'] = data.reloadly_client_id
+    if data.reloadly_client_secret is not None:
+        update_fields['reloadly_client_secret'] = data.reloadly_client_secret
+    if data.giftcard_markup_percent is not None:
+        update_fields['giftcard_markup_percent'] = data.giftcard_markup_percent
+    if data.giftcard_is_sandbox is not None:
+        update_fields['giftcard_is_sandbox'] = data.giftcard_is_sandbox
+
     # Manual coin->USD rates
     for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
         val = getattr(data, key, None)
