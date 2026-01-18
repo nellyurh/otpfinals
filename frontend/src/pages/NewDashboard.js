@@ -1564,11 +1564,11 @@ const NewDashboard = () => {
     };
 
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">SMS History</h2>
-            <p className="text-sm text-gray-600">Track your OTP requests</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">SMS History</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Track your OTP requests</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg font-medium">{orders.length}</span>
@@ -1577,9 +1577,9 @@ const NewDashboard = () => {
         </div>
         
         {orders.length > 0 ? (
-          <div className="bg-white p-6 rounded-xl border shadow-sm">
+          <div className="bg-white p-4 sm:p-6 rounded-xl border shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-black">
+              <table className="w-full text-black min-w-[600px]">
                 <thead>
                   <tr className="bg-gray-50 border-b">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
