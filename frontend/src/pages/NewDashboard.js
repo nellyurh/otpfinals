@@ -3640,6 +3640,10 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                       <span>Card Value</span>
                       <span>{selectedProduct.recipientCurrencyCode} {orderForm.amount}</span>
                     </div>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Rate</span>
+                      <span>1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || exchangeRate).toLocaleString()}</span>
+                    </div>
                     {selectedProduct.senderFee > 0 && (
                       <div className="flex justify-between text-sm">
                         <span>Service Fee</span>
@@ -3648,7 +3652,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                     )}
                     <div className="flex justify-between font-bold text-emerald-700 pt-2 border-t border-emerald-200">
                       <span>Total (NGN)</span>
-                      <span>₦{((parseFloat(orderForm.amount) + (selectedProduct.senderFee || 0)) * exchangeRate).toLocaleString()}</span>
+                      <span>₦{(parseFloat(orderForm.amount) * (selectedProduct.final_ngn_rate || exchangeRate) + (selectedProduct.senderFee || 0) * (selectedProduct.final_ngn_rate || exchangeRate)).toLocaleString()}</span>
                     </div>
                   </div>
                 )}
