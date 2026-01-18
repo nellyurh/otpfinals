@@ -4598,7 +4598,8 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
         'ercaspay_secret_key', 'ercaspay_api_key',
         'plisio_secret_key', 'plisio_webhook_secret',
-        'payscribe_api_key'
+        'payscribe_api_key',
+        'reloadly_client_secret'  # Mask Reloadly secret
     ]:
         if key in config_sanitized and config_sanitized[key]:
             config_sanitized[key] = '********'  # masked in GET; editable via PUT
@@ -4611,6 +4612,16 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
     config_sanitized['payscribe_configured'] = bool(config.get('payscribe_api_key') or PAYSCRIBE_API_KEY)
     config_sanitized['plisio_configured'] = bool(config.get('plisio_secret_key') or PLISIO_SECRET_KEY)
     config_sanitized['ercaspay_configured'] = bool(config.get('ercaspay_secret_key') or ERCASPAY_SECRET_KEY)
+    
+    # Expose Reloadly configuration status (from DB or env)
+    config_sanitized['reloadly_configured'] = bool(
+        (config.get('reloadly_client_id') and config.get('reloadly_client_secret')) or
+        (os.environ.get('RELOADLY_CLIENT_ID') and os.environ.get('RELOADLY_CLIENT_SECRET'))
+    )
+    # Return client ID (not secret) for display purposes, or indicate env-based config
+    if not config.get('reloadly_client_id') and os.environ.get('RELOADLY_CLIENT_ID'):
+        config_sanitized['reloadly_client_id'] = os.environ.get('RELOADLY_CLIENT_ID', '')[:20] + '...'  # Truncated for display
+        config_sanitized['reloadly_from_env'] = True
 
     return config_sanitized
 
