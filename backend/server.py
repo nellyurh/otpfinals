@@ -6746,9 +6746,9 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
         if current_usd < amount_usd:
             raise HTTPException(status_code=400, detail=f"Insufficient USD balance. Available: ${current_usd:.2f}")
         
-        # Get exchange rate from config
+        # Get WALLET-specific exchange rate from config
         config = await db.pricing_config.find_one({})
-        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        usd_to_ngn_rate = config.get('wallet_usd_to_ngn_rate', 1650) if config else 1650
         
         # Calculate NGN amount
         amount_ngn = round(amount_usd * usd_to_ngn_rate, 2)
