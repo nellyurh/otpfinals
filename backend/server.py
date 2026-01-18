@@ -6192,16 +6192,33 @@ class ReloadlyAuthService:
     def __init__(self):
         self.access_token = None
         self.token_expiry = None
-        self.client_id = os.environ.get('RELOADLY_CLIENT_ID', '')
-        self.client_secret = os.environ.get('RELOADLY_CLIENT_SECRET', '')
-        # Use sandbox for testing, switch to live for production
-        self.is_sandbox = True  # Set to False for production
         self.auth_url = "https://auth.reloadly.com/oauth/token"
-        self.api_base_url = "https://giftcards-sandbox.reloadly.com" if self.is_sandbox else "https://giftcards.reloadly.com"
-        self.audience = self.api_base_url
+    
+    async def get_config(self):
+        """Get Reloadly config from database or env"""
+        config = await db.pricing_config.find_one({})
+        if config:
+            return {
+                'client_id': config.get('reloadly_client_id') or os.environ.get('RELOADLY_CLIENT_ID', ''),
+                'client_secret': config.get('reloadly_client_secret') or os.environ.get('RELOADLY_CLIENT_SECRET', ''),
+                'is_sandbox': config.get('giftcard_is_sandbox', True),
+                'markup_percent': config.get('giftcard_markup_percent', 0)
+            }
+        return {
+            'client_id': os.environ.get('RELOADLY_CLIENT_ID', ''),
+            'client_secret': os.environ.get('RELOADLY_CLIENT_SECRET', ''),
+            'is_sandbox': True,
+            'markup_percent': 0
+        }
+    
+    def get_api_base_url(self, is_sandbox: bool) -> str:
+        return "https://giftcards-sandbox.reloadly.com" if is_sandbox else "https://giftcards.reloadly.com"
     
     async def get_access_token(self) -> str:
         """Get valid access token, refreshing if needed"""
+        config = await self.get_config()
+        api_base_url = self.get_api_base_url(config['is_sandbox'])
+        
         # Check if token is still valid (with 5-minute buffer)
         if (self.access_token and self.token_expiry and 
             datetime.now(timezone.utc) < self.token_expiry - timedelta(minutes=5)):
@@ -6212,9 +6229,9 @@ class ReloadlyAuthService:
             response = await client.post(
                 self.auth_url,
                 json={
-                    "client_id": self.client_id,
-                    "client_secret": self.client_secret,
-                    "audience": self.audience,
+                    "client_id": config['client_id'],
+                    "client_secret": config['client_secret'],
+                    "audience": api_base_url,
                     "grant_type": "client_credentials"
                 }
             )
@@ -6226,6 +6243,8 @@ class ReloadlyAuthService:
         self.access_token = token_data["access_token"]
         expires_in = token_data.get("expires_in", 86400)
         self.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+        
+        return self.access_token
         
         return self.access_token
     
