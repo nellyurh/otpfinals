@@ -3,9 +3,28 @@
 ## Original Problem Statement
 Build a full-stack OTP service platform with JWT auth, wallet system, multiple payment gateways, and admin panel.
 
-## Latest Updates (January 17, 2026)
+## Latest Updates (January 18, 2026)
 
-### Session 10 - UI Polish & Landing Page Enhancement
+### Session 11 - Support Channels & Mobile Responsiveness
+
+**Completed Tasks:**
+
+1. **Support Channel URLs (Admin Configurable)** ✅
+   - Added `whatsapp_support_url`, `telegram_support_url`, `support_email` to PricingConfig
+   - Admin Panel → Branding & Banners → Support Channel URLs section
+   - Support section in user dashboard now uses dynamic URLs from admin config
+   - Public branding endpoint returns support URLs
+
+2. **Mobile Responsiveness Improvements** ✅
+   - SMS History: Improved header responsiveness, min-width on table
+   - API Documentation: Stacked layout on mobile, overflow-x-auto on tables
+   - Reseller Orders Table: Added min-width for proper scrolling
+
+**API Updates:**
+- `GET /api/public/branding` - Now returns `whatsapp_support_url`, `telegram_support_url`, `support_email`
+- `PUT /api/admin/pricing` - Now accepts support channel URL updates
+
+### Previous Sessions Summary
 
 **UI Changes:**
 
