@@ -866,9 +866,9 @@ const NewDashboard = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-96 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900">Notifications</h3>
+                  <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-96 overflow-hidden">
+                    <div className="p-3 sm:p-4 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Notifications</h3>
                       <button 
                         onClick={() => setShowNotifications(false)}
                         className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
@@ -885,14 +885,14 @@ const NewDashboard = () => {
                         notifications.slice(0, 10).map((notif) => (
                           <div 
                             key={notif.id}
-                            className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read_at ? 'bg-purple-50' : ''}`}
+                            className={`p-3 sm:p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read_at ? 'bg-purple-50' : ''}`}
                             onClick={() => markNotificationRead(notif.id)}
                           >
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-2 sm:gap-3">
                               <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: !notif.read_at ? branding.primary_color_hex || '#059669' : '#d1d5db' }}></div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900">{notif.title}</p>
-                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
+                                <p className="text-xs sm:text-sm font-medium text-gray-900">{notif.title}</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
                                 <p className="text-[10px] text-gray-400 mt-1.5">
                                   {new Date(notif.created_at).toLocaleDateString()}
                                 </p>
