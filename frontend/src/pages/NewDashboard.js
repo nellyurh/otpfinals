@@ -3405,6 +3405,9 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [orderHistory, setOrderHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [orderDetails, setOrderDetails] = useState(null);
+    const [loadingDetails, setLoadingDetails] = useState(false);
     const [orderForm, setOrderForm] = useState({
       amount: '',
       recipient_email: '',
@@ -3415,6 +3418,29 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     const [exchangeRate, setExchangeRate] = useState(1650);
     const [countrySearch, setCountrySearch] = useState('');
     const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+
+    // Fetch order details including redeem code
+    const fetchOrderDetails = async (order) => {
+      setSelectedOrder(order);
+      setLoadingDetails(true);
+      try {
+        const transactionId = order.transaction_id;
+        if (transactionId && order.status === 'SUCCESSFUL') {
+          const resp = await axios.get(`${API}/api/giftcards/redeem-code/${transactionId}`, axiosConfig);
+          if (resp.data.success) {
+            setOrderDetails({ ...order, cards: resp.data.cards });
+          } else {
+            setOrderDetails(order);
+          }
+        } else {
+          setOrderDetails(order);
+        }
+      } catch (err) {
+        console.error('Failed to fetch order details:', err);
+        setOrderDetails(order);
+      }
+      setLoadingDetails(false);
+    };
 
     // Fetch countries on mount
     useEffect(() => {
