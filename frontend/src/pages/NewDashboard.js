@@ -170,6 +170,57 @@ const NewDashboard = () => {
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
+  // Handle Ercaspay callback
+  useEffect(() => {
+    const handleErcaspayCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fullUrl = window.location.href;
+      
+      // Check if this is an Ercaspay callback (handle malformed URL with double ?)
+      if (fullUrl.includes('ercaspay_callback=true') || urlParams.get('ercaspay_callback')) {
+        // Parse the reference from URL (handle both normal and malformed URLs)
+        let paymentRef = urlParams.get('ref');
+        let status = urlParams.get('status');
+        
+        // If URL is malformed (has ?ref=XXX?reference=XXX), extract from the full URL
+        if (!status && fullUrl.includes('status=')) {
+          const statusMatch = fullUrl.match(/status=([^&]+)/);
+          status = statusMatch ? statusMatch[1] : null;
+        }
+        
+        if (paymentRef && status) {
+          // Clean up the URL
+          window.history.replaceState({}, document.title, '/dashboard');
+          
+          if (status === 'PAID' || status === 'paid' || status === 'successful') {
+            toast.success('Payment successful! Your wallet will be credited shortly.');
+            // Refresh user profile to get updated balance
+            setTimeout(() => {
+              fetchProfile();
+              fetchTransactions();
+            }, 2000);
+          } else if (status === 'FAILED' || status === 'failed') {
+            toast.error('Payment failed. Please try again.');
+          } else if (status === 'PENDING' || status === 'pending') {
+            toast.info('Payment is pending. Your wallet will be credited once confirmed.');
+          } else {
+            toast.info(`Payment status: ${status}`);
+          }
+        } else if (paymentRef) {
+          // Just the callback with ref, clean up URL
+          window.history.replaceState({}, document.title, '/dashboard');
+          toast.info('Payment processing. Your wallet will be credited once confirmed.');
+          setTimeout(() => {
+            fetchProfile();
+            fetchTransactions();
+          }, 2000);
+        }
+      }
+    };
+    
+    handleErcaspayCallback();
+  }, []);
+
   useEffect(() => {
     if (!token) {
       navigate('/');
