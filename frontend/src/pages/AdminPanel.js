@@ -2388,6 +2388,40 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-4">
+                    {/* Reloadly Account Balance */}
+                    <div className="bg-gradient-to-r from-purple-100 to-indigo-100 border border-purple-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Reloadly Wallet Balance</p>
+                          {reloadlyBalance.loading ? (
+                            <p className="text-2xl font-bold text-purple-900 mt-1">Loading...</p>
+                          ) : reloadlyBalance.error ? (
+                            <p className="text-sm text-red-600 mt-1">{reloadlyBalance.error}</p>
+                          ) : reloadlyBalance.balance !== null ? (
+                            <p className="text-2xl font-bold text-purple-900 mt-1">
+                              ${reloadlyBalance.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              <span className="text-sm font-normal text-purple-600 ml-2">{reloadlyBalance.currency_code}</span>
+                            </p>
+                          ) : (
+                            <p className="text-sm text-purple-600 mt-1">Click refresh to check balance</p>
+                          )}
+                          {reloadlyBalance.is_sandbox && reloadlyBalance.balance !== null && (
+                            <p className="text-[10px] text-yellow-700 mt-1">⚠️ Sandbox mode - test balance only</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={fetchReloadlyBalance}
+                          disabled={reloadlyBalance.loading}
+                          className="h-8 px-3 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${reloadlyBalance.loading ? 'animate-spin' : ''}`} />
+                          {reloadlyBalance.loading ? 'Checking...' : 'Refresh'}
+                        </Button>
+                      </div>
+                    </div>
+
                     {giftcardsConfig.reloadly_from_env && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
                         <span className="text-blue-600 text-xs">ℹ️</span>
