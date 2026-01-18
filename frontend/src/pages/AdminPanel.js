@@ -2000,6 +2000,7 @@ const AdminPanel = ({ user, setUser }) => {
                         ['enable_transactions', 'Transactions', 'Transaction history'],
                         ['enable_fund_wallet', 'Fund Wallet', 'Deposit funds'],
                         ['enable_virtual_numbers', 'Virtual Numbers', 'SMS verification'],
+                        ['enable_giftcards', 'Gift Cards', 'Reloadly gift cards'],
                         ['enable_buy_data', 'Buy Data Bundle', 'Data packages'],
                         ['enable_airtime', 'Airtime Top-Up', 'Airtime purchases'],
                         ['enable_betting', 'Betting', 'Betting wallet'],
