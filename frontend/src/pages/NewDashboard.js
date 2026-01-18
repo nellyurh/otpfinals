@@ -1543,104 +1543,149 @@ const NewDashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           {/* Total */}
-          <div className="bg-white rounded-xl border shadow-sm p-6">
-            <p className="text-sm text-gray-600 mb-2">TOTAL</p>
-            <p className="text-3xl font-bold text-gray-900">{totalTransactions}</p>
-            <p className="text-xs text-gray-500 mt-1">0 txns</p>
+          <div className="bg-white rounded-lg sm:rounded-xl border shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-gray-600 mb-1 sm:mb-2">TOTAL</p>
+            <p className="text-lg sm:text-3xl font-bold text-gray-900">{totalTransactions}</p>
           </div>
 
           {/* Credit */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-sm p-6">
-            <p className="text-sm text-green-800 mb-2">CREDIT</p>
-            <p className="text-3xl font-bold text-green-900">₦{creditTotal.toFixed(2)}</p>
-            <p className="text-xs text-green-700 mt-1">0 txns</p>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl border border-green-200 shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-green-800 mb-1 sm:mb-2">CREDIT</p>
+            <p className="text-lg sm:text-3xl font-bold text-green-900">₦{creditTotal.toFixed(0)}</p>
           </div>
 
           {/* Debit */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-sm p-6">
-            <p className="text-sm text-green-800 mb-2">DEBIT</p>
-            <p className="text-3xl font-bold text-green-900">₦{debitTotal.toFixed(2)}</p>
-            <p className="text-xs text-green-700 mt-1">0 txns</p>
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg sm:rounded-xl border border-red-200 shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-red-800 mb-1 sm:mb-2">DEBIT</p>
+            <p className="text-lg sm:text-3xl font-bold text-red-900">₦{debitTotal.toFixed(0)}</p>
           </div>
 
           {/* Net */}
-          <div className="bg-white rounded-xl border shadow-sm p-6">
-            <p className="text-sm text-gray-600 mb-2">NET</p>
-            <p className="text-3xl font-bold text-gray-900">₦{netAmount.toFixed(2)}</p>
+          <div className="bg-white rounded-lg sm:rounded-xl border shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-gray-600 mb-1 sm:mb-2">NET</p>
+            <p className="text-lg sm:text-3xl font-bold text-gray-900">₦{netAmount.toFixed(0)}</p>
           </div>
         </div>
 
         {/* Transactions Table or Empty State */}
-        <div className="bg-white rounded-xl border shadow-sm p-6">
+        <div className="bg-white rounded-lg sm:rounded-xl border shadow-sm p-3 sm:p-6">
           {transactions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((txn) => (
-                    <tr key={txn.id} className="border-b hover:bg-gray-50 transition-colors">
-                      <td className="py-4 px-4 text-sm text-gray-700">{new Date(txn.created_at).toLocaleDateString()}</td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${
+            <>
+              {/* Mobile Card View */}
+              <div className="block sm:hidden space-y-3">
+                {transactions.map((txn) => (
+                  <div key={txn.id} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${
                           txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
                             ? 'bg-green-100 text-green-700' 
                             : 'bg-red-100 text-red-700'
                         }`}>
                           {txn.type.replace('_', ' ').toUpperCase()}
                         </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`font-semibold ${
-                          txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
-                            ? 'text-green-600' 
-                            : 'text-red-600'
-                        }`}>
-                          {txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' ? '+' : '-'}
-                          {txn.currency === 'NGN' ? '₦' : '$'}{txn.amount?.toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      </div>
+                      <span className={`font-bold text-sm ${
+                        txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' ? '+' : '-'}
+                        {txn.currency === 'NGN' ? '₦' : '$'}{txn.amount?.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="text-[10px] text-gray-500">{new Date(txn.created_at).toLocaleDateString()}</div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
                           txn.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
                           txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {txn.status}
                         </span>
-                      </td>
-                      <td className="py-4 px-4">
                         <button 
                           onClick={() => setSelectedTxn(txn)}
-                          className="px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                          className="px-2 py-1 text-[10px] font-semibold text-emerald-600 hover:bg-emerald-50 rounded"
                         >
                           View
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <Wallet className="w-10 h-10 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h3>
-              <p className="text-gray-500 mb-6">Your wallet history will appear here once you start transacting</p>
+              
+              {/* Desktop Table View */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((txn) => (
+                      <tr key={txn.id} className="border-b hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-4 text-sm text-gray-700">{new Date(txn.created_at).toLocaleDateString()}</td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${
+                            txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            {txn.type.replace('_', ' ').toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`font-semibold ${
+                            txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
+                              ? 'text-green-600' 
+                              : 'text-red-600'
+                          }`}>
+                            {txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' ? '+' : '-'}
+                            {txn.currency === 'NGN' ? '₦' : '$'}{txn.amount?.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                            txn.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                            txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {txn.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <button 
+                            onClick={() => setSelectedTxn(txn)}
+                            className="px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8 sm:py-16">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Wallet className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h3>
+              <p className="text-sm text-gray-500 mb-4 sm:mb-6">Your wallet history will appear here</p>
               <button 
                 onClick={() => setActiveSection('fund-wallet')}
-                className="px-6 py-3 bg-[#005E3A] text-white rounded-lg font-semibold hover:bg-[#004A2D] transition-colors"
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#005E3A] text-white rounded-lg font-semibold text-sm hover:bg-[#004A2D] transition-colors"
               >
                 Fund Wallet
               </button>
