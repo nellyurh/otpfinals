@@ -2561,6 +2561,11 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* GIFT CARD ORDERS SECTION */}
+            {activeSection === 'giftcard-orders' && (
+              <GiftCardOrdersSection API={API} axiosConfig={axiosConfig} />
+            )}
+
             {/* PROMO CODES SECTION */}
             {activeSection === 'promo-codes' && (
               <section className="space-y-6">
