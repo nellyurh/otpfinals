@@ -881,7 +881,7 @@ const NewDashboard = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-gray-100 z-50 max-h-96 overflow-hidden">
+                  <div className="fixed right-4 top-16 sm:absolute sm:right-0 sm:top-auto mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-gray-100 z-[100] max-h-96 overflow-hidden">
                     <div className="p-3 sm:p-4 border-b border-gray-100 flex items-center justify-between">
                       <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Notifications</h3>
                       <button 
