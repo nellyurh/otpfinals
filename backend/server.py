@@ -3885,11 +3885,21 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
         else:
             frontend_url = 'https://sea-lion-app-eu93r.ondigitalocean.app'
     
+    # Map payment method to Ercaspay format (must be array with underscore format)
+    ercaspay_payment_methods = []
+    if payment_method == 'card':
+        ercaspay_payment_methods = ['card']
+    elif payment_method == 'bank-transfer':
+        ercaspay_payment_methods = ['bank_transfer']
+    else:
+        # Default to both methods
+        ercaspay_payment_methods = ['card', 'bank_transfer']
+    
     # Prepare Ercaspay initiate checkout request
     checkout_data = {
         'amount': amount,
         'paymentReference': payment_ref,
-        'paymentMethods': payment_method,
+        'paymentMethods': ercaspay_payment_methods,  # Must be an array
         'customerName': user.get('full_name') or user.get('email', 'Customer'),
         'customerEmail': user.get('email'),
         'customerPhoneNumber': user.get('phone') or '',
