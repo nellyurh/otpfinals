@@ -3254,7 +3254,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
     const handleConvert = async () => {
       if (!convertAmount || parseFloat(convertAmount) <= 0) return;
-      if (parseFloat(convertAmount) > (user?.balance_usd || 0)) {
+      if (parseFloat(convertAmount) > (user?.usd_balance || 0)) {
         alert('Insufficient USD balance');
         return;
       }
