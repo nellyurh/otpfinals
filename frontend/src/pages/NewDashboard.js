@@ -134,6 +134,14 @@ const NewDashboard = () => {
     try {
       const resp = await axios.get(`${API}/api/public/branding`);
       setBranding(resp.data);
+      // Set support channel URLs
+      if (resp.data) {
+        setSupportUrls({
+          whatsapp_support_url: resp.data.whatsapp_support_url || 'https://wa.me/2348000000000',
+          telegram_support_url: resp.data.telegram_support_url || 'https://t.me/yoursupport',
+          support_email: resp.data.support_email || 'support@smsrelay.com'
+        });
+      }
     } catch (e) {
       // ignore
     }
