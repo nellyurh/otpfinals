@@ -4785,6 +4785,12 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.giftcard_is_sandbox is not None:
         update_fields['giftcard_is_sandbox'] = data.giftcard_is_sandbox
 
+    # Exchange rates (separate for wallet vs gift cards)
+    if data.wallet_usd_to_ngn_rate is not None:
+        update_fields['wallet_usd_to_ngn_rate'] = data.wallet_usd_to_ngn_rate
+    if data.giftcard_usd_to_ngn_rate is not None:
+        update_fields['giftcard_usd_to_ngn_rate'] = data.giftcard_usd_to_ngn_rate
+
     # Manual coin->USD rates
     for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
         val = getattr(data, key, None)
