@@ -6623,7 +6623,9 @@ async def get_giftcard_countries(user: dict = Depends(get_current_user)):
 async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = Depends(get_current_user)):
     """Place a gift card order - deducts from user's NGN wallet balance"""
     try:
-        user_id = user.get('user_id') or str(user.get('_id'))
+        user_id = user.get('id')
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
         
         # Get the product details first to calculate cost
         headers = await reloadly_auth.get_headers()
@@ -6642,7 +6644,7 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         
         # Get exchange rate and markup
         config = await db.pricing_config.find_one({})
-        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        usd_to_ngn_rate = config.get('giftcard_usd_to_ngn_rate', 1650) if config else 1650
         markup_percent = config.get('giftcard_markup_percent', 0) if config else 0
         markup_multiplier = 1 + (markup_percent / 100)
         
@@ -6652,11 +6654,11 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         total_ngn = round(total_usd * usd_to_ngn_rate * markup_multiplier, 2)
         
         # Check user's NGN balance
-        user_data = await db.users.find_one({'_id': ObjectId(user_id)})
+        user_data = await db.users.find_one({'id': user_id})
         if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
         
-        current_balance = user_data.get('balance_ngn', 0)
+        current_balance = user_data.get('ngn_balance', 0)
         if current_balance < total_ngn:
             raise HTTPException(status_code=400, detail=f"Insufficient NGN balance. Required: ₦{total_ngn:,.2f}, Available: ₦{current_balance:,.2f}")
         
