@@ -5,6 +5,44 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 18, 2026)
 
+### Session 12 - Gift Cards (Reloadly Integration)
+
+**Completed Tasks:**
+
+1. **Reloadly Gift Cards Integration** ✅
+   - Full integration with Reloadly Gift Cards API
+   - Browse 2,900+ gift cards from 169 countries
+   - Filter by country, search by brand/product name
+   - View detailed product info with redemption instructions
+   - Purchase with recipient email and phone (gift delivery)
+   - Order history tracking
+   - NGN wallet balance payment (deducts from user balance)
+
+2. **USD to NGN Conversion** ✅
+   - Convert USD balance to NGN at admin-configured exchange rate
+   - Modal with real-time conversion preview
+   - Transaction recorded in user history
+
+**New API Endpoints:**
+- `GET /api/giftcards/countries` - List all countries with gift cards
+- `GET /api/giftcards/products` - List gift card products (paginated, filterable)
+- `GET /api/giftcards/products/{id}` - Get product details
+- `POST /api/giftcards/order` - Place gift card order
+- `GET /api/giftcards/orders` - User's order history
+- `GET /api/giftcards/orders/{transaction_id}` - Order status
+- `GET /api/giftcards/redeem-code/{transaction_id}` - Get redeem code
+- `POST /api/wallet/convert-usd-to-ngn` - Convert USD to NGN
+- `GET /api/wallet/exchange-rate` - Get current exchange rate
+
+**Environment Variables Added:**
+- `RELOADLY_CLIENT_ID` - Reloadly API client ID
+- `RELOADLY_CLIENT_SECRET` - Reloadly API client secret
+
+**Admin Panel:**
+- Added `enable_giftcards` toggle in Page Toggles section
+
+---
+
 ### Session 11 - Support Channels & Mobile Responsiveness
 
 **Completed Tasks:**
