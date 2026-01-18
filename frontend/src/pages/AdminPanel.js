@@ -2675,6 +2675,47 @@ const AdminPanel = ({ user, setUser }) => {
                   </CardContent>
                 </Card>
 
+                {/* Support Channel URLs */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Support Channel URLs</CardTitle>
+                    <CardDescription className="text-xs">Configure the support links shown to users in the Support section</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">WhatsApp URL</Label>
+                        <Input
+                          value={branding.whatsapp_support_url}
+                          onChange={(e) => setBranding({ ...branding, whatsapp_support_url: e.target.value })}
+                          placeholder="https://wa.me/2348000000000"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Format: https://wa.me/PHONE_NUMBER</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Telegram URL</Label>
+                        <Input
+                          value={branding.telegram_support_url}
+                          onChange={(e) => setBranding({ ...branding, telegram_support_url: e.target.value })}
+                          placeholder="https://t.me/yoursupport"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Format: https://t.me/USERNAME</p>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Support Email</Label>
+                      <Input
+                        value={branding.support_email}
+                        onChange={(e) => setBranding({ ...branding, support_email: e.target.value })}
+                        placeholder="support@yoursite.com"
+                        className="h-9 text-sm bg-slate-50 border-slate-200"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Dashboard Banners */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
