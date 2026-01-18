@@ -3533,9 +3533,15 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   <span className="font-medium">{selectedProduct.recipientCurrencyCode}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Exchange Rate</span>
-                  <span className="font-medium">$1 = ₦{exchangeRate.toLocaleString()}</span>
+                  <span className="text-gray-500">Rate to NGN</span>
+                  <span className="font-medium">1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || selectedProduct.currency_to_ngn_rate || exchangeRate).toLocaleString()}</span>
                 </div>
+                {selectedProduct.markup_percent > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Markup</span>
+                    <span className="font-medium text-amber-600">+{selectedProduct.markup_percent}%</span>
+                  </div>
+                )}
                 {selectedProduct.senderFee > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Service Fee</span>
