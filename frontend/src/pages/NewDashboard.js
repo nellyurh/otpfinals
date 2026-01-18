@@ -3161,7 +3161,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs min-w-[500px]">
                 <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>
                     <th className="text-left px-3 py-2 font-semibold text-gray-600">Service</th>
@@ -3198,6 +3198,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                       <td className="px-3 py-2.5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
+
                 </tbody>
               </table>
             </div>
