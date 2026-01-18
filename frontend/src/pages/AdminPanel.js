@@ -552,6 +552,21 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const fetchServiceStats = async (startDate, endDate) => {
+    try {
+      let url = `${API}/admin/service-stats`;
+      if (startDate && endDate) {
+        url += `?start_date=${startDate}&end_date=${endDate}`;
+      }
+      const resp = await axios.get(url, axiosConfig);
+      if (resp.data.success) {
+        setServiceStats(resp.data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch service stats');
+    }
+  };
+
   const token = localStorage.getItem('token');
   const axiosConfig = {
     headers: { Authorization: `Bearer ${token}` },
