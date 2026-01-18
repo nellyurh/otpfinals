@@ -2288,6 +2288,149 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* GIFT CARDS PROVIDER SECTION */}
+            {activeSection === 'giftcards-provider' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Gift Cards Provider</h2>
+                    <p className="text-xs text-slate-500 mt-1">Configure Reloadly API credentials and markup rates</p>
+                  </div>
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {loading ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                </div>
+
+                {/* Reloadly Card */}
+                <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                          <Gift className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-base font-semibold text-purple-900">Reloadly</CardTitle>
+                          <p className="text-xs text-purple-600">Gift Cards API Provider</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${giftcardsConfig.giftcard_is_sandbox ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                          {giftcardsConfig.giftcard_is_sandbox ? 'SANDBOX' : 'LIVE'}
+                        </span>
+                        <Switch
+                          checked={pageToggles.enable_giftcards}
+                          onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, enable_giftcards: val }))}
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Client ID</Label>
+                        <Input
+                          value={giftcardsConfig.reloadly_client_id}
+                          onChange={(e) => setGiftcardsConfig({ ...giftcardsConfig, reloadly_client_id: e.target.value })}
+                          placeholder="OpBCYNyTFWh..."
+                          className="h-9 text-sm bg-slate-50 border-slate-200 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Client Secret</Label>
+                        <Input
+                          type="password"
+                          value={giftcardsConfig.reloadly_client_secret}
+                          onChange={(e) => setGiftcardsConfig({ ...giftcardsConfig, reloadly_client_secret: e.target.value })}
+                          placeholder="••••••••••••"
+                          className="h-9 text-sm bg-slate-50 border-slate-200 font-mono"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Markup Percentage (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={giftcardsConfig.giftcard_markup_percent}
+                          onChange={(e) => setGiftcardsConfig({ ...giftcardsConfig, giftcard_markup_percent: parseFloat(e.target.value) || 0 })}
+                          placeholder="5"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Added on top of Reloadly prices (e.g., 5% markup)</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Environment</Label>
+                        <div className="flex items-center gap-4 mt-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="giftcard_env"
+                              checked={giftcardsConfig.giftcard_is_sandbox}
+                              onChange={() => setGiftcardsConfig({ ...giftcardsConfig, giftcard_is_sandbox: true })}
+                              className="w-4 h-4 text-purple-600"
+                            />
+                            <span className="text-sm text-slate-700">Sandbox (Testing)</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="giftcard_env"
+                              checked={!giftcardsConfig.giftcard_is_sandbox}
+                              onChange={() => setGiftcardsConfig({ ...giftcardsConfig, giftcard_is_sandbox: false })}
+                              className="w-4 h-4 text-purple-600"
+                            />
+                            <span className="text-sm text-slate-700">Live (Production)</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
+                      <h4 className="font-semibold text-purple-900 text-sm mb-2">About Reloadly Gift Cards</h4>
+                      <ul className="text-xs text-purple-700 space-y-1">
+                        <li>• Access to 2,900+ gift cards from 169 countries</li>
+                        <li>• Brands include Netflix, Amazon, Google Play, Steam, and more</li>
+                        <li>• Gift cards are delivered to recipient's email</li>
+                        <li>• Get your API keys at: <a href="https://www.reloadly.com" target="_blank" rel="noopener noreferrer" className="underline">reloadly.com</a></li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Exchange Rate Card */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Exchange Rate (USD to NGN)</CardTitle>
+                    <CardDescription className="text-xs">Set the exchange rate for gift card pricing</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">USD to NGN Rate</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          value={pricing.usd_to_ngn_rate || 1650}
+                          onChange={(e) => setPricing({ ...pricing, usd_to_ngn_rate: parseFloat(e.target.value) || 1650 })}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">How many Naira per 1 USD (e.g., 1650)</p>
+                      </div>
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                        <p className="text-xs text-emerald-700">Preview: $10 gift card = ₦{((pricing.usd_to_ngn_rate || 1650) * 10 * (1 + (giftcardsConfig.giftcard_markup_percent || 0) / 100)).toLocaleString()}</p>
+                        <p className="text-[10px] text-emerald-600 mt-1">(with {giftcardsConfig.giftcard_markup_percent || 0}% markup)</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {/* PROMO CODES SECTION */}
             {activeSection === 'promo-codes' && (
               <section className="space-y-6">
