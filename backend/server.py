@@ -6399,6 +6399,55 @@ class ReloadlyAuthService:
 reloadly_auth = ReloadlyAuthService()
 
 
+@api_router.get("/admin/reloadly/balance")
+async def get_reloadly_balance(admin: dict = Depends(require_admin)):
+    """Get Reloadly account balance (admin only)"""
+    try:
+        config = await reloadly_auth.get_config()
+        
+        # Check if Reloadly is configured
+        if not config['client_id'] or not config['client_secret']:
+            return {
+                "success": False,
+                "error": "Reloadly credentials not configured",
+                "balance": None
+            }
+        
+        headers = await reloadly_auth.get_balance_headers()
+        topups_url = await reloadly_auth.get_topups_url()
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{topups_url}/accounts/balance",
+                headers=headers,
+                timeout=30.0
+            )
+        
+        if response.status_code != 200:
+            return {
+                "success": False,
+                "error": f"Failed to fetch balance: {response.text}",
+                "balance": None
+            }
+        
+        balance_data = response.json()
+        return {
+            "success": True,
+            "balance": balance_data.get("balance", 0),
+            "currency_code": balance_data.get("currencyCode", "USD"),
+            "currency_name": balance_data.get("currencyName", "US Dollar"),
+            "updated_at": balance_data.get("updatedAt"),
+            "is_sandbox": config['is_sandbox']
+        }
+    except Exception as e:
+        logger.error(f"Error fetching Reloadly balance: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "balance": None
+        }
+
+
 class GiftCardOrderRequest(BaseModel):
     product_id: int
     quantity: int = 1
