@@ -3469,7 +3469,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
     const handlePlaceOrder = async () => {
       if (!selectedProduct || !orderForm.amount || !orderForm.recipient_email || !orderForm.recipient_phone) {
-        alert('Please fill all required fields');
+        toast.error('Please fill all required fields');
         return;
       }
       setOrdering(true);
@@ -3483,12 +3483,12 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
           sender_name: orderForm.sender_name || undefined
         }, axiosConfig);
         
-        alert(`Order placed successfully! Transaction ID: ${resp.data.transaction_id}\n\nAmount charged: ₦${resp.data.amount_charged_ngn.toLocaleString()}`);
+        toast.success(`Order placed! Transaction ID: ${resp.data.transaction_id}. Amount charged: ₦${resp.data.amount_charged_ngn.toLocaleString()}`);
         setSelectedProduct(null);
         setOrderForm({ amount: '', recipient_email: '', recipient_phone: '', sender_name: user?.full_name || '' });
         fetchProfile();
       } catch (err) {
-        alert(err.response?.data?.detail || 'Order failed');
+        toast.error(err.response?.data?.detail || 'Order failed');
       }
       setOrdering(false);
     };
