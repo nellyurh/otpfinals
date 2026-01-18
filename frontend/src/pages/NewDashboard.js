@@ -3536,12 +3536,18 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Currency</span>
+                  <span className="text-gray-500">Card Currency</span>
                   <span className="font-medium">{selectedProduct.recipientCurrencyCode}</span>
                 </div>
+                {selectedProduct.recipientCurrencyCode !== 'USD' && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">{selectedProduct.recipientCurrencyCode} to USD</span>
+                    <span className="font-medium">1 {selectedProduct.recipientCurrencyCode} = ${(selectedProduct.currency_to_usd_rate || 1).toFixed(4)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Rate to NGN</span>
-                  <span className="font-medium">1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || selectedProduct.currency_to_ngn_rate || exchangeRate).toLocaleString()}</span>
+                  <span className="text-gray-500">USD to NGN Rate</span>
+                  <span className="font-medium">₦{(selectedProduct.admin_usd_to_ngn_rate || 1650).toLocaleString()}</span>
                 </div>
                 {selectedProduct.markup_percent > 0 && (
                   <div className="flex justify-between text-sm">
@@ -3549,6 +3555,10 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                     <span className="font-medium text-amber-600">+{selectedProduct.markup_percent}%</span>
                   </div>
                 )}
+                <div className="flex justify-between text-sm border-t pt-2">
+                  <span className="text-gray-700 font-medium">Final Rate</span>
+                  <span className="font-bold text-emerald-600">1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || exchangeRate).toLocaleString()}</span>
+                </div>
                 {selectedProduct.senderFee > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Service Fee</span>
