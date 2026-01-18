@@ -2780,151 +2780,126 @@ print_r(json_decode($response, true));`,
       const currentEndpoint = endpointData[activeEndpoint];
       
       return (
-        <div className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-100px)] -mx-6 -mt-6 bg-white">
-          {/* Sidebar - Hidden on mobile, shown at top as dropdown alternative */}
-          <div className="lg:w-56 bg-[#1e2936] text-white flex-shrink-0 overflow-y-auto">
-            <div className="p-4 border-b border-gray-700">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                  <Server className="w-4 h-4" />
-                </div>
-                <span className="font-semibold text-sm">API Documentation</span>
+        <div className="space-y-4">
+          {/* Back Button and Header */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowDocs(false)}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              ← Back to Portal
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                <Server className="w-4 h-4 text-white" />
               </div>
+              <span className="font-semibold text-sm text-gray-900">API Documentation</span>
+            </div>
+          </div>
+
+          {/* Endpoint Selector */}
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Select Endpoint</p>
+            <div className="flex flex-wrap gap-2">
+              {endpoints.map((ep) => (
+                <button
+                  key={ep.id}
+                  onClick={() => setActiveEndpoint(ep.id)}
+                  className={`px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2 ${
+                    activeEndpoint === ep.id 
+                      ? 'bg-emerald-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <span>{ep.name}</span>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                    ep.method === 'GET' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                  }`}>{ep.method}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* API Key Info */}
+          <div className="bg-gray-900 rounded-xl p-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Authentication</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-400">Header:</span>
+              <code className="text-emerald-400 text-xs bg-gray-800 px-2 py-1 rounded">X-API-KEY: {apiKey.substring(0, 16)}...</code>
+            </div>
+          </div>
+
+          {/* Endpoint Details */}
+          <div className="bg-white rounded-xl border p-4 sm:p-6">
+            <div className="mb-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{currentEndpoint.title}</h1>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className={`px-2 py-1 text-xs font-bold rounded ${
+                  currentEndpoint.method === 'GET' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-blue-100 text-blue-700'
+                }`}>{currentEndpoint.method}</span>
+                <code className="text-xs sm:text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded break-all">
+                  {API_BASE_URL}{currentEndpoint.path}
+                </code>
+              </div>
+              <p className="mt-3 text-sm text-gray-600">{currentEndpoint.description}</p>
             </div>
             
-            <div className="p-3">
-              <button
-                onClick={() => setShowDocs(false)}
-                className="w-full px-3 py-2 text-left text-xs text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-              >
-                ← Back to Portal
-              </button>
+            {/* Headers */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Headers</h3>
+              <ul className="list-disc list-inside text-sm text-gray-600">
+                {currentEndpoint.headers.map((h, i) => (
+                  <li key={i} className="break-all">{h}</li>
+                ))}
+              </ul>
             </div>
             
-            <div className="px-3 py-2">
-              <p className="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Endpoints</p>
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-1">
-                {endpoints.map((ep) => (
-                  <button
-                    key={ep.id}
-                    onClick={() => setActiveEndpoint(ep.id)}
-                    className={`w-full px-3 py-2 text-left text-xs lg:text-sm rounded transition-colors flex items-center justify-between ${
-                      activeEndpoint === ep.id 
-                        ? 'bg-emerald-600 text-white' 
-                        : 'text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="truncate">{ep.name}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ml-1 ${
-                      ep.method === 'GET' ? 'bg-green-600' : 'bg-blue-600'
-                    }`}>{ep.method}</span>
-                  </button>
+            {/* Request Body (for POST endpoints) */}
+            {currentEndpoint.requestBody && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Request Body</h3>
+                <div className="space-y-2">
+                  {currentEndpoint.requestBody.map((field, i) => (
+                    <div key={i} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <code className="text-xs font-mono text-gray-900 bg-white px-2 py-0.5 rounded">{field.name}</code>
+                        <span className="text-xs text-gray-500">{field.type}</span>
+                        {field.required && <span className="text-xs text-red-500">Required</span>}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">{field.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Response Fields */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Response</h3>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span className="text-xs sm:text-sm text-emerald-700 font-medium">Status code: 200 OK</span>
+              </div>
+              <div className="space-y-2">
+                {currentEndpoint.responseFields.map((field, i) => (
+                  <div key={i} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <code className="text-xs font-mono text-gray-900 bg-white px-2 py-0.5 rounded">{field.name}</code>
+                      <span className="text-xs text-gray-500">{field.type}</span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">{field.desc}</p>
+                  </div>
                 ))}
               </div>
             </div>
-            
-            <div className="px-3 py-2 border-t border-gray-700 mt-4 hidden lg:block">
-              <p className="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Authentication</p>
-              <div className="px-3 py-2 text-xs text-gray-400">
-                <p className="mb-1">Header:</p>
-                <code className="text-emerald-400 text-[10px]">X-API-KEY: {apiKey.substring(0, 12)}...</code>
-              </div>
-            </div>
           </div>
-          
-          {/* Main Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-6">
-              {/* Title */}
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">{currentEndpoint.title}</h1>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className={`px-2 py-1 text-xs font-bold rounded ${
-                    currentEndpoint.method === 'GET' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>{currentEndpoint.method}</span>
-                  <code className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                    {API_BASE_URL}{currentEndpoint.path}
-                  </code>
-                </div>
-                <p className="mt-3 text-gray-600">{currentEndpoint.description}</p>
-              </div>
-              
-              {/* Headers */}
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Headers</h3>
-                <ul className="list-disc list-inside text-sm text-gray-600">
-                  {currentEndpoint.headers.map((h, i) => (
-                    <li key={i}>{h}</li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* Request Body (for POST endpoints) */}
-              {currentEndpoint.requestBody && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Request Body</h3>
-                  <div className="border rounded-lg overflow-x-auto">
-                    <table className="w-full text-sm min-w-[400px]">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left px-4 py-2 font-semibold text-gray-700">Name</th>
-                          <th className="text-left px-4 py-2 font-semibold text-gray-700">Type</th>
-                          <th className="text-left px-4 py-2 font-semibold text-gray-700">Required</th>
-                          <th className="text-left px-4 py-2 font-semibold text-gray-700">Description</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentEndpoint.requestBody.map((field, i) => (
-                          <tr key={i} className="border-t">
-                            <td className="px-4 py-2 font-mono text-xs text-gray-900">{field.name}</td>
-                            <td className="px-4 py-2 text-gray-600">{field.type}</td>
-                            <td className="px-4 py-2 text-gray-600">{field.required ? 'Yes' : 'No'}</td>
-                            <td className="px-4 py-2 text-gray-600">{field.desc}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-              
-              {/* Response */}
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Response</h3>
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 mb-3 flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600" />
-                  <span className="text-sm text-emerald-700 font-medium">Status code: 200 OK</span>
-                </div>
-                <div className="border rounded-lg overflow-x-auto">
-                  <table className="w-full text-sm min-w-[350px]">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="text-left px-4 py-2 font-semibold text-gray-700">Name</th>
-                        <th className="text-left px-4 py-2 font-semibold text-gray-700">Type</th>
-                        <th className="text-left px-4 py-2 font-semibold text-gray-700">Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentEndpoint.responseFields.map((field, i) => (
-                        <tr key={i} className="border-t">
-                          <td className="px-4 py-2 font-mono text-xs text-gray-900">{field.name}</td>
-                          <td className="px-4 py-2 text-gray-600">{field.type}</td>
-                          <td className="px-4 py-2 text-gray-600">{field.desc}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Code Examples Panel - Hidden on mobile, shown below on small screens */}
-          <div className="w-full lg:w-96 bg-[#1e2936] flex-shrink-0 overflow-y-auto max-h-96 lg:max-h-none">
+
+          {/* Code Examples */}
+          <div className="bg-gray-900 rounded-xl overflow-hidden">
             {/* Tabs */}
-            <div className="flex border-b border-gray-700 sticky top-0 bg-[#1e2936]">
+            <div className="flex border-b border-gray-700">
               {['shell', 'python', 'php'].map((tab) => (
                 <button
                   key={tab}
@@ -2944,7 +2919,7 @@ print_r(json_decode($response, true));`,
             <div className="p-4">
               <p className="text-xs text-gray-400 mb-2">Request example</p>
               <div className="bg-[#151c24] rounded-lg p-3 overflow-x-auto">
-                <pre className="text-xs text-emerald-400 whitespace-pre-wrap font-mono">
+                <pre className="text-xs text-emerald-400 whitespace-pre-wrap font-mono break-all">
                   {currentEndpoint.examples[activeTab]}
                 </pre>
               </div>
@@ -2954,9 +2929,8 @@ print_r(json_decode($response, true));`,
             <div className="p-4 pt-0">
               <p className="text-xs text-gray-400 mb-2">Response example</p>
               <div className="bg-[#151c24] rounded-lg p-3 overflow-x-auto">
-                <pre className="text-xs font-mono whitespace-pre-wrap">
+                <pre className="text-xs font-mono whitespace-pre-wrap break-all">
                   {currentEndpoint.response.split('\n').map((line, i) => {
-                    // Simple syntax highlighting
                     if (line.includes('"success"') || line.includes('"balance') || line.includes('"server"') || line.includes('"order_id"')) {
                       return <span key={i} className="text-cyan-400">{line}{'\n'}</span>;
                     }
@@ -2965,7 +2939,7 @@ print_r(json_decode($response, true));`,
                     }
                     if (line.includes('": "')) {
                       const parts = line.split('": "');
-                      return <span key={i}><span className="text-cyan-400">{parts[0]}"</span><span className="text-gray-300">: </span><span className="text-green-400">"{parts[1]}</span>{'\n'}</span>;
+                      return <span key={i}><span className="text-cyan-400">{parts[0]}&quot;</span><span className="text-gray-300">: </span><span className="text-green-400">&quot;{parts[1]}</span>{'\n'}</span>;
                     }
                     if (line.match(/: \d/)) {
                       const parts = line.split(': ');
