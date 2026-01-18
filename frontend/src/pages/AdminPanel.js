@@ -311,6 +311,12 @@ const AdminPanel = ({ user, setUser }) => {
     is_sandbox: true
   });
 
+  const [serviceStats, setServiceStats] = useState({
+    gift_cards: { total_orders: 0, total_revenue_ngn: 0, total_value_usd: 0 },
+    currency_conversions: { total_conversions: 0, total_usd_converted: 0, total_ngn_received: 0 },
+    wallet_funding: []
+  });
+
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
