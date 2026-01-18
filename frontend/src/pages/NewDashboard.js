@@ -647,6 +647,7 @@ const NewDashboard = () => {
       category: 'SERVICES',
       items: [
         { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
+        { id: 'convert-currency', icon: RefreshCw, label: 'Convert Currency' },
         { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
         { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
         { id: 'buy-data', icon: Wallet, label: 'Buy Data Bundle', toggle: 'enable_buy_data' },
