@@ -3105,22 +3105,21 @@ print_r(json_decode($response, true));`,
         </div>
 
         {/* Quick Start */}
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-5">
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4 sm:p-5">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Start</h3>
-          <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-            <pre className="text-xs text-green-400 whitespace-pre-wrap">{`# 1. Get your balance
-curl "${resellerApiBaseUrl}/api/reseller/v1/balance?api_key=${resellerProfile.api_key}"
+          <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto max-w-full">
+            <pre className="text-[10px] sm:text-xs text-green-400 whitespace-pre-wrap break-all">{`# 1. Get your balance
+curl "${resellerApiBaseUrl}/api/reseller/v1/balance?api_key=${resellerProfile.api_key?.substring(0,8)}..."
 
 # 2. List servers
-curl "${resellerApiBaseUrl}/api/reseller/v1/servers?api_key=${resellerProfile.api_key}"
+curl "${resellerApiBaseUrl}/api/reseller/v1/servers"
 
-# 3. Get services for USA server
-curl "${resellerApiBaseUrl}/api/reseller/v1/services?server=usa&api_key=${resellerProfile.api_key}"
+# 3. Get services
+curl "${resellerApiBaseUrl}/api/reseller/v1/services?server=usa"
 
-# 4. Buy a number
+# 4. Buy a number (POST)
 curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
-  -H "X-API-KEY: ${resellerProfile.api_key}" \\
-  -H "Content-Type: application/json" \\
+  -H "X-API-KEY: YOUR_KEY" \\
   -d '{"server":"usa","service":"wa","price":850}'`}</pre>
           </div>
           <button
