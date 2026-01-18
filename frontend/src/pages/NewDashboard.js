@@ -3343,8 +3343,9 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
             <button
               onClick={handleConvert}
-              disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0 || parseFloat(convertAmount) > (user?.balance_usd || 0)}
+              disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0 || parseFloat(convertAmount) > (user?.usd_balance || 0)}
               className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ backgroundColor: branding.button_color_hex || '#059669' }}
             >
               {converting ? (
                 <>
