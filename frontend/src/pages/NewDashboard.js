@@ -1620,7 +1620,7 @@ const NewDashboard = () => {
                       </td>
                       <td className="py-4 px-4">
                         <button 
-                          onClick={() => toast.info(`Transaction ID: ${txn.id}\nRef: ${txn.reference || 'N/A'}\nDescription: ${txn.description || 'N/A'}`)}
+                          onClick={() => setSelectedTxn(txn)}
                           className="px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
                         >
                           View
@@ -1631,6 +1631,7 @@ const NewDashboard = () => {
                 </tbody>
               </table>
             </div>
+            {selectedTxn && <TransactionDetailsModal txn={selectedTxn} onClose={() => setSelectedTxn(null)} />}
           ) : (
             <div className="text-center py-16">
               <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
