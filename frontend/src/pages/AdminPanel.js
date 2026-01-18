@@ -42,6 +42,7 @@ import {
   Percent,
   Copy,
   MessageSquare,
+  Gift,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
