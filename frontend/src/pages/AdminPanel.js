@@ -529,6 +529,14 @@ const AdminPanel = ({ user, setUser }) => {
         enable_paymentpoint: response.data.enable_paymentpoint !== false,
         enable_plisio: response.data.enable_plisio !== false,
       });
+
+      // Load Gift Cards Provider config
+      setGiftcardsConfig({
+        reloadly_client_id: response.data.reloadly_client_id || '',
+        reloadly_client_secret: response.data.reloadly_client_secret || '',
+        giftcard_markup_percent: response.data.giftcard_markup_percent || 0,
+        giftcard_is_sandbox: response.data.giftcard_is_sandbox !== false,
+      });
     } catch (error) {
       console.error('Failed to fetch pricing');
     }
