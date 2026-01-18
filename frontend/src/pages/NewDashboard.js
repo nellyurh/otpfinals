@@ -648,6 +648,7 @@ const NewDashboard = () => {
       items: [
         { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
         { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
+        { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
         { id: 'buy-data', icon: Wallet, label: 'Buy Data Bundle', toggle: 'enable_buy_data' },
         { id: 'airtime', icon: Phone, label: 'Airtime Top-Up', toggle: 'enable_airtime' },
         { id: 'betting', icon: Gift, label: 'Betting', toggle: 'enable_betting' },
