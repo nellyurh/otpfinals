@@ -529,6 +529,11 @@ class PricingConfig(BaseModel):
     enable_plisio: bool = True
     enable_ercaspay: bool = True
 
+    # Support channel URLs (admin editable)
+    whatsapp_support_url: str = "https://wa.me/2348000000000"
+    telegram_support_url: str = "https://t.me/yoursupport"
+    support_email: str = "support@smsrelay.com"
+
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ErcaspayPayment(BaseModel):
@@ -711,6 +716,11 @@ class UpdatePricingRequest(BaseModel):
     enable_paymentpoint: Optional[bool] = None
     enable_plisio: Optional[bool] = None
     enable_ercaspay: Optional[bool] = None
+
+    # Support channel URLs
+    whatsapp_support_url: Optional[str] = None
+    telegram_support_url: Optional[str] = None
+    support_email: Optional[str] = None
 
 class ErcaspayInitiateRequest(BaseModel):
     amount: float  # NGN amount
@@ -4611,6 +4621,9 @@ async def get_public_branding():
         ),
         "banner_images": config.get("banner_images", []),
         "reseller_api_base_url": config.get("reseller_api_base_url", "https://smsrelay-hub.preview.emergentagent.com"),
+        "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
+        "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
+        "support_email": config.get("support_email", "support@smsrelay.com"),
     }
 
 @api_router.get("/user/page-toggles")
