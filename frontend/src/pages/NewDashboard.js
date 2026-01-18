@@ -3279,24 +3279,6 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
       }
     };
 
-    const handleConvertUsdToNgn = async () => {
-      if (!convertAmount || parseFloat(convertAmount) <= 0) return;
-      setConverting(true);
-      try {
-        const resp = await axios.post(`${API}/api/wallet/convert-usd-to-ngn`, 
-          { amount_usd: parseFloat(convertAmount) }, 
-          axiosConfig
-        );
-        alert(`Successfully converted $${convertAmount} to ₦${resp.data.amount_ngn_added.toLocaleString()}`);
-        setConvertAmount('');
-        setShowConvert(false);
-        fetchProfile();
-      } catch (err) {
-        alert(err.response?.data?.detail || 'Conversion failed');
-      }
-      setConverting(false);
-    };
-
     const handlePlaceOrder = async () => {
       if (!selectedProduct || !orderForm.amount || !orderForm.recipient_email || !orderForm.recipient_phone) {
         alert('Please fill all required fields');
