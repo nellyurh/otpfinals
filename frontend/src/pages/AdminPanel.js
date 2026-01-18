@@ -108,6 +108,7 @@ const AdminPanel = ({ user, setUser }) => {
     enable_transactions: true,
     enable_fund_wallet: true,
     enable_virtual_numbers: true,
+    enable_giftcards: true,
     enable_buy_data: true,
     enable_airtime: true,
     enable_betting: true,
