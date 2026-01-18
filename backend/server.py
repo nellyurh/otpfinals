@@ -6414,10 +6414,11 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         
         # Get the product details first to calculate cost
         headers = await reloadly_auth.get_headers()
+        api_url = await reloadly_auth.get_api_url()
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             product_resp = await client.get(
-                f"{await reloadly_auth.get_api_url()}/products/{order_req.product_id}",
+                f"{api_url}/products/{order_req.product_id}",
                 headers=headers
             )
         
@@ -6426,14 +6427,16 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         
         product = product_resp.json()
         
-        # Get exchange rate
+        # Get exchange rate and markup
         config = await db.pricing_config.find_one({})
         usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        markup_percent = config.get('giftcard_markup_percent', 0) if config else 0
+        markup_multiplier = 1 + (markup_percent / 100)
         
-        # Calculate total cost in NGN
+        # Calculate total cost in NGN with markup
         sender_fee = product.get("senderFee", 0)
         total_usd = (order_req.unit_price * order_req.quantity) + sender_fee
-        total_ngn = round(total_usd * usd_to_ngn_rate, 2)
+        total_ngn = round(total_usd * usd_to_ngn_rate * markup_multiplier, 2)
         
         # Check user's NGN balance
         user_data = await db.users.find_one({'_id': ObjectId(user_id)})
@@ -6462,7 +6465,7 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
-                f"{await reloadly_auth.get_api_url()}/orders",
+                f"{api_url}/orders",
                 headers=headers,
                 json=order_payload
             )
