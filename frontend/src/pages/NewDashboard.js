@@ -3207,6 +3207,504 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     );
   }
 
+  // ============ GIFT CARDS SECTION ============
+  function GiftCardsSection() {
+    const [countries, setCountries] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [selectedCountry, setSelectedCountry] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [orderHistory, setOrderHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [orderForm, setOrderForm] = useState({
+      amount: '',
+      recipient_email: '',
+      recipient_phone: '',
+      sender_name: user?.full_name || ''
+    });
+    const [ordering, setOrdering] = useState(false);
+    const [exchangeRate, setExchangeRate] = useState(1650);
+    const [showConvert, setShowConvert] = useState(false);
+    const [convertAmount, setConvertAmount] = useState('');
+    const [converting, setConverting] = useState(false);
+
+    // Fetch countries on mount
+    useEffect(() => {
+      fetchCountries();
+      fetchExchangeRate();
+    }, []);
+
+    // Fetch products when country changes
+    useEffect(() => {
+      fetchProducts();
+    }, [selectedCountry]);
+
+    const fetchCountries = async () => {
+      try {
+        const resp = await axios.get(`${API}/api/giftcards/countries`, axiosConfig);
+        setCountries(resp.data.countries || []);
+      } catch (err) {
+        console.error('Failed to fetch countries:', err);
+      }
+    };
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const params = { size: 100 };
+        if (selectedCountry) params.country_code = selectedCountry;
+        const resp = await axios.get(`${API}/api/giftcards/products`, { ...axiosConfig, params });
+        setProducts(resp.data.products || []);
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      }
+      setLoading(false);
+    };
+
+    const fetchExchangeRate = async () => {
+      try {
+        const resp = await axios.get(`${API}/api/wallet/exchange-rate`, axiosConfig);
+        setExchangeRate(resp.data.usd_to_ngn_rate || 1650);
+      } catch (err) {
+        console.error('Failed to fetch exchange rate:', err);
+      }
+    };
+
+    const fetchOrderHistory = async () => {
+      try {
+        const resp = await axios.get(`${API}/api/giftcards/orders`, axiosConfig);
+        setOrderHistory(resp.data.orders || []);
+      } catch (err) {
+        console.error('Failed to fetch order history:', err);
+      }
+    };
+
+    const handleConvertUsdToNgn = async () => {
+      if (!convertAmount || parseFloat(convertAmount) <= 0) return;
+      setConverting(true);
+      try {
+        const resp = await axios.post(`${API}/api/wallet/convert-usd-to-ngn`, 
+          { amount_usd: parseFloat(convertAmount) }, 
+          axiosConfig
+        );
+        alert(`Successfully converted $${convertAmount} to ₦${resp.data.amount_ngn_added.toLocaleString()}`);
+        setConvertAmount('');
+        setShowConvert(false);
+        fetchProfile();
+      } catch (err) {
+        alert(err.response?.data?.detail || 'Conversion failed');
+      }
+      setConverting(false);
+    };
+
+    const handlePlaceOrder = async () => {
+      if (!selectedProduct || !orderForm.amount || !orderForm.recipient_email || !orderForm.recipient_phone) {
+        alert('Please fill all required fields');
+        return;
+      }
+      setOrdering(true);
+      try {
+        const resp = await axios.post(`${API}/api/giftcards/order`, {
+          product_id: selectedProduct.productId,
+          quantity: 1,
+          unit_price: parseFloat(orderForm.amount),
+          recipient_email: orderForm.recipient_email,
+          recipient_phone: orderForm.recipient_phone,
+          sender_name: orderForm.sender_name || undefined
+        }, axiosConfig);
+        
+        alert(`Order placed successfully! Transaction ID: ${resp.data.transaction_id}\n\nAmount charged: ₦${resp.data.amount_charged_ngn.toLocaleString()}`);
+        setSelectedProduct(null);
+        setOrderForm({ amount: '', recipient_email: '', recipient_phone: '', sender_name: user?.full_name || '' });
+        fetchProfile();
+      } catch (err) {
+        alert(err.response?.data?.detail || 'Order failed');
+      }
+      setOrdering(false);
+    };
+
+    const filteredProducts = products.filter(p => 
+      !searchQuery || 
+      p.productName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.brand?.brandName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Order Details Modal
+    if (selectedProduct) {
+      const productDenominations = selectedProduct.fixedRecipientDenominations || [];
+      const isFixed = productDenominations.length > 0;
+      
+      return (
+        <div className="space-y-4">
+          <button 
+            onClick={() => setSelectedProduct(null)}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+          >
+            ← Back to Gift Cards
+          </button>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Product Info */}
+            <div className="bg-white rounded-xl border p-6">
+              <div className="flex items-start gap-4">
+                {selectedProduct.logoUrls?.[0] && (
+                  <img src={selectedProduct.logoUrls[0]} alt="" className="w-20 h-20 object-contain rounded-lg bg-gray-50" />
+                )}
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">{selectedProduct.productName}</h2>
+                  <p className="text-sm text-gray-500">{selectedProduct.brand?.brandName}</p>
+                  <p className="text-sm text-gray-500">{selectedProduct.country?.name}</p>
+                </div>
+              </div>
+              
+              {selectedProduct.redeemInstruction?.verbose && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-600">{selectedProduct.redeemInstruction.verbose}</p>
+                </div>
+              )}
+              
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Currency</span>
+                  <span className="font-medium">{selectedProduct.recipientCurrencyCode}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Exchange Rate</span>
+                  <span className="font-medium">$1 = ₦{exchangeRate.toLocaleString()}</span>
+                </div>
+                {selectedProduct.senderFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Service Fee</span>
+                    <span className="font-medium">${selectedProduct.senderFee}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Order Form */}
+            <div className="bg-white rounded-xl border p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Purchase Details</h3>
+              
+              <div className="space-y-4">
+                {/* Amount Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gift Card Value ({selectedProduct.recipientCurrencyCode})
+                  </label>
+                  {isFixed ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {productDenominations.map((val) => (
+                        <button
+                          key={val}
+                          onClick={() => setOrderForm({ ...orderForm, amount: val.toString() })}
+                          className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                            orderForm.amount === val.toString()
+                              ? 'bg-emerald-600 text-white border-emerald-600'
+                              : 'bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {selectedProduct.recipientCurrencyCode} {val}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      type="number"
+                      value={orderForm.amount}
+                      onChange={(e) => setOrderForm({ ...orderForm, amount: e.target.value })}
+                      placeholder={`Min: ${selectedProduct.minRecipientDenomination}, Max: ${selectedProduct.maxRecipientDenomination}`}
+                      className="w-full px-3 py-2 border rounded-lg text-sm"
+                      min={selectedProduct.minRecipientDenomination}
+                      max={selectedProduct.maxRecipientDenomination}
+                    />
+                  )}
+                </div>
+                
+                {/* Recipient Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recipient Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={orderForm.recipient_email}
+                    onChange={(e) => setOrderForm({ ...orderForm, recipient_email: e.target.value })}
+                    placeholder="recipient@example.com"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Gift card will be sent to this email</p>
+                </div>
+                
+                {/* Recipient Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recipient Phone <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={orderForm.recipient_phone}
+                    onChange={(e) => setOrderForm({ ...orderForm, recipient_phone: e.target.value })}
+                    placeholder="+234..."
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                
+                {/* Sender Name (optional) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Your Name (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={orderForm.sender_name}
+                    onChange={(e) => setOrderForm({ ...orderForm, sender_name: e.target.value })}
+                    placeholder="Sender name"
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                
+                {/* Price Summary */}
+                {orderForm.amount && (
+                  <div className="bg-emerald-50 rounded-lg p-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Card Value</span>
+                      <span>{selectedProduct.recipientCurrencyCode} {orderForm.amount}</span>
+                    </div>
+                    {selectedProduct.senderFee > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span>Service Fee</span>
+                        <span>${selectedProduct.senderFee}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-emerald-700 pt-2 border-t border-emerald-200">
+                      <span>Total (NGN)</span>
+                      <span>₦{((parseFloat(orderForm.amount) + (selectedProduct.senderFee || 0)) * exchangeRate).toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={ordering || !orderForm.amount || !orderForm.recipient_email || !orderForm.recipient_phone}
+                  className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {ordering ? 'Processing...' : 'Purchase Gift Card'}
+                </button>
+                
+                <p className="text-xs text-gray-500 text-center">
+                  Payment will be deducted from your NGN wallet balance
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Order History View
+    if (showHistory) {
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={() => setShowHistory(false)}
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+            >
+              ← Back to Gift Cards
+            </button>
+            <button onClick={fetchOrderHistory} className="text-sm text-emerald-600 hover:underline">
+              Refresh
+            </button>
+          </div>
+          
+          <h2 className="text-xl font-bold text-gray-900">Order History</h2>
+          
+          {orderHistory.length === 0 ? (
+            <div className="bg-white rounded-xl border p-8 text-center">
+              <Gift className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">No gift card orders yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {orderHistory.map((order) => (
+                <div key={order._id} className="bg-white rounded-xl border p-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-semibold text-gray-900">{order.product_name}</p>
+                      <p className="text-sm text-gray-500">{order.brand_name}</p>
+                      <p className="text-xs text-gray-400 mt-1">To: {order.recipient_email}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-emerald-600">₦{order.total_ngn?.toLocaleString()}</p>
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                        order.status === 'SUCCESSFUL' ? 'bg-green-100 text-green-700' :
+                        order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">{new Date(order.created_at).toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Main Gift Cards View
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Gift Cards</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Buy gift cards for any occasion</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setShowHistory(true); fetchOrderHistory(); }}
+              className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              Order History
+            </button>
+            <button
+              onClick={() => setShowConvert(true)}
+              className="px-3 py-2 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
+            >
+              Convert USD → NGN
+            </button>
+          </div>
+        </div>
+        
+        {/* Balance Card */}
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-4 text-white">
+          <p className="text-sm opacity-90">Available Balance (NGN)</p>
+          <p className="text-2xl font-bold">₦{(user?.balance_ngn || 0).toLocaleString()}</p>
+          <p className="text-xs opacity-75 mt-1">USD: ${(user?.balance_usd || 0).toFixed(2)} • Rate: ₦{exchangeRate.toLocaleString()}/USD</p>
+        </div>
+        
+        {/* Convert USD Modal */}
+        {showConvert && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Convert USD to NGN</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Current rate: $1 = ₦{exchangeRate.toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Your USD Balance: <span className="font-bold">${(user?.balance_usd || 0).toFixed(2)}</span>
+              </p>
+              <input
+                type="number"
+                value={convertAmount}
+                onChange={(e) => setConvertAmount(e.target.value)}
+                placeholder="Amount in USD"
+                className="w-full px-3 py-2 border rounded-lg mb-3"
+                max={user?.balance_usd || 0}
+              />
+              {convertAmount && (
+                <p className="text-sm text-emerald-600 mb-4">
+                  You'll receive: ₦{(parseFloat(convertAmount || 0) * exchangeRate).toLocaleString()}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setShowConvert(false); setConvertAmount(''); }}
+                  className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConvertUsdToNgn}
+                  disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0}
+                  className="flex-1 py-2 bg-emerald-600 text-white rounded-lg disabled:opacity-50"
+                >
+                  {converting ? 'Converting...' : 'Convert'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search gift cards..."
+              className="w-full px-4 py-2 border rounded-lg text-sm"
+            />
+          </div>
+          <select
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+            className="px-4 py-2 border rounded-lg text-sm bg-white"
+          >
+            <option value="">All Countries</option>
+            {countries.map((c) => (
+              <option key={c.isoName} value={c.isoName}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        
+        {/* Products Grid */}
+        {loading ? (
+          <div className="text-center py-12">
+            <RefreshCw className="w-8 h-8 mx-auto text-gray-400 animate-spin" />
+            <p className="text-gray-500 mt-2">Loading gift cards...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border">
+            <Gift className="w-12 h-12 mx-auto text-gray-300" />
+            <p className="text-gray-500 mt-2">No gift cards found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {filteredProducts.slice(0, 50).map((product) => (
+              <div
+                key={product.productId}
+                onClick={() => setSelectedProduct(product)}
+                className="bg-white rounded-xl border p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all"
+              >
+                {product.logoUrls?.[0] ? (
+                  <img 
+                    src={product.logoUrls[0]} 
+                    alt="" 
+                    className="w-full h-16 sm:h-20 object-contain mb-2 bg-gray-50 rounded-lg"
+                  />
+                ) : (
+                  <div className="w-full h-16 sm:h-20 bg-gray-100 rounded-lg flex items-center justify-center mb-2">
+                    <Gift className="w-8 h-8 text-gray-300" />
+                  </div>
+                )}
+                <h3 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{product.brand?.brandName}</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">{product.country?.name}</p>
+                <div className="mt-2 text-xs text-emerald-600 font-medium">
+                  {product.fixedRecipientDenominations?.length > 0 
+                    ? `${product.recipientCurrencyCode} ${product.fixedRecipientDenominations[0]}+`
+                    : `${product.recipientCurrencyCode} ${product.minRecipientDenomination}-${product.maxRecipientDenomination}`
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {filteredProducts.length > 50 && (
+          <p className="text-center text-sm text-gray-500">
+            Showing 50 of {filteredProducts.length} products. Use search to find specific cards.
+          </p>
+        )}
+      </div>
+    );
+  }
+
   function VirtualCardsSection() {
     return (
       <div className="space-y-6">
