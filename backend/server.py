@@ -6283,6 +6283,7 @@ async def get_giftcard_products(
     """Get available gift card products from Reloadly"""
     try:
         headers = await reloadly_auth.get_headers()
+        api_url = await reloadly_auth.get_api_url()
         
         params = {
             "page": page,
@@ -6295,7 +6296,7 @@ async def get_giftcard_products(
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{reloadly_auth.api_base_url}/products",
+                f"{api_url}/products",
                 headers=headers,
                 params=params
             )
@@ -6305,23 +6306,26 @@ async def get_giftcard_products(
         
         data = response.json()
         
-        # Process products to add NGN pricing
+        # Process products to add NGN pricing with markup
         products = data.get("content", [])
         
-        # Get current exchange rate from config
+        # Get current exchange rate and markup from config
         config = await db.pricing_config.find_one({})
         usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        markup_percent = config.get('giftcard_markup_percent', 0) if config else 0
+        markup_multiplier = 1 + (markup_percent / 100)
         
         for product in products:
-            # Add NGN equivalent pricing
+            # Add NGN equivalent pricing with markup
             if product.get("senderCurrencyCode") == "USD":
                 if product.get("fixedRecipientDenominations"):
-                    product["denominations_ngn"] = [round(d * usd_to_ngn_rate, 2) for d in product["fixedRecipientDenominations"]]
+                    product["denominations_ngn"] = [round(d * usd_to_ngn_rate * markup_multiplier, 2) for d in product["fixedRecipientDenominations"]]
                 if product.get("minRecipientDenomination"):
-                    product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate, 2)
+                    product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate * markup_multiplier, 2)
                 if product.get("maxRecipientDenomination"):
-                    product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate, 2)
+                    product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate * markup_multiplier, 2)
             product["usd_to_ngn_rate"] = usd_to_ngn_rate
+            product["markup_percent"] = markup_percent
         
         return {
             "success": True,
