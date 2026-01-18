@@ -3254,7 +3254,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     const handleConvert = async () => {
       if (!convertAmount || parseFloat(convertAmount) <= 0) return;
       if (parseFloat(convertAmount) > (user?.usd_balance || 0)) {
-        alert('Insufficient USD balance');
+        toast.error('Insufficient USD balance');
         return;
       }
       setConverting(true);
@@ -3263,12 +3263,12 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
           { amount_usd: parseFloat(convertAmount) }, 
           axiosConfig
         );
-        alert(`Successfully converted $${convertAmount} to ₦${resp.data.amount_ngn_added.toLocaleString()}`);
+        toast.success(`Successfully converted $${convertAmount} to ₦${resp.data.amount_ngn_added.toLocaleString()}`);
         setConvertAmount('');
         fetchProfile();
         fetchConversionHistory();
       } catch (err) {
-        alert(err.response?.data?.detail || 'Conversion failed');
+        toast.error(err.response?.data?.detail || 'Conversion failed');
       }
       setConverting(false);
     };
