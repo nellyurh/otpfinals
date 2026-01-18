@@ -6845,13 +6845,16 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
         if amount_usd <= 0:
             raise HTTPException(status_code=400, detail="Amount must be greater than 0")
         
-        user_id = user.get('user_id') or str(user.get('_id'))
-        user_data = await db.users.find_one({'_id': ObjectId(user_id)})
+        user_id = user.get('id')
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+            
+        user_data = await db.users.find_one({'id': user_id})
         
         if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
         
-        current_usd = user_data.get('balance_usd', 0)
+        current_usd = user_data.get('usd_balance', 0)
         if current_usd < amount_usd:
             raise HTTPException(status_code=400, detail=f"Insufficient USD balance. Available: ${current_usd:.2f}")
         
@@ -6864,11 +6867,11 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
         
         # Update balances
         await db.users.update_one(
-            {'_id': ObjectId(user_id)},
+            {'id': user_id},
             {
                 '$inc': {
-                    'balance_usd': -amount_usd,
-                    'balance_ngn': amount_ngn
+                    'usd_balance': -amount_usd,
+                    'ngn_balance': amount_ngn
                 }
             }
         )
@@ -6887,7 +6890,7 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
         await db.transactions.insert_one(transaction)
         
         # Get updated balances
-        updated_user = await db.users.find_one({'_id': ObjectId(user_id)})
+        updated_user = await db.users.find_one({'id': user_id})
         
         return {
             "success": True,
@@ -6895,8 +6898,8 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
             "amount_usd_deducted": amount_usd,
             "amount_ngn_added": amount_ngn,
             "exchange_rate": usd_to_ngn_rate,
-            "new_balance_usd": updated_user.get('balance_usd', 0),
-            "new_balance_ngn": updated_user.get('balance_ngn', 0)
+            "new_balance_usd": updated_user.get('usd_balance', 0),
+            "new_balance_ngn": updated_user.get('ngn_balance', 0)
         }
     except HTTPException:
         raise
