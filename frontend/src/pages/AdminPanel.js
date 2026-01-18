@@ -1719,6 +1719,82 @@ const AdminPanel = ({ user, setUser }) => {
                   </section>
                 )}
 
+                {/* Other Services Stats (Gift Cards, Currency Conversions) */}
+                <section className="mt-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-slate-800">Other Services Revenue</h3>
+                    <p className="text-[10px] text-slate-500">Based on selected time period</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="border border-purple-200 shadow-sm bg-gradient-to-br from-purple-50 to-white">
+                      <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Gift className="w-4 h-4 text-purple-600" />
+                          <span className="text-xs font-semibold text-purple-700">Gift Card Sales</span>
+                        </div>
+                        <p className="text-xl font-bold text-purple-900">
+                          ₦{Math.round(serviceStats.gift_cards?.total_revenue_ngn || 0).toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-purple-600 mt-1">
+                          {serviceStats.gift_cards?.total_orders || 0} orders | ${(serviceStats.gift_cards?.total_value_usd || 0).toFixed(2)} value
+                        </p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border border-blue-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                      <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <RefreshCw className="w-4 h-4 text-blue-600" />
+                          <span className="text-xs font-semibold text-blue-700">Currency Conversions</span>
+                        </div>
+                        <p className="text-xl font-bold text-blue-900">
+                          ₦{Math.round(serviceStats.currency_conversions?.total_ngn_received || 0).toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-blue-600 mt-1">
+                          {serviceStats.currency_conversions?.total_conversions || 0} conversions | ${(serviceStats.currency_conversions?.total_usd_converted || 0).toFixed(2)} USD
+                        </p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="border border-emerald-200 shadow-sm bg-gradient-to-br from-emerald-50 to-white">
+                      <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Wallet className="w-4 h-4 text-emerald-600" />
+                          <span className="text-xs font-semibold text-emerald-700">Total Other Revenue</span>
+                        </div>
+                        <p className="text-xl font-bold text-emerald-900">
+                          ₦{Math.round(
+                            (serviceStats.gift_cards?.total_revenue_ngn || 0) + 
+                            (serviceStats.currency_conversions?.total_ngn_received || 0)
+                          ).toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-emerald-600 mt-1">
+                          Gift Cards + Conversions
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border border-amber-200 shadow-sm bg-gradient-to-br from-amber-50 to-white">
+                      <CardContent className="pt-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp className="w-4 h-4 text-amber-600" />
+                          <span className="text-xs font-semibold text-amber-700">All Services Total</span>
+                        </div>
+                        <p className="text-xl font-bold text-amber-900">
+                          ₦{Math.round(
+                            (stats?.money_flow?.total_sales_ngn || 0) +
+                            (serviceStats.gift_cards?.total_revenue_ngn || 0) + 
+                            (serviceStats.currency_conversions?.total_ngn_received || 0)
+                          ).toLocaleString()}
+                        </p>
+                        <p className="text-[10px] text-amber-600 mt-1">
+                          OTP + Gift Cards + Conversions
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </section>
+
             {/* Simple activity snapshot (placeholder instead of real chart) */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
               <Card className="border border-slate-200 shadow-sm bg-white">
