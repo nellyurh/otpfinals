@@ -97,7 +97,10 @@ const AdminPanel = ({ user, setUser }) => {
     landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
     landing_hero_subtitle:
       'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
-    banner_images: []
+    banner_images: [],
+    whatsapp_support_url: 'https://wa.me/2348000000000',
+    telegram_support_url: 'https://t.me/yoursupport',
+    support_email: 'support@smsrelay.com'
   });
 
   const [pageToggles, setPageToggles] = useState({
