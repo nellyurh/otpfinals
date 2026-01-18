@@ -2865,8 +2865,8 @@ print_r(json_decode($response, true));`,
               {currentEndpoint.requestBody && (
                 <div className="mb-6">
                   <h3 className="text-sm font-semibold text-gray-900 mb-2">Request Body</h3>
-                  <div className="border rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
+                  <div className="border rounded-lg overflow-x-auto">
+                    <table className="w-full text-sm min-w-[400px]">
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="text-left px-4 py-2 font-semibold text-gray-700">Name</th>
@@ -2897,8 +2897,8 @@ print_r(json_decode($response, true));`,
                   <Check className="w-4 h-4 text-emerald-600" />
                   <span className="text-sm text-emerald-700 font-medium">Status code: 200 OK</span>
                 </div>
-                <div className="border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
+                <div className="border rounded-lg overflow-x-auto">
+                  <table className="w-full text-sm min-w-[350px]">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="text-left px-4 py-2 font-semibold text-gray-700">Name</th>
@@ -2921,8 +2921,8 @@ print_r(json_decode($response, true));`,
             </div>
           </div>
           
-          {/* Code Examples Panel */}
-          <div className="w-96 bg-[#1e2936] flex-shrink-0 overflow-y-auto">
+          {/* Code Examples Panel - Hidden on mobile, shown below on small screens */}
+          <div className="w-full lg:w-96 bg-[#1e2936] flex-shrink-0 overflow-y-auto max-h-96 lg:max-h-none">
             {/* Tabs */}
             <div className="flex border-b border-gray-700 sticky top-0 bg-[#1e2936]">
               {['shell', 'python', 'php'].map((tab) => (
