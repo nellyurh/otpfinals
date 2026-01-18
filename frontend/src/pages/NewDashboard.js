@@ -2780,9 +2780,9 @@ print_r(json_decode($response, true));`,
       const currentEndpoint = endpointData[activeEndpoint];
       
       return (
-        <div className="flex h-[calc(100vh-100px)] -mx-6 -mt-6 bg-white">
-          {/* Sidebar */}
-          <div className="w-56 bg-[#1e2936] text-white flex-shrink-0 overflow-y-auto">
+        <div className="flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-100px)] -mx-6 -mt-6 bg-white">
+          {/* Sidebar - Hidden on mobile, shown at top as dropdown alternative */}
+          <div className="lg:w-56 bg-[#1e2936] text-white flex-shrink-0 overflow-y-auto">
             <div className="p-4 border-b border-gray-700">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
@@ -2803,25 +2803,27 @@ print_r(json_decode($response, true));`,
             
             <div className="px-3 py-2">
               <p className="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Endpoints</p>
-              {endpoints.map((ep) => (
-                <button
-                  key={ep.id}
-                  onClick={() => setActiveEndpoint(ep.id)}
-                  className={`w-full px-3 py-2 text-left text-sm rounded transition-colors flex items-center justify-between ${
-                    activeEndpoint === ep.id 
-                      ? 'bg-emerald-600 text-white' 
-                      : 'text-gray-300 hover:bg-gray-700'
-                  }`}
-                >
-                  <span>{ep.name}</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                    ep.method === 'GET' ? 'bg-green-600' : 'bg-blue-600'
-                  }`}>{ep.method}</span>
-                </button>
-              ))}
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-1">
+                {endpoints.map((ep) => (
+                  <button
+                    key={ep.id}
+                    onClick={() => setActiveEndpoint(ep.id)}
+                    className={`w-full px-3 py-2 text-left text-xs lg:text-sm rounded transition-colors flex items-center justify-between ${
+                      activeEndpoint === ep.id 
+                        ? 'bg-emerald-600 text-white' 
+                        : 'text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <span className="truncate">{ep.name}</span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ml-1 ${
+                      ep.method === 'GET' ? 'bg-green-600' : 'bg-blue-600'
+                    }`}>{ep.method}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             
-            <div className="px-3 py-2 border-t border-gray-700 mt-4">
+            <div className="px-3 py-2 border-t border-gray-700 mt-4 hidden lg:block">
               <p className="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Authentication</p>
               <div className="px-3 py-2 text-xs text-gray-400">
                 <p className="mb-1">Header:</p>
