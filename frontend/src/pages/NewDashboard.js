@@ -990,6 +990,7 @@ const NewDashboard = () => {
             {activeSection === 'referral' && (isPageEnabled('referral') ? <ReferralSection /> : maintenanceContent("Referral Program"))}
             {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : maintenanceContent("Support Channels"))}
             {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection /> : maintenanceContent("Virtual Cards"))}
+            {activeSection === 'giftcards' && (isPageEnabled('giftcards') ? <GiftCardsSection /> : maintenanceContent("Gift Cards"))}
             {activeSection === 'reseller' && <ResellerSection />}
           </div>
         </main>
