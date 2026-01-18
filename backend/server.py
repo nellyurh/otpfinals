@@ -6575,10 +6575,11 @@ async def get_giftcard_order_status(transaction_id: int, user: dict = Depends(ge
     """Get status of a specific gift card order"""
     try:
         headers = await reloadly_auth.get_headers()
+        api_url = await reloadly_auth.get_api_url()
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{await reloadly_auth.get_api_url()}/orders/transactions/{transaction_id}",
+                f"{api_url}/orders/transactions/{transaction_id}",
                 headers=headers
             )
         
@@ -6598,10 +6599,11 @@ async def get_giftcard_redeem_code(transaction_id: int, user: dict = Depends(get
     """Get the redeem code for a completed gift card order"""
     try:
         headers = await reloadly_auth.get_headers()
+        api_url = await reloadly_auth.get_api_url()
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{await reloadly_auth.get_api_url()}/orders/transactions/{transaction_id}/cards",
+                f"{api_url}/orders/transactions/{transaction_id}/cards",
                 headers=headers
             )
         
