@@ -6835,6 +6835,128 @@ async def get_giftcard_redeem_code(transaction_id: int, user: dict = Depends(get
         raise HTTPException(status_code=500, detail=f"Failed to fetch redeem code: {str(e)}")
 
 
+@api_router.get("/admin/giftcard-orders")
+async def get_admin_giftcard_orders(
+    page: int = 1,
+    size: int = 50,
+    admin: dict = Depends(require_admin)
+):
+    """Get all gift card orders (admin only)"""
+    try:
+        skip = (page - 1) * size
+        orders = await db.giftcard_orders.find({}).sort('created_at', -1).skip(skip).limit(size).to_list(size)
+        total = await db.giftcard_orders.count_documents({})
+        
+        # Enrich with user info
+        for order in orders:
+            order['_id'] = str(order['_id'])
+            user_data = await db.users.find_one({'id': order.get('user_id')}, {'_id': 0, 'email': 1, 'full_name': 1})
+            if user_data:
+                order['user_email'] = user_data.get('email')
+                order['user_name'] = user_data.get('full_name')
+        
+        return {
+            "success": True,
+            "orders": orders,
+            "total": total,
+            "page": page,
+            "pages": (total + size - 1) // size
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch orders: {str(e)}")
+
+
+@api_router.get("/admin/service-stats")
+async def get_admin_service_stats(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    admin: dict = Depends(require_admin)
+):
+    """Get transaction stats for non-OTP services (gift cards, conversions, etc.)"""
+    try:
+        # Resolve date range
+        now = datetime.now(timezone.utc)
+        if end_date:
+            try:
+                end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            except:
+                end = now
+        else:
+            end = now
+            
+        if start_date:
+            try:
+                start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            except:
+                start = end - timedelta(days=7)
+        else:
+            start = end - timedelta(days=7)
+        
+        start_str = start.isoformat()
+        end_str = end.isoformat()
+        
+        # Gift card stats
+        giftcard_pipeline = [
+            {'$match': {'created_at': {'$gte': start_str, '$lte': end_str}}},
+            {'$group': {
+                '_id': None,
+                'total_count': {'$sum': 1},
+                'total_ngn': {'$sum': '$total_ngn'},
+                'total_usd': {'$sum': '$total_usd'}
+            }}
+        ]
+        giftcard_stats = await db.giftcard_orders.aggregate(giftcard_pipeline).to_list(1)
+        giftcard_data = giftcard_stats[0] if giftcard_stats else {'total_count': 0, 'total_ngn': 0, 'total_usd': 0}
+        
+        # Currency conversion stats
+        conversion_pipeline = [
+            {'$match': {
+                'type': 'currency_conversion',
+                'created_at': {'$gte': start_str, '$lte': end_str}
+            }},
+            {'$group': {
+                '_id': None,
+                'total_count': {'$sum': 1},
+                'total_usd_converted': {'$sum': {'$abs': '$amount_usd'}},
+                'total_ngn_received': {'$sum': '$amount_ngn'}
+            }}
+        ]
+        conversion_stats = await db.transactions.aggregate(conversion_pipeline).to_list(1)
+        conversion_data = conversion_stats[0] if conversion_stats else {'total_count': 0, 'total_usd_converted': 0, 'total_ngn_received': 0}
+        
+        # Wallet funding stats
+        funding_pipeline = [
+            {'$match': {
+                'type': {'$in': ['crypto_deposit', 'bank_deposit', 'card_deposit']},
+                'created_at': {'$gte': start_str, '$lte': end_str}
+            }},
+            {'$group': {
+                '_id': '$type',
+                'count': {'$sum': 1},
+                'total_ngn': {'$sum': {'$abs': '$amount_ngn'}}
+            }}
+        ]
+        funding_stats = await db.transactions.aggregate(funding_pipeline).to_list(10)
+        
+        return {
+            "success": True,
+            "period": {"start": start_str, "end": end_str},
+            "gift_cards": {
+                "total_orders": giftcard_data.get('total_count', 0),
+                "total_revenue_ngn": giftcard_data.get('total_ngn', 0),
+                "total_value_usd": giftcard_data.get('total_usd', 0)
+            },
+            "currency_conversions": {
+                "total_conversions": conversion_data.get('total_count', 0),
+                "total_usd_converted": conversion_data.get('total_usd_converted', 0),
+                "total_ngn_received": conversion_data.get('total_ngn_received', 0)
+            },
+            "wallet_funding": funding_stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch service stats: {str(e)}")
+
+
 # ============ USD TO NGN CONVERSION ============
 
 @api_router.post("/wallet/convert-usd-to-ngn")
