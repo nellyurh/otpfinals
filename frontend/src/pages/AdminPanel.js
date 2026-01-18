@@ -486,6 +486,9 @@ const AdminPanel = ({ user, setUser }) => {
           response.data.landing_hero_subtitle ||
           'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
         banner_images: response.data.banner_images || [],
+        whatsapp_support_url: response.data.whatsapp_support_url || 'https://wa.me/2348000000000',
+        telegram_support_url: response.data.telegram_support_url || 'https://t.me/yoursupport',
+        support_email: response.data.support_email || 'support@smsrelay.com',
       });
 
       // Reseller API URL
