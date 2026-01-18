@@ -2402,28 +2402,57 @@ const AdminPanel = ({ user, setUser }) => {
                   </CardContent>
                 </Card>
 
-                {/* Exchange Rate Card */}
+                {/* Exchange Rates Card */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold">Exchange Rate (USD to NGN)</CardTitle>
-                    <CardDescription className="text-xs">Set the exchange rate for gift card pricing</CardDescription>
+                    <CardTitle className="text-sm font-semibold">Exchange Rates (USD to NGN)</CardTitle>
+                    <CardDescription className="text-xs">Separate rates for wallet conversion and gift cards</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Gift Card Base Rate</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          value={pricing.giftcard_usd_to_ngn_rate || 1650}
+                          onChange={(e) => setPricing({ ...pricing, giftcard_usd_to_ngn_rate: parseFloat(e.target.value) || 1650 })}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Base rate for USD gift cards (before markup)</p>
+                      </div>
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                        <p className="text-xs text-emerald-700">Preview: $10 gift card = ₦{((pricing.giftcard_usd_to_ngn_rate || 1650) * 10 * (1 + (giftcardsConfig.giftcard_markup_percent || 0) / 100)).toLocaleString()}</p>
+                        <p className="text-[10px] text-emerald-600 mt-1">(with {giftcardsConfig.giftcard_markup_percent || 0}% markup)</p>
+                      </div>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-blue-700"><strong>Note:</strong> For non-USD currencies (EUR, GBP, CAD, etc.), live exchange rates are automatically fetched and applied.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Wallet Conversion Rate Card */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Wallet Conversion Rate</CardTitle>
+                    <CardDescription className="text-xs">Rate for user USD to NGN wallet conversion</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">USD to NGN Rate</Label>
+                        <Label className="text-xs font-semibold text-slate-600">Wallet USD to NGN Rate</Label>
                         <Input
                           type="number"
                           step="1"
-                          value={pricing.usd_to_ngn_rate || 1650}
-                          onChange={(e) => setPricing({ ...pricing, usd_to_ngn_rate: parseFloat(e.target.value) || 1650 })}
+                          value={pricing.wallet_usd_to_ngn_rate || 1650}
+                          onChange={(e) => setPricing({ ...pricing, wallet_usd_to_ngn_rate: parseFloat(e.target.value) || 1650 })}
                           className="h-9 text-sm bg-slate-50 border-slate-200"
                         />
-                        <p className="text-[10px] text-slate-400">How many Naira per 1 USD (e.g., 1650)</p>
+                        <p className="text-[10px] text-slate-400">Rate users get when converting USD to NGN</p>
                       </div>
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                        <p className="text-xs text-emerald-700">Preview: $10 gift card = ₦{((pricing.usd_to_ngn_rate || 1650) * 10 * (1 + (giftcardsConfig.giftcard_markup_percent || 0) / 100)).toLocaleString()}</p>
-                        <p className="text-[10px] text-emerald-600 mt-1">(with {giftcardsConfig.giftcard_markup_percent || 0}% markup)</p>
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <p className="text-xs text-purple-700">Preview: $100 converts to ₦{((pricing.wallet_usd_to_ngn_rate || 1650) * 100).toLocaleString()}</p>
                       </div>
                     </div>
                   </CardContent>
