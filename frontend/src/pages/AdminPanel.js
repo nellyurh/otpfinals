@@ -91,7 +91,9 @@ const AdminPanel = ({ user, setUser }) => {
     reloadly_client_id: '',
     reloadly_client_secret: '',
     giftcard_markup_percent: 0,
-    giftcard_is_sandbox: true
+    giftcard_is_sandbox: true,
+    reloadly_from_env: false,
+    reloadly_configured: false
   });
 
   const [branding, setBranding] = useState({
