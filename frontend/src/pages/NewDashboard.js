@@ -2291,9 +2291,10 @@ const NewDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* WhatsApp */}
           <a 
-            href="https://wa.me/2348000000000" 
+            href={supportUrls.whatsapp_support_url}
             target="_blank" 
             rel="noopener noreferrer"
+            data-testid="support-whatsapp-link"
             className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-2xl border border-green-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col items-center text-center"
           >
             <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center mb-4">
@@ -2308,9 +2309,10 @@ const NewDashboard = () => {
 
           {/* Telegram */}
           <a 
-            href="https://t.me/yoursupport" 
+            href={supportUrls.telegram_support_url}
             target="_blank" 
             rel="noopener noreferrer"
+            data-testid="support-telegram-link"
             className="bg-gradient-to-br from-blue-50 to-sky-100 p-6 rounded-2xl border border-blue-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col items-center text-center"
           >
             <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center mb-4">
@@ -2325,14 +2327,15 @@ const NewDashboard = () => {
 
           {/* Email */}
           <a 
-            href="mailto:support@smsrelay.com" 
+            href={`mailto:${supportUrls.support_email}`}
+            data-testid="support-email-link"
             className="bg-gradient-to-br from-purple-50 to-violet-100 p-6 rounded-2xl border border-purple-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col items-center text-center"
           >
             <div className="w-14 h-14 bg-purple-500 rounded-full flex items-center justify-center mb-4">
               <Mail className="w-7 h-7 text-white" />
             </div>
             <h3 className="font-bold text-gray-900 mb-1">Email</h3>
-            <p className="text-sm text-gray-600">support@smsrelay.com</p>
+            <p className="text-sm text-gray-600">{supportUrls.support_email}</p>
             <span className="mt-2 text-xs text-purple-600 font-semibold">Send email</span>
           </a>
         </div>
