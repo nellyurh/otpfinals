@@ -3564,71 +3564,13 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Gift Cards</h2>
             <p className="text-xs sm:text-sm text-gray-600">Buy gift cards for any occasion</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => { setShowHistory(true); fetchOrderHistory(); }}
-              className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
-              Order History
-            </button>
-            <button
-              onClick={() => setShowConvert(true)}
-              className="px-3 py-2 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
-            >
-              Convert USD → NGN
-            </button>
-          </div>
+          <button
+            onClick={() => { setShowHistory(true); fetchOrderHistory(); }}
+            className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          >
+            Order History
+          </button>
         </div>
-        
-        {/* Balance Card */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-4 text-white">
-          <p className="text-sm opacity-90">Available Balance (NGN)</p>
-          <p className="text-2xl font-bold">₦{(user?.balance_ngn || 0).toLocaleString()}</p>
-          <p className="text-xs opacity-75 mt-1">USD: ${(user?.balance_usd || 0).toFixed(2)} • Rate: ₦{exchangeRate.toLocaleString()}/USD</p>
-        </div>
-        
-        {/* Convert USD Modal */}
-        {showConvert && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Convert USD to NGN</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Current rate: $1 = ₦{exchangeRate.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 mb-4">
-                Your USD Balance: <span className="font-bold">${(user?.balance_usd || 0).toFixed(2)}</span>
-              </p>
-              <input
-                type="number"
-                value={convertAmount}
-                onChange={(e) => setConvertAmount(e.target.value)}
-                placeholder="Amount in USD"
-                className="w-full px-3 py-2 border rounded-lg mb-3"
-                max={user?.balance_usd || 0}
-              />
-              {convertAmount && (
-                <p className="text-sm text-emerald-600 mb-4">
-                  You'll receive: ₦{(parseFloat(convertAmount || 0) * exchangeRate).toLocaleString()}
-                </p>
-              )}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => { setShowConvert(false); setConvertAmount(''); }}
-                  className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConvertUsdToNgn}
-                  disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0}
-                  className="flex-1 py-2 bg-emerald-600 text-white rounded-lg disabled:opacity-50"
-                >
-                  {converting ? 'Converting...' : 'Convert'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -3641,16 +3583,52 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               className="w-full px-4 py-2 border rounded-lg text-sm"
             />
           </div>
-          <select
-            value={selectedCountry}
-            onChange={(e) => setSelectedCountry(e.target.value)}
-            className="px-4 py-2 border rounded-lg text-sm bg-white"
-          >
-            <option value="">All Countries</option>
-            {countries.map((c) => (
-              <option key={c.isoName} value={c.isoName}>{c.name}</option>
-            ))}
-          </select>
+          {/* Searchable Country Dropdown */}
+          <div className="relative">
+            <input
+              type="text"
+              value={countrySearch}
+              onChange={(e) => { setCountrySearch(e.target.value); setShowCountryDropdown(true); }}
+              onFocus={() => setShowCountryDropdown(true)}
+              placeholder="Select Country..."
+              className="w-full sm:w-56 px-4 py-2 border rounded-lg text-sm bg-white"
+            />
+            {selectedCountry && (
+              <button
+                onClick={() => { setSelectedCountry(''); setCountrySearch(''); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            {showCountryDropdown && (
+              <div className="absolute z-50 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <button
+                  onClick={() => { setSelectedCountry(''); setCountrySearch(''); setShowCountryDropdown(false); }}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                >
+                  All Countries
+                </button>
+                {countries
+                  .filter(c => c.name?.toLowerCase().includes(countrySearch.toLowerCase()))
+                  .slice(0, 50)
+                  .map((c) => (
+                    <button
+                      key={c.isoName}
+                      onClick={() => { 
+                        setSelectedCountry(c.isoName); 
+                        setCountrySearch(c.name); 
+                        setShowCountryDropdown(false); 
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                    >
+                      {c.name}
+                    </button>
+                  ))
+                }
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Products Grid */}
