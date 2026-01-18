@@ -1331,6 +1331,7 @@ const NewDashboard = () => {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [searchText, setSearchText] = useState('');
+    const [selectedTxn, setSelectedTxn] = useState(null);
 
     // Calculate summary statistics
     const totalTransactions = transactions.length;
@@ -1341,6 +1342,90 @@ const NewDashboard = () => {
       .filter(t => t.type === 'debit')
       .reduce((sum, t) => sum + (t.amount || 0), 0);
     const netAmount = creditTotal - debitTotal;
+
+    // Transaction Details Modal
+    const TransactionDetailsModal = ({ txn, onClose }) => {
+      if (!txn) return null;
+      
+      const isCredit = txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' || txn.type === 'currency_conversion';
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl max-w-md w-full shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className={`p-4 rounded-t-xl ${isCredit ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-rose-500 to-pink-500'} text-white`}>
+              <h3 className="font-bold text-lg">Transaction Details</h3>
+              <p className="text-white/80 text-sm">{txn.type?.replace(/_/g, ' ').toUpperCase()}</p>
+            </div>
+            <div className="p-4 space-y-4">
+              {/* Amount */}
+              <div className="text-center py-4 border-b">
+                <p className="text-gray-500 text-sm">Amount</p>
+                <p className={`text-3xl font-bold ${isCredit ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {isCredit ? '+' : '-'}{txn.currency === 'NGN' ? '₦' : '$'}{txn.amount?.toLocaleString()}
+                </p>
+              </div>
+              
+              {/* Balance Before & After */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500">Balance Before</p>
+                  <p className="font-semibold text-gray-800">
+                    {txn.currency === 'NGN' ? '₦' : '$'}
+                    {txn.balance_before !== undefined ? txn.balance_before.toLocaleString() : 'N/A'}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500">Balance After</p>
+                  <p className="font-semibold text-gray-800">
+                    {txn.currency === 'NGN' ? '₦' : '$'}
+                    {txn.balance_after !== undefined ? txn.balance_after.toLocaleString() : 'N/A'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Details */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-500">Transaction ID</span>
+                  <span className="font-medium text-gray-800">{txn.id || txn._id || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-500">Reference</span>
+                  <span className="font-medium text-gray-800">{txn.reference || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-500">Status</span>
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                    txn.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                    txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {txn.status}
+                  </span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-gray-500">Date</span>
+                  <span className="font-medium text-gray-800">{new Date(txn.created_at).toLocaleString()}</span>
+                </div>
+                {txn.description && (
+                  <div className="py-2">
+                    <span className="text-gray-500 block mb-1">Description</span>
+                    <span className="font-medium text-gray-800 text-xs">{txn.description}</span>
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={onClose}
+                className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div className="space-y-4 sm:space-y-6">
