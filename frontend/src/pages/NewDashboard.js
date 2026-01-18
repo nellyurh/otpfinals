@@ -1498,45 +1498,43 @@ const NewDashboard = () => {
 
             {/* From Date */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">From Date</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">From</label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
-                placeholder="dd/mm/yyyy"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               />
             </div>
 
             {/* To Date */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">To Date</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">To</label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
-                placeholder="dd/mm/yyyy"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               />
             </div>
           </div>
 
           {/* Search */}
           <div>
-            <label className="block text-sm text-gray-600 mb-2">Search</label>
+            <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Search</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search reference, description..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+                placeholder="Search..."
+                className="flex-1 min-w-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               />
-              <button className="px-6 py-2 bg-[#005E3A] text-white rounded-lg hover:bg-[#004A2D] transition-colors flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="px-3 sm:px-6 py-2 bg-[#005E3A] text-white rounded-lg hover:bg-[#004A2D] transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm flex-shrink-0">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                Apply Filter
+                <span className="hidden sm:inline">Apply</span>
               </button>
             </div>
           </div>
