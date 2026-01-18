@@ -6160,6 +6160,487 @@ async def admin_create_reseller_plan(request: Request, user: dict = Depends(get_
         return {'success': True, 'message': 'Plan created'}
 
 
+# ============ RELOADLY GIFT CARDS ============
+
+# Reloadly Auth Service - handles token caching
+class ReloadlyAuthService:
+    def __init__(self):
+        self.access_token = None
+        self.token_expiry = None
+        self.client_id = os.environ.get('RELOADLY_CLIENT_ID', '')
+        self.client_secret = os.environ.get('RELOADLY_CLIENT_SECRET', '')
+        # Use sandbox for testing, switch to live for production
+        self.is_sandbox = True  # Set to False for production
+        self.auth_url = "https://auth.reloadly.com/oauth/token"
+        self.api_base_url = "https://giftcards-sandbox.reloadly.com" if self.is_sandbox else "https://giftcards.reloadly.com"
+        self.audience = self.api_base_url
+    
+    async def get_access_token(self) -> str:
+        """Get valid access token, refreshing if needed"""
+        # Check if token is still valid (with 5-minute buffer)
+        if (self.access_token and self.token_expiry and 
+            datetime.now(timezone.utc) < self.token_expiry - timedelta(minutes=5)):
+            return self.access_token
+        
+        # Request new token
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.auth_url,
+                json={
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "audience": self.audience,
+                    "grant_type": "client_credentials"
+                }
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Failed to get Reloadly access token: {response.text}")
+        
+        token_data = response.json()
+        self.access_token = token_data["access_token"]
+        expires_in = token_data.get("expires_in", 86400)
+        self.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+        
+        return self.access_token
+    
+    async def get_headers(self) -> dict:
+        """Get headers for Reloadly API requests"""
+        token = await self.get_access_token()
+        return {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/com.reloadly.giftcards-v1+json",
+            "Content-Type": "application/json"
+        }
+
+reloadly_auth = ReloadlyAuthService()
+
+
+class GiftCardOrderRequest(BaseModel):
+    product_id: int
+    quantity: int = 1
+    unit_price: float  # Price per card in original currency
+    recipient_email: str
+    recipient_phone: str
+    sender_name: Optional[str] = None
+
+
+@api_router.get("/giftcards/products")
+async def get_giftcard_products(
+    country_code: Optional[str] = None,
+    product_name: Optional[str] = None,
+    page: int = 1,
+    size: int = 50,
+    user: dict = Depends(get_current_user)
+):
+    """Get available gift card products from Reloadly"""
+    try:
+        headers = await reloadly_auth.get_headers()
+        
+        params = {
+            "page": page,
+            "size": size
+        }
+        if country_code:
+            params["countryCode"] = country_code
+        if product_name:
+            params["productName"] = product_name
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{reloadly_auth.api_base_url}/products",
+                headers=headers,
+                params=params
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=f"Reloadly API error: {response.text}")
+        
+        data = response.json()
+        
+        # Process products to add NGN pricing
+        products = data.get("content", [])
+        
+        # Get current exchange rate from config
+        config = await db.pricing_config.find_one({})
+        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        
+        for product in products:
+            # Add NGN equivalent pricing
+            if product.get("senderCurrencyCode") == "USD":
+                if product.get("fixedRecipientDenominations"):
+                    product["denominations_ngn"] = [round(d * usd_to_ngn_rate, 2) for d in product["fixedRecipientDenominations"]]
+                if product.get("minRecipientDenomination"):
+                    product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate, 2)
+                if product.get("maxRecipientDenomination"):
+                    product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate, 2)
+            product["usd_to_ngn_rate"] = usd_to_ngn_rate
+        
+        return {
+            "success": True,
+            "products": products,
+            "total_elements": data.get("totalElements", 0),
+            "total_pages": data.get("totalPages", 0),
+            "page": page,
+            "size": size
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch gift cards: {str(e)}")
+
+
+@api_router.get("/giftcards/products/{product_id}")
+async def get_giftcard_product_detail(product_id: int, user: dict = Depends(get_current_user)):
+    """Get detailed information about a specific gift card product"""
+    try:
+        headers = await reloadly_auth.get_headers()
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{reloadly_auth.api_base_url}/products/{product_id}",
+                headers=headers
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=f"Reloadly API error: {response.text}")
+        
+        product = response.json()
+        
+        # Add NGN pricing
+        config = await db.pricing_config.find_one({})
+        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        
+        if product.get("senderCurrencyCode") == "USD":
+            if product.get("fixedRecipientDenominations"):
+                product["denominations_ngn"] = [round(d * usd_to_ngn_rate, 2) for d in product["fixedRecipientDenominations"]]
+            if product.get("minRecipientDenomination"):
+                product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate, 2)
+            if product.get("maxRecipientDenomination"):
+                product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate, 2)
+        product["usd_to_ngn_rate"] = usd_to_ngn_rate
+        
+        return {"success": True, "product": product}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch product details: {str(e)}")
+
+
+@api_router.get("/giftcards/countries")
+async def get_giftcard_countries(user: dict = Depends(get_current_user)):
+    """Get all countries with available gift cards"""
+    try:
+        headers = await reloadly_auth.get_headers()
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{reloadly_auth.api_base_url}/countries",
+                headers=headers
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=f"Reloadly API error: {response.text}")
+        
+        countries = response.json()
+        return {"success": True, "countries": countries}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch countries: {str(e)}")
+
+
+@api_router.post("/giftcards/order")
+async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = Depends(get_current_user)):
+    """Place a gift card order - deducts from user's NGN wallet balance"""
+    try:
+        user_id = user.get('user_id') or str(user.get('_id'))
+        
+        # Get the product details first to calculate cost
+        headers = await reloadly_auth.get_headers()
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            product_resp = await client.get(
+                f"{reloadly_auth.api_base_url}/products/{order_req.product_id}",
+                headers=headers
+            )
+        
+        if product_resp.status_code != 200:
+            raise HTTPException(status_code=400, detail="Invalid product ID")
+        
+        product = product_resp.json()
+        
+        # Get exchange rate
+        config = await db.pricing_config.find_one({})
+        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        
+        # Calculate total cost in NGN
+        sender_fee = product.get("senderFee", 0)
+        total_usd = (order_req.unit_price * order_req.quantity) + sender_fee
+        total_ngn = round(total_usd * usd_to_ngn_rate, 2)
+        
+        # Check user's NGN balance
+        user_data = await db.users.find_one({'_id': ObjectId(user_id)})
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_balance = user_data.get('balance_ngn', 0)
+        if current_balance < total_ngn:
+            raise HTTPException(status_code=400, detail=f"Insufficient NGN balance. Required: ₦{total_ngn:,.2f}, Available: ₦{current_balance:,.2f}")
+        
+        # Place order with Reloadly
+        order_payload = {
+            "productId": order_req.product_id,
+            "quantity": order_req.quantity,
+            "unitPrice": order_req.unit_price,
+            "customIdentifier": f"gc_{user_id}_{datetime.now(timezone.utc).timestamp()}",
+            "recipientEmail": order_req.recipient_email,
+            "recipientPhoneDetails": {
+                "countryCode": order_req.recipient_phone[:3] if order_req.recipient_phone.startswith('+') else "+234",
+                "phoneNumber": order_req.recipient_phone
+            }
+        }
+        
+        if order_req.sender_name:
+            order_payload["senderName"] = order_req.sender_name
+        
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{reloadly_auth.api_base_url}/orders",
+                headers=headers,
+                json=order_payload
+            )
+        
+        if response.status_code not in [200, 201]:
+            error_detail = response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
+            raise HTTPException(status_code=response.status_code, detail=f"Reloadly order failed: {error_detail}")
+        
+        order_data = response.json()
+        
+        # Deduct from user's balance
+        await db.users.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$inc': {'balance_ngn': -total_ngn}}
+        )
+        
+        # Record the transaction
+        transaction = {
+            'user_id': user_id,
+            'type': 'giftcard_purchase',
+            'amount_ngn': -total_ngn,
+            'amount_usd': -total_usd,
+            'description': f"Gift Card: {product.get('productName', 'Unknown')} x{order_req.quantity}",
+            'reference': order_data.get('transactionId'),
+            'status': order_data.get('status', 'PENDING'),
+            'metadata': {
+                'product_id': order_req.product_id,
+                'product_name': product.get('productName'),
+                'brand_name': product.get('brand', {}).get('brandName'),
+                'recipient_email': order_req.recipient_email,
+                'recipient_phone': order_req.recipient_phone,
+                'quantity': order_req.quantity,
+                'unit_price': order_req.unit_price,
+                'reloadly_response': order_data
+            },
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(transaction)
+        
+        # Store order in gift card orders collection
+        giftcard_order = {
+            'user_id': user_id,
+            'transaction_id': order_data.get('transactionId'),
+            'product_id': order_req.product_id,
+            'product_name': product.get('productName'),
+            'brand_name': product.get('brand', {}).get('brandName'),
+            'quantity': order_req.quantity,
+            'unit_price': order_req.unit_price,
+            'total_usd': total_usd,
+            'total_ngn': total_ngn,
+            'recipient_email': order_req.recipient_email,
+            'recipient_phone': order_req.recipient_phone,
+            'status': order_data.get('status', 'PENDING'),
+            'reloadly_data': order_data,
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.giftcard_orders.insert_one(giftcard_order)
+        
+        return {
+            "success": True,
+            "message": "Gift card order placed successfully",
+            "transaction_id": order_data.get('transactionId'),
+            "status": order_data.get('status'),
+            "amount_charged_ngn": total_ngn,
+            "new_balance_ngn": current_balance - total_ngn
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to place gift card order: {str(e)}")
+
+
+@api_router.get("/giftcards/orders")
+async def get_user_giftcard_orders(
+    page: int = 1,
+    size: int = 20,
+    user: dict = Depends(get_current_user)
+):
+    """Get user's gift card order history"""
+    try:
+        user_id = user.get('user_id') or str(user.get('_id'))
+        
+        skip = (page - 1) * size
+        orders = await db.giftcard_orders.find(
+            {'user_id': user_id}
+        ).sort('created_at', -1).skip(skip).limit(size).to_list(size)
+        
+        total = await db.giftcard_orders.count_documents({'user_id': user_id})
+        
+        # Remove ObjectId for JSON serialization
+        for order in orders:
+            order['_id'] = str(order['_id'])
+        
+        return {
+            "success": True,
+            "orders": orders,
+            "total": total,
+            "page": page,
+            "pages": (total + size - 1) // size
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch orders: {str(e)}")
+
+
+@api_router.get("/giftcards/orders/{transaction_id}")
+async def get_giftcard_order_status(transaction_id: int, user: dict = Depends(get_current_user)):
+    """Get status of a specific gift card order"""
+    try:
+        headers = await reloadly_auth.get_headers()
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{reloadly_auth.api_base_url}/orders/transactions/{transaction_id}",
+                headers=headers
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Order not found")
+        
+        order_data = response.json()
+        return {"success": True, "order": order_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch order status: {str(e)}")
+
+
+@api_router.get("/giftcards/redeem-code/{transaction_id}")
+async def get_giftcard_redeem_code(transaction_id: int, user: dict = Depends(get_current_user)):
+    """Get the redeem code for a completed gift card order"""
+    try:
+        headers = await reloadly_auth.get_headers()
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                f"{reloadly_auth.api_base_url}/orders/transactions/{transaction_id}/cards",
+                headers=headers
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Redeem code not available yet")
+        
+        cards = response.json()
+        return {"success": True, "cards": cards}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch redeem code: {str(e)}")
+
+
+# ============ USD TO NGN CONVERSION ============
+
+@api_router.post("/wallet/convert-usd-to-ngn")
+async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_user)):
+    """Convert user's USD balance to NGN"""
+    try:
+        body = await request.json()
+        amount_usd = float(body.get('amount_usd', 0))
+        
+        if amount_usd <= 0:
+            raise HTTPException(status_code=400, detail="Amount must be greater than 0")
+        
+        user_id = user.get('user_id') or str(user.get('_id'))
+        user_data = await db.users.find_one({'_id': ObjectId(user_id)})
+        
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_usd = user_data.get('balance_usd', 0)
+        if current_usd < amount_usd:
+            raise HTTPException(status_code=400, detail=f"Insufficient USD balance. Available: ${current_usd:.2f}")
+        
+        # Get exchange rate from config
+        config = await db.pricing_config.find_one({})
+        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        
+        # Calculate NGN amount
+        amount_ngn = round(amount_usd * usd_to_ngn_rate, 2)
+        
+        # Update balances
+        await db.users.update_one(
+            {'_id': ObjectId(user_id)},
+            {
+                '$inc': {
+                    'balance_usd': -amount_usd,
+                    'balance_ngn': amount_ngn
+                }
+            }
+        )
+        
+        # Record transaction
+        transaction = {
+            'user_id': user_id,
+            'type': 'currency_conversion',
+            'amount_usd': -amount_usd,
+            'amount_ngn': amount_ngn,
+            'exchange_rate': usd_to_ngn_rate,
+            'description': f"Converted ${amount_usd:.2f} USD to ₦{amount_ngn:,.2f} NGN",
+            'status': 'completed',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(transaction)
+        
+        # Get updated balances
+        updated_user = await db.users.find_one({'_id': ObjectId(user_id)})
+        
+        return {
+            "success": True,
+            "message": f"Successfully converted ${amount_usd:.2f} to ₦{amount_ngn:,.2f}",
+            "amount_usd_deducted": amount_usd,
+            "amount_ngn_added": amount_ngn,
+            "exchange_rate": usd_to_ngn_rate,
+            "new_balance_usd": updated_user.get('balance_usd', 0),
+            "new_balance_ngn": updated_user.get('balance_ngn', 0)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
+
+
+@api_router.get("/wallet/exchange-rate")
+async def get_exchange_rate(user: dict = Depends(get_current_user)):
+    """Get current USD to NGN exchange rate"""
+    config = await db.pricing_config.find_one({})
+    usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+    
+    return {
+        "success": True,
+        "usd_to_ngn_rate": usd_to_ngn_rate,
+        "updated_at": config.get('updated_at', None) if config else None
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(
