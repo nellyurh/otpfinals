@@ -678,6 +678,10 @@ class UpdatePricingRequest(BaseModel):
     area_code_markup: Optional[float] = None
     carrier_markup: Optional[float] = None
 
+    # Exchange rates (separate for wallet vs gift cards)
+    wallet_usd_to_ngn_rate: Optional[float] = None
+    giftcard_usd_to_ngn_rate: Optional[float] = None
+
     # Branding
     brand_name: Optional[str] = None
     brand_logo_url: Optional[str] = None
