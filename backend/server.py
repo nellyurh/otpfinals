@@ -6245,8 +6245,6 @@ class ReloadlyAuthService:
         self.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
         
         return self.access_token
-        
-        return self.access_token
     
     async def get_headers(self) -> dict:
         """Get headers for Reloadly API requests"""
@@ -6256,6 +6254,11 @@ class ReloadlyAuthService:
             "Accept": "application/com.reloadly.giftcards-v1+json",
             "Content-Type": "application/json"
         }
+    
+    async def get_api_url(self) -> str:
+        """Get the API base URL based on sandbox/live setting"""
+        config = await self.get_config()
+        return self.get_api_base_url(config['is_sandbox'])
 
 reloadly_auth = ReloadlyAuthService()
 
