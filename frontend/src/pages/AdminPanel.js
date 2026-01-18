@@ -760,6 +760,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => { setActiveSection('payment-gateways'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
+              icon={Gift}
+              label="Gift Cards Provider"
+              active={activeSection === 'giftcards-provider'}
+              onClick={() => { setActiveSection('giftcards-provider'); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
               icon={Tag}
               label="Promo Codes"
               active={activeSection === 'promo-codes'}
