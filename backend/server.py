@@ -6797,13 +6797,16 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
 
 @api_router.get("/wallet/exchange-rate")
 async def get_exchange_rate(user: dict = Depends(get_current_user)):
-    """Get current USD to NGN exchange rate"""
+    """Get current USD to NGN exchange rate for wallet conversion"""
     config = await db.pricing_config.find_one({})
-    usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+    wallet_rate = config.get('wallet_usd_to_ngn_rate', 1650) if config else 1650
+    giftcard_rate = config.get('giftcard_usd_to_ngn_rate', 1650) if config else 1650
     
     return {
         "success": True,
-        "usd_to_ngn_rate": usd_to_ngn_rate,
+        "usd_to_ngn_rate": wallet_rate,  # For wallet conversion
+        "wallet_usd_to_ngn_rate": wallet_rate,
+        "giftcard_usd_to_ngn_rate": giftcard_rate,
         "updated_at": config.get('updated_at', None) if config else None
     }
 
