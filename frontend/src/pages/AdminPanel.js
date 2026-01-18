@@ -275,6 +275,34 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const fetchReloadlyBalance = async () => {
+    setReloadlyBalance(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      const resp = await axios.get(`${API}/admin/reloadly/balance`, axiosConfig);
+      if (resp.data.success) {
+        setReloadlyBalance({
+          balance: resp.data.balance,
+          currency_code: resp.data.currency_code || 'USD',
+          loading: false,
+          error: null,
+          is_sandbox: resp.data.is_sandbox
+        });
+      } else {
+        setReloadlyBalance(prev => ({
+          ...prev,
+          loading: false,
+          error: resp.data.error || 'Failed to fetch balance'
+        }));
+      }
+    } catch (e) {
+      setReloadlyBalance(prev => ({
+        ...prev,
+        loading: false,
+        error: e.response?.data?.detail || 'Failed to fetch Reloadly balance'
+      }));
+    }
+  };
+
   const fetchAdminDeposits = async () => {
     try {
       const resp = await axios.get(`${API}/admin/deposits`, axiosConfig);
