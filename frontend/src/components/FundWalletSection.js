@@ -183,52 +183,52 @@ export function FundWalletSection({
       {/* NGN Funding Card with PaymentPoint Logo - Conditionally rendered */}
       {pageToggles?.enable_paymentpoint && (
         <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-emerald-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div>
-              <h3 className="font-bold text-gray-900">Virtual Account (NGN)</h3>
-              <p className="text-xs text-gray-600">Get a dedicated account number</p>
+            <div className="min-w-0">
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base">Virtual Account (NGN)</h3>
+              <p className="text-[10px] sm:text-xs text-gray-600">Get a dedicated account number</p>
             </div>
           </div>
 
           {user.virtual_account_number ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <button
                 onClick={() => setShowAccountDetails(!showAccountDetails)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border border-emerald-200 rounded-xl hover:bg-emerald-50 transition-colors"
+                className="w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-emerald-200 rounded-lg sm:rounded-xl hover:bg-emerald-50 transition-colors"
               >
-                <span className="font-semibold text-gray-900">View Account Details</span>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${showAccountDetails ? 'rotate-180' : ''}`} />
+                <span className="font-semibold text-gray-900 text-sm">View Account Details</span>
+                <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-transform flex-shrink-0 ${showAccountDetails ? 'rotate-180' : ''}`} />
               </button>
               
               {showAccountDetails && (
-                <div className="bg-white rounded-xl p-4 border border-emerald-200 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Account Number</span>
+                <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-emerald-200 space-y-2 sm:space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="text-xs sm:text-sm text-gray-600">Account Number</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-gray-900">{user.virtual_account_number}</span>
+                      <span className="font-mono font-bold text-gray-900 text-sm sm:text-base">{user.virtual_account_number}</span>
                       <button 
                         onClick={() => copyToClipboard(user.virtual_account_number)}
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
                       >
                         {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-400" />}
                       </button>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Account Name</span>
-                    <span className="font-semibold text-gray-900">{user.virtual_account_name || 'UltraCloud SMS'}</span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="text-xs sm:text-sm text-gray-600">Account Name</span>
+                    <span className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{user.virtual_account_name || 'UltraCloud SMS'}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Bank</span>
-                    <span className="font-semibold text-gray-900">{user.virtual_account_bank || 'PalmPay'}</span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="text-xs sm:text-sm text-gray-600">Bank</span>
+                    <span className="font-semibold text-gray-900 text-sm">{user.virtual_account_bank || 'PalmPay'}</span>
                   </div>
                 </div>
               )}
               
-              <p className="text-xs text-emerald-700 bg-emerald-100 px-3 py-2 rounded-lg">
+              <p className="text-[10px] sm:text-xs text-emerald-700 bg-emerald-100 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg">
                 💡 Transfers to this account will automatically credit your wallet
               </p>
             </div>
@@ -236,12 +236,12 @@ export function FundWalletSection({
             <button
               onClick={handleGenerateAccount}
               disabled={generatingAccount}
-              className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-300"
+              className="w-full py-2.5 sm:py-3 bg-emerald-600 text-white rounded-lg sm:rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors disabled:bg-gray-300"
             >
               {generatingAccount ? (
                 <span className="flex items-center justify-center gap-2">
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Creating Account...
+                  Creating...
                 </span>
               ) : (
                 'Generate Virtual Account'
@@ -253,19 +253,19 @@ export function FundWalletSection({
 
       {/* USD Funding Section - Crypto (Plisio) */}
       {pageToggles?.enable_plisio && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold">₿</span>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-200 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-sm sm:text-base">₿</span>
             </div>
-            <div>
-              <h3 className="font-bold text-gray-900">Crypto Deposit (USD)</h3>
-              <p className="text-xs text-gray-600">Pay with Bitcoin, Ethereum, USDT</p>
+            <div className="min-w-0">
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base">Crypto Deposit (USD)</h3>
+              <p className="text-[10px] sm:text-xs text-gray-600">Pay with Bitcoin, Ethereum, USDT</p>
             </div>
           </div>
           
-          <p className="text-sm text-gray-600 mb-4">
-            Deposit cryptocurrency to fund your USD wallet. Minimum: $5
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+            Deposit cryptocurrency to fund your USD wallet. Min: $5
           </p>
           
           <div className="flex gap-2 mb-3">
@@ -275,7 +275,7 @@ export function FundWalletSection({
               placeholder="Amount (USD)"
               value={plisioAmount || ''}
               onChange={(e) => setPlisioAmount(e.target.value)}
-              className="flex-1 px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 border border-blue-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
             <button
               onClick={async () => {
