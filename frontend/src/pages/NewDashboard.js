@@ -3209,6 +3209,177 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     );
   }
 
+  // ============ CONVERT CURRENCY SECTION ============
+  function ConvertCurrencySection() {
+    const [exchangeRate, setExchangeRate] = useState(1650);
+    const [convertAmount, setConvertAmount] = useState('');
+    const [converting, setConverting] = useState(false);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      fetchExchangeRate();
+      fetchConversionHistory();
+    }, []);
+
+    const fetchExchangeRate = async () => {
+      try {
+        const resp = await axios.get(`${API}/api/wallet/exchange-rate`, axiosConfig);
+        setExchangeRate(resp.data.usd_to_ngn_rate || 1650);
+      } catch (err) {
+        console.error('Failed to fetch exchange rate:', err);
+      }
+    };
+
+    const fetchConversionHistory = async () => {
+      setLoading(true);
+      try {
+        const resp = await axios.get(`${API}/api/user/transactions`, axiosConfig);
+        const conversions = (resp.data.transactions || []).filter(t => t.type === 'currency_conversion');
+        setTransactions(conversions.slice(0, 10));
+      } catch (err) {
+        console.error('Failed to fetch conversion history:', err);
+      }
+      setLoading(false);
+    };
+
+    const handleConvert = async () => {
+      if (!convertAmount || parseFloat(convertAmount) <= 0) return;
+      if (parseFloat(convertAmount) > (user?.balance_usd || 0)) {
+        alert('Insufficient USD balance');
+        return;
+      }
+      setConverting(true);
+      try {
+        const resp = await axios.post(`${API}/api/wallet/convert-usd-to-ngn`, 
+          { amount_usd: parseFloat(convertAmount) }, 
+          axiosConfig
+        );
+        alert(`Successfully converted $${convertAmount} to ₦${resp.data.amount_ngn_added.toLocaleString()}`);
+        setConvertAmount('');
+        fetchProfile();
+        fetchConversionHistory();
+      } catch (err) {
+        alert(err.response?.data?.detail || 'Conversion failed');
+      }
+      setConverting(false);
+    };
+
+    const ngnPreview = convertAmount ? (parseFloat(convertAmount) * exchangeRate) : 0;
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Convert Currency</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Convert your USD balance to NGN</p>
+        </div>
+
+        {/* Balance Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-5 text-white">
+            <p className="text-sm opacity-90">USD Balance</p>
+            <p className="text-3xl font-bold">${(user?.balance_usd || 0).toFixed(2)}</p>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-5 text-white">
+            <p className="text-sm opacity-90">NGN Balance</p>
+            <p className="text-3xl font-bold">₦{(user?.balance_ngn || 0).toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Exchange Rate Info */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="w-5 h-5 text-amber-600" />
+            <span className="font-semibold text-amber-800">Current Exchange Rate</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-900 mt-2">$1 = ₦{exchangeRate.toLocaleString()}</p>
+          <p className="text-xs text-amber-600 mt-1">Rate is set by admin and may change</p>
+        </div>
+
+        {/* Conversion Form */}
+        <div className="bg-white rounded-xl border p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Convert USD to NGN</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  value={convertAmount}
+                  onChange={(e) => setConvertAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full pl-8 pr-4 py-3 border rounded-lg text-lg"
+                  max={user?.balance_usd || 0}
+                  step="0.01"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Available: ${(user?.balance_usd || 0).toFixed(2)}</p>
+            </div>
+
+            {/* Preview */}
+            {convertAmount && parseFloat(convertAmount) > 0 && (
+              <div className="bg-emerald-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">You will receive:</p>
+                <p className="text-2xl font-bold text-emerald-700">₦{ngnPreview.toLocaleString()}</p>
+              </div>
+            )}
+
+            <button
+              onClick={handleConvert}
+              disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0 || parseFloat(convertAmount) > (user?.balance_usd || 0)}
+              className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {converting ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Converting...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-5 h-5" />
+                  Convert to NGN
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Recent Conversions */}
+        <div className="bg-white rounded-xl border p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Recent Conversions</h3>
+          
+          {loading ? (
+            <div className="text-center py-4">
+              <RefreshCw className="w-6 h-6 mx-auto text-gray-400 animate-spin" />
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-8">
+              <RefreshCw className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+              <p className="text-gray-500">No conversions yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map((tx, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">${Math.abs(tx.amount_usd || 0).toFixed(2)} → ₦{(tx.amount_ngn || 0).toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">Rate: ₦{tx.exchange_rate?.toLocaleString() || exchangeRate.toLocaleString()}/USD</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Completed</span>
+                    <p className="text-xs text-gray-500 mt-1">{new Date(tx.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // ============ GIFT CARDS SECTION ============
   function GiftCardsSection() {
     const [countries, setCountries] = useState([]);
