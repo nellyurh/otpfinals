@@ -4745,6 +4745,14 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
     if data.reseller_api_base_url is not None:
         update_fields['reseller_api_base_url'] = data.reseller_api_base_url
 
+    # Support channel URLs
+    if data.whatsapp_support_url is not None:
+        update_fields['whatsapp_support_url'] = data.whatsapp_support_url
+    if data.telegram_support_url is not None:
+        update_fields['telegram_support_url'] = data.telegram_support_url
+    if data.support_email is not None:
+        update_fields['support_email'] = data.support_email
+
     # Manual coin->USD rates
     for key in ['btc_usd_rate', 'eth_usd_rate', 'ltc_usd_rate', 'doge_usd_rate', 'bnb_usd_rate']:
         val = getattr(data, key, None)
