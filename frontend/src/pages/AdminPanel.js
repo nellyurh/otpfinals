@@ -538,6 +538,8 @@ const AdminPanel = ({ user, setUser }) => {
         reloadly_client_secret: response.data.reloadly_client_secret || '',
         giftcard_markup_percent: response.data.giftcard_markup_percent || 0,
         giftcard_is_sandbox: response.data.giftcard_is_sandbox !== false,
+        reloadly_from_env: response.data.reloadly_from_env || false,
+        reloadly_configured: response.data.reloadly_configured || false
       });
     } catch (error) {
       console.error('Failed to fetch pricing');
