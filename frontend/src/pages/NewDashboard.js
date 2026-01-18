@@ -188,38 +188,67 @@ const NewDashboard = () => {
           status = statusMatch ? statusMatch[1] : null;
         }
         
-        if (paymentRef && status) {
-          // Clean up the URL
-          window.history.replaceState({}, document.title, '/dashboard');
-          
-          if (status === 'PAID' || status === 'paid' || status === 'successful') {
-            toast.success('Payment successful! Your wallet will be credited shortly.');
-            // Refresh user profile to get updated balance
-            setTimeout(() => {
-              fetchProfile();
-              fetchTransactions();
-            }, 2000);
-          } else if (status === 'FAILED' || status === 'failed') {
-            toast.error('Payment failed. Please try again.');
-          } else if (status === 'PENDING' || status === 'pending') {
-            toast.info('Payment is pending. Your wallet will be credited once confirmed.');
-          } else {
-            toast.info(`Payment status: ${status}`);
+        // Also try to get ref from malformed URL
+        if (!paymentRef && fullUrl.includes('ref=')) {
+          const refMatch = fullUrl.match(/ref=([^?&]+)/);
+          paymentRef = refMatch ? refMatch[1] : null;
+        }
+        
+        // Clean up the URL immediately
+        window.history.replaceState({}, document.title, '/dashboard');
+        
+        if (paymentRef) {
+          // Verify payment status with backend
+          try {
+            const verifyResp = await axios.get(`${API}/api/ercaspay/verify/${paymentRef}`, axiosConfig);
+            const paymentStatus = verifyResp.data?.payment?.status;
+            
+            if (paymentStatus === 'paid') {
+              toast.success('Payment successful! Your wallet has been credited.');
+            } else if (paymentStatus === 'failed') {
+              toast.error('Payment failed. Please try again.');
+            } else if (paymentStatus === 'pending') {
+              toast.info('Payment is being processed. Your wallet will be credited shortly.');
+            } else {
+              toast.info(`Payment status: ${paymentStatus || status || 'Processing'}`);
+            }
+          } catch (err) {
+            // Fallback to URL status if verify fails
+            if (status === 'PAID' || status === 'paid' || status === 'successful') {
+              toast.success('Payment successful! Your wallet will be credited shortly.');
+            } else if (status === 'FAILED' || status === 'failed') {
+              toast.error('Payment failed. Please try again.');
+            } else {
+              toast.info('Payment processing. Please check your balance.');
+            }
           }
-        } else if (paymentRef) {
-          // Just the callback with ref, clean up URL
-          window.history.replaceState({}, document.title, '/dashboard');
-          toast.info('Payment processing. Your wallet will be credited once confirmed.');
+          
+          // Refresh data
           setTimeout(() => {
             fetchProfile();
             fetchTransactions();
-          }, 2000);
+          }, 1500);
+        } else if (status) {
+          // No ref but have status
+          if (status === 'PAID' || status === 'paid' || status === 'successful') {
+            toast.success('Payment successful! Your wallet will be credited shortly.');
+          } else if (status === 'FAILED' || status === 'failed') {
+            toast.error('Payment failed. Please try again.');
+          } else {
+            toast.info(`Payment status: ${status}`);
+          }
+          setTimeout(() => {
+            fetchProfile();
+            fetchTransactions();
+          }, 1500);
         }
       }
     };
     
-    handleErcaspayCallback();
-  }, []);
+    if (token) {
+      handleErcaspayCallback();
+    }
+  }, [token]);
 
   useEffect(() => {
     if (!token) {
