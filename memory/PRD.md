@@ -1,5 +1,8 @@
 # UltraCloud SMS - Product Requirements Document
 
+## Changelog
+- **2025-01-18**: Fixed Gift Cards not loading issue. The `giftcardsConfig` wasn't being included in save requests. Added environment variable indicator in Admin Panel.
+
 ## Original Problem Statement
 Build a full-stack OTP service platform with JWT auth, wallet system, multiple payment gateways, and admin panel.
 
