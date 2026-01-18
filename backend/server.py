@@ -6346,10 +6346,11 @@ async def get_giftcard_product_detail(product_id: int, user: dict = Depends(get_
     """Get detailed information about a specific gift card product"""
     try:
         headers = await reloadly_auth.get_headers()
+        api_url = await reloadly_auth.get_api_url()
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{await reloadly_auth.get_api_url()}/products/{product_id}",
+                f"{api_url}/products/{product_id}",
                 headers=headers
             )
         
@@ -6358,18 +6359,21 @@ async def get_giftcard_product_detail(product_id: int, user: dict = Depends(get_
         
         product = response.json()
         
-        # Add NGN pricing
+        # Add NGN pricing with markup
         config = await db.pricing_config.find_one({})
         usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        markup_percent = config.get('giftcard_markup_percent', 0) if config else 0
+        markup_multiplier = 1 + (markup_percent / 100)
         
         if product.get("senderCurrencyCode") == "USD":
             if product.get("fixedRecipientDenominations"):
-                product["denominations_ngn"] = [round(d * usd_to_ngn_rate, 2) for d in product["fixedRecipientDenominations"]]
+                product["denominations_ngn"] = [round(d * usd_to_ngn_rate * markup_multiplier, 2) for d in product["fixedRecipientDenominations"]]
             if product.get("minRecipientDenomination"):
-                product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate, 2)
+                product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate * markup_multiplier, 2)
             if product.get("maxRecipientDenomination"):
-                product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate, 2)
+                product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate * markup_multiplier, 2)
         product["usd_to_ngn_rate"] = usd_to_ngn_rate
+        product["markup_percent"] = markup_percent
         
         return {"success": True, "product": product}
     except HTTPException:
