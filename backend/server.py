@@ -706,6 +706,7 @@ class UpdatePricingRequest(BaseModel):
     enable_transactions: Optional[bool] = None
     enable_fund_wallet: Optional[bool] = None
     enable_virtual_numbers: Optional[bool] = None
+    enable_giftcards: Optional[bool] = None
     enable_buy_data: Optional[bool] = None
     enable_airtime: Optional[bool] = None
     enable_betting: Optional[bool] = None
@@ -728,6 +729,12 @@ class UpdatePricingRequest(BaseModel):
     whatsapp_support_url: Optional[str] = None
     telegram_support_url: Optional[str] = None
     support_email: Optional[str] = None
+
+    # Gift Cards Provider (Reloadly) settings
+    reloadly_client_id: Optional[str] = None
+    reloadly_client_secret: Optional[str] = None
+    giftcard_markup_percent: Optional[float] = None
+    giftcard_is_sandbox: Optional[bool] = None
 
 class ErcaspayInitiateRequest(BaseModel):
     amount: float  # NGN amount
