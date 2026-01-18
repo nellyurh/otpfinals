@@ -4789,6 +4789,7 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         'enable_transactions',
         'enable_fund_wallet',
         'enable_virtual_numbers',
+        'enable_giftcards',
         'enable_buy_data',
         'enable_airtime',
         'enable_betting',
