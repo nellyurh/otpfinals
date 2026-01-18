@@ -6388,22 +6388,49 @@ async def get_giftcard_products(
         # Process products to add NGN pricing with markup
         products = data.get("content", [])
         
-        # Get current exchange rate and markup from config
+        # Get live exchange rates and admin config
+        live_rates = await get_exchange_rates()
         config = await db.pricing_config.find_one({})
-        usd_to_ngn_rate = config.get('usd_to_ngn_rate', 1650) if config else 1650
+        
+        # Admin configured base rate and markup
+        base_usd_to_ngn = config.get('giftcard_usd_to_ngn_rate', 1650) if config else 1650
         markup_percent = config.get('giftcard_markup_percent', 0) if config else 0
         markup_multiplier = 1 + (markup_percent / 100)
         
+        # Use live rates if available, fallback to admin rate
+        ngn_rates = live_rates.get('ngn_rates', {})
+        
         for product in products:
-            # Add NGN equivalent pricing with markup
-            if product.get("senderCurrencyCode") == "USD":
-                if product.get("fixedRecipientDenominations"):
-                    product["denominations_ngn"] = [round(d * usd_to_ngn_rate * markup_multiplier, 2) for d in product["fixedRecipientDenominations"]]
-                if product.get("minRecipientDenomination"):
-                    product["min_ngn"] = round(product["minRecipientDenomination"] * usd_to_ngn_rate * markup_multiplier, 2)
-                if product.get("maxRecipientDenomination"):
-                    product["max_ngn"] = round(product["maxRecipientDenomination"] * usd_to_ngn_rate * markup_multiplier, 2)
-            product["usd_to_ngn_rate"] = usd_to_ngn_rate
+            sender_currency = product.get("senderCurrencyCode", "USD")
+            recipient_currency = product.get("recipientCurrencyCode", sender_currency)
+            
+            # Get the currency to NGN rate (use live rate if available, else calculate from USD)
+            if recipient_currency in ngn_rates:
+                currency_to_ngn = ngn_rates[recipient_currency]
+            elif recipient_currency == "USD":
+                currency_to_ngn = base_usd_to_ngn
+            else:
+                # Fallback: use the USD rate * admin base rate
+                usd_rates = live_rates.get('usd_rates', {})
+                if recipient_currency in usd_rates and usd_rates[recipient_currency] > 0:
+                    # Convert currency to USD, then USD to NGN
+                    currency_to_ngn = base_usd_to_ngn / usd_rates[recipient_currency]
+                else:
+                    currency_to_ngn = base_usd_to_ngn  # Fallback to USD rate
+            
+            # Apply markup
+            final_rate = currency_to_ngn * markup_multiplier
+            
+            # Add NGN equivalent pricing
+            if product.get("fixedRecipientDenominations"):
+                product["denominations_ngn"] = [round(d * final_rate, 2) for d in product["fixedRecipientDenominations"]]
+            if product.get("minRecipientDenomination"):
+                product["min_ngn"] = round(product["minRecipientDenomination"] * final_rate, 2)
+            if product.get("maxRecipientDenomination"):
+                product["max_ngn"] = round(product["maxRecipientDenomination"] * final_rate, 2)
+            
+            product["currency_to_ngn_rate"] = round(currency_to_ngn, 2)
+            product["final_ngn_rate"] = round(final_rate, 2)
             product["markup_percent"] = markup_percent
         
         return {
