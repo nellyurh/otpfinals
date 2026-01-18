@@ -96,6 +96,14 @@ const AdminPanel = ({ user, setUser }) => {
     reloadly_configured: false
   });
 
+  const [reloadlyBalance, setReloadlyBalance] = useState({
+    balance: null,
+    currency_code: 'USD',
+    loading: false,
+    error: null,
+    is_sandbox: true
+  });
+
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
