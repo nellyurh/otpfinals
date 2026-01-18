@@ -6189,6 +6189,81 @@ async def admin_create_reseller_plan(request: Request, user: dict = Depends(get_
         return {'success': True, 'message': 'Plan created'}
 
 
+# ============ EXCHANGE RATE SERVICE ============
+
+# Cache for exchange rates
+exchange_rate_cache = {
+    'rates': {},
+    'last_updated': None
+}
+
+async def get_exchange_rates():
+    """Fetch exchange rates from a free API (frankfurter.app) and cache them"""
+    global exchange_rate_cache
+    
+    # Check if cache is valid (less than 1 hour old)
+    if (exchange_rate_cache['last_updated'] and 
+        datetime.now(timezone.utc) - exchange_rate_cache['last_updated'] < timedelta(hours=1)):
+        return exchange_rate_cache['rates']
+    
+    try:
+        # Fetch rates from frankfurter.app (free, no API key needed)
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Get USD base rates for major currencies
+            response = await client.get(
+                "https://api.frankfurter.app/latest",
+                params={"from": "USD", "to": "EUR,GBP,CAD,AUD,NGN,BRL,MXN,INR,JPY,KRW,ZAR,AED,SAR,SGD,HKD,CHF,SEK,NOK,DKK,PLN,TRY"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                rates = data.get('rates', {})
+                rates['USD'] = 1.0  # Add USD itself
+                
+                # Calculate NGN rates for each currency (currency -> NGN)
+                ngn_rate = rates.get('NGN', 1650)  # Fallback if NGN not available
+                
+                # Store both raw rates and NGN conversion rates
+                exchange_rate_cache['rates'] = {
+                    'usd_rates': rates,
+                    'ngn_rates': {currency: ngn_rate / rate if rate > 0 else 0 for currency, rate in rates.items()},
+                    'base_ngn_per_usd': ngn_rate
+                }
+                exchange_rate_cache['last_updated'] = datetime.now(timezone.utc)
+                
+                return exchange_rate_cache['rates']
+    except Exception as e:
+        print(f"Failed to fetch exchange rates: {e}")
+    
+    # Return fallback rates if API fails
+    return {
+        'usd_rates': {'USD': 1.0, 'EUR': 0.92, 'GBP': 0.79, 'CAD': 1.36, 'NGN': 1650},
+        'ngn_rates': {'USD': 1650, 'EUR': 1793, 'GBP': 2089, 'CAD': 1213, 'NGN': 1},
+        'base_ngn_per_usd': 1650
+    }
+
+
+@api_router.get("/exchange-rates")
+async def get_all_exchange_rates(user: dict = Depends(get_current_user)):
+    """Get current exchange rates for all supported currencies"""
+    rates = await get_exchange_rates()
+    
+    # Also get admin-configured rates
+    config = await db.pricing_config.find_one({})
+    wallet_rate = config.get('wallet_usd_to_ngn_rate', 1650) if config else 1650
+    giftcard_rate = config.get('giftcard_usd_to_ngn_rate', 1650) if config else 1650
+    
+    return {
+        "success": True,
+        "live_rates": rates,
+        "admin_rates": {
+            "wallet_usd_to_ngn": wallet_rate,
+            "giftcard_usd_to_ngn": giftcard_rate
+        },
+        "cached_at": exchange_rate_cache.get('last_updated', datetime.now(timezone.utc)).isoformat() if exchange_rate_cache.get('last_updated') else None
+    }
+
+
 # ============ RELOADLY GIFT CARDS ============
 
 # Reloadly Auth Service - handles token caching
