@@ -502,6 +502,7 @@ const AdminPanel = ({ user, setUser }) => {
         enable_transactions: response.data.enable_transactions !== false,
         enable_fund_wallet: response.data.enable_fund_wallet !== false,
         enable_virtual_numbers: response.data.enable_virtual_numbers !== false,
+        enable_giftcards: response.data.enable_giftcards !== false,
         enable_buy_data: response.data.enable_buy_data !== false,
         enable_airtime: response.data.enable_airtime !== false,
         enable_betting: response.data.enable_betting !== false,
