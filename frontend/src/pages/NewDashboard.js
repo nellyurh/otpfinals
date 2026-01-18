@@ -3032,17 +3032,17 @@ print_r(json_decode($response, true));`,
 
     // Reseller dashboard
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Reseller Portal</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowDocs(true)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700"
+              className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700"
             >
               API Documentation
             </button>
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
               {resellerProfile.plan} Plan
             </span>
           </div>
