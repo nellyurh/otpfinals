@@ -941,6 +941,15 @@ const NewDashboard = () => {
                 <span className="font-bold">₦{(user.ngn_balance || 0).toLocaleString()}</span>
                 <div className="w-px h-4 bg-white/30"></div>
                 <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
+                {/* Convert USD button */}
+                <button
+                  onClick={() => setActiveSection('convert-currency')}
+                  className="ml-1 p-1 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Convert USD to NGN"
+                  data-testid="header-convert-usd-btn"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
               </div>
               
               {/* User avatar - Modern design with dynamic color */}
