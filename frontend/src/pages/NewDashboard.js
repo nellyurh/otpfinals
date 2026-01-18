@@ -3285,13 +3285,19 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
         {/* Balance Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-5 text-white">
+          <div 
+            className="rounded-xl p-5 text-white"
+            style={{ background: `linear-gradient(135deg, ${branding.primary_color_hex || '#059669'}, ${branding.secondary_color_hex || '#10b981'})` }}
+          >
             <p className="text-sm opacity-90">USD Balance</p>
-            <p className="text-3xl font-bold">${(user?.balance_usd || 0).toFixed(2)}</p>
+            <p className="text-3xl font-bold">${(user?.usd_balance || 0).toFixed(2)}</p>
           </div>
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-5 text-white">
+          <div 
+            className="rounded-xl p-5 text-white"
+            style={{ background: `linear-gradient(135deg, ${branding.accent_color_hex || '#7c3aed'}, ${branding.button_color_hex || '#7c3aed'})` }}
+          >
             <p className="text-sm opacity-90">NGN Balance</p>
-            <p className="text-3xl font-bold">₦{(user?.balance_ngn || 0).toLocaleString()}</p>
+            <p className="text-3xl font-bold">₦{(user?.ngn_balance || 0).toLocaleString()}</p>
           </div>
         </div>
 
@@ -3320,11 +3326,11 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   onChange={(e) => setConvertAmount(e.target.value)}
                   placeholder="0.00"
                   className="w-full pl-8 pr-4 py-3 border rounded-lg text-lg"
-                  max={user?.balance_usd || 0}
+                  max={user?.usd_balance || 0}
                   step="0.01"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Available: ${(user?.balance_usd || 0).toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">Available: ${(user?.usd_balance || 0).toFixed(2)}</p>
             </div>
 
             {/* Preview */}
