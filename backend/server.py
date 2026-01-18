@@ -535,6 +535,12 @@ class PricingConfig(BaseModel):
     telegram_support_url: str = "https://t.me/yoursupport"
     support_email: str = "support@smsrelay.com"
 
+    # Gift Cards Provider (Reloadly) settings
+    reloadly_client_id: str = ""
+    reloadly_client_secret: str = ""
+    giftcard_markup_percent: float = 0.0
+    giftcard_is_sandbox: bool = True
+
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ErcaspayPayment(BaseModel):
