@@ -3897,10 +3897,10 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
     if payment_method == 'card':
         ercaspay_payment_methods = ['card']
     elif payment_method == 'bank-transfer':
-        ercaspay_payment_methods = ['bank_transfer']
+        ercaspay_payment_methods = ['bank-transfer']
     else:
         # Default to both methods
-        ercaspay_payment_methods = ['card', 'bank_transfer']
+        ercaspay_payment_methods = ['card', 'bank-transfer']
     
     # Prepare Ercaspay initiate checkout request
     checkout_data = {
