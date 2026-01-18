@@ -3840,12 +3840,19 @@ async def _ercaspay_request(method: str, endpoint: str, data: Optional[Dict] = N
     
     try:
         async with httpx.AsyncClient() as client:
-            if method.upper() == 'GET':
-                response = await client.get(f'{ERCASPAY_BASE_URL}/{endpoint}', headers=headers, timeout=30.0)
-            else:
-                response = await client.post(f'{ERCASPAY_BASE_URL}/{endpoint}', json=data, headers=headers, timeout=30.0)
+            url = f'{ERCASPAY_BASE_URL}/{endpoint}'
+            logger.info(f"Ercaspay request: {method} {url}")
+            if data:
+                logger.info(f"Ercaspay request data: {data}")
             
-            logger.info(f"Ercaspay {method} {endpoint}: {response.status_code}")
+            if method.upper() == 'GET':
+                response = await client.get(url, headers=headers, timeout=30.0)
+            else:
+                response = await client.post(url, json=data, headers=headers, timeout=30.0)
+            
+            logger.info(f"Ercaspay {method} {endpoint}: status={response.status_code}")
+            logger.info(f"Ercaspay response: {response.text[:500] if response.text else 'empty'}")
+            
             if response.status_code in [200, 201]:
                 return response.json()
             logger.error(f"Ercaspay error: {response.text}")
