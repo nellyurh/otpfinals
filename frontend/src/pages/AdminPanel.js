@@ -85,6 +85,13 @@ const AdminPanel = ({ user, setUser }) => {
     fivesim_api_key: '',
   });
 
+  const [giftcardsConfig, setGiftcardsConfig] = useState({
+    reloadly_client_id: '',
+    reloadly_client_secret: '',
+    giftcard_markup_percent: 0,
+    giftcard_is_sandbox: true
+  });
+
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
