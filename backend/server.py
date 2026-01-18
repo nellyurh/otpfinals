@@ -507,6 +507,7 @@ class PricingConfig(BaseModel):
     enable_transactions: bool = True
     enable_fund_wallet: bool = True
     enable_virtual_numbers: bool = True
+    enable_giftcards: bool = True
     enable_buy_data: bool = True
     enable_airtime: bool = True
     enable_betting: bool = True
