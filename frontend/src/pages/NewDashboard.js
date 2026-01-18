@@ -3225,9 +3225,8 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     });
     const [ordering, setOrdering] = useState(false);
     const [exchangeRate, setExchangeRate] = useState(1650);
-    const [showConvert, setShowConvert] = useState(false);
-    const [convertAmount, setConvertAmount] = useState('');
-    const [converting, setConverting] = useState(false);
+    const [countrySearch, setCountrySearch] = useState('');
+    const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
     // Fetch countries on mount
     useEffect(() => {
