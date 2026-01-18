@@ -6761,7 +6761,9 @@ async def get_user_giftcard_orders(
 ):
     """Get user's gift card order history"""
     try:
-        user_id = user.get('user_id') or str(user.get('_id'))
+        user_id = user.get('id')
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
         
         skip = (page - 1) * size
         orders = await db.giftcard_orders.find(
