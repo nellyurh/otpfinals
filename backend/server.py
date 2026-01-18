@@ -6693,8 +6693,8 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         
         # Deduct from user's balance
         await db.users.update_one(
-            {'_id': ObjectId(user_id)},
-            {'$inc': {'balance_ngn': -total_ngn}}
+            {'id': user_id},
+            {'$inc': {'ngn_balance': -total_ngn}}
         )
         
         # Record the transaction
