@@ -6698,14 +6698,19 @@ async def create_giftcard_order(order_req: GiftCardOrderRequest, user: dict = De
         )
         
         # Record the transaction
+        new_balance = current_balance - total_ngn
         transaction = {
             'user_id': user_id,
             'type': 'giftcard_purchase',
+            'amount': total_ngn,
             'amount_ngn': -total_ngn,
             'amount_usd': -total_usd,
+            'currency': 'NGN',
+            'balance_before': current_balance,
+            'balance_after': new_balance,
             'description': f"Gift Card: {product.get('productName', 'Unknown')} x{order_req.quantity}",
-            'reference': order_data.get('transactionId'),
-            'status': order_data.get('status', 'PENDING'),
+            'reference': str(order_data.get('transactionId')),
+            'status': 'completed' if order_data.get('status') == 'SUCCESSFUL' else 'pending',
             'metadata': {
                 'product_id': order_req.product_id,
                 'product_name': product.get('productName'),
