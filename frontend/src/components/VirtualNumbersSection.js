@@ -475,7 +475,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="text-center mb-3 sm:mb-4">
-        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-0.5">Virtual SMS</h1>
+        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-0.5">Buy Numbers</h1>
         <p className="text-[10px] sm:text-xs text-gray-500">Get premium virtual numbers for verification</p>
       </div>
 
