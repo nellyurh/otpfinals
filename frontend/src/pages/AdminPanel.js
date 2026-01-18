@@ -83,6 +83,8 @@ const AdminPanel = ({ user, setUser }) => {
     daisysms_api_key: '',
     smspool_api_key: '',
     fivesim_api_key: '',
+    wallet_usd_to_ngn_rate: 1650,
+    giftcard_usd_to_ngn_rate: 1650,
   });
 
   const [giftcardsConfig, setGiftcardsConfig] = useState({
