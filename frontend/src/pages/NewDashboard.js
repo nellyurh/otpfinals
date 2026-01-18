@@ -3711,6 +3711,124 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
       );
     }
 
+    // Order Details View
+    if (selectedOrder) {
+      return (
+        <div className="space-y-4">
+          <button 
+            onClick={() => { setSelectedOrder(null); setOrderDetails(null); }}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+          >
+            ← Back to Order History
+          </button>
+          
+          <div className="bg-white rounded-xl border overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-6 text-white">
+              <h2 className="text-xl font-bold">{selectedOrder.product_name}</h2>
+              <p className="text-emerald-100">{selectedOrder.brand_name}</p>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {loadingDetails ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto"></div>
+                  <p className="text-gray-500 mt-2">Loading details...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Order Status */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <span className="text-gray-600">Status</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      selectedOrder.status === 'SUCCESSFUL' ? 'bg-green-100 text-green-700' :
+                      selectedOrder.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {selectedOrder.status}
+                    </span>
+                  </div>
+                  
+                  {/* Redeem Code Section */}
+                  {orderDetails?.cards && orderDetails.cards.length > 0 && (
+                    <div className="border-2 border-emerald-200 rounded-lg p-4 bg-emerald-50">
+                      <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                        <Gift className="w-5 h-5" />
+                        Redeem Code{orderDetails.cards.length > 1 ? 's' : ''}
+                      </h3>
+                      {orderDetails.cards.map((card, idx) => (
+                        <div key={idx} className="bg-white rounded-lg p-4 mb-2 border">
+                          {card.cardNumber && (
+                            <div className="mb-2">
+                              <p className="text-xs text-gray-500">Card Number / Code</p>
+                              <p className="font-mono text-lg font-bold text-emerald-700 select-all">{card.cardNumber}</p>
+                            </div>
+                          )}
+                          {card.pinCode && (
+                            <div className="mb-2">
+                              <p className="text-xs text-gray-500">PIN</p>
+                              <p className="font-mono text-lg font-bold text-emerald-700 select-all">{card.pinCode}</p>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => {
+                              const text = card.pinCode ? `Code: ${card.cardNumber}, PIN: ${card.pinCode}` : card.cardNumber;
+                              navigator.clipboard.writeText(text);
+                              toast.success('Copied to clipboard!');
+                            }}
+                            className="mt-2 px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                          >
+                            Copy Code
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Order Details */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-800">Order Details</h3>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Transaction ID</p>
+                        <p className="font-semibold">{selectedOrder.transaction_id}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Amount Paid</p>
+                        <p className="font-semibold text-emerald-600">₦{selectedOrder.total_ngn?.toLocaleString()}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Card Value</p>
+                        <p className="font-semibold">${selectedOrder.unit_price} x {selectedOrder.quantity}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Date</p>
+                        <p className="font-semibold">{new Date(selectedOrder.created_at).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Recipient Details */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-800">Recipient Details</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Email</p>
+                        <p className="font-semibold">{selectedOrder.recipient_email}</p>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Phone</p>
+                        <p className="font-semibold">{selectedOrder.recipient_phone}</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Order History View
     if (showHistory) {
       return (
@@ -3755,7 +3873,15 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                       </span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">{new Date(order.created_at).toLocaleString()}</p>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                    <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString()}</p>
+                    <button
+                      onClick={() => fetchOrderDetails(order)}
+                      className="px-3 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 font-medium"
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
