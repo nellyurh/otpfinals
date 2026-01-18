@@ -2352,6 +2352,12 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-4">
+                    {giftcardsConfig.reloadly_from_env && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+                        <span className="text-blue-600 text-xs">ℹ️</span>
+                        <p className="text-xs text-blue-700">Reloadly credentials are loaded from server environment variables. You can override them by entering new values below.</p>
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">Client ID</Label>
