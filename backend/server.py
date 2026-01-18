@@ -3874,8 +3874,16 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
     # Generate unique payment reference
     payment_ref = f"ERCS-{user['id'][:8]}-{str(uuid.uuid4())[:8]}".upper()
     
-    # Get frontend URL for redirect
-    frontend_url = os.environ.get('REACT_APP_BACKEND_URL', FRONTEND_URL) or 'https://sms-gateway-17.preview.emergentagent.com'
+    # Get frontend URL for redirect - check multiple possible env vars
+    # Priority: FRONTEND_URL > REACT_APP_FRONTEND_URL > extract from REACT_APP_BACKEND_URL
+    frontend_url = os.environ.get('FRONTEND_URL') or os.environ.get('REACT_APP_FRONTEND_URL')
+    if not frontend_url:
+        # Try to derive from backend URL (remove /api if present)
+        backend_url = os.environ.get('REACT_APP_BACKEND_URL', '')
+        if backend_url:
+            frontend_url = backend_url.rstrip('/')
+        else:
+            frontend_url = 'https://sea-lion-app-eu93r.ondigitalocean.app'
     
     # Prepare Ercaspay initiate checkout request
     checkout_data = {
