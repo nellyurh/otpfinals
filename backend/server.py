@@ -6994,6 +6994,10 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
         # Calculate NGN amount
         amount_ngn = round(amount_usd * usd_to_ngn_rate, 2)
         
+        # Get balance before for transaction record
+        balance_usd_before = current_usd
+        balance_ngn_before = user_data.get('ngn_balance', 0)
+        
         # Update balances
         await db.users.update_one(
             {'id': user_id},
@@ -7005,12 +7009,17 @@ async def convert_usd_to_ngn(request: Request, user: dict = Depends(get_current_
             }
         )
         
-        # Record transaction
+        # Record transaction with balance before/after
         transaction = {
+            'id': str(uuid.uuid4()),
             'user_id': user_id,
             'type': 'currency_conversion',
+            'amount': amount_ngn,
+            'currency': 'NGN',
             'amount_usd': -amount_usd,
             'amount_ngn': amount_ngn,
+            'balance_before': balance_ngn_before,
+            'balance_after': balance_ngn_before + amount_ngn,
             'exchange_rate': usd_to_ngn_rate,
             'description': f"Converted ${amount_usd:.2f} USD to ₦{amount_ngn:,.2f} NGN",
             'status': 'completed',
