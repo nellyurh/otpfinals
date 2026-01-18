@@ -6359,6 +6359,42 @@ class ReloadlyAuthService:
         """Get the API base URL based on sandbox/live setting"""
         config = await self.get_config()
         return self.get_api_base_url(config['is_sandbox'])
+    
+    def get_topups_api_url(self, is_sandbox: bool) -> str:
+        """Get the Topups API base URL for balance checking"""
+        return "https://topups-sandbox.reloadly.com" if is_sandbox else "https://topups.reloadly.com"
+    
+    async def get_balance_headers(self) -> dict:
+        """Get headers for Reloadly Topups/Balance API requests"""
+        config = await self.get_config()
+        api_base_url = self.get_topups_api_url(config['is_sandbox'])
+        
+        # Request token with topups audience
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.auth_url,
+                json={
+                    "client_id": config['client_id'],
+                    "client_secret": config['client_secret'],
+                    "audience": api_base_url,
+                    "grant_type": "client_credentials"
+                }
+            )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Failed to get Reloadly balance token: {response.text}")
+        
+        token_data = response.json()
+        return {
+            "Authorization": f"Bearer {token_data['access_token']}",
+            "Accept": "application/com.reloadly.topups-v1+json",
+            "Content-Type": "application/json"
+        }
+    
+    async def get_topups_url(self) -> str:
+        """Get the Topups API base URL based on sandbox/live setting"""
+        config = await self.get_config()
+        return self.get_topups_api_url(config['is_sandbox'])
 
 reloadly_auth = ReloadlyAuthService()
 
