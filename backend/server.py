@@ -6387,10 +6387,11 @@ async def get_giftcard_countries(user: dict = Depends(get_current_user)):
     """Get all countries with available gift cards"""
     try:
         headers = await reloadly_auth.get_headers()
+        api_url = await reloadly_auth.get_api_url()
         
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
-                f"{await reloadly_auth.get_api_url()}/countries",
+                f"{api_url}/countries",
                 headers=headers
             )
         
