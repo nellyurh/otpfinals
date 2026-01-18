@@ -93,31 +93,31 @@ export function FundWalletSection({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Fund Your Wallet</h2>
-        <p className="text-sm text-gray-600">Choose your preferred payment method</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Fund Your Wallet</h2>
+        <p className="text-xs sm:text-sm text-gray-600">Choose your preferred payment method</p>
       </div>
 
       {/* Ercaspay Card/Bank Payment - Conditionally rendered */}
       {pageToggles?.enable_ercaspay && (
-        <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-white" />
+        <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-orange-200 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div>
-              <h3 className="font-bold text-gray-900">Card / Bank Transfer</h3>
-              <p className="text-xs text-gray-600">Pay with Debit Card or Bank Transfer</p>
+            <div className="min-w-0">
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base">Card / Bank Transfer</h3>
+              <p className="text-[10px] sm:text-xs text-gray-600">Pay with Debit Card or Bank Transfer</p>
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div className="mb-3 sm:mb-4">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               Amount (NGN)
             </label>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-3 bg-orange-100 border border-orange-200 rounded-lg text-sm font-semibold text-orange-700">
+              <span className="px-2.5 sm:px-3 py-2.5 sm:py-3 bg-orange-100 border border-orange-200 rounded-lg text-xs sm:text-sm font-semibold text-orange-700 flex-shrink-0">
                 ₦
               </span>
               <input
@@ -135,54 +135,54 @@ export function FundWalletSection({
                     setErcaspayAmount(e.target.value);
                   }
                 }}
-                placeholder="Enter amount (min ₦100)"
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm transition-colors"
+                placeholder="Min ₦100"
+                className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm transition-colors"
                 disabled={ercaspayLoading}
                 autoComplete="off"
               />
             </div>
-            <p className="mt-1 text-[11px] text-gray-500">
+            <p className="mt-1 text-[10px] sm:text-[11px] text-gray-500">
               Minimum deposit: ₦100
             </p>
           </div>
 
           {/* Payment Method Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <button
               onClick={() => handleErcaspayPayment('card')}
               disabled={ercaspayLoading}
-              className="flex items-center justify-center gap-2 py-3 px-4 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 bg-orange-500 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {ercaspayLoading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
               ) : (
-                <CreditCard className="w-4 h-4" />
+                <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               )}
-              Pay with Card
+              <span className="truncate">Card</span>
             </button>
             <button
               onClick={() => handleErcaspayPayment('bank-transfer')}
               disabled={ercaspayLoading}
-              className="flex items-center justify-center gap-2 py-3 px-4 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 bg-amber-500 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm hover:bg-amber-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {ercaspayLoading ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
               ) : (
-                <Wallet className="w-4 h-4" />
+                <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               )}
-              Bank Transfer
+              <span className="truncate">Bank</span>
             </button>
           </div>
 
-          <p className="mt-3 text-[10px] text-gray-500 text-center">
-            Powered by Ercaspay. Your card details are encrypted and secure.
+          <p className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-gray-500 text-center">
+            Powered by Ercaspay. Secure & encrypted.
           </p>
         </div>
       )}
 
       {/* NGN Funding Card with PaymentPoint Logo - Conditionally rendered */}
       {pageToggles?.enable_paymentpoint && (
-        <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-6 border border-emerald-200 shadow-sm">
+        <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-emerald-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
