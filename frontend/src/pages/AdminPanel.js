@@ -824,6 +824,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => { setActiveSection('transactions'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
+              icon={Gift}
+              label="Gift Card Orders"
+              active={activeSection === 'giftcard-orders'}
+              onClick={() => { setActiveSection('giftcard-orders'); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
               icon={CreditCard}
               label="Ercaspay Payments"
               active={activeSection === 'ercaspay'}
