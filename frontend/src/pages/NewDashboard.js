@@ -1315,14 +1315,14 @@ const NewDashboard = () => {
     const netAmount = creditTotal - debitTotal;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
-            <p className="text-sm text-gray-600">Track your wallet activity</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Transactions</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Track your wallet activity</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -1331,22 +1331,22 @@ const NewDashboard = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl border shadow-sm p-6">
+        <div className="bg-white rounded-xl border shadow-sm p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
-            <h3 className="font-semibold text-gray-900">Filter Transactions</h3>
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Filter Transactions</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
             {/* Type Filter */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Type</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Type</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               >
                 <option value="all">All Types</option>
                 <option value="credit">Credit</option>
@@ -1356,13 +1356,13 @@ const NewDashboard = () => {
 
             {/* Currency Filter */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Currency</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Currency</label>
               <select
                 value={filterCurrency}
                 onChange={(e) => setFilterCurrency(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               >
-                <option value="all">All Currencies</option>
+                <option value="all">All</option>
                 <option value="NGN">NGN</option>
                 <option value="USD">USD</option>
               </select>
@@ -1370,11 +1370,11 @@ const NewDashboard = () => {
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Status</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A]"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               >
                 <option value="all">All Status</option>
                 <option value="completed">Completed</option>
