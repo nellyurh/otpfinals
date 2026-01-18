@@ -12,16 +12,31 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 1. **Reloadly Gift Cards Integration** ✅
    - Full integration with Reloadly Gift Cards API
    - Browse 2,900+ gift cards from 169 countries
+   - **Searchable country dropdown** (user requested)
    - Filter by country, search by brand/product name
    - View detailed product info with redemption instructions
    - Purchase with recipient email and phone (gift delivery)
    - Order history tracking
-   - NGN wallet balance payment (deducts from user balance)
+   - NGN wallet balance payment with configurable markup
 
-2. **USD to NGN Conversion** ✅
-   - Convert USD balance to NGN at admin-configured exchange rate
-   - Modal with real-time conversion preview
-   - Transaction recorded in user history
+2. **Convert Currency Page** ✅ (Separate page, not modal)
+   - New sidebar menu item "Convert Currency"
+   - Dedicated page with USD/NGN balance cards
+   - Exchange rate display
+   - Conversion form with preview
+   - Recent conversions history
+
+3. **Admin Panel - Gift Cards Provider Section** ✅
+   - New sidebar item "Gift Cards Provider"
+   - Reloadly API credentials (Client ID, Client Secret)
+   - Markup percentage setting
+   - Sandbox/Live environment toggle
+   - USD to NGN exchange rate configuration
+   - Price preview with markup calculation
+
+4. **UI Improvements** ✅
+   - Removed balance card from Gift Cards page
+   - Added searchable country dropdown (not plain select)
 
 **New API Endpoints:**
 - `GET /api/giftcards/countries` - List all countries with gift cards
@@ -38,8 +53,12 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 - `RELOADLY_CLIENT_ID` - Reloadly API client ID
 - `RELOADLY_CLIENT_SECRET` - Reloadly API client secret
 
-**Admin Panel:**
-- Added `enable_giftcards` toggle in Page Toggles section
+**Database Fields Added (pricing_config):**
+- `reloadly_client_id` - API client ID (editable in admin)
+- `reloadly_client_secret` - API client secret (editable in admin)
+- `giftcard_markup_percent` - Markup percentage on gift card prices
+- `giftcard_is_sandbox` - Boolean for sandbox/live mode
+- `enable_giftcards` - Page toggle
 
 ---
 
