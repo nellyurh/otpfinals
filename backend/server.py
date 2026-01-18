@@ -502,6 +502,10 @@ class PricingConfig(BaseModel):
     doge_usd_rate: float = 1420.0
     bnb_usd_rate: float = 1420.0
 
+    # Exchange rates - separate for wallet conversion vs gift cards
+    wallet_usd_to_ngn_rate: float = 1650.0  # Rate for Convert Currency page
+    giftcard_usd_to_ngn_rate: float = 1650.0  # Base rate for gift cards (before markup)
+    
     # Page toggles (admin controlled)
     enable_dashboard: bool = True
     enable_transactions: bool = True
