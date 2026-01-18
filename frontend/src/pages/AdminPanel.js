@@ -65,6 +65,213 @@ import { useNavigate } from 'react-router-dom';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Gift Card Orders Section Component
+const GiftCardOrdersSection = ({ API, axiosConfig }) => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderCards, setOrderCards] = useState(null);
+  const [loadingCards, setLoadingCards] = useState(false);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const resp = await axios.get(`${API}/admin/giftcard-orders`, axiosConfig);
+      if (resp.data.success) {
+        setOrders(resp.data.orders);
+      }
+    } catch (err) {
+      toast.error('Failed to fetch gift card orders');
+    }
+    setLoading(false);
+  };
+
+  const fetchOrderCards = async (transactionId) => {
+    setLoadingCards(true);
+    try {
+      const resp = await axios.get(`${API}/giftcards/redeem-code/${transactionId}`, axiosConfig);
+      if (resp.data.success) {
+        setOrderCards(resp.data.cards);
+      }
+    } catch (err) {
+      setOrderCards(null);
+    }
+    setLoadingCards(false);
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  return (
+    <section className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Gift Card Orders</h2>
+          <p className="text-xs text-slate-500 mt-1">View all gift card purchases</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white rounded-t-xl">
+              <h3 className="font-bold text-lg">{selectedOrder.product_name}</h3>
+              <p className="text-purple-200 text-sm">{selectedOrder.brand_name}</p>
+            </div>
+            <div className="p-4 space-y-4">
+              {/* Redeem Codes */}
+              {loadingCards ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+                </div>
+              ) : orderCards && orderCards.length > 0 ? (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-purple-700 mb-2">Redeem Code(s)</p>
+                  {orderCards.map((card, idx) => (
+                    <div key={idx} className="bg-white rounded p-2 mb-1 font-mono text-sm">
+                      {card.cardNumber && <p>Code: <span className="font-bold">{card.cardNumber}</span></p>}
+                      {card.pinCode && <p>PIN: <span className="font-bold">{card.pinCode}</span></p>}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {/* Order Info */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-slate-50 p-2 rounded">
+                  <p className="text-slate-500 text-xs">Transaction ID</p>
+                  <p className="font-semibold">{selectedOrder.transaction_id}</p>
+                </div>
+                <div className="bg-slate-50 p-2 rounded">
+                  <p className="text-slate-500 text-xs">Status</p>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                    selectedOrder.status === 'SUCCESSFUL' ? 'bg-green-100 text-green-700' :
+                    selectedOrder.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {selectedOrder.status}
+                  </span>
+                </div>
+                <div className="bg-slate-50 p-2 rounded">
+                  <p className="text-slate-500 text-xs">Amount Paid</p>
+                  <p className="font-semibold text-emerald-600">₦{selectedOrder.total_ngn?.toLocaleString()}</p>
+                </div>
+                <div className="bg-slate-50 p-2 rounded">
+                  <p className="text-slate-500 text-xs">Card Value</p>
+                  <p className="font-semibold">${selectedOrder.unit_price} x {selectedOrder.quantity}</p>
+                </div>
+                <div className="bg-slate-50 p-2 rounded col-span-2">
+                  <p className="text-slate-500 text-xs">Recipient</p>
+                  <p className="font-semibold">{selectedOrder.recipient_email}</p>
+                  <p className="text-xs text-slate-400">{selectedOrder.recipient_phone}</p>
+                </div>
+                <div className="bg-slate-50 p-2 rounded col-span-2">
+                  <p className="text-slate-500 text-xs">Customer</p>
+                  <p className="font-semibold">{selectedOrder.user_name || 'N/A'}</p>
+                  <p className="text-xs text-slate-400">{selectedOrder.user_email}</p>
+                </div>
+                <div className="bg-slate-50 p-2 rounded col-span-2">
+                  <p className="text-slate-500 text-xs">Date</p>
+                  <p className="font-semibold">{new Date(selectedOrder.created_at).toLocaleString()}</p>
+                </div>
+              </div>
+
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => { setSelectedOrder(null); setOrderCards(null); }}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Orders Table */}
+      <Card className="border border-slate-200 shadow-sm bg-white">
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              <Gift className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+              <p>No gift card orders yet</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 border-b">
+                  <tr>
+                    <th className="text-left p-3 font-semibold text-slate-600">Product</th>
+                    <th className="text-left p-3 font-semibold text-slate-600">Customer</th>
+                    <th className="text-left p-3 font-semibold text-slate-600">Amount</th>
+                    <th className="text-left p-3 font-semibold text-slate-600">Status</th>
+                    <th className="text-left p-3 font-semibold text-slate-600">Date</th>
+                    <th className="text-right p-3 font-semibold text-slate-600">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {orders.map((order) => (
+                    <tr key={order._id} className="hover:bg-slate-50">
+                      <td className="p-3">
+                        <p className="font-medium text-slate-900">{order.product_name}</p>
+                        <p className="text-xs text-slate-500">{order.brand_name}</p>
+                      </td>
+                      <td className="p-3">
+                        <p className="font-medium text-slate-900">{order.user_name || 'N/A'}</p>
+                        <p className="text-xs text-slate-500">{order.user_email}</p>
+                      </td>
+                      <td className="p-3">
+                        <p className="font-semibold text-emerald-600">₦{order.total_ngn?.toLocaleString()}</p>
+                        <p className="text-xs text-slate-400">${order.total_usd?.toFixed(2)}</p>
+                      </td>
+                      <td className="p-3">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                          order.status === 'SUCCESSFUL' ? 'bg-green-100 text-green-700' :
+                          order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-slate-500 text-xs">
+                        {new Date(order.created_at).toLocaleString()}
+                      </td>
+                      <td className="p-3 text-right">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            if (order.transaction_id && order.status === 'SUCCESSFUL') {
+                              fetchOrderCards(order.transaction_id);
+                            }
+                          }}
+                        >
+                          View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+};
+
 const AdminPanel = ({ user, setUser }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
