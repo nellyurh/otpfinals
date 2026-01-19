@@ -1069,12 +1069,31 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 md:p-6">
         <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Your Verifications</h3>
 
-        {orders.filter((o) => o.status === 'active').length > 0 ? (
+        {orders.filter((o) => {
+          // Show active orders OR completed orders with OTP (within last 10 minutes)
+          if (o.status === 'active') return true;
+          if ((o.status === 'completed' || o.status === 'received') && (o.otp || o.otp_code)) {
+            const createdAt = new Date(o.created_at);
+            const now = new Date();
+            const elapsedMinutes = (now - createdAt) / (1000 * 60);
+            return elapsedMinutes < 10; // Show for 10 minutes after creation
+          }
+          return false;
+        }).length > 0 ? (
           <>
             {/* Mobile Card Layout */}
             <div className="block md:hidden space-y-3">
               {orders
-                .filter((o) => o.status === 'active')
+                .filter((o) => {
+                  if (o.status === 'active') return true;
+                  if ((o.status === 'completed' || o.status === 'received') && (o.otp || o.otp_code)) {
+                    const createdAt = new Date(o.created_at);
+                    const now = new Date();
+                    const elapsedMinutes = (now - createdAt) / (1000 * 60);
+                    return elapsedMinutes < 10;
+                  }
+                  return false;
+                })
                 .map((order) => {
                   const createdAt = new Date(order.created_at);
                   const now = new Date();
@@ -1082,7 +1101,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
                   const minutes = Math.floor(remainingSeconds / 60);
                   const seconds = remainingSeconds % 60;
-                  const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
+                  const hasOTP = order.otp || order.otp_code;
+                  const canCancel = !hasOTP && remainingSeconds > 0;
 
                   return (
                     <div key={order.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
