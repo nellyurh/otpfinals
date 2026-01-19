@@ -1270,8 +1270,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             {!hasOTP && !canCancel && (
                               <span className="text-[10px] text-gray-500">Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
                             )}
-                            {(order.otp || order.otp_code) && (
-                              <span className="text-[10px] text-green-600 font-semibold">✓ Received</span>
+                            {hasOTP && (
+                              <span className="text-xs text-emerald-600 font-semibold">✓ Complete</span>
                             )}
                           </td>
                         </tr>
