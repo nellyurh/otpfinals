@@ -3453,7 +3453,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     const fetchConversionHistory = async () => {
       setLoading(true);
       try {
-        const resp = await axios.get(`${API}/api/user/transactions`, axiosConfig);
+        const resp = await axios.get(`${API}/api/transactions/list`, axiosConfig);
         const conversions = (resp.data.transactions || []).filter(t => t.type === 'currency_conversion');
         setTransactions(conversions.slice(0, 10));
       } catch (err) {
