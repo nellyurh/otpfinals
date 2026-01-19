@@ -4805,10 +4805,10 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['smspool_api_key'] = data.smspool_api_key
     if data.fivesim_api_key is not None:
         update_fields['fivesim_api_key'] = data.fivesim_api_key
-    if data.area_code_markup is not None:
-        update_fields['area_code_markup'] = data.area_code_markup
-    if data.carrier_markup is not None:
-        update_fields['carrier_markup'] = data.carrier_markup
+    if data.fivesim_markup is not None:
+        update_fields['fivesim_markup'] = data.fivesim_markup
+    if data.daisysms_advanced_markup is not None:
+        update_fields['daisysms_advanced_markup'] = data.daisysms_advanced_markup
 
     # Payment Gateway Keys
     if data.paymentpoint_api_key is not None:
