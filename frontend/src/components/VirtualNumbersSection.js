@@ -297,20 +297,17 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         let additionalCost = 0;
         const breakdown = [`Base: ₦${baseNGN.toFixed(2)}`];
 
-        // Add 35% for each advanced option selected
+        // Add 20% for each advanced option selected (matching backend)
         if (selectedCarrier) {
-          additionalCost += baseNGN * 0.35;
-          breakdown.push(`Carrier (${selectedCarrier.label}): +₦${(baseNGN * 0.35).toFixed(2)}`);
+          additionalCost += baseNGN * 0.20;
+          breakdown.push(`Carrier (${selectedCarrier.label}): +₦${(baseNGN * 0.20).toFixed(2)}`);
         }
         if (selectedAreaCodes && selectedAreaCodes.length > 0) {
-          additionalCost += baseNGN * 0.35;
+          additionalCost += baseNGN * 0.20;
           const codes = selectedAreaCodes.map((c) => c.value).join(', ');
-          breakdown.push(`Area Code (${codes}): +₦${(baseNGN * 0.35).toFixed(2)}`);
+          breakdown.push(`Area Code (${codes}): +₦${(baseNGN * 0.20).toFixed(2)}`);
         }
-        if (preferredNumber) {
-          additionalCost += baseNGN * 0.35;
-          breakdown.push(`Preferred Number: +₦${(baseNGN * 0.35).toFixed(2)}`);
-        }
+        // Note: preferredNumber doesn't add extra cost per backend logic
 
         const totalNGN = baseNGN + additionalCost;
         const totalUSD = totalNGN / 1500;
