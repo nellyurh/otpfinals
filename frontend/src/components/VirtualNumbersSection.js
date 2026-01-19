@@ -292,30 +292,41 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           }
         }
         
-        // Client-side calculation (no promo)
+        // For DaisySMS with advanced options, always use backend calculation
+        // since the advanced markup is configurable from admin
+        if (selectedCarrier || (selectedAreaCodes && selectedAreaCodes.length > 0) || preferredNumber) {
+          try {
+            const response = await axios.post(
+              `${API}/api/orders/calculate-price`,
+              {
+                server: selectedServer.value,
+                service: selectedService.value,
+                country: '187', // DaisySMS is US-only
+                area_code: selectedAreaCodes && selectedAreaCodes.length > 0 ? selectedAreaCodes[0].value : undefined,
+                carrier: selectedCarrier?.value,
+              },
+              axiosConfig
+            );
+
+            if (response.data.success) {
+              setEstimatedPrice({
+                ...response.data,
+                final_ngn: response.data.final_price_ngn,
+                final_usd: response.data.final_price_usd,
+              });
+              return;
+            }
+          } catch (error) {
+            console.error('Failed to calculate advanced price:', error);
+          }
+        }
+        
+        // Client-side calculation (no advanced options)
         let baseNGN = selectedService.price_ngn;
-        let additionalCost = 0;
-        const breakdown = [`Base: ₦${baseNGN.toFixed(2)}`];
-
-        // Add 20% for each advanced option selected (matching backend)
-        if (selectedCarrier) {
-          additionalCost += baseNGN * 0.20;
-          breakdown.push(`Carrier (${selectedCarrier.label}): +₦${(baseNGN * 0.20).toFixed(2)}`);
-        }
-        if (selectedAreaCodes && selectedAreaCodes.length > 0) {
-          additionalCost += baseNGN * 0.20;
-          const codes = selectedAreaCodes.map((c) => c.value).join(', ');
-          breakdown.push(`Area Code (${codes}): +₦${(baseNGN * 0.20).toFixed(2)}`);
-        }
-        // Note: preferredNumber doesn't add extra cost per backend logic
-
-        const totalNGN = baseNGN + additionalCost;
-        const totalUSD = totalNGN / 1500;
-
         setEstimatedPrice({
-          final_usd: totalUSD,
-          final_ngn: totalNGN,
-          breakdown
+          final_usd: selectedService.price_usd,
+          final_ngn: baseNGN,
+          breakdown: [`Base: ₦${baseNGN.toFixed(2)}`]
         });
       } else if (selectedServer.value === 'server1' && selectedService.price_ngn) {
         // SMS-pool (International server): allow user to select a specific pool.
