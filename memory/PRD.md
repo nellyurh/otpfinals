@@ -1,12 +1,29 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2025-01-19**: Fixed Ercaspay payment gateway - now allows all payment methods (card, bank-transfer, ussd, qrcode) at checkout. Fixed USD to NGN conversion transactions not showing in history (wrong API endpoint).
 - **2025-01-18**: Fixed Gift Cards not loading issue. The `giftcardsConfig` wasn't being included in save requests. Added environment variable indicator in Admin Panel.
 
 ## Original Problem Statement
 Build a full-stack OTP service platform with JWT auth, wallet system, multiple payment gateways, and admin panel.
 
-## Latest Updates (January 18, 2026)
+## Latest Updates (January 19, 2026)
+
+### Session 13 - Payment Gateway Fixes
+
+**Completed Tasks:**
+
+1. **Ercaspay Payment Gateway Fix** ✅
+   - Fixed `paymentMethods` parameter format (comma-separated string)
+   - Now allows all payment methods at Ercaspay checkout
+   - Users can choose: card, bank-transfer, ussd, or qrcode at checkout
+
+2. **Currency Conversion History Fix** ✅
+   - Fixed wrong API endpoint in ConvertCurrencySection
+   - Changed from `/api/user/transactions` to `/api/transactions/list`
+   - Currency conversion transactions now showing in history
+
+## Previous Updates (January 18, 2026)
 
 ### Session 12 - Gift Cards (Reloadly Integration)
 
