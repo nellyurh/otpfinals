@@ -1105,18 +1105,20 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   const canCancel = !hasOTP && remainingSeconds > 0;
 
                   return (
-                    <div key={order.id} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                    <div key={order.id} className={`rounded-xl p-3 border ${hasOTP ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-100'}`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-semibold text-gray-800">
                           {order.service_name || getServiceName(order.service)}
                         </span>
                         <div className="flex items-center gap-1">
-                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full">
-                            Active
+                          <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${hasOTP ? 'bg-emerald-500 text-white' : 'bg-green-100 text-green-700'}`}>
+                            {hasOTP ? '✓ Code Received' : 'Waiting...'}
                           </span>
-                          <span className="text-[10px] text-gray-500 font-mono">
-                            {minutes}:{seconds.toString().padStart(2, '0')}
-                          </span>
+                          {!hasOTP && (
+                            <span className="text-[10px] text-gray-500 font-mono">
+                              {minutes}:{seconds.toString().padStart(2, '0')}
+                            </span>
+                          )}
                         </div>
                       </div>
                       
@@ -1137,17 +1139,24 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-gray-500">OTP:</span>
-                        {order.otp || order.otp_code ? (
+                        {hasOTP ? (
                           <div className="flex items-center gap-1">
-                            <span className="font-mono text-sm font-bold text-emerald-600">
+                            <span className="font-mono text-lg font-bold text-emerald-600 bg-white px-2 py-0.5 rounded">
                               {order.otp || order.otp_code}
                             </span>
                             <button
                               onClick={() => copyOTP(order.otp || order.otp_code)}
-                              className="p-0.5 hover:bg-gray-200 rounded"
+                              className="p-1 bg-emerald-100 hover:bg-emerald-200 rounded"
                             >
-                              <Copy className="w-3 h-3 text-gray-500" />
+                              <Copy className="w-3 h-3 text-emerald-600" />
                             </button>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            Waiting...
+                          </span>
+                        )}
                           </div>
                         ) : (
                           <span className="text-[10px] text-gray-400 flex items-center gap-1">
