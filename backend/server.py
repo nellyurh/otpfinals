@@ -2518,14 +2518,30 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         
         # Get base price
         if provider == 'daisysms':
-            # Use static pricing for DaisySMS
-            base_price_usd = DAISYSMS_PRICES.get(data.service, 1.00)
+            # Use LIVE pricing from DaisySMS API
+            api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    'https://daisysms.com/stubs/handler_api.php',
+                    params={'api_key': api_key, 'action': 'getPricesVerification'},
+                    timeout=15.0
+                )
+                if response.status_code == 200:
+                    prices_data = response.json()
+                    if data.service in prices_data and '187' in prices_data[data.service]:
+                        usa_data = prices_data[data.service]['187']
+                        base_price_usd = float(usa_data.get('retail_price', usa_data.get('cost', 1.0)))
+                    else:
+                        raise HTTPException(status_code=404, detail="Service not found")
+                else:
+                    raise HTTPException(status_code=500, detail="Failed to fetch pricing")
             
-            # DaisySMS adds 20% for area codes and carriers (from their side)
+            # Apply advanced options markup (configurable from admin)
+            advanced_markup = config.get('daisysms_advanced_markup', 20.0) if config else 20.0
             if data.area_code:
-                base_price_usd = base_price_usd * 1.20
+                base_price_usd = base_price_usd * (1 + advanced_markup / 100)
             if data.carrier:
-                base_price_usd = base_price_usd * 1.20
+                base_price_usd = base_price_usd * (1 + advanced_markup / 100)
         else:
             # Get from cached services for other providers
             cached_service = await db.cached_services.find_one({
