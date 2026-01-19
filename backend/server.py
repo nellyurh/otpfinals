@@ -2662,15 +2662,55 @@ async def purchase_number(
         if data.carrier:
             base_price_usd = base_price_usd * (1 + advanced_markup / 100)
     elif provider == '5sim':
-        # For 5sim, use cached base USD price from services endpoint
-        cached_service = await db.cached_services.find_one({
-            'provider': '5sim',
-            'service_code': data.service,
-            'country_code': data.country
-        }, {'_id': 0})
-        if not cached_service:
-            raise HTTPException(status_code=404, detail="Service not found for this country")
-        base_price_usd = float(cached_service.get('base_price', 0) or 0)
+        # For 5sim, check if operator is selected and get its price
+        if data.operator and data.operator != 'any':
+            # Get operator-specific price from 5sim API
+            fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    f"{FIVESIM_BASE_URL}/guest/prices",
+                    params={'country': data.country, 'product': data.service},
+                    timeout=15.0
+                )
+                if resp.status_code == 200:
+                    prices_data = resp.json()
+                    # Find operator price
+                    if data.country in prices_data and data.service in prices_data[data.country]:
+                        operators = prices_data[data.country][data.service]
+                        if data.operator in operators:
+                            # Price is in coins, convert to USD
+                            price_coins = float(operators[data.operator].get('cost', 0))
+                            coin_rate = float(config.get('fivesim_coin_per_usd', 77.44) or 77.44)
+                            base_price_usd = price_coins / coin_rate
+                        else:
+                            # Fallback to cached service price
+                            cached_service = await db.cached_services.find_one({
+                                'provider': '5sim',
+                                'service_code': data.service,
+                                'country_code': data.country
+                            }, {'_id': 0})
+                            base_price_usd = float(cached_service.get('base_price', 0) or 0) if cached_service else 0
+                    else:
+                        raise HTTPException(status_code=404, detail="Service/country not found")
+                else:
+                    # Fallback to cached
+                    cached_service = await db.cached_services.find_one({
+                        'provider': '5sim',
+                        'service_code': data.service,
+                        'country_code': data.country
+                    }, {'_id': 0})
+                    base_price_usd = float(cached_service.get('base_price', 0) or 0) if cached_service else 0
+        else:
+            # No operator selected, use cached service price (cheapest)
+            cached_service = await db.cached_services.find_one({
+                'provider': '5sim',
+                'service_code': data.service,
+                'country_code': data.country
+            }, {'_id': 0})
+            if not cached_service:
+                raise HTTPException(status_code=404, detail="Service not found for this country")
+            base_price_usd = float(cached_service.get('base_price', 0) or 0)
+        
         if base_price_usd <= 0:
             raise HTTPException(status_code=400, detail="Invalid service price")
     else:
