@@ -172,7 +172,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             label: service.name,
             name: service.name,
             price_usd: service.final_price,
-            price_ngn: service.final_price * 1500,
+            price_ngn: service.final_price_ngn || service.final_price * 1500,
             count: service.count
           }));
           setAvailableServices(services);
