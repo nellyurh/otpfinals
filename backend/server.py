@@ -2639,15 +2639,28 @@ async def purchase_number(
     
     # Calculate price
     if provider == 'daisysms':
-        # Use SAME static pricing as calculate-price endpoint for consistency
-        base_price_usd = DAISYSMS_PRICES.get(data.service, 1.00)
-        
-        # DaisySMS adds 20% for area codes and carriers (from their side)
-        # Match calculate-price logic exactly
+        # Use LIVE pricing from DaisySMS API
+        async with httpx.AsyncClient() as client:
+            price_response = await client.get(
+                'https://daisysms.com/stubs/handler_api.php',
+                params={'api_key': (config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY), 'action': 'getPricesVerification'},
+                timeout=10.0
+            )
+            if price_response.status_code == 200:
+                prices = price_response.json()
+                if data.service in prices and '187' in prices[data.service]:
+                    base_price_usd = float(prices[data.service]['187'].get('retail_price', prices[data.service]['187'].get('cost', 1.0)))
+                else:
+                    raise HTTPException(status_code=404, detail="Service not found")
+            else:
+                raise HTTPException(status_code=500, detail="Failed to fetch pricing")
+
+        # Apply advanced options markup (configurable from admin)
+        advanced_markup = config.get('daisysms_advanced_markup', 20.0) if config else 20.0
         if data.area_code or (hasattr(data, 'area_codes') and data.area_codes):
-            base_price_usd = base_price_usd * 1.20
+            base_price_usd = base_price_usd * (1 + advanced_markup / 100)
         if data.carrier:
-            base_price_usd = base_price_usd * 1.20
+            base_price_usd = base_price_usd * (1 + advanced_markup / 100)
     elif provider == '5sim':
         # For 5sim, use cached base USD price from services endpoint
         cached_service = await db.cached_services.find_one({
