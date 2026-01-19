@@ -1,7 +1,7 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2025-01-19**: **CRITICAL FIX** - Fixed SMS pricing discrepancy where users were shown one price but charged differently. The `/services/daisysms` endpoint was using LIVE API pricing while `calculate-price` and `purchase` used STATIC pricing. Now all three endpoints use consistent STATIC DAISYSMS_PRICES. Also fixed frontend advanced options markup from 35% to 20% to match backend.
+- **2025-01-19**: **PRICING FIX** - DaisySMS now uses LIVE API pricing (e.g., WhatsApp $0.50 + 50% markup = $0.75). Added configurable `daisysms_advanced_markup` for area code/carrier options. Fixed 5sim to use selected operator's price during purchase.
 - **2025-01-19**: Fixed OTP/SMS not showing in active orders - orders now stay visible when code is received. Added polling to auto-refresh orders every 5 seconds. Made SMS History mobile responsive with card layout. Fixed Ercaspay payment gateway.
 - **2025-01-19**: Fixed Ercaspay payment gateway - now allows all payment methods (card, bank-transfer, ussd, qrcode) at checkout. Fixed USD to NGN conversion transactions not showing in history (wrong API endpoint).
 - **2025-01-18**: Fixed Gift Cards not loading issue. The `giftcardsConfig` wasn't being included in save requests. Added environment variable indicator in Admin Panel.
@@ -11,28 +11,20 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 19, 2026)
 
-### Session 13 - Critical Pricing Fix
+### Session 13 - SMS Pricing Fixes
 
-**ROOT CAUSE OF PRICING BUG:**
-The `/services/daisysms` endpoint was using **LIVE API pricing** from DaisySMS, while `calculate-price` and `purchase` endpoints used **STATIC DAISYSMS_PRICES**. This caused users to see a lower price in the dropdown but get charged a higher amount during purchase.
+**DaisySMS Pricing (LIVE API):**
+- Services endpoint, calculate-price, and purchase ALL use LIVE pricing from DaisySMS API
+- Example: WhatsApp base = $0.50, with 50% markup = $0.75, NGN = ₦1,125
+- Advanced options (area code, carrier) add configurable `daisysms_advanced_markup` (default 20%)
 
-**Fixes Applied:**
+**5sim Operator Pricing:**
+- Fixed: When user selects a specific operator, that operator's price is now used
+- Previously was using cached service price regardless of selected operator
 
-1. **Services Endpoint Now Uses Static Pricing** ✅
-   - Changed `/services/daisysms` to use `DAISYSMS_PRICES` dict
-   - Now returns `final_price_ngn` directly to frontend
-   - All three endpoints (services, calculate-price, purchase) now consistent
-
-2. **Frontend Advanced Options Markup Fixed** ✅
-   - Changed from 35% to 20% for carrier/area code options
-   - Removed extra charge for preferred number (backend doesn't charge for it)
-   - Frontend now matches backend calculations exactly
-
-3. **Previous Fixes This Session:**
-   - OTP not showing in active orders
-   - SMS History mobile responsiveness
-   - Ercaspay payment gateway
-   - Currency conversion history
+**New Admin Config Fields:**
+- `daisysms_advanced_markup`: Configurable markup % for advanced options (default 20%)
+- `fivesim_markup`: Separate markup for 5sim provider (was using tigersms_markup)
 
 ## Previous Updates (January 18, 2026)
 
