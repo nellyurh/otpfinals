@@ -659,6 +659,7 @@ class UpdatePricingRequest(BaseModel):
     tigersms_markup: Optional[float] = None
     daisysms_markup: Optional[float] = None
     smspool_markup: Optional[float] = None
+    fivesim_markup: Optional[float] = None  # 5sim markup
     ngn_to_usd_rate: Optional[float] = None
     rub_to_usd_rate: Optional[float] = None
     fivesim_coin_per_usd: Optional[float] = None
@@ -676,8 +677,8 @@ class UpdatePricingRequest(BaseModel):
     plisio_webhook_secret: Optional[str] = None
     payscribe_api_key: Optional[str] = None
     
-    area_code_markup: Optional[float] = None
-    carrier_markup: Optional[float] = None
+    # DaisySMS advanced options markup
+    daisysms_advanced_markup: Optional[float] = None
 
     # Exchange rates (separate for wallet vs gift cards)
     wallet_usd_to_ngn_rate: Optional[float] = None
