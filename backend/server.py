@@ -2619,29 +2619,15 @@ async def purchase_number(
     
     # Calculate price
     if provider == 'daisysms':
-        # Get live pricing
-        async with httpx.AsyncClient() as client:
-            price_response = await client.get(
-                'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': (config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY), 'action': 'getPricesVerification'},
-                timeout=10.0
-            )
-            if price_response.status_code == 200:
-                prices = price_response.json()
-                if data.service in prices and '187' in prices[data.service]:
-                    base_price_usd = float(prices[data.service]['187'].get('retail_price', 1.0))
-                else:
-                    base_price_usd = 1.00  # Fallback
-            else:
-                base_price_usd = 1.00
-
-        # Add 35% for each advanced option (our markup)
+        # Use SAME static pricing as calculate-price endpoint for consistency
+        base_price_usd = DAISYSMS_PRICES.get(data.service, 1.00)
+        
+        # DaisySMS adds 20% for area codes and carriers (from their side)
+        # Match calculate-price logic exactly
         if data.area_code or (hasattr(data, 'area_codes') and data.area_codes):
-            base_price_usd = base_price_usd * 1.35
+            base_price_usd = base_price_usd * 1.20
         if data.carrier:
-            base_price_usd = base_price_usd * 1.35
-        if data.phone_make or (hasattr(data, 'preferred_number') and data.preferred_number):
-            base_price_usd = base_price_usd * 1.35
+            base_price_usd = base_price_usd * 1.20
     elif provider == '5sim':
         # For 5sim, use cached base USD price from services endpoint
         cached_service = await db.cached_services.find_one({
