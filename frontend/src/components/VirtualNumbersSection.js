@@ -126,12 +126,24 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   };
 
   // Update timer every second (for countdown in active orders)
+  // Also poll for order updates to get OTP when received
   useEffect(() => {
     const interval = setInterval(() => {
       setTick((t) => t + 1);
     }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    // Poll for order updates every 5 seconds
+    const pollInterval = setInterval(() => {
+      if (fetchOrders) {
+        fetchOrders();
+      }
+    }, 5000);
+    
+    return () => {
+      clearInterval(interval);
+      clearInterval(pollInterval);
+    };
+  }, [fetchOrders]);
 
   // Fetch services for selected server
   const fetchServicesForServer = async (serverValue) => {
