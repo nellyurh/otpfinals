@@ -1,6 +1,7 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2025-01-19**: Fixed OTP/SMS not showing in active orders - orders now stay visible when code is received. Added polling to auto-refresh orders every 5 seconds. Made SMS History mobile responsive with card layout. Fixed Ercaspay payment gateway.
 - **2025-01-19**: Fixed Ercaspay payment gateway - now allows all payment methods (card, bank-transfer, ussd, qrcode) at checkout. Fixed USD to NGN conversion transactions not showing in history (wrong API endpoint).
 - **2025-01-18**: Fixed Gift Cards not loading issue. The `giftcardsConfig` wasn't being included in save requests. Added environment variable indicator in Admin Panel.
 
@@ -9,19 +10,32 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 19, 2026)
 
-### Session 13 - Payment Gateway Fixes
+### Session 13 - OTP/SMS Display & Mobile Responsiveness Fixes
 
 **Completed Tasks:**
 
-1. **Ercaspay Payment Gateway Fix** ✅
-   - Fixed `paymentMethods` parameter format (comma-separated string)
-   - Now allows all payment methods at Ercaspay checkout
-   - Users can choose: card, bank-transfer, ussd, or qrcode at checkout
+1. **Fixed OTP Not Showing in Active Orders** ✅
+   - Orders now remain visible when SMS/OTP code is received
+   - Status changes from "Waiting..." to "✓ Code Received" with green highlight
+   - Orders with OTP stay visible for 10 minutes after creation
+   - Order card turns green when code is received
 
-2. **Currency Conversion History Fix** ✅
+2. **Added Order Polling** ✅
+   - Frontend now polls for order updates every 5 seconds
+   - No more manual refresh needed to see received codes
+
+3. **SMS History Mobile Responsive** ✅
+   - Added mobile card layout (hidden on desktop)
+   - Shows service, phone, code, status, and date in card format
+   - No horizontal scroll on mobile
+
+4. **Ercaspay Payment Gateway Fix** ✅
+   - All payment methods now available at checkout
+   - Users can choose: card, bank-transfer, ussd, or qrcode
+
+5. **Currency Conversion History Fix** ✅
    - Fixed wrong API endpoint in ConvertCurrencySection
-   - Changed from `/api/user/transactions` to `/api/transactions/list`
-   - Currency conversion transactions now showing in history
+   - Conversion transactions now showing in history
 
 ## Previous Updates (January 18, 2026)
 
