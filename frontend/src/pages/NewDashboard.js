@@ -1801,9 +1801,55 @@ const NewDashboard = () => {
         </div>
         
         {orders.length > 0 ? (
-          <div className="bg-white p-4 sm:p-6 rounded-xl border shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-black min-w-[600px]">
+          <div className="bg-white p-3 sm:p-6 rounded-xl border shadow-sm">
+            {/* Mobile Card Layout */}
+            <div className="block md:hidden space-y-3">
+              {orders.map((order) => (
+                <div key={order.id} className={`rounded-xl p-3 border ${(order.otp || order.otp_code) ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-100'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <span className="text-emerald-600 text-xs font-bold">{(order.service || '?')[0].toUpperCase()}</span>
+                      </div>
+                      <span className="font-medium text-sm text-gray-900">{getServiceName(order.service)}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
+                      order.status === 'active' || order.status === 'RECEIVED' ? 'bg-emerald-100 text-emerald-700' :
+                      order.status === 'cancelled' || order.status === 'CANCELED' ? 'bg-red-100 text-red-700' :
+                      order.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-gray-500">Phone:</span>
+                    <span className="font-mono text-xs text-gray-800">{order.phone_number}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-gray-500">Code:</span>
+                    {order.otp || order.otp_code ? (
+                      <span className="font-mono text-lg font-bold text-emerald-600 bg-white px-2 py-0.5 rounded">
+                        {order.otp || order.otp_code}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs italic">Not received</span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-[10px] text-gray-500">
+                    <span>{new Date(order.created_at).toLocaleDateString()}</span>
+                    <span>{new Date(order.created_at).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table Layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-black">
                 <thead>
                   <tr className="bg-gray-50 border-b">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
@@ -1811,7 +1857,6 @@ const NewDashboard = () => {
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Code</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1834,13 +1879,14 @@ const NewDashboard = () => {
                             {order.otp || order.otp_code}
                           </span>
                         ) : (
-                          <span className="text-gray-400 italic">Waiting...</span>
+                          <span className="text-gray-400 italic">Not received</span>
                         )}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
                           order.status === 'active' || order.status === 'RECEIVED' ? 'bg-emerald-100 text-emerald-700' :
                           order.status === 'cancelled' || order.status === 'CANCELED' ? 'bg-red-100 text-red-700' :
+                          order.status === 'completed' ? 'bg-blue-100 text-blue-700' :
                           order.status === 'pending' || order.status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
                           'bg-gray-100 text-gray-700'
                         }`}>
@@ -1849,14 +1895,6 @@ const NewDashboard = () => {
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-600">
                         {new Date(order.created_at).toLocaleString()}
-                      </td>
-                      <td className="py-4 px-4">
-                        <button 
-                          onClick={() => toast.info(`Order ID: ${order.id}\nServer: ${order.server_name || order.provider || 'N/A'}\nCountry: ${order.country || 'N/A'}\nPrice: ₦${order.price_ngn || 0}`)}
-                          className="px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
-                        >
-                          View
-                        </button>
                       </td>
                     </tr>
                   ))}
