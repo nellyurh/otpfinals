@@ -1157,25 +1157,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             Waiting...
                           </span>
                         )}
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                            <RefreshCw className="w-3 h-3 animate-spin" />
-                            Waiting...
-                          </span>
-                        )}
                       </div>
 
-                      {!(order.otp || order.otp_code) && canCancel && (
+                      {!hasOTP && canCancel && (
                         <button
                           onClick={() => handleCancelOrder(order.activation_id || order.id)}
                           className="w-full mt-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-xs font-semibold"
                         >
                           Cancel Order
                         </button>
-                      )}
-                      {(order.otp || order.otp_code) && (
-                        <div className="text-center mt-2 text-[10px] text-green-600 font-semibold">✓ OTP Received</div>
                       )}
                     </div>
                   );
