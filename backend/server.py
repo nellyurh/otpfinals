@@ -2249,14 +2249,15 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
 
 @api_router.get("/services/daisysms")
 async def get_daisysms_services(user: dict = Depends(get_current_user)):
-    """Get DaisySMS services with LIVE pricing from API"""
+    """Get DaisySMS services with STATIC pricing (matching calculate-price and purchase)"""
     try:
-        # Get API key and markup from config
+        # Get markup from config
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
         markup_percent = config.get('daisysms_markup', 50.0) if config else 50.0
+        ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+        api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
         
-        # Fetch live prices from DaisySMS
+        # Fetch service availability from DaisySMS (for counts only)
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
@@ -2267,15 +2268,18 @@ async def get_daisysms_services(user: dict = Depends(get_current_user)):
             if response.status_code == 200:
                 prices_data = response.json()
                 
-                # Transform into services with pricing
+                # Transform into services with STATIC pricing (same as calculate-price/purchase)
                 services = []
                 for service_code, countries in prices_data.items():
                     if '187' in countries:  # USA country code
                         usa_data = countries['187']
-                        base_price = float(usa_data.get('retail_price', usa_data.get('cost', 1.0)))
                         
-                        # Apply markup
+                        # Use STATIC pricing from DAISYSMS_PRICES (same as purchase endpoint)
+                        base_price = DAISYSMS_PRICES.get(service_code, 1.00)
+                        
+                        # Apply markup (same formula as calculate-price and purchase)
                         final_price = base_price * (1 + markup_percent / 100)
+                        final_price_ngn = final_price * ngn_rate
                         
                         services.append({
                             'value': service_code,
@@ -2283,6 +2287,7 @@ async def get_daisysms_services(user: dict = Depends(get_current_user)):
                             'name': usa_data.get('name', service_code),
                             'base_price': base_price,
                             'final_price': final_price,
+                            'final_price_ngn': final_price_ngn,
                             'count': usa_data.get('count', 0)
                         })
                 
