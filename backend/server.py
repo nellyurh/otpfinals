@@ -2655,8 +2655,9 @@ async def purchase_number(
         if cached_service['currency'] == 'RUB':
             base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
 
-    # Apply our markup (default 50%)
-    markup = config.get(f'{provider}_markup', 50.0) if provider != '5sim' else config.get('tigersms_markup', 50.0)
+    # Apply our markup (default 50%) - use consistent key format with calculate-price
+    markup_key = f'{provider}_markup'
+    markup = config.get(markup_key, 50.0)
     final_price_usd = base_price_usd * (1 + markup / 100)
     
     # Convert to NGN if needed
