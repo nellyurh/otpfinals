@@ -1,208 +1,175 @@
 <analysis>**original_problem_statement:**
-The user initially wanted to build a full-stack OTP service platform, UltraCloud Sms, with JWT auth, a user wallet, crypto deposits, and an admin panel.
+The user's goal is to build and deploy a full-stack OTP service platform, UltraCloud Sms. The project has evolved to include a full UI/UX, an admin panel, a reseller system, and multiple 3rd-party integrations.
 
-The scope expanded significantly to include:
-1.  A major UI/UX overhaul for the landing page and user dashboard.
-2.  Admin controls for payment gateways, site-wide branding (logo, colors, banners), and user management.
-3.  Numerous UI/UX fixes, including mobile responsiveness for both user and admin dashboards.
-4.  A complete restructuring of the admin panel, splitting a monolithic settings page into dedicated sections.
-5.  The implementation of a full-stack Reseller system, allowing users to subscribe to plans and resell OTP services via an API. This included a new reseller dashboard for users and management panels for admins.
-6.  A recent set of bug fixes and feature requests related to the new reseller system and other parts of the application, including a redesigned API documentation page and new admin sales-tracking pages.
+Recent work focused on fixing the Reloadly gift card feature, implementing comprehensive transaction histories, improving mobile responsiveness, and debugging payment gateway integrations (Ercaspay and PaymentPoint).
+
+PRODUCT REQUIREMENTS:
+- Fix all UI/UX bugs, especially mobile responsiveness and element positioning.
+- Ensure the gift card sales feature (Reloadly) is fully functional, including purchase and history.
+- Implement a complete gift card transaction history for both users and admins, with a detailed view showing the e-code.
+- Enhance the main transaction history to show balance before and after each transaction.
+- Create separate metrics on the admin dashboard for non-OTP services (Gift Cards, Currency Conversion).
+- Resolve all payment gateway issues, specifically with Ercaspay bank transfers and PaymentPoint virtual account generation.
+- Ensure all callbacks and redirects work with the user's Digital Ocean deployment URLs.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a functional OTP service platform with a redesigned, responsive frontend and a feature-rich admin panel. The admin panel is now organized into logical sections: Dashboard, Page Toggles, Payment Gateways, Promo Codes, Branding & Banners, SMS Providers, Resellers, OTP Sales, and Reseller Sales.
+The application is a full-stack OTP service platform with a FastAPI backend and a React frontend using a MongoDB database. It features an admin panel for managing services, users, and pricing.
 
-A comprehensive Reseller system is in place, featuring:
--   **Backend:** A full suite of API endpoints () and corresponding database models for managing reseller profiles, subscription plans, and orders. These endpoints have been recently fixed and tested.
--   **User Frontend:** A Reseller Portal in the user dashboard where users can register, get their API key, view stats, and access a professionally redesigned API documentation page.
--   **Admin Frontend:** A Resellers section in the admin panel for managing subscription plans, individual reseller accounts, and a configurable API Base URL for the reseller documentation. New OTP Sales and Reseller Sales pages provide detailed statistics and order histories.
-
-A branding layer has been implemented in the backend to abstract away provider names (e.g., 5sim) and show user-friendly server names (e.g., Server 2) in the UI and error messages.
+Key features implemented include:
+- **OTP Services:** Integration with multiple SMS providers.
+- **Gift Card Sales:** A complete flow for selling gift cards via the Reloadly API, including browsing products, purchasing, and viewing order history with redeem codes. The admin panel has sections for managing Reloadly credentials, markup, and viewing wallet balance.
+- **Transaction History:** A detailed transaction history for users with a modal view showing balance before and after the transaction.
+- **Admin Dashboard:** Includes metrics for OTP sales and a new section for Other Services Revenue (Gift Cards, Currency Conversions).
+- **Payment Gateways:** Integrations with Ercaspay and PaymentPoint for funding wallets.
+- **Mobile Responsiveness:** Significant improvements have been made to the Fund Wallet and Transactions pages to eliminate horizontal scroll.
 
 **Last working item**:
--   **Last item agent was working:** The agent addressed the user's request to test and fix the reseller API endpoints. This involved fixing the , , , , and  endpoints, which were failing due to incorrect API key handling (using DB config instead of environment variables) and incorrect provider API details (wrong URL for smspool, wrong parameter name for cancel). The agent also implemented the server name branding and fixed an issue where prices for some providers were not showing up for resellers.
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** Y
--   **Which testing method agent to use?** backend testing agent
--   **User Testing Done:** N
+-   Last item agent was working: The agent was debugging an issue with the Ercaspay payment gateway where selecting the Bank Transfer option was failing with an error indicating the Card payment method was not enabled. The agent identified that the API request payload was incorrect.
+-   Status: IN PROGRESS
+-   Agent Testing Done: N
+-   Which testing method agent to use? backend testing agent
+-   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Clarify income logic for canceled reseller orders (P0)
--   Issue 2: Ercaspay amount field loses focus (P2)
--   Issue 3: Admin Bank Accounts page showing no data (P3)
--   Issue 4: Incorrect Total OTP Volume metric on the admin dashboard (P3)
+-   Issue 1: Ercaspay bank transfer payment is not working (P0)
+-   Issue 2: User reports PaymentPoint virtual account generation is not working (P1)
+-   Issue 3: Reseller Portal has horizontal scroll on mobile (P1)
+-   Issue 4: Digital Ocean deployment is failing (P2)
 
 **Issues Detail:**
--   **Issue 1: Clarify income logic for canceled reseller orders**
-    -   **Description:** The agent implemented logic to *decrement* revenue when a reseller order is canceled. However, a recent user message stated, if sms is cancelled it should add to income. This is contradictory. The standard behavior is to subtract revenue upon refund.
-    -   **Attempted fixes:** The agent previously implemented the logic to decrement revenue in  in .
+-   **Issue 1: Ercaspay bank transfer payment is not working**
+    -   **Description:** When the user clicks the Bank payment option for Ercaspay, the API returns an error: card payment method is not enabled for the transaction. The agent discovered that the  field in the API request to Ercaspay was being sent in an incorrect format.
+    -   **Attempted fixes:** The agent first tried sending the  as a JSON array (), which caused a 500 error from the Ercaspay API. The agent then did a web search and found the correct format.
     -   **Next debug checklist:**
-        1.  Use  to confirm the desired business logic with the user.
-        2.  Ask clearly: When a reseller order is canceled and the user is refunded, should that amount be SUBTRACTED from the total income/revenue, or ADDED to it?
-        3.  Based on the user's response, adjust the  endpoint in  if necessary.
-    -   **Why fix this issue and what will be achieved with the fix?** Ensures accurate financial reporting for the admin and resellers. The current ambiguity could lead to incorrect revenue calculations.
-    -   **Status:** BLOCKED
+        1.  In , locate the  function.
+        2.  Modify the  sent to the Ercaspay API. The  field must be a **comma-separated string**, not an array. For example, when bank-transfer is selected, the payload should contain .
+        3.  Restart the backend service.
+        4.  Test the fix by making a request to the  endpoint with  set to . Verify it returns a successful response with a checkout URL.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking a primary payment method for funding user wallets.
+    -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on other issue:** User clarification is required.
 
--   **Issue 2: Ercaspay amount field loses focus**
-    -   **Description:** When a user is typing an amount into the Ercaspay payment input, the field loses focus, disrupting the payment flow. This is an old, low-priority issue.
-    -   **Attempted fixes:** None in recent sessions.
+-   **Issue 2: User reports PaymentPoint virtual account generation is not working**
+    -   **Description:** The user stated that the generate account not working for payment point.
+    -   **Attempted fixes:** The agent tested the backend endpoint  and confirmed it works correctly, returning virtual account details. This suggests the issue is likely on the frontend.
     -   **Next debug checklist:**
-        1.  Locate the Ercaspay payment component in the frontend.
-        2.  Investigate for any state updates that are causing the component to re-render unnecessarily on each keystroke.
-        3.  Ensure the input's  is stable and not changing during typing.
-    -   **Why fix this issue and what will be achieved with the fix?** Improves the user experience for one of the payment methods.
+        1.  Log into the application and navigate to the Fund Wallet page.
+        2.  Click the Generate Account or View Account Details button for the PaymentPoint option.
+        3.  Use the browser's developer tools to inspect the console for any JavaScript errors and check the network tab to see if the API call to  is being made correctly.
+        4.  If it fails, review the React code in  to debug the  handler and state management for displaying the account details.
+    -   **Why fix this issue and what will be achieved with the fix?** This will restore a key method for users to fund their accounts.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+
+-   **Issue 3: Reseller Portal has horizontal scroll on mobile**
+    -   **Description:** A recurring UI bug from the previous session where the Reseller Portal page has a horizontal scrollbar on mobile devices, making it difficult to use.
+    -   **Attempted fixes:** Previous attempts were made in the last fork session. No fixes were attempted in the current session.
+    -   **Next debug checklist:**
+        1.  Navigate to the Reseller Portal section within the user dashboard.
+        2.  Take a screenshot on a mobile viewport (e.g., width 375px) to confirm the issue.
+        3.  Inspect the  component inside .
+        4.  Identify the element causing the overflow (likely a wide table, code block, or non-wrapping container) and apply appropriate Tailwind CSS classes (, , responsive widths) to fix it.
+    -   **Why fix this issue and what will be achieved with the fix?** Improves mobile usability and addresses a persistent user complaint.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** frontend
-    -   **Blocked on other issue:** none
 
--   **Issue 3: Admin Bank Accounts page showing no data**
-    -   **Description:** The Bank Accounts page in the admin panel is always empty, even if data is expected. This is an old, low-priority issue.
-    -   **Attempted fixes:** None in recent sessions.
-    -   **Next debug checklist:**
-        1.  Check the backend endpoint that serves data for this page.
-        2.  Verify the frontend component is correctly fetching and rendering the data.
-    -   **Why fix this issue and what will be achieved with the fix?** Restores functionality to a part of the admin panel.
+-   **Issue 4: Digital Ocean deployment is failing**
+    -   **Description:** A long-standing, high-priority issue where the user is unable to deploy the application successfully on Digital Ocean's App Platform. The user is actively testing on their DO environment.
     -   **Status:** NOT STARTED
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** none
-
--   **Issue 4: Incorrect Total OTP Volume metric on the admin dashboard**
-    -   **Description:** The Total OTP Volume KPI on the main admin dashboard displays an incorrect value. This is an old, low-priority issue.
-    -   **Attempted fixes:** None in recent sessions.
-    -   **Next debug checklist:**
-        1.  Review the logic in the  endpoint in .
-        2.  Identify which database query calculates this metric and correct it.
-    -   **Why fix this issue and what will be achieved with the fix?** Ensures the admin dashboard displays accurate, reliable statistics.
-    -   **Status:** NOT STARTED
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** backend
-    -   **Blocked on other issue:** none
+    -   **Is recurring issue?** Y
+    -   **Note:** This is a major blocker for the user going live.
 
 **In progress Task List**:
-None.
+(None, all in-progress work is classified under issues)
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   **P1:** Complete Profile Settings and Referral Pages functionality.
-    *   **P1:** Finalize Admin User Management (Edit user details).
-    *   **P2:** Verify and fix edit/delete functionality for Popup Notifications in the admin panel.
+    *   **P2:** Refactor the monolithic  into a modular structure using FastAPI's .
+    *   **P2:** Refactor the large  and  components into smaller, more manageable sub-components.
 *   **Future Tasks:**
-    *   **P3:** Refactor the monolithic  into a modular structure using .
-    *   **P3:** Refactor the massive  and  components into smaller, manageable sub-components.
-    *   **P4:** Delete deprecated files: , .
+    *   Implement real-time order status updates for gift cards using webhooks.
+    *   Add filtering by category/brand for gift cards.
 
 **Completed work in this session**
--   **Reseller API Fixed:** Corrected logic for , , , , and  endpoints by using correct API keys, provider URLs, and parameters.
--   **Provider Branding Implemented:** Created a backend mapping to show user-friendly Server names instead of provider names (5sim, smspool) in the UI and error messages.
--   **Reseller Service Pricing Fixed:** Corrected the reseller services endpoint to fetch and display correct prices for all providers.
--   **Admin Sales Pages Created:** Implemented new OTP Sales and Reseller Sales pages in the admin panel with detailed stats and order lists.
--   **Reseller API URL Made Configurable:** Added a setting in the admin panel to control the API base URL shown in the reseller documentation.
--   **Critical Bugs Resolved:** Fixed the reseller portal's infinite reload, the broken SMS history page, admin branding colors not saving, promo code validation failures, and a bug in the 5sim purchase flow.
--   **API Documentation Redesigned:** Replaced the old reseller documentation with a new, professional, 5sim-style component that is persistent and uses the configurable API URL.
+-   **Fixed: Gift Card Loading & Configuration:** Resolved an issue where gift cards weren't loading because Reloadly credentials weren't being saved from the Admin Panel. The backend was also updated to provide better feedback on whether credentials are being loaded from the environment.
+-   **Added: Reloadly Wallet Balance:** Implemented a new section in the Admin Panel to display the current Reloadly account balance, with a manual refresh button.
+-   **Fixed: Gift Card Purchase Flow:** Corrected a critical bug in the backend that was causing gift card purchases to fail due to incorrect user ID lookups ( vs. string uid=0(root) gid=0(root) groups=0(root)) and field name mismatches ( vs ).
+-   **Implemented: Gift Card Order History:** Created a full-featured order history for gift cards, accessible by both users and admins. The user view includes a details modal that displays the  and  for the purchased card.
+-   **Implemented: Admin Service Metrics:** Added a new Other Services Revenue card to the admin dashboard to track revenue from Gift Card Sales and Currency Conversions, separate from OTP sales.
+-   **Implemented: Detailed Transaction View:** Enhanced the general transaction list so that clicking View opens a modal showing  and  the transaction.
+-   **Fixed: Mobile Responsiveness:** Overhauled the Fund Wallet and Transactions pages to be fully responsive on mobile devices, eliminating horizontal scroll issues.
+-   **Fixed: Ercaspay Callback URL:** Corrected the logic for handling Ercaspay's redirect after a payment, which included a malformed URL with two  characters. Also updated the backend to use a  environment variable for constructing the correct redirect URL for the user's Digital Ocean deployment.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:** Ercaspay amount field loses focus during typing.
--   **Issue 2:** Bank Accounts page in the admin panel shows no data.
--   **Issue 3:** Total OTP Volume metric in the admin dashboard is incorrect.
-
-**Known issue recurrence from previous fork**
--   The reseller page reloading bug was a regression from the previous session, which has now been fixed by lifting state to the parent  component.
--   The admin branding colors not saving was also a recurring issue, which was fixed by ensuring the  function correctly populates the frontend state.
+-   **Issue 1: Mobile sidebar navigation is flaky**
+    -   **Debug checklist:** The hamburger menu for the sidebar on mobile sometimes fails to open on the first click in automated tests. This could indicate a z-index issue, an overlapping invisible element, or a problem with the click event handler.
+    -   **Why to solve this issue and what will be achieved with this?** A non-functioning main navigation menu makes the app difficult to use on mobile.
+    -   **Should Test frontend/backend/both after fix:** frontend
+    -   **Is recurring issue?** Y
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Backend:** FastAPI, Pydantic, Motor (MongoDB), .
-*   **Frontend:** React, TailwindCSS, , Shadcn UI, .
-*   **State Management:** React Hooks (, ). Addressed component instability by lifting state from nested components to parent components.
-*   **Architecture:** Monolithic backend () and large React page components (, ) remain a significant source of technical debt and fragility.
+*   **3rd Party API Integration (Reloadly):** Implemented a full service for authentication, fetching products, placing orders, and checking account balance.
+*   **Dynamic Configuration:** The application uses a MongoDB  collection to manage all settings from the admin panel, including API keys, rates, and feature toggles.
+*   **Payment Gateway Webhook/Callback:** Implemented logic to handle redirects from Ercaspay, including parsing malformed URLs and cleaning the browser history. The backend now uses a  environment variable for correct redirect URL generation.
+*   **Responsive UI Design:** Utilized Tailwind CSS to create responsive layouts for complex sections like transactions and wallet funding, ensuring usability on mobile devices.
 
 **key DB schema**
--   **pricing_config:** Added  (str).
+-   ** (New Collection):** Stores a record for each gift card purchase, including , , , , , , etc.
+-   ** (collection):** Updated to include  and  fields to track wallet changes for each transaction.
 
 **All files of reference**
-*   
-*   
-*   
-*   
-*   
-
-**Areas that need refactoring**:
-*   : **CRITICAL.** The file is now over 3,500 lines. Although the immediate reloading issue was fixed by lifting state, the root cause is the dozens of unstable nested components defined within its render function. This file MUST be broken down into smaller, separate component files to ensure stability.
-*   : **CRITICAL.** This file has grown to over 4,000 lines. It should be refactored into components for each admin section.
-*   : **HIGH.** The file is now over 5,500 lines. The reseller and new admin logic should be moved to dedicated  files.
-
-**key api endpoints**
-*    (new)
-*    (new)
-*    (new)
-*    (fixed)
-*    (fixed)
-*    (fixed)
-*    (fixed)
-*    (fixed)
-*    (fixed)
-*    (fixed)
+*    (Backend logic for APIs, payment gateways, gift cards)
+*    (Main user dashboard, transaction history, gift card UI)
+*    (Admin dashboard, Reloadly config, new metrics)
+*    (UI for all funding methods)
 
 **Critical Info for New Agent**
--   **IMMEDIATE BLOCKER:** You MUST clarify the business logic for canceled order income with the user before proceeding. Their last request on this was ambiguous and contradicts the current implementation.
--   **Frontend Fragility:** The  and  files are extremely unstable due to their size and the use of nested component functions. Be aware that any change can cause unintended side effects. The state-lifting pattern was a patch, not a cure. Refactoring is urgently needed.
--   **Reseller API Keys:** The reseller endpoints have been refactored to use API keys from environment variables () directly, NOT from the database . This was a major fix. Do not revert this pattern.
--   **Provider Branding:** A new function  exists in  to convert internal provider names to user-facing server names. Use this function for any new UI text or error messages that might expose a provider's identity.
-
-**documents and test reports created in this job**
-*   
-*   
-*   
+-   **Ercaspay Payload:** The Ercaspay API requires the  field to be a **comma-separated string** (e.g., ), not a JSON array. This is the likely fix for the current blocking issue.
+-   **Digital Ocean Deployment URLs:** The user is deploying on Digital Ocean with separate URLs for the frontend and backend. The backend now uses a  environment variable to construct correct redirect URLs for payment gateways. This must be set correctly in the user's environment.
+-   **User ID vs. :** Be aware that the  collection uses a string uid=0(root) gid=0(root) groups=0(root) (UUID) for identification in most of the application logic, while other collections might use MongoDB's  (). This has caused bugs before and requires careful attention when writing database queries.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (8):** the documentation page exit back to reseller portal after sometime its not supposed to be so the link https://sms-gateway-17.preview.emergentagent.com supposed to set from the reseller managemet side on the admin dashboard, promocode validation not working on the front end!... - **(COMPLETED)**
-2.  **User (9):** we need a page for reseller sales too and the reseller endpoints need to be tested - **(COMPLETED)**
-3.  **Agent:** Investigated and started fixing reseller endpoints.
-4.  **User (10):** first this check that prices in all country 1 isnt availbe ensure that all prices are showed to the reseller with the markup based on thier acoount and test the buy cancel and sms polling logic for resellers and aslo notifications are carring 5sim and other providers some error messages are carring other providers too fixed that with temering the logic... - **(COMPLETED)**
-5.  **Agent:** Fixed reseller service pricing and implemented provider branding.
-6.  **Agent:** Fixed and tested reseller , , and  endpoints.
-7.  **Agent:** Completed work and called finish tool.
-8.  **User (11):** proceed - **(PENDING ACTION)** This is the last user message, indicating the agent should continue with any remaining tasks or verification.
-9.  ... (older messages related to previous fixes)
-10. ...
+1.  **User:** Requested adding Reloadly balance display to the admin panel. (COMPLETED)
+2.  **User:** Requested hiding markup on the user side, using custom alerts, and fixing the failing gift card purchase flow. (COMPLETED)
+3.  **User:** Requested a gift card order history with a detailed view (including e-code), new admin metrics for other services, and a detailed transaction view showing balance before/after. (COMPLETED)
+4.  **User:** Asked for the credentials needed for Ercaspay (callback URL, webhook URL, signature). (COMPLETED)
+5.  **User:** Reported mobile horizontal scroll on the Fund Wallet/Transactions pages and that Ercaspay bank transfer and PaymentPoint account generation were not working. (IN PROGRESS)
+6.  **User:** Provided the malformed URL from Ercaspay after a successful payment, indicating a redirect issue. (COMPLETED)
+7.  **User:** Confirmed they are testing on a Digital Ocean domain and provided the URL. (COMPLETED)
+8.  **User:** Provided the backend URL for their Digital Ocean deployment. (COMPLETED)
+9.  **User:** Reported that clicking bank on Ercaspay gives a card payment method is not enabled error and that both payment buttons seem to trigger a loading state. (IN PROGRESS - THIS IS THE CURRENT FOCUS)
+10. **User:**  - no action needed.
 
 **Project Health Check:**
-*   **Broken:**
-    *   None.
-*   **Mocked:**
-    *   The Profile Settings and Referral pages in the user dashboard are still UI placeholders.
+*   **Broken:** Ercaspay bank transfer payment initiation.
+*   **Needs Verification:** PaymentPoint virtual account generation (user reports it's broken, but backend API test passed).
 
 **3rd Party Integrations**
-*   **DaisySMS** (OTP Service)
-*   **SMS-pool** (OTP Service)
-*   **5sim** (OTP Service)
-*   **PaymentPoint** (NGN Virtual Accounts)
-*   **Payscribe** (Bill Payments)
-*   **Plisio** (Cryptocurrency Payments)
-*   **Ercaspay** (NGN Card/Bank Payments)
+*   OTP Services: DaisySMS, SMS-pool, 5sim
+*   Payment Gateways: PaymentPoint, Payscribe, Plisio, Ercaspay
+*   Gift Cards: Reloadly
+*   Currency Rates: exchangerate-api.com
+*   Database: MongoDB Atlas / Digital Ocean Managed MongoDB
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (Two iterations were run).
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:**
-    -   
-    -   
--   **Known regressions:** None in the last session. Previous regressions (reloading page, broken colors) were fixed.
+-   Testing agent used after significant changes: NO
+-   Troubleshoot agent used after agent stuck in loop: NO
+-   Test files created: []
+-   Known regressions: None introduced in this session.
 
 **Credentials to test flow:**
-*   **Admin user:**  / 
+*   Admin user:  / 
+*   Reloadly credentials are in  and are used as a fallback.
+*   Ercaspay/PaymentPoint keys are in .
 
 **What agent forgot to execute**
--   The agent has consistently prioritized the user's most recent, high-priority requests. This means older, lower-priority issues have not been addressed. These include:
-    -   The Ercaspay amount field losing focus.
-    -   The Admin Bank Accounts page showing no data.
-    -   The incorrect Total OTP Volume metric on the admin dashboard.</analysis>
+-   The agent has not yet addressed the recurring issue of horizontal scroll on the **Reseller Portal** page.
+-   The agent has not performed a frontend test to verify the user's report that **PaymentPoint account generation is failing**, despite the backend API working.</analysis>
