@@ -3892,14 +3892,9 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
         else:
             frontend_url = 'https://sea-lion-app-eu93r.ondigitalocean.app'
     
-    # Map payment method to Ercaspay format (comma-separated string)
-    if payment_method == 'card':
-        ercaspay_payment_methods = 'card'
-    elif payment_method == 'bank-transfer':
-        ercaspay_payment_methods = 'bank-transfer'
-    else:
-        # Default to both methods
-        ercaspay_payment_methods = 'card,bank-transfer'
+    # Always allow all payment methods so users can choose at Ercaspay checkout
+    # This gives users flexibility to select card, bank-transfer, ussd, or qrcode
+    ercaspay_payment_methods = 'card,bank-transfer,ussd,qrcode'
     
     # Prepare Ercaspay initiate checkout request
     checkout_data = {
