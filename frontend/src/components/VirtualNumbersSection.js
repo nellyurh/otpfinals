@@ -1186,7 +1186,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 </thead>
                 <tbody>
                   {orders
-                    .filter((o) => o.status === 'active')
+                    .filter((o) => {
+                      if (o.status === 'active') return true;
+                      if ((o.status === 'completed' || o.status === 'received') && (o.otp || o.otp_code)) {
+                        const createdAt = new Date(o.created_at);
+                        const now = new Date();
+                        const elapsedMinutes = (now - createdAt) / (1000 * 60);
+                        return elapsedMinutes < 10;
+                      }
+                      return false;
+                    })
                     .map((order) => {
                       const createdAt = new Date(order.created_at);
                       const now = new Date();
@@ -1194,10 +1203,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
                       const minutes = Math.floor(remainingSeconds / 60);
                       const seconds = remainingSeconds % 60;
-                      const canCancel = !order.otp && !order.otp_code && remainingSeconds > 0;
+                      const hasOTP = order.otp || order.otp_code;
+                      const canCancel = !hasOTP && remainingSeconds > 0;
 
                       return (
-                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                        <tr key={order.id} className={`border-b ${hasOTP ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}>
                           <td className="py-3 px-3">
                             <span className="text-xs font-medium text-gray-800">
                               {order.service_name || getServiceName(order.service)}
@@ -1217,16 +1227,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             </div>
                           </td>
                           <td className="py-3 px-3">
-                            {order.otp || order.otp_code ? (
+                            {hasOTP ? (
                               <div className="flex items-center gap-1">
-                                <span className="font-mono text-sm font-bold text-emerald-600">
+                                <span className="font-mono text-lg font-bold text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-200">
                                   {order.otp || order.otp_code}
                                 </span>
                                 <button
                                   onClick={() => copyOTP(order.otp || order.otp_code)}
-                                  className="p-0.5 hover:bg-gray-200 rounded"
+                                  className="p-1 bg-emerald-100 hover:bg-emerald-200 rounded"
                                 >
-                                  <Copy className="w-3 h-3 text-gray-500" />
+                                  <Copy className="w-3 h-3 text-emerald-600" />
                                 </button>
                               </div>
                             ) : (
@@ -1238,16 +1248,18 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-0.5">
-                              <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-700 rounded-full text-center w-fit">
-                                Active
+                              <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full text-center w-fit ${hasOTP ? 'bg-emerald-500 text-white' : 'bg-green-100 text-green-700'}`}>
+                                {hasOTP ? '✓ Received' : 'Waiting'}
                               </span>
-                              <span className="text-[10px] text-gray-500 font-mono">
-                                {minutes}:{seconds.toString().padStart(2, '0')}
-                              </span>
+                              {!hasOTP && (
+                                <span className="text-[10px] text-gray-500 font-mono">
+                                  {minutes}:{seconds.toString().padStart(2, '0')}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="py-3 px-3">
-                            {!(order.otp || order.otp_code) && canCancel && (
+                            {!hasOTP && canCancel && (
                               <button
                                 onClick={() => handleCancelOrder(order.activation_id || order.id)}
                                 className="px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-[10px] font-semibold"
@@ -1255,7 +1267,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                                 Cancel
                               </button>
                             )}
-                            {!(order.otp || order.otp_code) && !canCancel && (
+                            {!hasOTP && !canCancel && (
                               <span className="text-[10px] text-gray-500">Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
                             )}
                             {(order.otp || order.otp_code) && (
