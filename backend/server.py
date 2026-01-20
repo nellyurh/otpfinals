@@ -2669,9 +2669,9 @@ async def purchase_number(
             base_price_usd = base_price_usd * (1 + advanced_markup / 100)
     elif provider == '5sim':
         # For 5sim, check if operator is selected and get its price
+        # NOTE: 5sim API returns 'cost' already in USD (not coins!)
         if data.operator and data.operator != 'any':
             # Get operator-specific price from 5sim API
-            fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
             async with httpx.AsyncClient() as client:
                 resp = await client.get(
                     f"{FIVESIM_BASE_URL}/guest/prices",
@@ -2684,10 +2684,8 @@ async def purchase_number(
                     if data.country in prices_data and data.service in prices_data[data.country]:
                         operators = prices_data[data.country][data.service]
                         if data.operator in operators:
-                            # Price is in coins, convert to USD
-                            price_coins = float(operators[data.operator].get('cost', 0))
-                            coin_rate = float(config.get('fivesim_coin_per_usd', 77.44) or 77.44)
-                            base_price_usd = price_coins / coin_rate
+                            # API cost is already in USD
+                            base_price_usd = float(operators[data.operator].get('cost', 0))
                         else:
                             # Fallback to cached service price
                             cached_service = await db.cached_services.find_one({
