@@ -3535,22 +3535,6 @@ const AdminPanel = ({ user, setUser }) => {
                         <p className="text-[9px] text-slate-400">1 USD = X NGN</p>
                       </div>
                     </div>
-                    
-                    <div className="pt-2 border-t border-slate-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">5sim Markup (%)</Label>
-                          <Input
-                            type="number"
-                            step="1"
-                            value={pricing.fivesim_markup}
-                            onChange={(e) => setPricing({ ...pricing, fivesim_markup: parseFloat(e.target.value) || 0 })}
-                            className="h-9 text-sm bg-slate-50 border-slate-200"
-                          />
-                          <p className="text-[9px] text-slate-400">Markup percentage for 5sim/Global Server</p>
-                        </div>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
 
