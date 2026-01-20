@@ -738,8 +738,8 @@ const AdminPanel = ({ user, setUser }) => {
         tigersms_markup: response.data.tigersms_markup,
         daisysms_markup: response.data.daisysms_markup,
         smspool_markup: response.data.smspool_markup,
+        fivesim_markup: response.data.fivesim_markup ?? prev.fivesim_markup,
         ngn_to_usd_rate: response.data.ngn_to_usd_rate,
-        fivesim_coin_per_usd: response.data.fivesim_coin_per_usd ?? prev.fivesim_coin_per_usd,
         // keep masked values from GET; only update if user types a new key
         daisysms_api_key: response.data.daisysms_api_key || '',
         smspool_api_key: response.data.smspool_api_key || '',
