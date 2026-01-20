@@ -2821,10 +2821,8 @@ async def purchase_number(
             raise HTTPException(status_code=400, detail="Unexpected server response")
         activation_id = str(result.get('id'))
         phone_number = str(result.get('phone'))
-        # 5sim price is in coins
-        price_coins = float(result.get('price') or 0)
-        coin_rate = float(config.get('fivesim_coin_per_usd', 77.44) or 77.44)
-        actual_price = price_coins / coin_rate
+        # 5sim API returns price already in USD
+        actual_price = float(result.get('price') or 0)
 
     if not result:
         raise HTTPException(status_code=400, detail="Failed to purchase number from provider")
