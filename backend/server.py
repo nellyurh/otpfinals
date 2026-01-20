@@ -4794,8 +4794,6 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['ngn_to_usd_rate'] = data.ngn_to_usd_rate
     if data.rub_to_usd_rate is not None:
         update_fields['rub_to_usd_rate'] = data.rub_to_usd_rate
-    if data.fivesim_coin_per_usd is not None:
-        update_fields['fivesim_coin_per_usd'] = data.fivesim_coin_per_usd
     if data.daisysms_api_key is not None:
         update_fields['daisysms_api_key'] = data.daisysms_api_key
     if data.smspool_api_key is not None:
