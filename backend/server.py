@@ -661,7 +661,6 @@ class UpdatePricingRequest(BaseModel):
     fivesim_markup: Optional[float] = None  # 5sim markup
     ngn_to_usd_rate: Optional[float] = None
     rub_to_usd_rate: Optional[float] = None
-    fivesim_coin_per_usd: Optional[float] = None
     # SMS Provider API Keys
     daisysms_api_key: Optional[str] = None
     smspool_api_key: Optional[str] = None
