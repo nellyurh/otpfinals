@@ -5648,11 +5648,11 @@ async def reseller_get_services(request: Request, server: str, country: Optional
                 
     elif server == 'all_country_2':
         # 5sim - use environment variable
+        # NOTE: 5sim API returns prices directly in USD (not coins)
         if not country:
             raise HTTPException(status_code=400, detail="Country required for this server")
         fivesim_key = FIVESIM_API_KEY
-        markup = pricing.get('tigersms_markup', 20)  # Uses same field as tigersms
-        coin_rate = pricing.get('fivesim_coin_per_usd', 77.44)
+        markup = pricing.get('fivesim_markup', 50)  # Use fivesim_markup
         if fivesim_key:
             try:
                 resp = requests.get(
@@ -5663,8 +5663,8 @@ async def reseller_get_services(request: Request, server: str, country: Optional
                 if resp.ok:
                     data = resp.json()
                     for service_code, info in data.items():
-                        coin_price = float(info.get('Price', 0))
-                        base_usd = coin_price / coin_rate
+                        # Price is already in USD
+                        base_usd = float(info.get('Price', 0))
                         base_ngn = base_usd * ngn_rate
                         reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
                         services.append({
@@ -5672,8 +5672,7 @@ async def reseller_get_services(request: Request, server: str, country: Optional
                             'name': service_code.replace('_', ' ').title(),
                             'price_ngn': round(reseller_price, 2),
                             'price_usd': round(reseller_price / ngn_rate, 4),
-                            'available': True,
-                            'operators': list(info.get('operators', {}).keys()) if isinstance(info.get('operators'), dict) else []
+                            'available': True
                         })
             except Exception as e:
                 logger.error(f"5sim services error: {e}")
