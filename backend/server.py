@@ -2224,8 +2224,10 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
                             'country_code': country,
                         },
                         {
-                            '$setOnInsert': {'currency': 'USD'},
-                            '$min': {'base_price': svc['base_price_usd']},
+                            '$set': {
+                                'currency': 'USD',
+                                'base_price': svc['base_price_usd'],
+                            },
                         },
                         upsert=True,
                     )
