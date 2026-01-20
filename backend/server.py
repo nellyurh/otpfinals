@@ -2196,26 +2196,27 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
                                 "price_usd": final_price_usd,
                                 "price_ngn": final_price_ngn,
                                 "base_price_usd": base_price_usd,
-                                "operators": [],
+                                "_operators": [],  # Internal use only, not sent to frontend
                             }
                         svc = services[key]
-                        # track cheapest price
+                        # track cheapest price (show users the lowest available price)
                         if final_price_usd < svc["price_usd"]:
                             svc["price_usd"] = final_price_usd
                             svc["price_ngn"] = final_price_usd * ngn_rate
                             svc["base_price_usd"] = base_price_usd
 
-                        svc["operators"].append(
-                            {
-                                "name": operator_name,
-                                "cost_usd": base_price_usd,  # API cost in USD
-                                "base_price_usd": base_price_usd,
-                                "price_usd": final_price_usd,
-                                "price_ngn": final_price_ngn,
-                            }
-                        )
+                        # Store operator internally for purchase logic
+                        svc["_operators"].append({
+                            "name": operator_name,
+                            "base_price_usd": base_price_usd,
+                            "price_usd": final_price_usd,
+                            "price_ngn": final_price_ngn,
+                        })
 
                 result_list = list(services.values())
+                # Remove internal _operators from response (hide provider details from users)
+                for svc in result_list:
+                    svc.pop("_operators", None)
                 result_list.sort(key=lambda x: x["name"])
 
                 # Cache cheapest base USD price per service/country for purchase endpoint
