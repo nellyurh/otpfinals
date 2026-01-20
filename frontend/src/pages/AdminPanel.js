@@ -3496,7 +3496,7 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">5sim Markup (%)</Label>
+                        <Label className="text-xs font-semibold text-slate-600">TigerSMS Markup (%)</Label>
                         <div className="relative">
                           <Input
                             type="number"
@@ -3506,7 +3506,20 @@ const AdminPanel = ({ user, setUser }) => {
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
                         </div>
-                        <p className="text-[9px] text-slate-400">Applied to 5sim prices</p>
+                        <p className="text-[9px] text-slate-400">Applied to TigerSMS/Server 3 prices</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">5sim/Global Server Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.fivesim_markup}
+                            onChange={(e) => setPricing({ ...pricing, fivesim_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
+                        <p className="text-[9px] text-slate-400">Applied to 5sim/Global Server prices</p>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">NGN/USD Rate</Label>
