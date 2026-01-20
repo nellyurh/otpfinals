@@ -2153,7 +2153,6 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
 
         coin_rate = float(config.get("fivesim_coin_per_usd", 77.44) or 77.44)
         markup = float(config.get("fivesim_markup", 50.0) or 50.0)  # Use fivesim_markup
-        rub_to_usd = float(config.get("rub_to_usd_rate", 0.010) or 0.010)  # RUB to USD rate
         ngn_rate = float(config.get("ngn_to_usd_rate", 1500.0) or 1500.0)
 
         async with httpx.AsyncClient() as client:
@@ -2173,17 +2172,19 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
                 services: Dict[str, Dict[str, Any]] = {}
 
                 # Structure: country -> product -> operator -> {cost, count, rate}
+                # NOTE: 5sim API returns 'cost' already in USD (not coins!)
                 for product, operators in country_block.items():
                     for operator_name, info in operators.items():
                         try:
-                            base_cost_coins = float(info.get("cost", 0) or 0)
+                            base_price_usd = float(info.get("cost", 0) or 0)  # Already in USD
                         except Exception:
-                            base_cost_coins = 0.0
-                        if base_cost_coins <= 0:
+                            base_price_usd = 0.0
+                        if base_price_usd <= 0:
                             continue
 
-                        base_price_usd = base_cost_coins / coin_rate
+                        # Apply markup
                         final_price_usd = base_price_usd * (1 + markup / 100)
+                        final_price_ngn = final_price_usd * ngn_rate
 
                         key = product
                         if key not in services:
