@@ -277,7 +277,6 @@ const AdminPanel = ({ user, setUser }) => {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [pricing, setPricing] = useState({
-    tigersms_markup: 20,
     daisysms_markup: 20,
     smspool_markup: 20,
     fivesim_markup: 50,
