@@ -2151,8 +2151,8 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
             await db.pricing_config.insert_one(cfg)
             config = cfg
 
-        coin_rate = float(config.get("fivesim_coin_per_usd", 77.44) or 77.44)
-        markup = float(config.get("fivesim_markup", 50.0) or 50.0)  # Use fivesim_markup
+        # 5sim API returns prices directly in USD - no coin conversion needed
+        markup = float(config.get("fivesim_markup", 50.0) or 50.0)
         ngn_rate = float(config.get("ngn_to_usd_rate", 1500.0) or 1500.0)
 
         async with httpx.AsyncClient() as client:
