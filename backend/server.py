@@ -2194,7 +2194,7 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
                                 "label": service_label,
                                 "name": service_label,
                                 "price_usd": final_price_usd,
-                                "price_ngn": final_price_usd * config.get("ngn_to_usd_rate", 1500.0),
+                                "price_ngn": final_price_ngn,
                                 "base_price_usd": base_price_usd,
                                 "operators": [],
                             }
@@ -2202,16 +2202,16 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
                         # track cheapest price
                         if final_price_usd < svc["price_usd"]:
                             svc["price_usd"] = final_price_usd
-                            svc["price_ngn"] = final_price_usd * config.get("ngn_to_usd_rate", 1500.0)
+                            svc["price_ngn"] = final_price_usd * ngn_rate
                             svc["base_price_usd"] = base_price_usd
 
                         svc["operators"].append(
                             {
                                 "name": operator_name,
-                                "base_cost_coins": base_cost_coins,
+                                "cost_usd": base_price_usd,  # API cost in USD
                                 "base_price_usd": base_price_usd,
                                 "price_usd": final_price_usd,
-                                "price_ngn": final_price_usd * config.get("ngn_to_usd_rate", 1500.0),
+                                "price_ngn": final_price_ngn,
                             }
                         )
 
