@@ -734,7 +734,6 @@ const AdminPanel = ({ user, setUser }) => {
       const response = await axios.get(`${API}/admin/pricing`, axiosConfig);
       setPricing((prev) => ({
         ...prev,
-        tigersms_markup: response.data.tigersms_markup,
         daisysms_markup: response.data.daisysms_markup,
         smspool_markup: response.data.smspool_markup,
         fivesim_markup: response.data.fivesim_markup ?? prev.fivesim_markup,
