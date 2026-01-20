@@ -2152,7 +2152,7 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
             config = cfg
 
         coin_rate = float(config.get("fivesim_coin_per_usd", 77.44) or 77.44)
-        markup = float(config.get("tigersms_markup", 50.0) or 50.0)  # reuse markup
+        markup = float(config.get("fivesim_markup", 50.0) or 50.0)  # Use fivesim_markup
 
         async with httpx.AsyncClient() as client:
             if country:
