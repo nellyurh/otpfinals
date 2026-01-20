@@ -466,11 +466,10 @@ class PricingConfig(BaseModel):
     tigersms_markup: float = 50.0
     daisysms_markup: float = 50.0
     smspool_markup: float = 50.0
-    fivesim_markup: float = 50.0  # 5sim markup (was using tigersms_markup before)
+    fivesim_markup: float = 50.0  # 5sim markup
     # Currency conversion
     ngn_to_usd_rate: float = 1500.0
     rub_to_usd_rate: float = 0.010  # 1 RUB = ~0.01 USD
-    fivesim_coin_per_usd: float = 77.44  # 1 USD = 77.44 5sim coins (editable in admin)
     # DaisySMS advanced options markup (configurable from admin)
     daisysms_advanced_markup: float = 20.0  # Extra markup for area code/carrier options
     # Branding (admin editable)
