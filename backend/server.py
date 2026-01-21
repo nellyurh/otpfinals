@@ -4022,13 +4022,16 @@ async def ercaspay_webhook(request: Request):
     
     logger.info(f"Ercaspay webhook received: {payload}")
     
-    # Extract payment info from webhook
-    event = payload.get('event')
-    data = payload.get('data', {})
+    # Ercaspay sends data directly in payload (not nested under 'data')
+    # Sample: {"amount": 100, "transaction_reference": "ERCS|...", "payment_reference": "R5md...", "status": "SUCCESSFUL", ...}
     
-    payment_ref = data.get('paymentReference') or data.get('payment_reference')
-    transaction_ref = data.get('transactionReference') or data.get('transaction_reference')
-    status = data.get('status', '').lower()
+    # Handle both nested format (if 'data' exists) and flat format (direct payload)
+    data = payload.get('data', payload)  # Use payload itself if 'data' key doesn't exist
+    
+    # Extract references - Ercaspay uses snake_case in webhooks
+    payment_ref = data.get('payment_reference') or data.get('paymentReference')
+    transaction_ref = data.get('transaction_reference') or data.get('transactionReference')
+    status = data.get('status', '').upper()  # Ercaspay sends status in UPPERCASE (e.g., "SUCCESSFUL")
     amount = data.get('amount', 0)
     
     if not payment_ref and not transaction_ref:
