@@ -32,10 +32,12 @@ const giftCardBrands = [
 const serviceCards = [
   { name: 'Virtual Numbers', color: 'text-purple-600', bgColor: 'bg-purple-50', iconBg: 'bg-purple-100', icon: Smartphone },
   { name: 'Gift Cards', color: 'text-orange-600', bgColor: 'bg-orange-50', iconBg: 'bg-orange-100', icon: Gift },
+  { name: 'Virtual Cards', color: 'text-blue-600', bgColor: 'bg-blue-50', iconBg: 'bg-blue-100', icon: CreditCard },
   { name: 'Internet Data', color: 'text-emerald-600', bgColor: 'bg-emerald-50', iconBg: 'bg-emerald-100', icon: Wifi },
   { name: 'TV Sub', color: 'text-pink-600', bgColor: 'bg-pink-50', iconBg: 'bg-pink-100', icon: Tv },
-  { name: 'Airtime', color: 'text-purple-600', bgColor: 'bg-purple-50', iconBg: 'bg-purple-100', icon: Phone },
-  { name: 'Electricity', color: 'text-emerald-600', bgColor: 'bg-emerald-50', iconBg: 'bg-emerald-100', icon: Lightbulb },
+  { name: 'Airtime', color: 'text-amber-600', bgColor: 'bg-amber-50', iconBg: 'bg-amber-100', icon: Phone },
+  { name: 'Electricity', color: 'text-cyan-600', bgColor: 'bg-cyan-50', iconBg: 'bg-cyan-100', icon: Lightbulb },
+  { name: 'Education', color: 'text-indigo-600', bgColor: 'bg-indigo-50', iconBg: 'bg-indigo-100', icon: GraduationCap },
 ];
 
 const Landing = ({ setUser }) => {
