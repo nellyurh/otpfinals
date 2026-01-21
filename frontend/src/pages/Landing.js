@@ -16,16 +16,16 @@ const popularServices = [
   { country: 'Nigeria', flag: '🇳🇬', service: 'Facebook', orders: '3,120', price: '$0.20' },
 ];
 
-// Gift card brands with logos
+// Gift card brands with logos from reliable sources
 const giftCardBrands = [
-  { name: 'Amazon', logo: 'https://cdn.cdnlogo.com/logos/a/94/amazon.svg', color: '#FF9900' },
-  { name: 'iTunes', logo: 'https://cdn.cdnlogo.com/logos/a/3/apple.svg', color: '#555555' },
-  { name: 'Google Play', logo: 'https://cdn.cdnlogo.com/logos/g/82/google-play.svg', color: '#4285F4' },
-  { name: 'Steam', logo: 'https://cdn.cdnlogo.com/logos/s/54/steam.svg', color: '#1B2838' },
-  { name: 'Netflix', logo: 'https://cdn.cdnlogo.com/logos/n/49/netflix.svg', color: '#E50914' },
-  { name: 'Spotify', logo: 'https://cdn.cdnlogo.com/logos/s/46/spotify.svg', color: '#1DB954' },
-  { name: 'PlayStation', logo: 'https://cdn.cdnlogo.com/logos/p/8/playstation.svg', color: '#003791' },
-  { name: 'Xbox', logo: 'https://cdn.cdnlogo.com/logos/x/23/xbox.svg', color: '#107C10' },
+  { name: 'Amazon', logo: 'https://logo.clearbit.com/amazon.com', color: '#FF9900' },
+  { name: 'iTunes', logo: 'https://logo.clearbit.com/apple.com', color: '#555555' },
+  { name: 'Google Play', logo: 'https://logo.clearbit.com/play.google.com', color: '#4285F4' },
+  { name: 'Steam', logo: 'https://logo.clearbit.com/steampowered.com', color: '#1B2838' },
+  { name: 'Netflix', logo: 'https://logo.clearbit.com/netflix.com', color: '#E50914' },
+  { name: 'Spotify', logo: 'https://logo.clearbit.com/spotify.com', color: '#1DB954' },
+  { name: 'PlayStation', logo: 'https://logo.clearbit.com/playstation.com', color: '#003791' },
+  { name: 'Xbox', logo: 'https://logo.clearbit.com/xbox.com', color: '#107C10' },
 ];
 
 // Service cards data inspired by Screenshot 3
