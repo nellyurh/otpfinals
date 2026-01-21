@@ -375,17 +375,15 @@ const Landing = ({ setUser }) => {
               <div 
                 key={index}
                 onClick={() => setShowAuth(true)}
-                className="rounded-xl p-3 sm:p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group border border-white/20"
-                style={{ backgroundColor: brand.color }}
+                className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group"
                 title={brand.name}
               >
-                <span 
-                  className="text-xl sm:text-2xl font-bold"
-                  style={{ color: brand.textColor }}
-                >
-                  {brand.name[0]}
-                </span>
-                <span className="text-[8px] sm:text-[10px] font-semibold truncate max-w-full text-center" style={{ color: brand.textColor, opacity: 0.9 }}>
+                <img 
+                  src={brand.logo} 
+                  alt={brand.name}
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                />
+                <span className="text-[8px] sm:text-[10px] font-medium text-gray-600 truncate max-w-full text-center">
                   {brand.name}
                 </span>
               </div>
