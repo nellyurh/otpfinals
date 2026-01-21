@@ -4053,9 +4053,11 @@ async def ercaspay_webhook(request: Request):
     
     # Don't process already completed payments
     if payment.get('status') == 'paid':
+        logger.info(f"Ercaspay webhook: Payment {payment_ref} already processed")
         return {'status': 'ok', 'message': 'Already processed'}
     
-    # Map Ercaspay status to our status
+    # Map Ercaspay status to our status (Ercaspay sends UPPERCASE like "SUCCESSFUL")
+    status_lower = status.lower()
     status_map = {
         'successful': 'paid',
         'success': 'paid',
@@ -4063,10 +4065,13 @@ async def ercaspay_webhook(request: Request):
         'completed': 'paid',
         'failed': 'failed',
         'cancelled': 'failed',
-        'expired': 'expired'
+        'canceled': 'failed',
+        'expired': 'expired',
+        'pending': 'pending'
     }
     
-    new_status = status_map.get(status, 'pending')
+    new_status = status_map.get(status_lower, 'pending')
+    logger.info(f"Ercaspay webhook: Mapping status '{status}' -> '{new_status}' for payment {payment_ref}")
     
     update_fields = {
         'status': new_status,
