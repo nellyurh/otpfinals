@@ -16,16 +16,16 @@ const popularServices = [
   { country: 'Nigeria', flag: '🇳🇬', service: 'Facebook', orders: '3,120', price: '$0.20' },
 ];
 
-// Gift card brands with logos
+// Gift card brands with colors for fallback display
 const giftCardBrands = [
-  { name: 'Amazon', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg', color: '#FF9900' },
-  { name: 'iTunes', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/df/ITunes_logo.svg', color: '#FB5BC5' },
-  { name: 'Google Play', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg', color: '#4285F4' },
-  { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg', color: '#1B2838' },
-  { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', color: '#E50914' },
-  { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg', color: '#1DB954' },
-  { name: 'PlayStation', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/00/PlayStation_logo.svg', color: '#003791' },
-  { name: 'Xbox', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg', color: '#107C10' },
+  { name: 'Amazon', initial: 'A', color: '#FF9900', bg: '#FFF3E0' },
+  { name: 'iTunes', initial: 'i', color: '#FB5BC5', bg: '#FCE4EC' },
+  { name: 'Google Play', initial: 'G', color: '#4285F4', bg: '#E3F2FD' },
+  { name: 'Steam', initial: 'S', color: '#1B2838', bg: '#ECEFF1' },
+  { name: 'Netflix', initial: 'N', color: '#E50914', bg: '#FFEBEE' },
+  { name: 'Spotify', initial: 'S', color: '#1DB954', bg: '#E8F5E9' },
+  { name: 'PlayStation', initial: 'P', color: '#003791', bg: '#E8EAF6' },
+  { name: 'Xbox', initial: 'X', color: '#107C10', bg: '#E8F5E9' },
 ];
 
 // Service cards data inspired by Screenshot 3
