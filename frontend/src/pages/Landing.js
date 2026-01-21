@@ -252,6 +252,11 @@ const Landing = ({ setUser }) => {
                     <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
                     <span className="text-xs sm:text-sm font-semibold text-amber-600">Electricity</span>
                   </div>
+                  
+                  <div className="absolute bottom-2 sm:bottom-4 right-4 sm:right-8 bg-white rounded-xl px-3 sm:px-4 py-2 shadow-lg flex items-center gap-2">
+                    <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                    <span className="text-xs sm:text-sm font-semibold text-orange-600">Gift Cards</span>
+                  </div>
                 </div>
               </div>
             </div>
