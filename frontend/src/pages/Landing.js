@@ -370,30 +370,22 @@ const Landing = ({ setUser }) => {
           </div>
 
           {/* Gift Card Brand Logos */}
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8">
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4 max-w-4xl mx-auto mb-8">
             {giftCardBrands.map((brand, index) => (
               <div 
                 key={index}
                 onClick={() => setShowAuth(true)}
-                className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group"
+                className="rounded-xl p-3 sm:p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group border border-white/20"
+                style={{ backgroundColor: brand.color }}
                 title={brand.name}
               >
-                <img 
-                  src={brand.logo} 
-                  alt={brand.name}
-                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain opacity-70 group-hover:opacity-100 transition-all"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
                 <span 
-                  className="hidden text-xl sm:text-2xl font-bold items-center justify-center"
-                  style={{ color: brand.color }}
+                  className="text-xl sm:text-2xl font-bold"
+                  style={{ color: brand.textColor }}
                 >
                   {brand.name[0]}
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-medium text-gray-600 truncate max-w-full text-center">
+                <span className="text-[8px] sm:text-[10px] font-semibold truncate max-w-full text-center" style={{ color: brand.textColor, opacity: 0.9 }}>
                   {brand.name}
                 </span>
               </div>
