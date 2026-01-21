@@ -352,6 +352,79 @@ const Landing = ({ setUser }) => {
         </div>
       </section>
 
+      {/* Gift Cards Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-orange-50 via-white to-purple-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold mb-4">
+              <Gift className="w-4 h-4" />
+              Gift Cards Available
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">Buy Gift Cards Instantly</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Purchase gift cards from your favorite brands at the best rates. Instant delivery to your email.</p>
+          </div>
+
+          {/* Gift Card Brand Logos */}
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-4 sm:gap-6 max-w-4xl mx-auto mb-8">
+            {giftCardBrands.map((brand, index) => (
+              <div 
+                key={index}
+                onClick={() => setShowAuth(true)}
+                className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex items-center justify-center group"
+                title={brand.name}
+              >
+                <img 
+                  src={brand.logo} 
+                  alt={brand.name}
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain grayscale group-hover:grayscale-0 transition-all"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = `<span class="text-lg sm:text-2xl font-bold" style="color: ${brand.color}">${brand.name[0]}</span>`;
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Gift Card Features */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto mb-8">
+            <div className="bg-white rounded-xl p-4 sm:p-5 text-center border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                <Zap className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1">Instant Delivery</h3>
+              <p className="text-sm text-gray-600">Codes sent to your email in seconds</p>
+            </div>
+            <div className="bg-white rounded-xl p-4 sm:p-5 text-center border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                <Shield className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1">100% Genuine</h3>
+              <p className="text-sm text-gray-600">All codes are verified and authentic</p>
+            </div>
+            <div className="bg-white rounded-xl p-4 sm:p-5 text-center border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3">
+                <Globe className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1">Global Brands</h3>
+              <p className="text-sm text-gray-600">100+ brands from around the world</p>
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <div className="text-center">
+            <button
+              onClick={() => setShowAuth(true)}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-bold text-white shadow-xl transition-all"
+              style={{ backgroundColor: buttonColor, boxShadow: `0 10px 25px -5px ${buttonColor}40` }}
+            >
+              <Gift className="w-5 h-5" />
+              Browse Gift Cards
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="how-it-works" className="py-12 sm:py-16 lg:py-20" style={{ background: `linear-gradient(135deg, ${accentColor}10, ${accentColor}05)` }}>
         <div className="container mx-auto px-4 sm:px-6">
