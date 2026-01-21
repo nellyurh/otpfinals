@@ -16,16 +16,16 @@ const popularServices = [
   { country: 'Nigeria', flag: '🇳🇬', service: 'Facebook', orders: '3,120', price: '$0.20' },
 ];
 
-// Gift card brands with logos from reliable sources
+// Gift card brands with inline colored boxes (reliable, no external dependencies)
 const giftCardBrands = [
-  { name: 'Amazon', logo: 'https://logo.clearbit.com/amazon.com', color: '#FF9900' },
-  { name: 'iTunes', logo: 'https://logo.clearbit.com/apple.com', color: '#555555' },
-  { name: 'Google Play', logo: 'https://logo.clearbit.com/play.google.com', color: '#4285F4' },
-  { name: 'Steam', logo: 'https://logo.clearbit.com/steampowered.com', color: '#1B2838' },
-  { name: 'Netflix', logo: 'https://logo.clearbit.com/netflix.com', color: '#E50914' },
-  { name: 'Spotify', logo: 'https://logo.clearbit.com/spotify.com', color: '#1DB954' },
-  { name: 'PlayStation', logo: 'https://logo.clearbit.com/playstation.com', color: '#003791' },
-  { name: 'Xbox', logo: 'https://logo.clearbit.com/xbox.com', color: '#107C10' },
+  { name: 'Amazon', color: '#FF9900', textColor: '#ffffff' },
+  { name: 'iTunes', color: '#FB5BC5', textColor: '#ffffff' },
+  { name: 'Google Play', color: '#4285F4', textColor: '#ffffff' },
+  { name: 'Steam', color: '#1B2838', textColor: '#ffffff' },
+  { name: 'Netflix', color: '#E50914', textColor: '#ffffff' },
+  { name: 'Spotify', color: '#1DB954', textColor: '#ffffff' },
+  { name: 'PlayStation', color: '#003791', textColor: '#ffffff' },
+  { name: 'Xbox', color: '#107C10', textColor: '#ffffff' },
 ];
 
 // Service cards data inspired by Screenshot 3
