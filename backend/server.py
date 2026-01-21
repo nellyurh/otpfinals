@@ -4085,11 +4085,20 @@ async def ercaspay_webhook(request: Request):
         if user:
             credit_amount = float(payment.get('amount', 0))
             
+            if credit_amount <= 0:
+                logger.error(f"Ercaspay webhook: Invalid credit amount {credit_amount} for payment {payment_ref}")
+                return {'status': 'error', 'message': 'Invalid amount'}
+            
             # Credit NGN balance
-            await db.users.update_one(
+            result = await db.users.update_one(
                 {'id': payment['user_id']},
                 {'$inc': {'ngn_balance': credit_amount}}
             )
+            
+            if result.modified_count == 0:
+                logger.error(f"Ercaspay webhook: Failed to credit user {payment['user_id']} for payment {payment_ref}")
+            else:
+                logger.info(f"Ercaspay webhook: Successfully credited ₦{credit_amount} to user {payment['user_id']}")
             
             # Create transaction record
             transaction = Transaction(
@@ -4118,8 +4127,11 @@ async def ercaspay_webhook(request: Request):
             )
             
             logger.info(f"Ercaspay payment successful: {payment_ref}, credited ₦{credit_amount} to user {payment['user_id']}")
+        else:
+            logger.error(f"Ercaspay webhook: User {payment['user_id']} not found for payment {payment_ref}")
     
     await db.ercaspay_payments.update_one(query, {'$set': update_fields})
+    logger.info(f"Ercaspay webhook: Updated payment {payment_ref} status to {new_status}")
     
     return {'status': 'ok'}
 
