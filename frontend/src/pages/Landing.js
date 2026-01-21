@@ -375,18 +375,19 @@ const Landing = ({ setUser }) => {
               <div 
                 key={index}
                 onClick={() => setShowAuth(true)}
-                className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex items-center justify-center group"
+                className="rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col items-center justify-center gap-1"
+                style={{ backgroundColor: brand.bg }}
                 title={brand.name}
               >
-                <img 
-                  src={brand.logo} 
-                  alt={brand.name}
-                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain grayscale group-hover:grayscale-0 transition-all"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = `<span class="text-lg sm:text-2xl font-bold" style="color: ${brand.color}">${brand.name[0]}</span>`;
-                  }}
-                />
+                <span 
+                  className="text-xl sm:text-2xl font-bold"
+                  style={{ color: brand.color }}
+                >
+                  {brand.initial}
+                </span>
+                <span className="text-[8px] sm:text-[10px] font-medium text-gray-600 truncate max-w-full">
+                  {brand.name}
+                </span>
               </div>
             ))}
           </div>
