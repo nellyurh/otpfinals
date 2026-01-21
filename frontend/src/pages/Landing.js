@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Phone, Shield, Zap, Globe, DollarSign, Clock, ChevronRight, X, Wifi, Tv, Smartphone, Lightbulb, GraduationCap, ShieldCheck } from 'lucide-react';
+import { Phone, Shield, Zap, Globe, DollarSign, Clock, ChevronRight, X, Wifi, Tv, Smartphone, Lightbulb, GraduationCap, ShieldCheck, Gift, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -16,14 +16,26 @@ const popularServices = [
   { country: 'Nigeria', flag: '🇳🇬', service: 'Facebook', orders: '3,120', price: '$0.20' },
 ];
 
+// Gift card brands with logos
+const giftCardBrands = [
+  { name: 'Amazon', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg', color: '#FF9900' },
+  { name: 'iTunes', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/df/ITunes_logo.svg', color: '#FB5BC5' },
+  { name: 'Google Play', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg', color: '#4285F4' },
+  { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg', color: '#1B2838' },
+  { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg', color: '#E50914' },
+  { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg', color: '#1DB954' },
+  { name: 'PlayStation', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/00/PlayStation_logo.svg', color: '#003791' },
+  { name: 'Xbox', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg', color: '#107C10' },
+];
+
 // Service cards data inspired by Screenshot 3
 const serviceCards = [
   { name: 'Virtual Numbers', color: 'text-purple-600', bgColor: 'bg-purple-50', iconBg: 'bg-purple-100', icon: Smartphone },
+  { name: 'Gift Cards', color: 'text-orange-600', bgColor: 'bg-orange-50', iconBg: 'bg-orange-100', icon: Gift },
   { name: 'Internet Data', color: 'text-emerald-600', bgColor: 'bg-emerald-50', iconBg: 'bg-emerald-100', icon: Wifi },
   { name: 'TV Sub', color: 'text-pink-600', bgColor: 'bg-pink-50', iconBg: 'bg-pink-100', icon: Tv },
   { name: 'Airtime', color: 'text-purple-600', bgColor: 'bg-purple-50', iconBg: 'bg-purple-100', icon: Phone },
   { name: 'Electricity', color: 'text-emerald-600', bgColor: 'bg-emerald-50', iconBg: 'bg-emerald-100', icon: Lightbulb },
-  { name: 'Virtual Cards', color: 'text-gray-700', bgColor: 'bg-gray-50', iconBg: 'bg-gray-100', icon: ShieldCheck },
 ];
 
 const Landing = ({ setUser }) => {
