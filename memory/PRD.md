@@ -1,32 +1,32 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2025-01-19**: **PRICING FIX** - DaisySMS now uses LIVE API pricing (e.g., WhatsApp $0.50 + 50% markup = $0.75). Added configurable `daisysms_advanced_markup` for area code/carrier options. Fixed 5sim to use selected operator's price during purchase.
-- **2025-01-19**: Fixed OTP/SMS not showing in active orders - orders now stay visible when code is received. Added polling to auto-refresh orders every 5 seconds. Made SMS History mobile responsive with card layout. Fixed Ercaspay payment gateway.
-- **2025-01-19**: Fixed Ercaspay payment gateway - now allows all payment methods (card, bank-transfer, ussd, qrcode) at checkout. Fixed USD to NGN conversion transactions not showing in history (wrong API endpoint).
-- **2025-01-18**: Fixed Gift Cards not loading issue. The `giftcardsConfig` wasn't being included in save requests. Added environment variable indicator in Admin Panel.
+- **2025-01-21**: Landing page enhancements - Added Gift Cards section with brand logos (Amazon, iTunes, Google Play, Steam, Netflix, Spotify, PlayStation, Xbox). Updated SEO meta tags with Open Graph support for WhatsApp/social sharing. Generated social preview image. Removed Emergent references from meta description.
+- **2025-01-20**: 5sim pricing fixed - API returns USD directly, removed coin conversion. Admin panel cleanup - removed TigerSMS markup, added 5sim markup.
+- **2025-01-19**: Fixed SMS pricing, OTP display, mobile responsiveness, Ercaspay payment gateway.
 
 ## Original Problem Statement
 Build a full-stack OTP service platform with JWT auth, wallet system, multiple payment gateways, and admin panel.
 
-## Latest Updates (January 19, 2026)
+## Latest Updates (January 21, 2026)
 
-### Session 13 - SMS Pricing Fixes
+### Session 14 - Landing Page & SEO Improvements
 
-**DaisySMS Pricing (LIVE API):**
-- Services endpoint, calculate-price, and purchase ALL use LIVE pricing from DaisySMS API
-- Example: WhatsApp base = $0.50, with 50% markup = $0.75, NGN = ₦1,125
-- Advanced options (area code, carrier) add configurable `daisysms_advanced_markup` (default 20%)
+**Landing Page Enhancements:**
+1. Added Gift Cards section with brand logos
+   - Amazon, iTunes, Google Play, Steam, Netflix, Spotify, PlayStation, Xbox
+   - Feature cards: Instant Delivery, 100% Genuine, Global Brands
+2. Added "Gift Cards" floating badge in hero section
+3. Added "Gift Cards" to services grid
 
-**5sim Operator Pricing:**
-- Fixed: When user selects a specific operator, that operator's price is now used
-- Previously was using cached service price regardless of selected operator
+**SEO Improvements:**
+1. Updated meta description (removed Emergent reference)
+2. Added Open Graph tags for social sharing (WhatsApp, Facebook)
+3. Added Twitter Card meta tags
+4. Generated social preview image for link sharing
+5. Added keywords, author, robots meta tags
 
-**New Admin Config Fields:**
-- `daisysms_advanced_markup`: Configurable markup % for advanced options (default 20%)
-- `fivesim_markup`: Separate markup for 5sim provider (was using tigersms_markup)
-
-## Previous Updates (January 18, 2026)
+## Previous Updates
 
 ### Session 12 - Gift Cards (Reloadly Integration)
 
