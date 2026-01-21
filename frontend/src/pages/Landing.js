@@ -16,16 +16,16 @@ const popularServices = [
   { country: 'Nigeria', flag: '🇳🇬', service: 'Facebook', orders: '3,120', price: '$0.20' },
 ];
 
-// Gift card brands with inline colored boxes (reliable, no external dependencies)
+// Gift card brands with logos
 const giftCardBrands = [
-  { name: 'Amazon', color: '#FF9900', textColor: '#ffffff' },
-  { name: 'iTunes', color: '#FB5BC5', textColor: '#ffffff' },
-  { name: 'Google Play', color: '#4285F4', textColor: '#ffffff' },
-  { name: 'Steam', color: '#1B2838', textColor: '#ffffff' },
-  { name: 'Netflix', color: '#E50914', textColor: '#ffffff' },
-  { name: 'Spotify', color: '#1DB954', textColor: '#ffffff' },
-  { name: 'PlayStation', color: '#003791', textColor: '#ffffff' },
-  { name: 'Xbox', color: '#107C10', textColor: '#ffffff' },
+  { name: 'Amazon', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/200px-Amazon_logo.svg.png' },
+  { name: 'iTunes', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/ITunes_12.2_logo.svg/200px-ITunes_12.2_logo.svg.png' },
+  { name: 'Google Play', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/200px-Google_Play_Store_badge_EN.svg.png' },
+  { name: 'Steam', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/200px-Steam_icon_logo.svg.png' },
+  { name: 'Netflix', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Netflix_2015_N_logo.svg/200px-Netflix_2015_N_logo.svg.png' },
+  { name: 'Spotify', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/200px-Spotify_icon.svg.png' },
+  { name: 'PlayStation', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Playstation_logo_colour.svg/200px-Playstation_logo_colour.svg.png' },
+  { name: 'Xbox', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Xbox_one_logo.svg/200px-Xbox_one_logo.svg.png' },
 ];
 
 // Service cards data inspired by Screenshot 3
