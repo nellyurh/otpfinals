@@ -676,16 +676,12 @@ const Landing = ({ setUser }) => {
             </button>
 
             <div className="flex justify-center mb-6 sm:mb-8">
-              {branding.brand_logo_url ? (
-                <img src={branding.brand_logo_url} alt="Logo" className="h-14 sm:h-16 object-contain" />
-              ) : (
-                <div 
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${buttonColor}, ${accentColor})` }}
-                >
-                  <Phone className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                </div>
-              )}
+              <div 
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shadow-lg"
+                style={{ background: `linear-gradient(135deg, ${buttonColor}, ${accentColor})` }}
+              >
+                <Phone className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              </div>
             </div>
 
             {/* Tabs */}
