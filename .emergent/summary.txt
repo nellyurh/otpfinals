@@ -1,175 +1,175 @@
 <analysis>**original_problem_statement:**
 The user's goal is to build and deploy a full-stack OTP service platform, UltraCloud Sms. The project has evolved to include a full UI/UX, an admin panel, a reseller system, and multiple 3rd-party integrations.
 
-Recent work focused on fixing the Reloadly gift card feature, implementing comprehensive transaction histories, improving mobile responsiveness, and debugging payment gateway integrations (Ercaspay and PaymentPoint).
+Recent user requests included:
+- Fixing Ercaspay payment flows and a critical issue where successful payments on the live server do not credit user accounts.
+- Correcting multiple complex pricing bugs related to SMS services (DaisySMS, 5sim) where users were being charged incorrectly.
+- Resolving UI bugs where active OTP orders would disappear upon receiving an SMS and making the SMS history page mobile-responsive.
+- Improving the landing page design, adding a gift card section with brand logos, and enhancing SEO for social media sharing.
+- Cleaning up the admin panel by removing unused configuration options.
 
 PRODUCT REQUIREMENTS:
-- Fix all UI/UX bugs, especially mobile responsiveness and element positioning.
-- Ensure the gift card sales feature (Reloadly) is fully functional, including purchase and history.
-- Implement a complete gift card transaction history for both users and admins, with a detailed view showing the e-code.
-- Enhance the main transaction history to show balance before and after each transaction.
-- Create separate metrics on the admin dashboard for non-OTP services (Gift Cards, Currency Conversion).
-- Resolve all payment gateway issues, specifically with Ercaspay bank transfers and PaymentPoint virtual account generation.
-- Ensure all callbacks and redirects work with the user's Digital Ocean deployment URLs.
+- Fix the critical Ercaspay webhook issue preventing user wallets from being credited after successful payments.
+- Ensure all SMS service pricing is consistent between what is displayed and what is charged.
+- Fix all remaining UI/UX bugs, especially mobile responsiveness and state persistence.
+- Test and fix the reseller functionality, which was likely affected by recent pricing logic changes.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack OTP service platform with a FastAPI backend and a React frontend using a MongoDB database. It features an admin panel for managing services, users, and pricing.
+The application is a full-stack OTP service platform with a FastAPI backend, a React frontend, and a MongoDB database. It features an admin panel for managing services and pricing, and a user dashboard for purchasing OTP numbers and gift cards.
 
-Key features implemented include:
-- **OTP Services:** Integration with multiple SMS providers.
-- **Gift Card Sales:** A complete flow for selling gift cards via the Reloadly API, including browsing products, purchasing, and viewing order history with redeem codes. The admin panel has sections for managing Reloadly credentials, markup, and viewing wallet balance.
-- **Transaction History:** A detailed transaction history for users with a modal view showing balance before and after the transaction.
-- **Admin Dashboard:** Includes metrics for OTP sales and a new section for Other Services Revenue (Gift Cards, Currency Conversions).
-- **Payment Gateways:** Integrations with Ercaspay and PaymentPoint for funding wallets.
-- **Mobile Responsiveness:** Significant improvements have been made to the Fund Wallet and Transactions pages to eliminate horizontal scroll.
+Key features and recent updates include:
+- **OTP Services:** Integrations with DaisySMS, SMS-pool, and 5sim. The pricing logic for these providers has been significantly refactored to use live API data plus a configurable markup, ensuring consistency.
+- **Payment Gateways:** Integrations with Ercaspay and PaymentPoint. The Ercaspay initiation flow has been fixed.
+- **OTP Order Display:** The UI now correctly keeps active orders visible after an OTP is received and polls the backend for status updates.
+- **Mobile UI:** The SMS history page has been refactored to be fully responsive.
+- **Landing Page:** The landing page has been redesigned with improved SEO metadata, a new Gift Cards section with brand logos, and a cleaner login/register popup.
+- **Admin Panel:** Unused and confusing settings (like  and ) have been removed.
 
 **Last working item**:
--   Last item agent was working: The agent was debugging an issue with the Ercaspay payment gateway where selecting the Bank Transfer option was failing with an error indicating the Card payment method was not enabled. The agent identified that the API request payload was incorrect.
--   Status: IN PROGRESS
+-   Last item agent was working: The agent was about to begin investigating a critical P0 bug reported by the user. On the live Digital Ocean server, successful payments via Ercaspay are not crediting user accounts. The user suspects the webhook handler is failing.
+-   Status: NOT STARTED
 -   Agent Testing Done: N
 -   Which testing method agent to use? backend testing agent
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Ercaspay bank transfer payment is not working (P0)
+-   Issue 1: Ercaspay webhooks are not crediting user accounts on the live server (P0)
 -   Issue 2: User reports PaymentPoint virtual account generation is not working (P1)
 -   Issue 3: Reseller Portal has horizontal scroll on mobile (P1)
--   Issue 4: Digital Ocean deployment is failing (P2)
+-   Issue 4: Reseller  for 5sim is broken after pricing changes (P2)
+-   Issue 5: Mobile sidebar navigation is flaky (P2)
+-   Issue 6: Digital Ocean deployment is failing (long-standing) (P2)
 
 **Issues Detail:**
--   **Issue 1: Ercaspay bank transfer payment is not working**
-    -   **Description:** When the user clicks the Bank payment option for Ercaspay, the API returns an error: card payment method is not enabled for the transaction. The agent discovered that the  field in the API request to Ercaspay was being sent in an incorrect format.
-    -   **Attempted fixes:** The agent first tried sending the  as a JSON array (), which caused a 500 error from the Ercaspay API. The agent then did a web search and found the correct format.
+-   **Issue 1: Ercaspay webhooks are not crediting user accounts on the live server**
+    -   **Description:** A critical bug where users complete payments successfully on Ercaspay, but their wallets are not credited on the platform. This is likely due to a failure in the webhook handler that processes payment confirmations.
+    -   **Attempted fixes:** None.
     -   **Next debug checklist:**
-        1.  In , locate the  function.
-        2.  Modify the  sent to the Ercaspay API. The  field must be a **comma-separated string**, not an array. For example, when bank-transfer is selected, the payload should contain .
-        3.  Restart the backend service.
-        4.  Test the fix by making a request to the  endpoint with  set to . Verify it returns a successful response with a checkout URL.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking a primary payment method for funding user wallets.
-    -   **Status:** IN PROGRESS
+        1.  Review the  endpoint logic in .
+        2.  Check the live server logs (Digital Ocean) for incoming webhook requests from Ercaspay and any errors.
+        3.  Verify the webhook's parsing, transaction lookup, status update, and wallet crediting logic.
+        4.  Ensure the webhook URL configured in the user's Ercaspay account is correct for the live environment.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the highest priority bug. Fixing it will restore the core functionality of adding funds to the platform, preventing revenue loss and user churn.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** backend
 
 -   **Issue 2: User reports PaymentPoint virtual account generation is not working**
-    -   **Description:** The user stated that the generate account not working for payment point.
-    -   **Attempted fixes:** The agent tested the backend endpoint  and confirmed it works correctly, returning virtual account details. This suggests the issue is likely on the frontend.
+    -   **Description:** The user stated that the generate account not working for payment point. Backend tests passed, suggesting a frontend problem.
     -   **Next debug checklist:**
-        1.  Log into the application and navigate to the Fund Wallet page.
-        2.  Click the Generate Account or View Account Details button for the PaymentPoint option.
-        3.  Use the browser's developer tools to inspect the console for any JavaScript errors and check the network tab to see if the API call to  is being made correctly.
-        4.  If it fails, review the React code in  to debug the  handler and state management for displaying the account details.
-    -   **Why fix this issue and what will be achieved with the fix?** This will restore a key method for users to fund their accounts.
+        1.  In the browser, navigate to the Fund Wallet page and click the Generate Account button for PaymentPoint.
+        2.  Use developer tools to check the console for errors and the network tab for the API call to .
+        3.  Review the  handler in .
+    -   **Why fix this issue and what will be achieved with the fix?** Restores a key method for users to fund their accounts.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** frontend
 
 -   **Issue 3: Reseller Portal has horizontal scroll on mobile**
-    -   **Description:** A recurring UI bug from the previous session where the Reseller Portal page has a horizontal scrollbar on mobile devices, making it difficult to use.
-    -   **Attempted fixes:** Previous attempts were made in the last fork session. No fixes were attempted in the current session.
+    -   **Description:** A recurring UI bug making the Reseller Portal difficult to use on mobile devices.
     -   **Next debug checklist:**
-        1.  Navigate to the Reseller Portal section within the user dashboard.
-        2.  Take a screenshot on a mobile viewport (e.g., width 375px) to confirm the issue.
-        3.  Inspect the  component inside .
-        4.  Identify the element causing the overflow (likely a wide table, code block, or non-wrapping container) and apply appropriate Tailwind CSS classes (, , responsive widths) to fix it.
-    -   **Why fix this issue and what will be achieved with the fix?** Improves mobile usability and addresses a persistent user complaint.
+        1.  Inspect the  component in  on a mobile viewport.
+        2.  Identify the element causing the overflow and apply responsive Tailwind CSS classes (, ).
+    -   **Why fix this issue and what will be achieved with the fix?** Improves mobile usability.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** frontend
 
--   **Issue 4: Digital Ocean deployment is failing**
-    -   **Description:** A long-standing, high-priority issue where the user is unable to deploy the application successfully on Digital Ocean's App Platform. The user is actively testing on their DO environment.
+-   **Issue 4: Reseller  for 5sim is broken after pricing changes**
+    -   **Description:** The user pointed out that the reseller functionality needs to be tested and fixed, especially for 5sim, after its pricing logic was changed from a coin-based system to direct USD.
+    -   **Next debug checklist:**
+        1.  Create a reseller account for testing.
+        2.  Review the reseller purchase logic in  (around line 5700) to ensure it correctly calculates costs using the new direct USD pricing for 5sim.
+        3.  Test the full purchase flow via the reseller API.
+    -   **Why fix this issue and what will be achieved with the fix?** This will ensure the reseller feature, a key business requirement, works with the updated 5sim integration.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** backend
+
+-   **Issue 5: Mobile sidebar navigation is flaky**
+    -   **Description:** The hamburger menu for the sidebar on mobile sometimes fails to open on the first click.
+    -   **Next debug checklist:** Investigate potential z-index issues or problems with the click event handler on mobile.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
-    -   **Note:** This is a major blocker for the user going live.
-
-**In progress Task List**:
-(None, all in-progress work is classified under issues)
+    -   **Should Test frontend/backend/both after fix?** frontend
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
     *   **P2:** Refactor the monolithic  into a modular structure using FastAPI's .
-    *   **P2:** Refactor the large  and  components into smaller, more manageable sub-components.
+    *   **P2:** Refactor the large , , and  components into smaller, more manageable sub-components.
+    *   **P2:** Investigate converting the web app into a mobile app, possibly using Capacitor, as requested by the user.
 *   **Future Tasks:**
+    *   Implement backend functionality for the Virtual Cards service, which has already been added to the landing page UI.
     *   Implement real-time order status updates for gift cards using webhooks.
-    *   Add filtering by category/brand for gift cards.
+    *   Add filtering by category/brand for the gift card store.
 
 **Completed work in this session**
--   **Fixed: Gift Card Loading & Configuration:** Resolved an issue where gift cards weren't loading because Reloadly credentials weren't being saved from the Admin Panel. The backend was also updated to provide better feedback on whether credentials are being loaded from the environment.
--   **Added: Reloadly Wallet Balance:** Implemented a new section in the Admin Panel to display the current Reloadly account balance, with a manual refresh button.
--   **Fixed: Gift Card Purchase Flow:** Corrected a critical bug in the backend that was causing gift card purchases to fail due to incorrect user ID lookups ( vs. string uid=0(root) gid=0(root) groups=0(root)) and field name mismatches ( vs ).
--   **Implemented: Gift Card Order History:** Created a full-featured order history for gift cards, accessible by both users and admins. The user view includes a details modal that displays the  and  for the purchased card.
--   **Implemented: Admin Service Metrics:** Added a new Other Services Revenue card to the admin dashboard to track revenue from Gift Card Sales and Currency Conversions, separate from OTP sales.
--   **Implemented: Detailed Transaction View:** Enhanced the general transaction list so that clicking View opens a modal showing  and  the transaction.
--   **Fixed: Mobile Responsiveness:** Overhauled the Fund Wallet and Transactions pages to be fully responsive on mobile devices, eliminating horizontal scroll issues.
--   **Fixed: Ercaspay Callback URL:** Corrected the logic for handling Ercaspay's redirect after a payment, which included a malformed URL with two  characters. Also updated the backend to use a  environment variable for constructing the correct redirect URL for the user's Digital Ocean deployment.
-
-**Earlier issues found/mentioned but not fixed**
--   **Issue 1: Mobile sidebar navigation is flaky**
-    -   **Debug checklist:** The hamburger menu for the sidebar on mobile sometimes fails to open on the first click in automated tests. This could indicate a z-index issue, an overlapping invisible element, or a problem with the click event handler.
-    -   **Why to solve this issue and what will be achieved with this?** A non-functioning main navigation menu makes the app difficult to use on mobile.
-    -   **Should Test frontend/backend/both after fix:** frontend
-    -   **Is recurring issue?** Y
+-   **Fixed: Critical SMS Pricing Bugs:**
+    - Aligned pricing logic across service display, price calculation, and purchase endpoints for DaisySMS and 5sim.
+    - Corrected 5sim's pricing to use direct USD values from its API, fixing a bug that resulted in drastically incorrect low prices.
+    - Ensured that operator-specific pricing for 5sim is correctly applied during purchase.
+-   **Fixed: OTP/SMS Order Display & UI:**
+    - Modified the frontend to keep active orders visible after an OTP is received and added polling for status updates.
+    - Made the SMS History section fully mobile-responsive by converting the layout from a table to cards.
+-   **Improved: Landing Page & SEO:**
+    - Updated  with proper SEO and social media () tags.
+    - Added a Gift Cards section with brand logos and updated the Our Services list.
+    - Removed all mentions of emergent.sh and fixed the auth popup UI.
+-   **Improved: Admin Panel Configuration:**
+    - Removed obsolete settings (, ) from the backend and frontend admin panel to reduce confusion.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **3rd Party API Integration (Reloadly):** Implemented a full service for authentication, fetching products, placing orders, and checking account balance.
-*   **Dynamic Configuration:** The application uses a MongoDB  collection to manage all settings from the admin panel, including API keys, rates, and feature toggles.
-*   **Payment Gateway Webhook/Callback:** Implemented logic to handle redirects from Ercaspay, including parsing malformed URLs and cleaning the browser history. The backend now uses a  environment variable for correct redirect URL generation.
-*   **Responsive UI Design:** Utilized Tailwind CSS to create responsive layouts for complex sections like transactions and wallet funding, ensuring usability on mobile devices.
-
-**key DB schema**
--   ** (New Collection):** Stores a record for each gift card purchase, including , , , , , , etc.
--   ** (collection):** Updated to include  and  fields to track wallet changes for each transaction.
+-   **Live API Pricing:** The system now dynamically fetches prices for OTP services from provider APIs (e.g., DaisySMS, 5sim) and combines them with a configurable markup set in the admin panel.
+-   **Frontend Polling:** Used  in the  React component to periodically fetch order status, improving user experience while waiting for an SMS.
+-   **SEO & Social Previews:** Enhanced the  file with Open Graph (og:) tags to control how links to the site appear on social media platforms like WhatsApp.
 
 **All files of reference**
-*    (Backend logic for APIs, payment gateways, gift cards)
-*    (Main user dashboard, transaction history, gift card UI)
-*    (Admin dashboard, Reloadly config, new metrics)
-*    (UI for all funding methods)
+*    (Contains all backend logic, including the Ercaspay webhook that needs debugging).
+*    (The main landing page; updated with SEO, a gift card section, and other UI improvements).
+-    (Component for OTP purchases; updated with polling and new order display logic).
+*    (Main user dashboard, contains the mobile-responsive SMS History section).
+*    (Admin UI where provider markup settings were corrected).
+*    (File where SEO and social preview tags were added).
 
 **Critical Info for New Agent**
--   **Ercaspay Payload:** The Ercaspay API requires the  field to be a **comma-separated string** (e.g., ), not a JSON array. This is the likely fix for the current blocking issue.
--   **Digital Ocean Deployment URLs:** The user is deploying on Digital Ocean with separate URLs for the frontend and backend. The backend now uses a  environment variable to construct correct redirect URLs for payment gateways. This must be set correctly in the user's environment.
--   **User ID vs. :** Be aware that the  collection uses a string uid=0(root) gid=0(root) groups=0(root) (UUID) for identification in most of the application logic, while other collections might use MongoDB's  (). This has caused bugs before and requires careful attention when writing database queries.
+-   **The absolute top priority (P0) is fixing the Ercaspay webhook.** The user has provided evidence that successful payments on their live server are not crediting accounts. This is a critical business failure. Start by examining the  endpoint in  and the server logs.
+-   The pricing logic for SMS services is complex and was the source of major bugs. It now correctly uses live API prices + a percentage markup. Do not reintroduce static pricing.
+-   The  provider's API returns prices in direct USD. The concept of coins and the  rate has been completely removed.
+-   The user is actively using a Digital Ocean deployment, so any fixes, especially those involving environment variables or external URLs (like webhooks), must be compatible with that environment.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requested adding Reloadly balance display to the admin panel. (COMPLETED)
-2.  **User:** Requested hiding markup on the user side, using custom alerts, and fixing the failing gift card purchase flow. (COMPLETED)
-3.  **User:** Requested a gift card order history with a detailed view (including e-code), new admin metrics for other services, and a detailed transaction view showing balance before/after. (COMPLETED)
-4.  **User:** Asked for the credentials needed for Ercaspay (callback URL, webhook URL, signature). (COMPLETED)
-5.  **User:** Reported mobile horizontal scroll on the Fund Wallet/Transactions pages and that Ercaspay bank transfer and PaymentPoint account generation were not working. (IN PROGRESS)
-6.  **User:** Provided the malformed URL from Ercaspay after a successful payment, indicating a redirect issue. (COMPLETED)
-7.  **User:** Confirmed they are testing on a Digital Ocean domain and provided the URL. (COMPLETED)
-8.  **User:** Provided the backend URL for their Digital Ocean deployment. (COMPLETED)
-9.  **User:** Reported that clicking bank on Ercaspay gives a card payment method is not enabled error and that both payment buttons seem to trigger a loading state. (IN PROGRESS - THIS IS THE CURRENT FOCUS)
-10. **User:**  - no action needed.
+1.  **User:** Requested removing the unused Tiger SMS markup from the admin panel. (COMPLETED)
+2.  **User:** Asked if the web app could be turned into a native mobile app. (ANSWERED - Agent provided options like Capacitor).
+3.  **User:** Requested improvements to the landing page: add styling, a gift card section with logos, and fix SEO/social previews. (COMPLETED)
+4.  **User:** Clarified that the previously working gift card logos should be restored, and the auth popup should be simplified. (COMPLETED)
+5.  **User:** Re-iterated landing page fixes: restore gift card logos, use header logo in auth popup, and add Gift Cards and Virtual Cards to the services list. (COMPLETED)
+6.  **User:** Final confirmation of landing page fixes. (COMPLETED)
+7.  **User:** **CRITICAL ISSUE (P0):** Reported that on the live Digital Ocean server, successful Ercaspay payments are not crediting user accounts. Provided screenshots and suspects a webhook issue. (PENDING)
+8.  **User:** Asked the agent to restore the operators list for the 5sim service. (COMPLETED)
+9.  **User:** Asked the agent to verify no other code was broken and to remove the coin rate setting for 5sim from the admin panel. (COMPLETED)
+10. **User:** Pointed out a duplicate 5sim markup field in the admin panel and that the reseller side needs to be fixed for the new 5sim pricing. (COMPLETED/PENDING - Admin panel fixed, reseller part is pending).
 
 **Project Health Check:**
-*   **Broken:** Ercaspay bank transfer payment initiation.
-*   **Needs Verification:** PaymentPoint virtual account generation (user reports it's broken, but backend API test passed).
+*   **Broken:** Ercaspay webhook processing on the live server (P0).
+*   **Needs Verification:** PaymentPoint virtual account generation (frontend), Reseller  flow for 5sim.
 
 **3rd Party Integrations**
 *   OTP Services: DaisySMS, SMS-pool, 5sim
-*   Payment Gateways: PaymentPoint, Payscribe, Plisio, Ercaspay
+*   Payment Gateways: PaymentPoint, Payscribe, Plisio, **Ercaspay (Webhook is broken)**
 *   Gift Cards: Reloadly
 *   Currency Rates: exchangerate-api.com
-*   Database: MongoDB Atlas / Digital Ocean Managed MongoDB
+*   Database: MongoDB
 
 **Testing status**
 -   Testing agent used after significant changes: NO
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
--   Known regressions: None introduced in this session.
-
-**Credentials to test flow:**
-*   Admin user:  / 
-*   Reloadly credentials are in  and are used as a fallback.
-*   Ercaspay/PaymentPoint keys are in .
+-   Known regressions: None from this session, but existing ones (mobile sidebar) persist.
 
 **What agent forgot to execute**
--   The agent has not yet addressed the recurring issue of horizontal scroll on the **Reseller Portal** page.
--   The agent has not performed a frontend test to verify the user's report that **PaymentPoint account generation is failing**, despite the backend API working.</analysis>
+-   The agent did not address the user's request to test and fix the reseller  functionality, especially for 5sim, after the major pricing logic changes. This is now listed as a pending issue.</analysis>
