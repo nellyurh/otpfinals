@@ -5187,6 +5187,8 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['plisio_webhook_secret'] = data.plisio_webhook_secret
     if data.payscribe_api_key is not None:
         update_fields['payscribe_api_key'] = data.payscribe_api_key
+    if data.payscribe_public_key is not None:
+        update_fields['payscribe_public_key'] = data.payscribe_public_key
 
     # Branding
     if data.brand_name is not None:
