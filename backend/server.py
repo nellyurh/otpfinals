@@ -4950,6 +4950,7 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         'enable_paymentpoint',
         'enable_plisio',
         'enable_ercaspay',
+        'enable_payscribe',
     ]:
         val = getattr(data, key, None)
         if val is not None:
