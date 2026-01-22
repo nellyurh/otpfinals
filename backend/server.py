@@ -4333,7 +4333,8 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
             }
         },
         "customer": {
-            "name": user.get('full_name') or user.get('email', 'Customer'),
+            # Send name in UPPERCASE - Payscribe will format it properly
+            "name": (user.get('full_name') or user.get('email', 'Customer')).upper(),
             "email": user.get('email', ''),
             "phone": user.get('phone', '') or '08000000000'
         }
