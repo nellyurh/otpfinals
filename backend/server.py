@@ -4333,8 +4333,9 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
             }
         },
         "customer": {
-            # Send name in UPPERCASE - Payscribe will format it properly
-            "name": (user.get('full_name') or user.get('email', 'Customer')).upper(),
+            # Send name in Title Case - Payscribe caches this on first registration
+            # Using .title() to ensure "john doe" becomes "John Doe"
+            "name": (user.get('full_name') or user.get('email', 'Customer')).title(),
             "email": user.get('email', ''),
             "phone": user.get('phone', '') or '08000000000'
         }
