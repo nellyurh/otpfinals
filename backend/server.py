@@ -4542,8 +4542,6 @@ async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
 
     return {'success': True}
 
-@api_router.post("/payscribe/buy-airtime")
-
 
 @api_router.get('/admin/deposits')
 async def admin_list_deposits(admin: dict = Depends(require_admin)):
