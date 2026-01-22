@@ -4306,6 +4306,14 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     if user.get('is_suspended'):
         raise HTTPException(status_code=403, detail="Account suspended")
     
+    # Require full_name to be set for Payscribe (they use it for account name)
+    full_name = user.get('full_name', '').strip()
+    if not full_name or len(full_name) < 3:
+        raise HTTPException(
+            status_code=400, 
+            detail="Please update your profile with your full name before using bank transfer. Go to Profile → Edit Profile."
+        )
+    
     amount = payload.amount
     if amount < 100:
         raise HTTPException(status_code=400, detail="Minimum deposit amount is ₦100")
