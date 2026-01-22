@@ -2108,6 +2108,117 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* Payscribe Temporary Accounts Section */}
+            {activeSection === 'payscribe' && (
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-900">Payscribe Temp Accounts</h2>
+                    <p className="text-[10px] text-slate-500">One-time virtual accounts for bank transfers</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fetchPayscribeTempAccounts()}
+                    className="text-[10px] h-7"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    Refresh
+                  </Button>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Total Accounts</p>
+                    <p className="text-lg font-bold text-slate-900">{payscribeTempAccounts?.length || 0}</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Paid</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {payscribeTempAccounts?.filter(a => a.status === 'paid').length || 0}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Pending</p>
+                    <p className="text-lg font-bold text-yellow-600">
+                      {payscribeTempAccounts?.filter(a => a.status === 'pending').length || 0}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Total Volume</p>
+                    <p className="text-lg font-bold text-purple-600">
+                      ₦{payscribeTempAccounts?.filter(a => a.status === 'paid').reduce((sum, a) => sum + (a.amount || 0), 0).toLocaleString() || 0}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="p-3 border-b border-slate-200 bg-slate-50">
+                    <h3 className="text-xs font-semibold text-slate-800">Account History</h3>
+                  </div>
+                  {payscribeTempAccounts && payscribeTempAccounts.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px]">
+                        <thead className="bg-slate-50 text-slate-600 uppercase text-[9px]">
+                          <tr>
+                            <th className="py-2 px-2 text-left">Date</th>
+                            <th className="py-2 px-2 text-left">User</th>
+                            <th className="py-2 px-2 text-left">Amount</th>
+                            <th className="py-2 px-2 text-left">Account</th>
+                            <th className="py-2 px-2 text-left">Bank</th>
+                            <th className="py-2 px-2 text-left">Status</th>
+                            <th className="py-2 px-2 text-left">Expiry</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {payscribeTempAccounts.map((acc) => (
+                            <tr key={acc.id} className="hover:bg-slate-50">
+                              <td className="py-2 px-2 text-slate-600">
+                                {new Date(acc.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="py-2 px-2 text-slate-800 font-medium">
+                                <div className="truncate max-w-[100px]" title={acc.user_email}>
+                                  {acc.user_email || acc.user_id?.slice(0, 8) + '...'}
+                                </div>
+                              </td>
+                              <td className="py-2 px-2 font-semibold text-purple-600">
+                                ₦{(acc.amount || 0).toLocaleString()}
+                              </td>
+                              <td className="py-2 px-2 font-mono text-slate-700">
+                                {acc.account_number || '-'}
+                              </td>
+                              <td className="py-2 px-2 text-slate-600 truncate max-w-[80px]">
+                                {acc.bank_name || '-'}
+                              </td>
+                              <td className="py-2 px-2">
+                                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${
+                                  acc.status === 'paid'
+                                    ? 'bg-green-100 text-green-700'
+                                    : acc.status === 'failed'
+                                    ? 'bg-red-100 text-red-700'
+                                    : acc.status === 'expired'
+                                    ? 'bg-gray-100 text-gray-700'
+                                    : 'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {acc.status}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2 text-slate-500 text-[9px]">
+                                {acc.expiry_date ? new Date(acc.expiry_date).toLocaleTimeString() : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center text-xs text-slate-500 py-6">No Payscribe accounts found</div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* Popup Notifications Management */}
             {activeSection === 'notifications' && (
               <section className="space-y-4">
