@@ -43,6 +43,7 @@ import {
   Copy,
   MessageSquare,
   Gift,
+  Building2,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
