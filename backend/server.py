@@ -5039,7 +5039,7 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
         'ercaspay_secret_key', 'ercaspay_api_key',
         'plisio_secret_key', 'plisio_webhook_secret',
-        'payscribe_api_key',
+        'payscribe_api_key', 'payscribe_public_key',
         'reloadly_client_secret'  # Mask Reloadly secret
     ]:
         if key in config_sanitized and config_sanitized[key]:
@@ -5050,7 +5050,10 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         (config.get('paymentpoint_api_key') and config.get('paymentpoint_secret')) or 
         (PAYMENTPOINT_API_KEY and PAYMENTPOINT_SECRET and PAYMENTPOINT_BUSINESS_ID)
     )
-    config_sanitized['payscribe_configured'] = bool(config.get('payscribe_api_key') or PAYSCRIBE_API_KEY)
+    config_sanitized['payscribe_configured'] = bool(
+        (config.get('payscribe_api_key') and config.get('payscribe_public_key')) or 
+        (PAYSCRIBE_API_KEY and PAYSCRIBE_PUBLIC_KEY)
+    )
     config_sanitized['plisio_configured'] = bool(config.get('plisio_secret_key') or PLISIO_SECRET_KEY)
     config_sanitized['ercaspay_configured'] = bool(config.get('ercaspay_secret_key') or ERCASPAY_SECRET_KEY)
     
