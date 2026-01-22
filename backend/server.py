@@ -769,6 +769,9 @@ class ErcaspayInitiateRequest(BaseModel):
     amount: float  # NGN amount
     payment_method: str  # 'card' or 'bank-transfer'
 
+class PayscribeCreateAccountRequest(BaseModel):
+    amount: float  # NGN amount
+
 class BillPaymentRequest(BaseModel):
     service_type: str
     provider: str
