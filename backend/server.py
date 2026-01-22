@@ -4330,6 +4330,7 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
         raise HTTPException(status_code=500, detail="Failed to create temporary account. Please try again.")
     
     # Extract account details from response
+    # Response structure: { status, description, message: { details: { customer, account: [...], expiry, expiry_date, status } } }
     message = result.get('message', {})
     details = message.get('details', {})
     accounts = details.get('account', [])
@@ -4339,6 +4340,9 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
         raise HTTPException(status_code=500, detail="Failed to get account details from Payscribe")
     
     account = accounts[0]  # Get first account
+    
+    # expiry_date is at the details level, not inside account
+    expiry_date = details.get('expiry_date') or account.get('expiry_date')
     
     # Create payment record
     payment_record = PayscribeTempAccount(
@@ -4350,7 +4354,7 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
         bank_name=account.get('bank_name'),
         bank_code=account.get('bank_code'),
         status='pending',
-        expiry_date=account.get('expiry_date'),
+        expiry_date=expiry_date,
         payscribe_response=result
     )
     
@@ -4369,9 +4373,9 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
             'account_name': account.get('account_name'),
             'bank_name': account.get('bank_name'),
             'bank_code': account.get('bank_code'),
-            'expiry_date': account.get('expiry_date')
+            'expiry_date': expiry_date
         },
-        'expires_in_minutes': 30
+        'expires_in_minutes': 60  # 1 hour as set in the request
     }
 
 
