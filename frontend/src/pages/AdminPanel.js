@@ -2837,16 +2837,31 @@ const AdminPanel = ({ user, setUser }) => {
 
                     {/* Payscribe */}
                     <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
-                      <h4 className="font-semibold text-sm text-purple-900 mb-3">Payscribe (Bill Payments)</h4>
-                      <div>
-                        <label className="text-xs font-medium text-slate-700">API Key</label>
-                        <Input
-                          type="password"
-                          placeholder="Enter Payscribe API Key"
-                          value={pricing.payscribe_api_key || ''}
-                          onChange={(e) => setPricing({ ...pricing, payscribe_api_key: e.target.value })}
-                          className="mt-1 h-9 text-xs"
-                        />
+                      <h4 className="font-semibold text-sm text-purple-900 mb-3">Payscribe (Bank Transfer / Collections)</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Secret Key (ps_sk_...)</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Payscribe Secret Key"
+                            value={pricing.payscribe_api_key || ''}
+                            onChange={(e) => setPricing({ ...pricing, payscribe_api_key: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Public Key (ps_pk_...)</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Payscribe Public Key"
+                            value={pricing.payscribe_public_key || ''}
+                            onChange={(e) => setPricing({ ...pricing, payscribe_public_key: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-500">
+                          Get keys from your Payscribe dashboard. Remember to whitelist your server IP.
+                        </p>
                       </div>
                     </div>
                   </CardContent>
