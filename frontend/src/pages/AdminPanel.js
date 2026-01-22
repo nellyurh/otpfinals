@@ -2735,6 +2735,33 @@ const AdminPanel = ({ user, setUser }) => {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Payscribe */}
+                  <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                            <Building2 className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-sm font-semibold text-purple-900">Payscribe</CardTitle>
+                            <p className="text-[10px] text-purple-600">Bank Transfer (Instant)</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={pageToggles.enable_payscribe}
+                          onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, enable_payscribe: val }))}
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-xs text-purple-700">
+                      <p>One-time virtual accounts for instant deposits</p>
+                      <div className={`mt-3 px-3 py-1.5 rounded-full text-center font-semibold ${pageToggles.enable_payscribe ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {pageToggles.enable_payscribe ? 'ENABLED' : 'DISABLED'}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* Payment Gateway API Keys */}
