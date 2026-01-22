@@ -560,6 +560,24 @@ class ErcaspayPayment(BaseModel):
     ercaspay_response: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class PayscribeTempAccount(BaseModel):
+    """Payscribe temporary virtual account for one-time payments"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    amount: float  # Expected amount in NGN
+    reference: str  # Unique reference for this transaction
+    account_number: Optional[str] = None
+    account_name: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_code: Optional[str] = None
+    status: str = "pending"  # pending, paid, failed, expired
+    expiry_date: Optional[str] = None
+    payscribe_response: Optional[Dict[str, Any]] = None
+    webhook_response: Optional[Dict[str, Any]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: Optional[datetime] = None
+
 class CachedService(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
