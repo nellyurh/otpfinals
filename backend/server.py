@@ -1449,12 +1449,25 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
 
 # ============ Payscribe Functions ============
 
-async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[Dict] = None) -> Optional[Dict]:
-    """Generic Payscribe API request"""
+async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[Dict] = None, use_public_key: bool = False) -> Optional[Dict]:
+    """Generic Payscribe API request
+    
+    Args:
+        endpoint: API endpoint path
+        method: HTTP method (GET/POST)
+        data: Request payload
+        use_public_key: If True, use public key (required for collections API)
+    """
     try:
-        # Get key from database first, fallback to env
+        # Get keys from database first, fallback to env
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        payscribe_key = (config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None) or PAYSCRIBE_API_KEY
+        
+        # For collections API, use public key; otherwise use secret key
+        if use_public_key:
+            payscribe_key = PAYSCRIBE_PUBLIC_KEY
+            logger.info("Using Payscribe PUBLIC key for collections API")
+        else:
+            payscribe_key = (config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None) or PAYSCRIBE_API_KEY
         
         if not payscribe_key:
             logger.error("Payscribe not configured. Set keys in Admin → Payment Gateways")
