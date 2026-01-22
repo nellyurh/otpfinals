@@ -4410,7 +4410,9 @@ async def payscribe_check_payment_status(reference: str, user: dict = Depends(ge
         'amount': payment.get('amount'),
         'reference': payment.get('reference'),
         'account_number': payment.get('account_number'),
+        'account_name': payment.get('account_name'),
         'bank_name': payment.get('bank_name'),
+        'bank_code': payment.get('bank_code'),
         'created_at': payment.get('created_at'),
         'expiry_date': payment.get('expiry_date')
     }
