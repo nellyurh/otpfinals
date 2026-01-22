@@ -4336,8 +4336,8 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     
     logger.info(f"Creating Payscribe temp account for user {user['id']}, amount: {amount}, ref: {ref}")
     
-    # Use the correct Collections API endpoint
-    result = await payscribe_request('collections/virtual-accounts/create', 'POST', request_data)
+    # Use the correct Collections API endpoint with public key
+    result = await payscribe_request('collections/virtual-accounts/create', 'POST', request_data, use_public_key=True)
     
     if not result or not result.get('status'):
         logger.error(f"Payscribe create temp account failed: {result}")
