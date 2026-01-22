@@ -196,6 +196,7 @@ PAYMENTPOINT_BASE_URL = os.environ.get('PAYMENTPOINT_BASE_URL', 'https://api.pay
 
 # Payscribe Config
 PAYSCRIBE_API_KEY = os.environ.get('PAYSCRIBE_API_KEY', 'ps_sk_live_B5sFjlLCGBiZx2GnlXu94bJpmpCmGU5i5c6')
+PAYSCRIBE_PUBLIC_KEY = os.environ.get('PAYSCRIBE_PUBLIC_KEY', 'ps_pk_live_FtQAcPMj4JfEYN98FNsEHZ31xer6IlqXmBZ')
 PAYSCRIBE_BASE_URL = os.environ.get('PAYSCRIBE_BASE_URL', 'https://api.payscribe.ng/api/v1')
 
 # SMS Provider Configs
