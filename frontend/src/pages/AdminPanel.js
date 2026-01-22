@@ -607,6 +607,7 @@ const AdminPanel = ({ user, setUser }) => {
     fetchAdminTransactions();
     fetchAdminVirtualAccounts();
     fetchErcaspayPayments();
+    fetchPayscribeTempAccounts();
   }, [periodPreset, customRange.start, customRange.end]);
 
   const fetchPromoCodes = async () => {
