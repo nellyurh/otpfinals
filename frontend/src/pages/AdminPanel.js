@@ -1125,6 +1125,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => { setActiveSection('ercaspay'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
+              icon={Building2}
+              label="Payscribe Accounts"
+              active={activeSection === 'payscribe'}
+              onClick={() => { setActiveSection('payscribe'); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
               icon={Bell}
               label="Popup Notifications"
               active={activeSection === 'notifications'}
