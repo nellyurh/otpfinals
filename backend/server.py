@@ -105,6 +105,7 @@ async def seed_database():
                 'enable_fund_wallet': True,
                 'enable_paymentpoint': True,
                 'enable_ercaspay': True,
+                'enable_payscribe': True,
                 'enable_crypto': True,
                 'enable_reseller': True,
                 'enable_airtime': True,
