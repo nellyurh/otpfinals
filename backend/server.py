@@ -4297,7 +4297,9 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     # Get frontend URL for the callback
     frontend_url = os.environ.get('FRONTEND_URL') or os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
     
-    # Prepare Payscribe API request
+    # Prepare Payscribe API request - using Collections API for dynamic virtual accounts
+    # Endpoint: /collections/virtual-accounts/create
+    # Note: "expiry" must be inside "order" object
     request_data = {
         "account_type": "dynamic",
         "ref": ref,
@@ -4305,22 +4307,23 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
         "order": {
             "amount": amount,
             "amount_type": "EXACT",
-            "description": f"Wallet deposit for {user.get('email')}"
-        },
-        "expiry": {
-            "duration": 30,
-            "duration_type": "minute"
+            "description": f"Wallet deposit for {user.get('email')}",
+            "expiry": {
+                "duration": 1,
+                "duration_type": "hours"
+            }
         },
         "customer": {
             "name": user.get('full_name') or user.get('email', 'Customer'),
             "email": user.get('email', ''),
-            "phone": user.get('phone', '')
+            "phone": user.get('phone', '') or '08000000000'
         }
     }
     
     logger.info(f"Creating Payscribe temp account for user {user['id']}, amount: {amount}, ref: {ref}")
     
-    result = await payscribe_request('virtual-account/create', 'POST', request_data)
+    # Use the correct Collections API endpoint
+    result = await payscribe_request('collections/virtual-accounts/create', 'POST', request_data)
     
     if not result or not result.get('status'):
         logger.error(f"Payscribe create temp account failed: {result}")
