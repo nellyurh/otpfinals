@@ -4342,15 +4342,15 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
         },
         "customer": {
             # Send name in Title Case - Payscribe caches this on first registration
-            # Using .title() to ensure "john doe" becomes "John Doe"
-            "name": (user.get('full_name') or user.get('email', 'Customer')).title(),
+            # Using the validated full_name variable (already checked above)
+            "name": full_name.title(),
             "email": user.get('email', ''),
             "phone": user.get('phone', '') or '08000000000'
         }
     }
     
     logger.info(f"Creating Payscribe temp account for user {user['id']}, amount: {amount}, ref: {ref}")
-    logger.info(f"User full_name from DB: '{user.get('full_name')}', email: '{user.get('email')}', phone: '{user.get('phone')}'")
+    logger.info(f"User full_name from DB: '{full_name}', email: '{user.get('email')}', phone: '{user.get('phone')}'")
     logger.info(f"Payscribe customer name being sent: '{request_data['customer']['name']}'")
     logger.info(f"Payscribe customer email being sent: '{request_data['customer']['email']}'")
     logger.info(f"Payscribe customer phone being sent: '{request_data['customer']['phone']}'")
