@@ -752,6 +752,7 @@ class UpdatePricingRequest(BaseModel):
     enable_paymentpoint: Optional[bool] = None
     enable_plisio: Optional[bool] = None
     enable_ercaspay: Optional[bool] = None
+    enable_payscribe: Optional[bool] = None
 
     # Support channel URLs
     whatsapp_support_url: Optional[str] = None
