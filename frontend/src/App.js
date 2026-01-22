@@ -5,6 +5,7 @@ import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import NewDashboard from './pages/NewDashboard';
 import AdminPanel from './pages/AdminPanel';
+import PayscribePayment from './pages/PayscribePayment';
 // import NewAdminPanel from './pages/NewAdminPanel';
 import { Toaster } from 'sonner';
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="/" element={!user ? <Landing setUser={setUser} /> : <Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={user ? <NewDashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
           <Route path="/admin" element={user?.is_admin ? <AdminPanel user={user} setUser={setUser} /> : <Navigate to="/dashboard" />} />
+          <Route path="/payscribe-payment" element={user ? <PayscribePayment /> : <Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
