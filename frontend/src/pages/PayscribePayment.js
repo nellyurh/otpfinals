@@ -133,6 +133,27 @@ export default function PayscribePayment() {
     // Keep checking state active to show the "waiting" UI
   };
 
+  // Helper to format bank name with abbreviation
+  const formatBankName = (bankName) => {
+    if (!bankName) return 'Loading...';
+    // Add abbreviations for common banks
+    const abbreviations = {
+      '9 Payment Service Bank': '9 Payment Service Bank (9PSB)',
+      '9 payment service bank': '9 Payment Service Bank (9PSB)',
+      '9PSB': '9 Payment Service Bank (9PSB)',
+      'Providus Bank': 'Providus Bank (PROVIDUS)',
+      'Wema Bank': 'Wema Bank (WEMA)',
+      'Sterling Bank': 'Sterling Bank (STERLING)',
+      'Guaranty Trust Bank': 'Guaranty Trust Bank (GTB)',
+      'First Bank': 'First Bank (FBN)',
+      'Access Bank': 'Access Bank (ACCESS)',
+      'Zenith Bank': 'Zenith Bank (ZENITH)',
+      'United Bank for Africa': 'United Bank for Africa (UBA)',
+      'Kolomoni MFB': 'Kolomoni MFB (KOLOMONI)',
+    };
+    return abbreviations[bankName] || bankName;
+  };
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
