@@ -4804,6 +4804,7 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
             'enable_paymentpoint': True,
             'enable_plisio': True,
             'enable_ercaspay': True,
+            'enable_payscribe': True,
         }
     return {
         'enable_dashboard': config.get('enable_dashboard', True),
@@ -4823,6 +4824,7 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
         'enable_paymentpoint': config.get('enable_paymentpoint', True),
         'enable_plisio': config.get('enable_plisio', True),
         'enable_ercaspay': config.get('enable_ercaspay', True),
+        'enable_payscribe': config.get('enable_payscribe', True),
     }
 
 @api_router.put("/admin/pricing")
