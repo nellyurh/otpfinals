@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { CreditCard, RefreshCw, Wallet, Receipt, Copy, Check, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CreditCard, RefreshCw, Wallet, Receipt, Copy, Check, ChevronDown, Building2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -12,6 +13,8 @@ export function FundWalletSection({
   pageToggles, 
   transactions 
 }) {
+  const navigate = useNavigate();
+  
   // Local state - won't reset on parent re-render since this is a separate component
   const [showAccountDetails, setShowAccountDetails] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -21,6 +24,11 @@ export function FundWalletSection({
   const [ercaspayAmount, setErcaspayAmount] = useState('');
   const [ercaspayLoading, setErcaspayLoading] = useState(false);
   const ercaspayInputRef = useRef(null);
+  
+  // Payscribe state
+  const [payscribeAmount, setPayscribeAmount] = useState('');
+  const [payscribeLoading, setPayscribeLoading] = useState(false);
+  const payscribeInputRef = useRef(null);
   
   // Plisio state
   const [plisioAmount, setPlisioAmount] = useState('');
