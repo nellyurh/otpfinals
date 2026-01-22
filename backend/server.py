@@ -4474,27 +4474,21 @@ async def payscribe_webhook(request: Request):
         )
     
     if not payment:
-        logger.warning(f"Payscribe payment not found: {ref}")
+        logger.warning(f"Payscribe payment not found for account_number={account_number}, account_id={account_id}")
         return {'status': 'ignored', 'message': 'Payment not found'}
+    
+    ref = payment.get('reference', trans_id)  # Use our stored reference or trans_id from webhook
     
     # Don't process already completed payments
     if payment.get('status') == 'paid':
         logger.info(f"Payscribe webhook: Payment {ref} already processed")
         return {'status': 'ok', 'message': 'Already processed'}
     
-    # Map status
-    status_map = {
-        'SUCCESSFUL': 'paid',
-        'SUCCESS': 'paid',
-        'COMPLETED': 'paid',
-        'PAID': 'paid',
-        'FAILED': 'failed',
-        'CANCELLED': 'failed',
-        'EXPIRED': 'expired'
-    }
+    # For accounts.payment.status event, receiving a webhook means payment was successful
+    # The event_type "accounts.payment.status" indicates a payment was received
+    new_status = 'paid' if event_type == 'accounts.payment.status' else 'pending'
     
-    new_status = status_map.get(status, 'pending')
-    logger.info(f"Payscribe webhook: Mapping status '{status}' -> '{new_status}' for payment {ref}")
+    logger.info(f"Payscribe webhook: Setting status to '{new_status}' for payment {ref}")
     
     update_fields = {
         'status': new_status,
@@ -4506,7 +4500,8 @@ async def payscribe_webhook(request: Request):
     if new_status == 'paid':
         user = await db.users.find_one({'id': payment['user_id']}, {'_id': 0})
         if user:
-            credit_amount = float(payment.get('amount', 0))
+            # Use the amount from webhook (actual payment) or fallback to stored amount
+            credit_amount = amount if amount > 0 else float(payment.get('amount', 0))
             
             if credit_amount <= 0:
                 logger.error(f"Payscribe webhook: Invalid credit amount {credit_amount} for payment {ref}")
@@ -4535,7 +4530,11 @@ async def payscribe_webhook(request: Request):
                     'provider': 'payscribe',
                     'payment_method': 'bank-transfer',
                     'account_number': payment.get('account_number'),
-                    'bank_name': payment.get('bank_name')
+                    'bank_name': payment.get('bank_name'),
+                    'sender_name': sender_name,
+                    'sender_account': sender_account,
+                    'narration': narration,
+                    'trans_id': trans_id
                 }
             )
             trans_dict = transaction.model_dump()
@@ -4546,7 +4545,7 @@ async def payscribe_webhook(request: Request):
             await _create_transaction_notification(
                 payment['user_id'],
                 'Deposit successful',
-                f"₦{credit_amount:,.2f} has been credited to your wallet via Payscribe Bank Transfer.",
+                f"₦{credit_amount:,.2f} has been credited to your wallet via Payscribe Bank Transfer from {sender_name}.",
                 metadata={'reference': ref, 'type': 'deposit_ngn', 'provider': 'payscribe'},
             )
             
