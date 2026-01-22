@@ -272,7 +272,7 @@ export default function PayscribePayment() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Bank Name</p>
-                  <p className="font-semibold text-gray-900">{payment.bank_name || 'Loading...'}</p>
+                  <p className="font-semibold text-gray-900">{formatBankName(payment.bank_name)}</p>
                 </div>
               </div>
             </div>
