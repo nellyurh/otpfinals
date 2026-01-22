@@ -552,6 +552,15 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const fetchPayscribeTempAccounts = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/payscribe/temp-accounts`, axiosConfig);
+      setPayscribeTempAccounts(resp.data.accounts || []);
+    } catch (e) {
+      console.error('Failed to fetch payscribe temp accounts');
+    }
+  };
+
   const fetchServiceStats = async (startDate, endDate) => {
     try {
       let url = `${API}/admin/service-stats`;
