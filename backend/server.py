@@ -4553,10 +4553,11 @@ async def payscribe_webhook(request: Request):
         else:
             logger.error(f"Payscribe webhook: User {payment['user_id']} not found for payment {ref}")
     
-    await db.payscribe_temp_accounts.update_one({'reference': ref}, {'$set': update_fields})
-    logger.info(f"Payscribe webhook: Updated payment {ref} status to {new_status}")
+    # Update by account_number since that's how we found the record
+    await db.payscribe_temp_accounts.update_one({'account_number': account_number}, {'$set': update_fields})
+    logger.info(f"Payscribe webhook: Updated payment {ref} (account: {account_number}) status to {new_status}")
     
-    return {'status': 'ok'}
+    return {'status': 'ok', 'message': f'Payment processed successfully'}
 
 
 @api_router.get('/admin/payscribe/temp-accounts')
