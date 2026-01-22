@@ -4418,7 +4418,22 @@ async def payscribe_check_payment_status(reference: str, user: dict = Depends(ge
 
 @api_router.post('/payscribe/webhook')
 async def payscribe_webhook(request: Request):
-    """Handle Payscribe webhook callbacks for virtual account payments."""
+    """Handle Payscribe webhook callbacks for virtual account payments.
+    
+    Payscribe webhook payload structure:
+    {
+        "event_id": "...",
+        "event_type": "accounts.payment.status",
+        "trans_id": "...",
+        "amount": 100,
+        "fee": 0.65,
+        "currency": "NGN",
+        "transaction": { "session_id", "date", "amount", "narration", "sender_name", ... },
+        "customer": { "id", "name", "number" (account number), "account_id", "account_type" },
+        "created_at": "...",
+        "transaction_hash": "..."
+    }
+    """
     try:
         payload = await request.json()
     except Exception:
@@ -4426,25 +4441,37 @@ async def payscribe_webhook(request: Request):
     
     logger.info(f"Payscribe webhook received: {payload}")
     
-    # Extract payment info from webhook
-    # Payscribe webhook structure varies, so handle multiple formats
-    ref = payload.get('ref') or payload.get('reference') or payload.get('payment_reference')
-    status = payload.get('status', '').upper()
-    amount = payload.get('amount', 0)
+    # Extract payment info from Payscribe webhook
+    event_type = payload.get('event_type', '')
+    event_id = payload.get('event_id', '')
+    trans_id = payload.get('trans_id', '')
+    amount = float(payload.get('amount', 0))
     
-    # Also check for nested data
-    if not ref:
-        data = payload.get('data', {})
-        ref = data.get('ref') or data.get('reference')
-        status = data.get('status', status).upper()
-        amount = data.get('amount', amount)
+    # Get customer/account info
+    customer = payload.get('customer', {})
+    account_number = customer.get('number', '')  # This is the virtual account number
+    account_id = customer.get('account_id', '')
+    account_type = customer.get('account_type', '')
     
-    if not ref:
-        logger.warning("Payscribe webhook missing reference")
-        return {'status': 'ignored', 'message': 'Missing reference'}
+    # Get transaction details
+    transaction_data = payload.get('transaction', {})
+    sender_name = transaction_data.get('sender_name', '')
+    sender_account = transaction_data.get('sender_account', '')
+    narration = transaction_data.get('narration', '')
     
-    # Find the payment record
-    payment = await db.payscribe_temp_accounts.find_one({'reference': ref}, {'_id': 0})
+    logger.info(f"Payscribe webhook: event={event_type}, account_number={account_number}, amount={amount}, sender={sender_name}")
+    
+    # Find payment record by account number (primary) or account_id (fallback)
+    payment = None
+    if account_number:
+        payment = await db.payscribe_temp_accounts.find_one({'account_number': account_number}, {'_id': 0})
+    
+    if not payment and account_id:
+        # Try finding by account_id stored in payscribe_response
+        payment = await db.payscribe_temp_accounts.find_one(
+            {'payscribe_response.message.details.account.id': account_id}, 
+            {'_id': 0}
+        )
     
     if not payment:
         logger.warning(f"Payscribe payment not found: {ref}")
