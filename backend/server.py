@@ -1458,21 +1458,35 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         if not payscribe_key:
             logger.error("Payscribe not configured. Set keys in Admin → Payment Gateways")
             return None
-            
+        
+        url = f'{PAYSCRIBE_BASE_URL}/{endpoint}'
         headers = {
             'Authorization': f'Bearer {payscribe_key}',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         }
+        
+        logger.info(f"Payscribe request: {method} {url}")
+        if data:
+            logger.info(f"Payscribe request data: {data}")
         
         async with httpx.AsyncClient() as client:
             if method == 'GET':
-                response = await client.get(f'{PAYSCRIBE_BASE_URL}/{endpoint}', headers=headers, timeout=30.0)
+                response = await client.get(url, headers=headers, timeout=30.0)
             else:
-                response = await client.post(f'{PAYSCRIBE_BASE_URL}/{endpoint}', json=data, headers=headers, timeout=30.0)
+                response = await client.post(url, json=data, headers=headers, timeout=30.0)
+            
+            logger.info(f"Payscribe response status: {response.status_code}")
+            logger.info(f"Payscribe response content-type: {response.headers.get('content-type', 'unknown')}")
             
             if response.status_code == 200:
-                return response.json()
-            logger.error(f"Payscribe error: {response.text}")
+                try:
+                    return response.json()
+                except Exception as json_err:
+                    logger.error(f"Payscribe JSON parse error: {json_err}")
+                    logger.error(f"Payscribe raw response: {response.text[:500]}")
+                    return None
+            logger.error(f"Payscribe error ({response.status_code}): {response.text[:500]}")
             return None
     except Exception as e:
         logger.error(f"Payscribe request error: {str(e)}")
