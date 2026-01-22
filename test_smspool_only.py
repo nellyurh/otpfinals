@@ -7,7 +7,7 @@ from datetime import datetime
 import time
 
 class SMSPoolTester:
-    def __init__(self, base_url="https://otpcloud-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://otpsync.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.admin_token = None
