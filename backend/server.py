@@ -4338,6 +4338,7 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     }
     
     logger.info(f"Creating Payscribe temp account for user {user['id']}, amount: {amount}, ref: {ref}")
+    logger.info(f"Payscribe customer name being sent: '{request_data['customer']['name']}'")
     
     # Use the correct Collections API endpoint with public key
     result = await payscribe_request('collections/virtual-accounts/create', 'POST', request_data, use_public_key=True)
