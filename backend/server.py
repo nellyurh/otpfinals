@@ -534,6 +534,7 @@ class PricingConfig(BaseModel):
     enable_paymentpoint: bool = True
     enable_plisio: bool = True
     enable_ercaspay: bool = True
+    enable_payscribe: bool = True
 
     # Support channel URLs (admin editable)
     whatsapp_support_url: str = "https://wa.me/2348000000000"
