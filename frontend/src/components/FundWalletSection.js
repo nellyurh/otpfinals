@@ -137,6 +137,78 @@ export function FundWalletSection({
         <p className="text-xs sm:text-sm text-gray-600">Choose your preferred payment method</p>
       </div>
 
+      {/* Payscribe Bank Transfer - Temporary Account (RECOMMENDED - First Option) */}
+      {pageToggles?.enable_payscribe && (
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-emerald-300 shadow-sm relative">
+          {/* Recommended Badge */}
+          <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full shadow-sm">
+            RECOMMENDED
+          </div>
+          
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 mt-1">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base">Bank Transfer (Instant)</h3>
+              <p className="text-[10px] sm:text-xs text-gray-600">Pay via one-time virtual account • Instant confirmation</p>
+            </div>
+          </div>
+
+          <div className="mb-3 sm:mb-4">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+              Amount (NGN)
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 sm:px-3 py-2.5 sm:py-3 bg-emerald-100 border border-emerald-200 rounded-lg text-xs sm:text-sm font-semibold text-emerald-700 flex-shrink-0">
+                ₦
+              </span>
+              <input
+                ref={payscribeInputRef}
+                key="payscribe-input-stable"
+                id="payscribe-amount-input"
+                data-testid="payscribe-amount-input"
+                type="number"
+                min="100"
+                step="100"
+                defaultValue={payscribeAmount}
+                onBlur={(e) => setPayscribeAmount(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setPayscribeAmount(e.target.value);
+                    handlePayscribePayment();
+                  }
+                }}
+                placeholder="Min ₦100"
+                className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm transition-colors"
+                disabled={payscribeLoading}
+                autoComplete="off"
+              />
+            </div>
+            <p className="mt-1 text-[10px] sm:text-[11px] text-gray-500">
+              Minimum deposit: ₦100 • Account expires in 1 hour
+            </p>
+          </div>
+
+          <button
+            onClick={handlePayscribePayment}
+            disabled={payscribeLoading}
+            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 bg-emerald-600 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm hover:bg-emerald-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            {payscribeLoading ? (
+              <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+            ) : (
+              <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            )}
+            <span>{payscribeLoading ? 'Creating Account...' : 'Get Account Details'}</span>
+          </button>
+
+          <p className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-gray-500 text-center">
+            Powered by Payscribe. Instant confirmation via webhook.
+          </p>
+        </div>
+      )}
+
       {/* Ercaspay Card/Bank Payment - Conditionally rendered */}
       {pageToggles?.enable_ercaspay && (
         <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-orange-200 shadow-sm">
