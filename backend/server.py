@@ -4265,6 +4265,260 @@ async def admin_list_ercaspay_payments(admin: dict = Depends(require_admin)):
     return {'payments': payments}
 
 
+# ============ Payscribe Temporary Virtual Account Integration ============
+
+@api_router.post('/payscribe/create-temp-account')
+async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, user: dict = Depends(get_current_user)):
+    """Create a temporary virtual account for a one-time payment via Payscribe."""
+    if user.get('is_suspended'):
+        raise HTTPException(status_code=403, detail="Account suspended")
+    
+    amount = payload.amount
+    if amount < 100:
+        raise HTTPException(status_code=400, detail="Minimum deposit amount is ₦100")
+    
+    # Generate unique reference
+    ref = f"PSC-{user['id'][:8]}-{str(uuid.uuid4())[:8]}".upper()
+    
+    # Get frontend URL for the callback
+    frontend_url = os.environ.get('FRONTEND_URL') or os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
+    
+    # Prepare Payscribe API request
+    request_data = {
+        "account_type": "dynamic",
+        "ref": ref,
+        "currency": "NGN",
+        "order": {
+            "amount": amount,
+            "amount_type": "EXACT",
+            "description": f"Wallet deposit for {user.get('email')}"
+        },
+        "expiry": {
+            "duration": 30,
+            "duration_type": "minute"
+        },
+        "customer": {
+            "name": user.get('full_name') or user.get('email', 'Customer'),
+            "email": user.get('email', ''),
+            "phone": user.get('phone', '')
+        }
+    }
+    
+    logger.info(f"Creating Payscribe temp account for user {user['id']}, amount: {amount}, ref: {ref}")
+    
+    result = await payscribe_request('virtual-account/create', 'POST', request_data)
+    
+    if not result or not result.get('status'):
+        logger.error(f"Payscribe create temp account failed: {result}")
+        raise HTTPException(status_code=500, detail="Failed to create temporary account. Please try again.")
+    
+    # Extract account details from response
+    message = result.get('message', {})
+    details = message.get('details', {})
+    accounts = details.get('account', [])
+    
+    if not accounts:
+        logger.error(f"Payscribe response missing account details: {result}")
+        raise HTTPException(status_code=500, detail="Failed to get account details from Payscribe")
+    
+    account = accounts[0]  # Get first account
+    
+    # Create payment record
+    payment_record = PayscribeTempAccount(
+        user_id=user['id'],
+        amount=amount,
+        reference=ref,
+        account_number=account.get('account_number'),
+        account_name=account.get('account_name'),
+        bank_name=account.get('bank_name'),
+        bank_code=account.get('bank_code'),
+        status='pending',
+        expiry_date=account.get('expiry_date'),
+        payscribe_response=result
+    )
+    
+    payment_dict = payment_record.model_dump()
+    payment_dict['created_at'] = payment_dict['created_at'].isoformat()
+    await db.payscribe_temp_accounts.insert_one(payment_dict)
+    
+    logger.info(f"Payscribe temp account created: {ref}, account: {account.get('account_number')}")
+    
+    return {
+        'success': True,
+        'reference': ref,
+        'amount': amount,
+        'account': {
+            'account_number': account.get('account_number'),
+            'account_name': account.get('account_name'),
+            'bank_name': account.get('bank_name'),
+            'bank_code': account.get('bank_code'),
+            'expiry_date': account.get('expiry_date')
+        },
+        'expires_in_minutes': 30
+    }
+
+
+@api_router.get('/payscribe/check-status/{reference}')
+async def payscribe_check_payment_status(reference: str, user: dict = Depends(get_current_user)):
+    """Check the status of a Payscribe temporary account payment."""
+    payment = await db.payscribe_temp_accounts.find_one(
+        {'reference': reference, 'user_id': user['id']},
+        {'_id': 0}
+    )
+    
+    if not payment:
+        raise HTTPException(status_code=404, detail='Payment not found')
+    
+    return {
+        'success': True,
+        'status': payment.get('status'),
+        'amount': payment.get('amount'),
+        'reference': payment.get('reference'),
+        'account_number': payment.get('account_number'),
+        'bank_name': payment.get('bank_name'),
+        'created_at': payment.get('created_at'),
+        'expiry_date': payment.get('expiry_date')
+    }
+
+
+@api_router.post('/payscribe/webhook')
+async def payscribe_webhook(request: Request):
+    """Handle Payscribe webhook callbacks for virtual account payments."""
+    try:
+        payload = await request.json()
+    except Exception:
+        return {'status': 'error', 'message': 'Invalid JSON'}
+    
+    logger.info(f"Payscribe webhook received: {payload}")
+    
+    # Extract payment info from webhook
+    # Payscribe webhook structure varies, so handle multiple formats
+    ref = payload.get('ref') or payload.get('reference') or payload.get('payment_reference')
+    status = payload.get('status', '').upper()
+    amount = payload.get('amount', 0)
+    
+    # Also check for nested data
+    if not ref:
+        data = payload.get('data', {})
+        ref = data.get('ref') or data.get('reference')
+        status = data.get('status', status).upper()
+        amount = data.get('amount', amount)
+    
+    if not ref:
+        logger.warning("Payscribe webhook missing reference")
+        return {'status': 'ignored', 'message': 'Missing reference'}
+    
+    # Find the payment record
+    payment = await db.payscribe_temp_accounts.find_one({'reference': ref}, {'_id': 0})
+    
+    if not payment:
+        logger.warning(f"Payscribe payment not found: {ref}")
+        return {'status': 'ignored', 'message': 'Payment not found'}
+    
+    # Don't process already completed payments
+    if payment.get('status') == 'paid':
+        logger.info(f"Payscribe webhook: Payment {ref} already processed")
+        return {'status': 'ok', 'message': 'Already processed'}
+    
+    # Map status
+    status_map = {
+        'SUCCESSFUL': 'paid',
+        'SUCCESS': 'paid',
+        'COMPLETED': 'paid',
+        'PAID': 'paid',
+        'FAILED': 'failed',
+        'CANCELLED': 'failed',
+        'EXPIRED': 'expired'
+    }
+    
+    new_status = status_map.get(status, 'pending')
+    logger.info(f"Payscribe webhook: Mapping status '{status}' -> '{new_status}' for payment {ref}")
+    
+    update_fields = {
+        'status': new_status,
+        'webhook_response': payload,
+        'updated_at': datetime.now(timezone.utc).isoformat()
+    }
+    
+    # If payment successful, credit user wallet
+    if new_status == 'paid':
+        user = await db.users.find_one({'id': payment['user_id']}, {'_id': 0})
+        if user:
+            credit_amount = float(payment.get('amount', 0))
+            
+            if credit_amount <= 0:
+                logger.error(f"Payscribe webhook: Invalid credit amount {credit_amount} for payment {ref}")
+                return {'status': 'error', 'message': 'Invalid amount'}
+            
+            # Credit NGN balance
+            result = await db.users.update_one(
+                {'id': payment['user_id']},
+                {'$inc': {'ngn_balance': credit_amount}}
+            )
+            
+            if result.modified_count == 0:
+                logger.error(f"Payscribe webhook: Failed to credit user {payment['user_id']} for payment {ref}")
+            else:
+                logger.info(f"Payscribe webhook: Successfully credited ₦{credit_amount} to user {payment['user_id']}")
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=payment['user_id'],
+                type='deposit_ngn',
+                amount=credit_amount,
+                currency='NGN',
+                status='completed',
+                reference=ref,
+                metadata={
+                    'provider': 'payscribe',
+                    'payment_method': 'bank-transfer',
+                    'account_number': payment.get('account_number'),
+                    'bank_name': payment.get('bank_name')
+                }
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+            
+            # Create notification
+            await _create_transaction_notification(
+                payment['user_id'],
+                'Deposit successful',
+                f"₦{credit_amount:,.2f} has been credited to your wallet via Payscribe Bank Transfer.",
+                metadata={'reference': ref, 'type': 'deposit_ngn', 'provider': 'payscribe'},
+            )
+            
+            logger.info(f"Payscribe payment successful: {ref}, credited ₦{credit_amount} to user {payment['user_id']}")
+        else:
+            logger.error(f"Payscribe webhook: User {payment['user_id']} not found for payment {ref}")
+    
+    await db.payscribe_temp_accounts.update_one({'reference': ref}, {'$set': update_fields})
+    logger.info(f"Payscribe webhook: Updated payment {ref} status to {new_status}")
+    
+    return {'status': 'ok'}
+
+
+@api_router.get('/admin/payscribe/temp-accounts')
+async def admin_list_payscribe_temp_accounts(admin: dict = Depends(require_admin)):
+    """List all Payscribe temporary virtual accounts for admin view."""
+    projection = {'_id': 0}
+    accounts = (
+        await db.payscribe_temp_accounts
+        .find({}, projection)
+        .sort('created_at', -1)
+        .to_list(500)
+    )
+    
+    # Enrich with user emails
+    for acc in accounts:
+        user = await db.users.find_one({'id': acc.get('user_id')}, {'_id': 0, 'email': 1, 'full_name': 1})
+        if user:
+            acc['user_email'] = user.get('email')
+            acc['user_name'] = user.get('full_name')
+    
+    return {'accounts': accounts}
+
+
 @api_router.post('/admin/purge')
 async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
     """Dangerous: purge user data (users/orders/transactions) as requested."""
