@@ -1485,7 +1485,8 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         
         logger.info(f"Payscribe request: {method} {url}")
         if data:
-            logger.info(f"Payscribe request data: {data}")
+            import json as json_module
+            logger.info(f"Payscribe request data (raw JSON): {json_module.dumps(data)}")
         
         async with httpx.AsyncClient() as client:
             if method == 'GET':
@@ -1495,6 +1496,7 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
             
             logger.info(f"Payscribe response status: {response.status_code}")
             logger.info(f"Payscribe response content-type: {response.headers.get('content-type', 'unknown')}")
+            logger.info(f"Payscribe full response: {response.text[:1000]}")
             
             if response.status_code == 200:
                 try:
