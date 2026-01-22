@@ -464,6 +464,7 @@ class PricingConfig(BaseModel):
     plisio_secret_key: str = ""
     plisio_webhook_secret: str = ""
     payscribe_api_key: str = ""
+    payscribe_public_key: str = ""
     # Markup percentages
     tigersms_markup: float = 50.0
     daisysms_markup: float = 50.0
