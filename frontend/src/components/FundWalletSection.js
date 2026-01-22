@@ -100,6 +100,36 @@ export function FundWalletSection({
     }
   };
 
+  const handlePayscribePayment = async () => {
+    const inputValue = payscribeInputRef.current?.value || payscribeAmount;
+    const amount = parseFloat(inputValue);
+    if (!amount || amount < 100) {
+      toast.error('Minimum deposit amount is ₦100');
+      return;
+    }
+    setPayscribeAmount(inputValue);
+
+    setPayscribeLoading(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/payscribe/create-temp-account`,
+        { amount: amount },
+        axiosConfig
+      );
+
+      if (response.data.success && response.data.reference) {
+        toast.success('Account created! Redirecting...');
+        navigate(`/payscribe-payment?ref=${response.data.reference}`);
+      } else {
+        toast.error('Failed to create payment account');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create payment account');
+    } finally {
+      setPayscribeLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
