@@ -404,6 +404,7 @@ const AdminPanel = ({ user, setUser }) => {
   const [adminTransactions, setAdminTransactions] = useState([]);
   const [adminVirtualAccounts, setAdminVirtualAccounts] = useState([]);
   const [ercaspayPayments, setErcaspayPayments] = useState([]);
+  const [payscribeTempAccounts, setPayscribeTempAccounts] = useState([]);
 
   // Notification management state
   const [adminNotifications, setAdminNotifications] = useState([]);
