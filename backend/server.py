@@ -1466,7 +1466,8 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         
         # For collections API, use public key; otherwise use secret key
         if use_public_key:
-            payscribe_key = PAYSCRIBE_PUBLIC_KEY
+            # Try database first, then env
+            payscribe_key = (config.get('payscribe_public_key') if config and config.get('payscribe_public_key') not in [None, '', '********'] else None) or PAYSCRIBE_PUBLIC_KEY
             logger.info("Using Payscribe PUBLIC key for collections API")
         else:
             payscribe_key = (config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None) or PAYSCRIBE_API_KEY
