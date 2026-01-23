@@ -1334,10 +1334,16 @@ const NewDashboard = () => {
                 onClick={service.action}
                 className={`${service.bgColor} rounded-2xl p-4 sm:p-5 border border-white/50 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden`}
               >
-                {/* Icon Circle */}
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${service.iconBg} rounded-xl flex items-center justify-center mb-3 text-white shadow-lg`}>
-                  {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-5 h-5 sm:w-6 sm:h-6" />}
-                </div>
+                {/* Icon Circle or Custom Icon */}
+                {service.isCustomIcon ? (
+                  <div className="mb-3">
+                    <service.icon />
+                  </div>
+                ) : (
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 ${service.iconBg} rounded-xl flex items-center justify-center mb-3 text-white shadow-lg`}>
+                    {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                  </div>
+                )}
                 
                 <h4 className="text-sm sm:text-base font-bold text-gray-800 mb-2">
                   {service.name}
