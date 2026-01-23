@@ -34,6 +34,84 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# ============ Secrets Encryption ============
+# Master key for encrypting API keys at rest
+# Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+SECRETS_MASTER_KEY = os.environ.get('SECRETS_MASTER_KEY', '')
+
+def _get_fernet():
+    """Get Fernet instance for encryption/decryption."""
+    if not SECRETS_MASTER_KEY:
+        return None
+    try:
+        # If it's a valid Fernet key, use directly
+        return Fernet(SECRETS_MASTER_KEY.encode() if isinstance(SECRETS_MASTER_KEY, str) else SECRETS_MASTER_KEY)
+    except Exception:
+        # Derive key from master password using PBKDF2
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=b'ultracloud-sms-salt',  # Fixed salt for consistency
+            iterations=100000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(SECRETS_MASTER_KEY.encode()))
+        return Fernet(key)
+
+def encrypt_secret(plaintext: str) -> str:
+    """Encrypt a secret value for storage."""
+    if not plaintext or not SECRETS_MASTER_KEY:
+        return plaintext
+    try:
+        fernet = _get_fernet()
+        if fernet:
+            encrypted = fernet.encrypt(plaintext.encode())
+            return f"ENC:{encrypted.decode()}"
+    except Exception as e:
+        logger.error(f"Encryption error: {e}")
+    return plaintext
+
+def decrypt_secret(ciphertext: str) -> str:
+    """Decrypt a secret value from storage."""
+    if not ciphertext or not SECRETS_MASTER_KEY:
+        return ciphertext
+    if not ciphertext.startswith("ENC:"):
+        return ciphertext  # Not encrypted
+    try:
+        fernet = _get_fernet()
+        if fernet:
+            encrypted_data = ciphertext[4:]  # Remove "ENC:" prefix
+            decrypted = fernet.decrypt(encrypted_data.encode())
+            return decrypted.decode()
+    except Exception as e:
+        logger.error(f"Decryption error: {e}")
+    return ciphertext
+
+async def log_audit_event(user_id: str, action: str, details: dict):
+    """Log an audit event for security tracking."""
+    try:
+        audit_entry = {
+            'id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'action': action,
+            'details': details,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'ip_address': details.get('ip_address', 'unknown')
+        }
+        await db.audit_logs.insert_one(audit_entry)
+        logger.info(f"Audit: {action} by {user_id}")
+    except Exception as e:
+        logger.error(f"Audit log error: {e}")
+
+# List of sensitive fields that should be encrypted
+SENSITIVE_FIELDS = [
+    'daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key',
+    'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
+    'ercaspay_secret_key', 'ercaspay_api_key',
+    'plisio_secret_key', 'plisio_webhook_secret',
+    'payscribe_api_key', 'payscribe_public_key',
+    'reloadly_client_id', 'reloadly_client_secret'
+]
+
 # MongoDB connection with error handling
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 logger.info(f"Connecting to MongoDB: {mongo_url[:30]}...")  # Log first 30 chars only for security
