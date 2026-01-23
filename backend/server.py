@@ -5360,11 +5360,13 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     if data.support_email is not None:
         update_fields['support_email'] = data.support_email
 
-    # Gift Cards Provider settings
-    if data.reloadly_client_id is not None:
-        update_fields['reloadly_client_id'] = data.reloadly_client_id
-    if data.reloadly_client_secret is not None:
-        update_fields['reloadly_client_secret'] = data.reloadly_client_secret
+    # Gift Cards Provider settings - encrypt sensitive fields
+    if data.reloadly_client_id is not None and data.reloadly_client_id != '********':
+        update_fields['reloadly_client_id'] = encrypt_secret(data.reloadly_client_id)
+        updated_sensitive_keys.append('reloadly_client_id')
+    if data.reloadly_client_secret is not None and data.reloadly_client_secret != '********':
+        update_fields['reloadly_client_secret'] = encrypt_secret(data.reloadly_client_secret)
+        updated_sensitive_keys.append('reloadly_client_secret')
     if data.giftcard_markup_percent is not None:
         update_fields['giftcard_markup_percent'] = data.giftcard_markup_percent
     if data.giftcard_is_sandbox is not None:
