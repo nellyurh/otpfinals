@@ -1,6 +1,19 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-01-22**: Payscribe Integration Complete + Security Hardening + Deployment Configs
+  - Fixed Payscribe Collections API integration (dynamic virtual accounts)
+  - Added admin controls for Payscribe keys (public + secret)
+  - Added payment page UI with animated confirmation state
+  - Added "RECOMMENDED" badge for Payscribe in Fund Wallet
+  - Fixed bank name display with abbreviations (9PSB)
+  - Secured /api/seed-database endpoint (requires X-Seed-Secret header)
+  - Fixed CORS (no more allow_origins: * with credentials)
+  - Added API key encryption at rest (Fernet/AES)
+  - Added audit logging for sensitive key changes
+  - Created Docker deployment configs for Contabo VPS
+  - Created GitHub Actions CI/CD workflow
+  - Created comprehensive DEPLOYMENT_GUIDE.md
 - **2025-01-21**: Landing page enhancements - Added Gift Cards section with brand logos (Amazon, iTunes, Google Play, Steam, Netflix, Spotify, PlayStation, Xbox). Updated SEO meta tags with Open Graph support for WhatsApp/social sharing. Generated social preview image. Removed Emergent references from meta description.
 - **2025-01-20**: 5sim pricing fixed - API returns USD directly, removed coin conversion. Admin panel cleanup - removed TigerSMS markup, added 5sim markup.
 - **2025-01-19**: Fixed SMS pricing, OTP display, mobile responsiveness, Ercaspay payment gateway.
