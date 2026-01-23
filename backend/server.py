@@ -1561,11 +1561,13 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         
         # For collections API, use public key; otherwise use secret key
         if use_public_key:
-            # Try database first, then env
-            payscribe_key = (config.get('payscribe_public_key') if config and config.get('payscribe_public_key') not in [None, '', '********'] else None) or PAYSCRIBE_PUBLIC_KEY
+            # Try database first, then env - decrypt if encrypted
+            db_key = config.get('payscribe_public_key') if config and config.get('payscribe_public_key') not in [None, '', '********'] else None
+            payscribe_key = decrypt_secret(db_key) if db_key else PAYSCRIBE_PUBLIC_KEY
             logger.info("Using Payscribe PUBLIC key for collections API")
         else:
-            payscribe_key = (config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None) or PAYSCRIBE_API_KEY
+            db_key = config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None
+            payscribe_key = decrypt_secret(db_key) if db_key else PAYSCRIBE_API_KEY
         
         if not payscribe_key:
             logger.error("Payscribe not configured. Set keys in Admin → Payment Gateways")
