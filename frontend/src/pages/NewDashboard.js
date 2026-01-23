@@ -1121,8 +1121,18 @@ const NewDashboard = () => {
 
     // Service cards with dynamic colors from branding
     const primaryColor = branding.primary_color_hex || '#059669';
+    
+    // Country flags component for Virtual Numbers card
+    const CountryFlags = () => (
+      <div className="flex -space-x-2">
+        <img src="https://flagcdn.com/w40/us.png" alt="USA" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+        <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+        <img src="https://flagcdn.com/w40/ng.png" alt="Nigeria" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+      </div>
+    );
+    
     const serviceCards = [
-      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: Phone, bgColor: 'bg-gradient-to-br from-emerald-50 to-green-100', iconBg: 'bg-emerald-500' },
+      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: CountryFlags, bgColor: 'bg-gradient-to-br from-emerald-50 to-green-100', iconBg: 'bg-transparent', isCustomIcon: true },
       { name: 'Internet Data', action: () => setActiveSection('buy-data'), bgColor: 'bg-gradient-to-br from-blue-50 to-sky-100', iconBg: 'bg-blue-500', icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
