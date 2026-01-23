@@ -131,9 +131,9 @@ async def seed_database(request: Request):
                 'accent_color_hex': '#7c3aed'
             }
             await db.pricing_config.insert_one(config)
-            results.append("✅ Default pricing config created")
+            results.append("Default pricing config created")
         else:
-            results.append("ℹ️ Pricing config already exists")
+            results.append("Pricing config already exists")
         
         # Create default reseller plans
         plans_exist = await db.reseller_plans.find_one({})
