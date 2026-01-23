@@ -190,12 +190,10 @@ async def seed_database(request: Request):
             "success": True,
             "message": "Database seeded successfully!",
             "results": results,
-            "login": {
-                "email": "admin@smsrelay.com",
-                "password": "admin123"
-            }
+            "note": "Check server logs for admin credentials if this was first setup"
         }
     except Exception as e:
+        logger.error(f"Seed database error: {str(e)}")
         return {"success": False, "error": str(e)}
 
 # Security
