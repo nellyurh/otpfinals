@@ -1,29 +1,40 @@
-FROM node:20-alpine
+# Build stage
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json ./
-COPY yarn.lock* package-lock.json* ./
+COPY package.json yarn.lock ./
 
-# Install dependencies (prefer yarn if available, fallback to npm)
-RUN if [ -f yarn.lock ]; then yarn install; else npm install; fi
+# Install dependencies
+RUN yarn install --frozen-lockfile
 
-# Copy application code
+# Copy source code
 COPY . .
 
-# Set build-time environment variable
+# Build argument for backend URL
 ARG REACT_APP_BACKEND_URL
 ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 
 # Build the app
-RUN if [ -f yarn.lock ]; then yarn build; else npm run build; fi
+RUN yarn build
 
-# Install serve
-RUN npm install -g serve
+# Production stage - serve with nginx
+FROM nginx:alpine
 
-# Railway provides PORT dynamically
-ENV PORT=3000
+# Copy built files
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Start command
-CMD serve -s build -l $PORT
+# Copy nginx config for SPA routing
+RUN echo 'server { \
+    listen 80; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
