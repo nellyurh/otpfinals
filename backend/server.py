@@ -5261,8 +5261,10 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
     }
 
 @api_router.put("/admin/pricing")
-async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depends(require_admin)):
+async def update_pricing_config(data: UpdatePricingRequest, request: Request, admin: dict = Depends(require_admin)):
     update_fields = {}
+    updated_sensitive_keys = []  # Track which sensitive fields were updated
+    
     if data.tigersms_markup is not None:
         update_fields['tigersms_markup'] = data.tigersms_markup
     if data.daisysms_markup is not None:
@@ -5273,36 +5275,51 @@ async def update_pricing_config(data: UpdatePricingRequest, admin: dict = Depend
         update_fields['ngn_to_usd_rate'] = data.ngn_to_usd_rate
     if data.rub_to_usd_rate is not None:
         update_fields['rub_to_usd_rate'] = data.rub_to_usd_rate
-    if data.daisysms_api_key is not None:
-        update_fields['daisysms_api_key'] = data.daisysms_api_key
-    if data.smspool_api_key is not None:
-        update_fields['smspool_api_key'] = data.smspool_api_key
-    if data.fivesim_api_key is not None:
-        update_fields['fivesim_api_key'] = data.fivesim_api_key
+    
+    # Sensitive fields - encrypt if master key is set
+    if data.daisysms_api_key is not None and data.daisysms_api_key != '********':
+        update_fields['daisysms_api_key'] = encrypt_secret(data.daisysms_api_key)
+        updated_sensitive_keys.append('daisysms_api_key')
+    if data.smspool_api_key is not None and data.smspool_api_key != '********':
+        update_fields['smspool_api_key'] = encrypt_secret(data.smspool_api_key)
+        updated_sensitive_keys.append('smspool_api_key')
+    if data.fivesim_api_key is not None and data.fivesim_api_key != '********':
+        update_fields['fivesim_api_key'] = encrypt_secret(data.fivesim_api_key)
+        updated_sensitive_keys.append('fivesim_api_key')
+    
     if data.fivesim_markup is not None:
         update_fields['fivesim_markup'] = data.fivesim_markup
     if data.daisysms_advanced_markup is not None:
         update_fields['daisysms_advanced_markup'] = data.daisysms_advanced_markup
 
-    # Payment Gateway Keys
-    if data.paymentpoint_api_key is not None:
-        update_fields['paymentpoint_api_key'] = data.paymentpoint_api_key
-    if data.paymentpoint_secret is not None:
-        update_fields['paymentpoint_secret'] = data.paymentpoint_secret
-    if data.paymentpoint_business_id is not None:
-        update_fields['paymentpoint_business_id'] = data.paymentpoint_business_id
-    if data.ercaspay_secret_key is not None:
-        update_fields['ercaspay_secret_key'] = data.ercaspay_secret_key
-    if data.ercaspay_api_key is not None:
-        update_fields['ercaspay_api_key'] = data.ercaspay_api_key
-    if data.plisio_secret_key is not None:
-        update_fields['plisio_secret_key'] = data.plisio_secret_key
-    if data.plisio_webhook_secret is not None:
-        update_fields['plisio_webhook_secret'] = data.plisio_webhook_secret
-    if data.payscribe_api_key is not None:
-        update_fields['payscribe_api_key'] = data.payscribe_api_key
-    if data.payscribe_public_key is not None:
-        update_fields['payscribe_public_key'] = data.payscribe_public_key
+    # Payment Gateway Keys - encrypt sensitive fields
+    if data.paymentpoint_api_key is not None and data.paymentpoint_api_key != '********':
+        update_fields['paymentpoint_api_key'] = encrypt_secret(data.paymentpoint_api_key)
+        updated_sensitive_keys.append('paymentpoint_api_key')
+    if data.paymentpoint_secret is not None and data.paymentpoint_secret != '********':
+        update_fields['paymentpoint_secret'] = encrypt_secret(data.paymentpoint_secret)
+        updated_sensitive_keys.append('paymentpoint_secret')
+    if data.paymentpoint_business_id is not None and data.paymentpoint_business_id != '********':
+        update_fields['paymentpoint_business_id'] = encrypt_secret(data.paymentpoint_business_id)
+        updated_sensitive_keys.append('paymentpoint_business_id')
+    if data.ercaspay_secret_key is not None and data.ercaspay_secret_key != '********':
+        update_fields['ercaspay_secret_key'] = encrypt_secret(data.ercaspay_secret_key)
+        updated_sensitive_keys.append('ercaspay_secret_key')
+    if data.ercaspay_api_key is not None and data.ercaspay_api_key != '********':
+        update_fields['ercaspay_api_key'] = encrypt_secret(data.ercaspay_api_key)
+        updated_sensitive_keys.append('ercaspay_api_key')
+    if data.plisio_secret_key is not None and data.plisio_secret_key != '********':
+        update_fields['plisio_secret_key'] = encrypt_secret(data.plisio_secret_key)
+        updated_sensitive_keys.append('plisio_secret_key')
+    if data.plisio_webhook_secret is not None and data.plisio_webhook_secret != '********':
+        update_fields['plisio_webhook_secret'] = encrypt_secret(data.plisio_webhook_secret)
+        updated_sensitive_keys.append('plisio_webhook_secret')
+    if data.payscribe_api_key is not None and data.payscribe_api_key != '********':
+        update_fields['payscribe_api_key'] = encrypt_secret(data.payscribe_api_key)
+        updated_sensitive_keys.append('payscribe_api_key')
+    if data.payscribe_public_key is not None and data.payscribe_public_key != '********':
+        update_fields['payscribe_public_key'] = encrypt_secret(data.payscribe_public_key)
+        updated_sensitive_keys.append('payscribe_public_key')
 
     # Branding
     if data.brand_name is not None:
