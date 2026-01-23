@@ -7537,12 +7537,28 @@ async def get_exchange_rate(user: dict = Depends(get_current_user)):
 
 app.include_router(api_router)
 
+# CORS Configuration - Secure settings
+# When allow_credentials=True, allow_origins cannot be "*"
+# Use specific origins from CORS_ORIGINS env var
+cors_origins_env = os.environ.get('CORS_ORIGINS', '')
+if cors_origins_env and cors_origins_env != '*':
+    cors_origins = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+else:
+    # Default allowed origins for production
+    cors_origins = [
+        "https://getucloudy.com",
+        "https://www.getucloudy.com",
+        "https://cloudsmsservice.com",
+        "https://www.cloudsmsservice.com",
+        "http://localhost:3000",  # Development
+    ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Seed-Secret"],
 )
 
 @app.on_event("shutdown")
