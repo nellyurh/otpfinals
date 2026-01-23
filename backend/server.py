@@ -182,9 +182,9 @@ async def seed_database(request: Request):
             ]
             for plan in default_plans:
                 await db.reseller_plans.insert_one(plan)
-            results.append("✅ Default reseller plans created (Free, Basic, Pro, Enterprise)")
+            results.append("Default reseller plans created")
         else:
-            results.append("ℹ️ Reseller plans already exist")
+            results.append("Reseller plans already exist")
         
         return {
             "success": True,
