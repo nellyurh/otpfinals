@@ -13,7 +13,7 @@ import time
 
 class DaisySMSCancelTester:
     def __init__(self):
-        self.base_url = "https://otpsync.preview.emergentagent.com"
+        self.base_url = "https://sms-gateway-api.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.admin_token = None
         self.admin_user_id = None
