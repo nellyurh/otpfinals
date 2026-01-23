@@ -70,9 +70,24 @@ def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 # Database Seed Endpoint - Creates admin user and default config
-@api_router.get("/seed-database")
-async def seed_database():
-    """One-time database setup - creates admin user and default config."""
+# SECURITY: Requires SEED_SECRET token and can only be run once per deployment
+@api_router.post("/seed-database")
+async def seed_database(request: Request):
+    """One-time database setup - creates admin user and default config.
+    
+    SECURITY: Requires SEED_SECRET header to prevent unauthorized access.
+    This endpoint only creates data if it doesn't exist (idempotent).
+    """
+    # Require secret token to run seed
+    seed_secret = os.environ.get('SEED_SECRET', '')
+    provided_secret = request.headers.get('X-Seed-Secret', '')
+    
+    if not seed_secret:
+        raise HTTPException(status_code=403, detail="Seed endpoint disabled. Set SEED_SECRET env var to enable.")
+    
+    if provided_secret != seed_secret:
+        raise HTTPException(status_code=403, detail="Invalid seed secret")
+    
     try:
         results = []
         
@@ -91,9 +106,9 @@ async def seed_database():
                 'created_at': datetime.now(timezone.utc).isoformat()
             }
             await db.users.insert_one(admin)
-            results.append("✅ Admin user created: admin@smsrelay.com / admin123")
+            results.append("Admin user created: admin@smsrelay.com")
         else:
-            results.append("ℹ️ Admin user already exists")
+            results.append("Admin user already exists")
         
         # Create default pricing config
         config_exists = await db.pricing_config.find_one({})
