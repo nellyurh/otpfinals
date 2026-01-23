@@ -3,6 +3,7 @@ name: Deploy to Contabo VPS
 on:
   push:
     branches:
+      - final
       - main
       - master
   workflow_dispatch:  # Allow manual trigger
@@ -21,24 +22,24 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: 22
           script: |
-            cd /opt/ultracloud
+            cd /opt/otp
             
             # Pull latest code
-            git pull origin main || git pull origin master
+            git fetch --all
+            git reset --hard origin/final || git reset --hard origin/main || git reset --hard origin/master
             
-            # Build and restart containers
-            docker compose down
-            docker compose build --no-cache
+            # Rebuild and restart containers
+            docker compose build
             docker compose up -d
             
             # Clean up old images
             docker image prune -f
             
             # Health check
-            sleep 10
-            curl -f http://localhost:8001/health || echo "Backend health check failed"
+            sleep 15
+            curl -f http://localhost:8001/api/health || echo "Backend health check failed"
             
             echo "Deployment completed at $(date)"
 
