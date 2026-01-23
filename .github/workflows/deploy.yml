@@ -1,0 +1,51 @@
+name: Deploy to Contabo VPS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            cd /opt/ultracloud
+            
+            # Pull latest code
+            git pull origin main || git pull origin master
+            
+            # Build and restart containers
+            docker compose down
+            docker compose build --no-cache
+            docker compose up -d
+            
+            # Clean up old images
+            docker image prune -f
+            
+            # Health check
+            sleep 10
+            curl -f http://localhost:8001/health || echo "Backend health check failed"
+            
+            echo "Deployment completed at $(date)"
+
+      - name: Notify on success
+        if: success()
+        run: echo "✅ Deployment successful!"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "❌ Deployment failed!"
