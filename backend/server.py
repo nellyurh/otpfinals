@@ -5414,7 +5414,20 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     
     await db.pricing_config.update_one({}, {'$set': update_fields}, upsert=True)
     
-    return {'success': True, 'updated': update_fields}
+    # Audit log for sensitive key updates
+    if updated_sensitive_keys:
+        client_ip = request.client.host if request.client else 'unknown'
+        await log_audit_event(
+            user_id=admin['id'],
+            action='update_api_keys',
+            details={
+                'keys_updated': updated_sensitive_keys,
+                'ip_address': client_ip,
+                'admin_email': admin.get('email')
+            }
+        )
+    
+    return {'success': True, 'updated': list(update_fields.keys())}
 
 @api_router.get("/admin/stats")
 async def get_admin_stats(
