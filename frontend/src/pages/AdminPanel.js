@@ -3925,6 +3925,11 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* Email Settings Section */}
+            {activeSection === 'email-settings' && (
+              <EmailSettingsSection API={API} axiosConfig={axiosConfig} config={config} setConfig={setConfig} saveConfig={saveConfig} />
+            )}
+
             {activeSection === 'users' && (
               <section className="grid grid-cols-1 gap-6 mt-4">
                 <Card className="border border-slate-200 shadow-sm bg-white">
