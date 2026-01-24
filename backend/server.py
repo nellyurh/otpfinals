@@ -4052,7 +4052,7 @@ async def plisio_status(deposit_id: str, user: dict = Depends(get_current_user))
 async def _ercaspay_request(method: str, endpoint: str, data: Optional[Dict] = None) -> Optional[Dict]:
     """Make a request to Ercaspay API."""
     config = await db.pricing_config.find_one({}, {'_id': 0})
-    secret_key = config.get('ercaspay_secret_key') if config and config.get('ercaspay_secret_key') not in [None, '', '********'] else ERCASPAY_SECRET_KEY
+    secret_key = get_api_key(config, 'ercaspay_secret_key', ERCASPAY_SECRET_KEY)
     
     if not secret_key:
         logger.error("Ercaspay secret key not configured")
