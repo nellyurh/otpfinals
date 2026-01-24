@@ -290,6 +290,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
   const [sendingBulk, setSendingBulk] = useState(false);
   const [emailStats, setEmailStats] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchEmailStats();
@@ -341,6 +342,15 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
     }
   };
 
+  // Default values for config
+  const smtpHost = config?.smtp_host || 'smtp.titan.email';
+  const smtpPort = config?.smtp_port || 465;
+  const smtpEmail = config?.smtp_email || '';
+  const smtpPassword = config?.smtp_password || '';
+  const smtpFromName = config?.smtp_from_name || 'UltraCloud SMS';
+  const enableWelcomeEmail = config?.enable_welcome_email !== false;
+  const enableTransactionEmail = config?.enable_transaction_email !== false;
+
   return (
     <section className="space-y-6 mt-4">
       {/* SMTP Settings Card */}
@@ -356,7 +366,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
             <div>
               <Label className="text-xs">SMTP Host</Label>
               <Input
-                value={config.smtp_host || 'smtp.titan.email'}
+                value={smtpHost}
                 onChange={(e) => setConfig({ ...config, smtp_host: e.target.value })}
                 placeholder="smtp.titan.email"
                 className="text-xs h-9"
@@ -366,8 +376,8 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
               <Label className="text-xs">SMTP Port</Label>
               <Input
                 type="number"
-                value={config.smtp_port || 465}
-                onChange={(e) => setConfig({ ...config, smtp_port: parseInt(e.target.value) })}
+                value={smtpPort}
+                onChange={(e) => setConfig({ ...config, smtp_port: parseInt(e.target.value) || 465 })}
                 placeholder="465"
                 className="text-xs h-9"
               />
@@ -376,7 +386,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
               <Label className="text-xs">SMTP Email</Label>
               <Input
                 type="email"
-                value={config.smtp_email || ''}
+                value={smtpEmail}
                 onChange={(e) => setConfig({ ...config, smtp_email: e.target.value })}
                 placeholder="support@yourdomain.com"
                 className="text-xs h-9"
@@ -387,7 +397,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
               <div className="relative">
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  value={config.smtp_password || ''}
+                  value={smtpPassword}
                   onChange={(e) => setConfig({ ...config, smtp_password: e.target.value })}
                   placeholder="••••••••"
                   className="text-xs h-9 pr-10"
@@ -404,7 +414,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
             <div className="md:col-span-2">
               <Label className="text-xs">From Name</Label>
               <Input
-                value={config.smtp_from_name || 'UltraCloud SMS'}
+                value={smtpFromName}
                 onChange={(e) => setConfig({ ...config, smtp_from_name: e.target.value })}
                 placeholder="UltraCloud SMS"
                 className="text-xs h-9"
@@ -415,14 +425,14 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
           <div className="flex items-center gap-6 pt-2">
             <div className="flex items-center gap-2">
               <Switch
-                checked={config.enable_welcome_email !== false}
+                checked={enableWelcomeEmail}
                 onCheckedChange={(checked) => setConfig({ ...config, enable_welcome_email: checked })}
               />
               <Label className="text-xs">Send welcome email on signup</Label>
             </div>
             <div className="flex items-center gap-2">
               <Switch
-                checked={config.enable_transaction_email !== false}
+                checked={enableTransactionEmail}
                 onCheckedChange={(checked) => setConfig({ ...config, enable_transaction_email: checked })}
               />
               <Label className="text-xs">Send transaction notifications</Label>
