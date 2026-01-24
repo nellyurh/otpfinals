@@ -5443,6 +5443,369 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
         logger.error(f"Betting fund error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============ Electricity Bill Payment ============
+
+class ElectricityRequest(BaseModel):
+    provider: str
+    meter_number: str
+    meter_type: str  # prepaid or postpaid
+    amount: float
+
+@api_router.get("/payscribe/validate-meter")
+async def validate_meter(provider: str, meter_number: str, meter_type: str, user: dict = Depends(get_current_user)):
+    """Validate electricity meter number"""
+    try:
+        endpoint = f'electricity/lookup?disco={provider}&meter={meter_number}&type={meter_type}'
+        result = await payscribe_request(endpoint, 'GET')
+        
+        if result and result.get('status'):
+            customer = result.get('message', {}).get('details', {})
+            return {
+                'status': True,
+                'customer': {
+                    'name': customer.get('name') or customer.get('customer_name', 'Unknown'),
+                    'address': customer.get('address', ''),
+                    'meter_number': meter_number
+                }
+            }
+        return {'status': False, 'message': 'Meter validation failed'}
+    except Exception as e:
+        logger.error(f"Meter validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/payscribe/buy-electricity")
+async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_current_user)):
+    """Purchase electricity via Payscribe"""
+    try:
+        # Check balance
+        if user.get('ngn_balance', 0) < request.amount:
+            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+
+        if request.amount < 500:
+            raise HTTPException(status_code=400, detail="Minimum amount is ₦500")
+
+        # Purchase electricity
+        data = {
+            'disco': request.provider,
+            'meter': request.meter_number,
+            'type': request.meter_type,
+            'amount': request.amount,
+            'ref': str(uuid.uuid4())
+        }
+        
+        result = await payscribe_request('electricity/vend', 'POST', data)
+        
+        if result and result.get('status'):
+            # Deduct from user balance
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+
+            details = result.get('message', {}).get('details', {})
+            token = details.get('token', '')
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=user['id'],
+                type='bill_payment',
+                amount=request.amount,
+                currency='NGN',
+                status='completed',
+                reference=details.get('trans_id'),
+                metadata={'service': 'electricity', 'provider': request.provider, 'meter': request.meter_number, 'token': token}
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+
+            await _create_transaction_notification(
+                user['id'],
+                'Electricity Purchase',
+                f"₦{request.amount:,.2f} electricity purchased for {request.meter_number}",
+                metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'token': token}
+            )
+
+            return {'success': True, 'message': 'Electricity purchase successful', 'token': token, 'details': details}
+
+        raise HTTPException(status_code=400, detail="Electricity purchase failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Electricity purchase error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============ TV Subscription ============
+
+class TVPaymentRequest(BaseModel):
+    provider: str
+    smartcard: str
+    plan_code: str
+    amount: float
+
+@api_router.get("/payscribe/tv-plans")
+async def get_tv_plans(provider: str, user: dict = Depends(get_current_user)):
+    """Get TV subscription plans for a provider"""
+    try:
+        endpoint = f'cable/list?provider={provider}'
+        result = await payscribe_request(endpoint, 'GET')
+        
+        if result and result.get('status'):
+            plans = result.get('message', {}).get('details', [])
+            return {
+                'status': True,
+                'plans': [{'code': p.get('code'), 'name': p.get('name'), 'amount': p.get('amount')} for p in plans]
+            }
+        return {'status': False, 'plans': []}
+    except Exception as e:
+        logger.error(f"TV plans fetch error: {str(e)}")
+        return {'status': False, 'plans': []}
+
+@api_router.get("/payscribe/validate-smartcard")
+async def validate_smartcard(provider: str, smartcard: str, user: dict = Depends(get_current_user)):
+    """Validate TV smartcard/IUC number"""
+    try:
+        endpoint = f'cable/lookup?provider={provider}&smartcard={smartcard}'
+        result = await payscribe_request(endpoint, 'GET')
+        
+        if result and result.get('status'):
+            customer = result.get('message', {}).get('details', {})
+            return {
+                'status': True,
+                'customer': {
+                    'name': customer.get('name') or customer.get('customer_name', 'Unknown'),
+                    'currentPlan': customer.get('current_bouquet') or customer.get('currentPlan', ''),
+                    'smartcard': smartcard
+                }
+            }
+        return {'status': False, 'message': 'Smartcard validation failed'}
+    except Exception as e:
+        logger.error(f"Smartcard validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/payscribe/pay-tv")
+async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(get_current_user)):
+    """Pay TV subscription via Payscribe"""
+    try:
+        # Check balance
+        if user.get('ngn_balance', 0) < request.amount:
+            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+
+        # Pay TV subscription
+        data = {
+            'provider': request.provider,
+            'smartcard': request.smartcard,
+            'plan_code': request.plan_code,
+            'ref': str(uuid.uuid4())
+        }
+        
+        result = await payscribe_request('cable/vend', 'POST', data)
+        
+        if result and result.get('status'):
+            # Deduct from user balance
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+
+            details = result.get('message', {}).get('details', {})
+            
+            # Create transaction record
+            transaction = Transaction(
+                user_id=user['id'],
+                type='bill_payment',
+                amount=request.amount,
+                currency='NGN',
+                status='completed',
+                reference=details.get('trans_id'),
+                metadata={'service': 'tv', 'provider': request.provider, 'smartcard': request.smartcard, 'plan': request.plan_code}
+            )
+            trans_dict = transaction.model_dump()
+            trans_dict['created_at'] = trans_dict['created_at'].isoformat()
+            await db.transactions.insert_one(trans_dict)
+
+            await _create_transaction_notification(
+                user['id'],
+                'TV Subscription',
+                f"₦{request.amount:,.2f} TV subscription for {request.smartcard}",
+                metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment'}
+            )
+
+            return {'success': True, 'message': 'TV subscription successful', 'details': details}
+
+        raise HTTPException(status_code=400, detail="TV subscription failed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"TV subscription error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============ Wallet-to-Wallet Transfer ============
+
+class WalletTransferRequest(BaseModel):
+    recipient_email: str
+    amount: float
+    note: Optional[str] = ''
+
+@api_router.get("/wallet/validate-recipient")
+async def validate_transfer_recipient(email: str, user: dict = Depends(get_current_user)):
+    """Validate recipient for wallet transfer"""
+    try:
+        if email.lower() == user.get('email', '').lower():
+            raise HTTPException(status_code=400, detail="Cannot transfer to yourself")
+        
+        recipient = await db.users.find_one(
+            {'email': {'$regex': f'^{email}$', '$options': 'i'}},
+            {'_id': 0, 'id': 1, 'email': 1, 'full_name': 1}
+        )
+        
+        if not recipient:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {
+            'valid': True,
+            'user': {
+                'id': recipient['id'],
+                'email': recipient['email'],
+                'name': recipient.get('full_name', 'Unknown')
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Recipient validation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/wallet/transfer")
+async def transfer_to_wallet(request: WalletTransferRequest, user: dict = Depends(get_current_user)):
+    """Transfer funds to another user's wallet"""
+    try:
+        # Validate amount
+        if request.amount < 100:
+            raise HTTPException(status_code=400, detail="Minimum transfer amount is ₦100")
+        
+        # Check sender balance
+        if user.get('ngn_balance', 0) < request.amount:
+            raise HTTPException(status_code=400, detail="Insufficient balance")
+        
+        # Find recipient
+        recipient = await db.users.find_one(
+            {'email': {'$regex': f'^{request.recipient_email}$', '$options': 'i'}},
+            {'_id': 0}
+        )
+        
+        if not recipient:
+            raise HTTPException(status_code=404, detail="Recipient not found")
+        
+        if recipient['id'] == user['id']:
+            raise HTTPException(status_code=400, detail="Cannot transfer to yourself")
+        
+        # Generate transfer reference
+        transfer_ref = f"W2W-{uuid.uuid4().hex[:8].upper()}"
+        
+        # Deduct from sender
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'ngn_balance': -request.amount}}
+        )
+        
+        # Credit recipient
+        await db.users.update_one(
+            {'id': recipient['id']},
+            {'$inc': {'ngn_balance': request.amount}}
+        )
+        
+        # Create sender transaction (debit)
+        sender_tx = Transaction(
+            user_id=user['id'],
+            type='transfer_out',
+            amount=request.amount,
+            currency='NGN',
+            status='completed',
+            reference=transfer_ref,
+            metadata={
+                'recipient_id': recipient['id'],
+                'recipient_email': recipient['email'],
+                'recipient_name': recipient.get('full_name', ''),
+                'note': request.note
+            }
+        )
+        sender_dict = sender_tx.model_dump()
+        sender_dict['created_at'] = sender_dict['created_at'].isoformat()
+        await db.transactions.insert_one(sender_dict)
+        
+        # Create recipient transaction (credit)
+        recipient_tx = Transaction(
+            user_id=recipient['id'],
+            type='transfer_in',
+            amount=request.amount,
+            currency='NGN',
+            status='completed',
+            reference=transfer_ref,
+            metadata={
+                'sender_id': user['id'],
+                'sender_email': user['email'],
+                'sender_name': user.get('full_name', ''),
+                'note': request.note
+            }
+        )
+        recipient_dict = recipient_tx.model_dump()
+        recipient_dict['created_at'] = recipient_dict['created_at'].isoformat()
+        await db.transactions.insert_one(recipient_dict)
+        
+        # Notifications
+        await _create_transaction_notification(
+            user['id'],
+            'Money Sent',
+            f"You sent ₦{request.amount:,.2f} to {recipient.get('full_name', recipient['email'])}",
+            metadata={'reference': transfer_ref, 'type': 'transfer_out'}
+        )
+        
+        await _create_transaction_notification(
+            recipient['id'],
+            'Money Received',
+            f"You received ₦{request.amount:,.2f} from {user.get('full_name', user['email'])}",
+            metadata={'reference': transfer_ref, 'type': 'transfer_in'}
+        )
+        
+        return {
+            'success': True,
+            'message': 'Transfer successful',
+            'reference': transfer_ref,
+            'amount': request.amount,
+            'recipient': recipient.get('full_name', recipient['email'])
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Wallet transfer error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/wallet/recent-transfers")
+async def get_recent_transfers(user: dict = Depends(get_current_user)):
+    """Get user's recent wallet transfers"""
+    try:
+        transfers = await db.transactions.find(
+            {
+                'user_id': user['id'],
+                'type': {'$in': ['transfer_out', 'transfer_in']}
+            },
+            {'_id': 0}
+        ).sort('created_at', -1).limit(10).to_list(10)
+        
+        # Format transfers for display
+        formatted = []
+        for t in transfers:
+            meta = t.get('metadata', {})
+            formatted.append({
+                'type': t['type'],
+                'amount': t['amount'],
+                'recipient_name': meta.get('recipient_name') or meta.get('sender_name', 'Unknown'),
+                'recipient_email': meta.get('recipient_email') or meta.get('sender_email', ''),
+                'note': meta.get('note', ''),
+                'reference': t.get('reference', ''),
+                'created_at': t.get('created_at', '')
+            })
+        
+        return {'transfers': formatted}
+    except Exception as e:
+        logger.error(f"Recent transfers fetch error: {str(e)}")
+        return {'transfers': []}
+
 @api_router.get("/admin/users")
 async def admin_list_users(admin: dict = Depends(require_admin)):
     """List users for admin view (basic snapshot)."""
