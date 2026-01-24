@@ -276,9 +276,10 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
 };
 
 // Email Settings Section Component
-const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig }) => {
+const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
   const [testEmail, setTestEmail] = useState('');
   const [sendingTest, setSendingTest] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [bulkEmail, setBulkEmail] = useState({
     subject: '',
     title: '',
@@ -302,6 +303,34 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
       setEmailStats(response.data);
     } catch (error) {
       console.error('Failed to fetch email stats:', error);
+    }
+  };
+
+  const saveEmailSettings = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        smtp_host: config?.smtp_host || 'smtp.titan.email',
+        smtp_port: config?.smtp_port || 465,
+        smtp_from_name: config?.smtp_from_name || 'UltraCloud SMS',
+        enable_welcome_email: config?.enable_welcome_email !== false,
+        enable_transaction_email: config?.enable_transaction_email !== false,
+      };
+      
+      // Only include credentials if they're not masked
+      if (config?.smtp_email && config.smtp_email !== '********') {
+        payload.smtp_email = config.smtp_email;
+      }
+      if (config?.smtp_password && config.smtp_password !== '********') {
+        payload.smtp_password = config.smtp_password;
+      }
+      
+      await axios.put(`${API}/admin/pricing`, payload, axiosConfig);
+      toast.success('Email settings saved!');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save email settings');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -440,8 +469,8 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig 
           </div>
           
           <div className="flex items-center gap-3 pt-2">
-            <Button onClick={saveConfig} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-              <Save className="w-3 h-3 mr-1" /> Save Settings
+            <Button onClick={saveEmailSettings} disabled={saving} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+              <Save className="w-3 h-3 mr-1" /> {saving ? 'Saving...' : 'Save Settings'}
             </Button>
             <div className="flex-1 flex items-center gap-2">
               <Input
