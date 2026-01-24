@@ -44,6 +44,8 @@ import {
   MessageSquare,
   Gift,
   Building2,
+  Mail,
+  Send,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
