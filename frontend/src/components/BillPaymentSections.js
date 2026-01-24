@@ -1,10 +1,38 @@
 import { useState, useEffect } from 'react';
-import { Check, RefreshCw, Zap, Tv, Send, User, Search, Smartphone, Wifi, ArrowLeft, ChevronDown, Plus } from 'lucide-react';
+import { Check, RefreshCw, Zap, Tv, Send, User, Search, Wifi, ArrowLeft, ChevronDown, Plus, Gamepad2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import Select from 'react-select';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Network/Company Logo URLs
+const LOGOS = {
+  // Networks
+  mtn: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/New-mtn-logo.svg/120px-New-mtn-logo.svg.png',
+  airtel: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Airtel_logo.svg/120px-Airtel_logo.svg.png',
+  glo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Glo_logo.svg/120px-Glo_logo.svg.png',
+  '9mobile': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Etisalat-Logo.svg/120px-Etisalat-Logo.svg.png',
+  // Electricity
+  ekedc: 'https://logos.fancode.com/ng_electric/ekedc.png',
+  ikedc: 'https://logos.fancode.com/ng_electric/ikedc.png',
+  aedc: 'https://logos.fancode.com/ng_electric/aedc.png',
+  phed: 'https://logos.fancode.com/ng_electric/phed.png',
+  kedco: 'https://logos.fancode.com/ng_electric/kedco.png',
+  bedc: 'https://logos.fancode.com/ng_electric/bedc.png',
+  jed: 'https://logos.fancode.com/ng_electric/jed.png',
+  kaedco: 'https://logos.fancode.com/ng_electric/kaedco.png',
+  // TV
+  dstv: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/DStv_logo.svg/120px-DStv_logo.svg.png',
+  gotv: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/GOtv_logo.svg/120px-GOtv_logo.svg.png',
+  startimes: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/StarTimes_logo.svg/120px-StarTimes_logo.svg.png',
+  // Betting
+  bet9ja: 'https://bet9ja.com/icons/logo.svg',
+  sportybet: 'https://www.sportybet.com/images/logo.png',
+  '1xbet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/1xBet_logo.svg/120px-1xBet_logo.svg.png',
+  betway: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Betway_logo.svg/120px-Betway_logo.svg.png',
+  betking: 'https://www.betking.com/assets/images/logo.png',
+};
 
 // Shared Select styles matching Virtual Numbers
 const selectStyles = {
@@ -48,6 +76,32 @@ const selectStyles = {
   })
 };
 
+// Logo Image Component with fallback
+function LogoImage({ src, alt, fallbackColor, size = 'md' }) {
+  const [error, setError] = useState(false);
+  const sizeClasses = size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-10 h-10' : 'w-8 h-8';
+  
+  if (error || !src) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-full flex items-center justify-center text-white text-xs font-bold`}
+        style={{ backgroundColor: fallbackColor || '#059669' }}
+      >
+        {alt?.charAt(0) || '?'}
+      </div>
+    );
+  }
+  
+  return (
+    <img 
+      src={src} 
+      alt={alt}
+      className={`${sizeClasses} object-contain`}
+      onError={() => setError(true)}
+    />
+  );
+}
+
 // ============ Airtime Section ============
 export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions }) {
   const [network, setNetwork] = useState(null);
@@ -57,10 +111,10 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
   const [expanded, setExpanded] = useState(true);
 
   const networkOptions = [
-    { value: 'mtn', label: 'MTN', color: '#FFCC00' },
-    { value: 'airtel', label: 'Airtel', color: '#ED1C24' },
-    { value: 'glo', label: 'Glo', color: '#50B651' },
-    { value: '9mobile', label: '9mobile', color: '#006E51' }
+    { value: 'mtn', label: 'MTN', logo: LOGOS.mtn, color: '#FFCC00' },
+    { value: 'airtel', label: 'Airtel', logo: LOGOS.airtel, color: '#ED1C24' },
+    { value: 'glo', label: 'Glo', logo: LOGOS.glo, color: '#50B651' },
+    { value: '9mobile', label: '9mobile', logo: LOGOS['9mobile'], color: '#006E51' }
   ];
 
   const presetAmounts = ['100', '200', '500', '1000', '2000', '5000'];
@@ -107,7 +161,6 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 
   return (
     <div className="space-y-4" data-testid="airtime-section">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-gray-900">Airtime Top-Up</h2>
@@ -115,7 +168,6 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
         </div>
       </div>
 
-      {/* Purchase Card */}
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <button
           onClick={() => setExpanded(!expanded)}
@@ -130,7 +182,6 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 
         {expanded && (
           <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
-            {/* Network Selection */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Network</label>
               <div className="grid grid-cols-4 gap-2">
@@ -145,14 +196,15 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
                     }`}
                     data-testid={`airtime-network-${net.value}`}
                   >
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mx-auto mb-1" style={{ backgroundColor: net.color }} />
+                    <div className="flex justify-center mb-1">
+                      <LogoImage src={net.logo} alt={net.label} fallbackColor={net.color} />
+                    </div>
                     <span className="text-[10px] sm:text-xs font-medium text-gray-700">{net.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Phone Number */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Phone Number</label>
               <input
@@ -165,7 +217,6 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
               />
             </div>
 
-            {/* Amount Input */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Amount</label>
               <div className="relative">
@@ -181,7 +232,6 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
               </div>
             </div>
 
-            {/* Preset Amounts */}
             <div className="flex flex-wrap gap-2">
               {presetAmounts.map((preset) => (
                 <button
@@ -198,7 +248,6 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
               ))}
             </div>
 
-            {/* Price Summary */}
             {amount && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                 <div className="flex items-center justify-between">
@@ -225,21 +274,21 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 
 // ============ Bills Payment Section (Landing Page with Service Cards) ============
 export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection }) {
-  const [activeService, setActiveService] = useState(null);
+  const [activeService, setActiveServiceLocal] = useState(null);
 
   const billServices = [
     { id: 'data', label: 'Buy Data', icon: Wifi, color: 'from-blue-500 to-cyan-500', description: 'Internet data bundles' },
     { id: 'electricity', label: 'Electricity', icon: Zap, color: 'from-yellow-500 to-orange-500', description: 'Pay electricity bills' },
     { id: 'tv', label: 'TV Subscription', icon: Tv, color: 'from-purple-500 to-pink-500', description: 'DSTV, GOtv, StarTimes' },
+    { id: 'betting', label: 'Betting', icon: Gamepad2, color: 'from-red-500 to-rose-500', description: 'Fund betting wallets' },
     { id: 'transfer', label: 'Send Money', icon: Send, color: 'from-emerald-500 to-teal-500', description: 'Wallet to wallet transfer' },
   ];
 
   if (activeService) {
     return (
       <div className="space-y-4">
-        {/* Back Button */}
         <button 
-          onClick={() => setActiveService(null)}
+          onClick={() => setActiveServiceLocal(null)}
           className="flex items-center gap-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -249,6 +298,7 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
         {activeService === 'data' && <BuyDataSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
         {activeService === 'electricity' && <ElectricitySubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
         {activeService === 'tv' && <TVSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
+        {activeService === 'betting' && <BettingSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
         {activeService === 'transfer' && <WalletTransferSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} />}
       </div>
     );
@@ -256,7 +306,6 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
 
   return (
     <div className="space-y-4" data-testid="bills-payment-section">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-gray-900">Bills Payment</h2>
@@ -264,12 +313,11 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
         </div>
       </div>
 
-      {/* Service Cards Grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {billServices.map((service) => (
           <button
             key={service.id}
-            onClick={() => setActiveService(service.id)}
+            onClick={() => setActiveServiceLocal(service.id)}
             className="bg-white rounded-xl border shadow-sm p-4 text-left hover:shadow-md hover:border-emerald-300 transition-all group"
             data-testid={`bill-service-${service.id}`}
           >
@@ -297,10 +345,10 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
   const [expanded, setExpanded] = useState(true);
 
   const networkOptions = [
-    { value: 'mtn', label: 'MTN', color: '#FFCC00' },
-    { value: 'airtel', label: 'Airtel', color: '#ED1C24' },
-    { value: 'glo', label: 'Glo', color: '#50B651' },
-    { value: '9mobile', label: '9mobile', color: '#006E51' }
+    { value: 'mtn', label: 'MTN', logo: LOGOS.mtn, color: '#FFCC00' },
+    { value: 'airtel', label: 'Airtel', logo: LOGOS.airtel, color: '#ED1C24' },
+    { value: 'glo', label: 'Glo', logo: LOGOS.glo, color: '#50B651' },
+    { value: '9mobile', label: '9mobile', logo: LOGOS['9mobile'], color: '#006E51' }
   ];
 
   const planCategories = ['daily', 'weekly', 'monthly', 'mega'];
@@ -401,7 +449,6 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
 
         {expanded && (
           <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
-            {/* Network Selection */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Network</label>
               <div className="grid grid-cols-4 gap-2">
@@ -415,14 +462,15 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
                         : 'border-gray-200 hover:border-emerald-300'
                     }`}
                   >
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full mx-auto mb-1" style={{ backgroundColor: net.color }} />
+                    <div className="flex justify-center mb-1">
+                      <LogoImage src={net.logo} alt={net.label} fallbackColor={net.color} />
+                    </div>
                     <span className="text-[10px] sm:text-xs font-medium text-gray-700">{net.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Plan Category Tabs */}
             {network && (
               <div>
                 <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Plan Type</label>
@@ -444,7 +492,6 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               </div>
             )}
 
-            {/* Plan Cards */}
             {network && !loadingPlans && (
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                 {filteredPlans.map((plan) => (
@@ -473,7 +520,6 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               </div>
             )}
 
-            {/* Phone Number */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Phone Number</label>
               <input
@@ -485,7 +531,6 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               />
             </div>
 
-            {/* Price Summary */}
             {selectedPlan && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                 <div className="flex items-center justify-between">
@@ -524,14 +569,14 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
   const [expanded, setExpanded] = useState(true);
 
   const providers = [
-    { value: 'ekedc', label: 'EKEDC (Eko)' },
-    { value: 'ikedc', label: 'IKEDC (Ikeja)' },
-    { value: 'aedc', label: 'AEDC (Abuja)' },
-    { value: 'phed', label: 'PHED (Port Harcourt)' },
-    { value: 'kedco', label: 'KEDCO (Kano)' },
-    { value: 'bedc', label: 'BEDC (Benin)' },
-    { value: 'jed', label: 'JED (Jos)' },
-    { value: 'kaedco', label: 'KAEDCO (Kaduna)' }
+    { value: 'ekedc', label: 'EKEDC', fullName: 'Eko Electricity' },
+    { value: 'ikedc', label: 'IKEDC', fullName: 'Ikeja Electric' },
+    { value: 'aedc', label: 'AEDC', fullName: 'Abuja Electricity' },
+    { value: 'phed', label: 'PHED', fullName: 'Port Harcourt' },
+    { value: 'kedco', label: 'KEDCO', fullName: 'Kano Electricity' },
+    { value: 'bedc', label: 'BEDC', fullName: 'Benin Electricity' },
+    { value: 'jed', label: 'JED', fullName: 'Jos Electricity' },
+    { value: 'kaedco', label: 'KAEDCO', fullName: 'Kaduna Electricity' }
   ];
 
   const handleValidateMeter = async () => {
@@ -626,21 +671,28 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
 
         {expanded && (
           <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
-            {/* Provider Selection */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Provider</label>
-              <Select
-                menuPortalTarget={document.body}
-                styles={selectStyles}
-                value={provider}
-                onChange={(option) => { setProvider(option); setValidatedMeter(null); }}
-                options={providers}
-                placeholder="Choose provider..."
-                isClearable
-              />
+              <div className="grid grid-cols-4 gap-2">
+                {providers.map((prov) => (
+                  <button
+                    key={prov.value}
+                    onClick={() => { setProvider(prov); setValidatedMeter(null); }}
+                    className={`p-2 sm:p-3 rounded-xl border-2 transition-all text-center ${
+                      provider?.value === prov.value 
+                        ? 'border-yellow-500 bg-yellow-50' 
+                        : 'border-gray-200 hover:border-yellow-300'
+                    }`}
+                  >
+                    <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-yellow-600" />
+                    </div>
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-700">{prov.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Meter Type */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Meter Type</label>
               <div className="flex gap-2">
@@ -663,7 +715,6 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
               </div>
             </div>
 
-            {/* Meter Number */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Meter Number</label>
               <div className="flex gap-2">
@@ -684,7 +735,6 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
               </div>
             </div>
 
-            {/* Validated Meter Info */}
             {validatedMeter && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -695,7 +745,6 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
               </div>
             )}
 
-            {/* Amount */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Amount</label>
               <div className="relative">
@@ -710,7 +759,6 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
               </div>
             </div>
 
-            {/* Preset Amounts */}
             <div className="flex flex-wrap gap-2">
               {['1000', '2000', '5000', '10000', '20000'].map((preset) => (
                 <button
@@ -753,9 +801,9 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
   const [planCategory, setPlanCategory] = useState('all');
 
   const providers = [
-    { value: 'dstv', label: 'DSTV' },
-    { value: 'gotv', label: 'GOtv' },
-    { value: 'startimes', label: 'StarTimes' }
+    { value: 'dstv', label: 'DSTV', logo: LOGOS.dstv },
+    { value: 'gotv', label: 'GOtv', logo: LOGOS.gotv },
+    { value: 'startimes', label: 'StarTimes', logo: LOGOS.startimes }
   ];
 
   const planCategories = ['all', 'basic', 'standard', 'premium'];
@@ -881,7 +929,6 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
 
         {expanded && (
           <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
-            {/* Provider Selection */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Provider</label>
               <div className="grid grid-cols-3 gap-2">
@@ -895,14 +942,15 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
                         : 'border-gray-200 hover:border-purple-300'
                     }`}
                   >
-                    <Tv className="w-5 h-5 mx-auto mb-1 text-purple-600" />
+                    <div className="flex justify-center mb-1">
+                      <LogoImage src={prov.logo} alt={prov.label} fallbackColor="#9333ea" size="lg" />
+                    </div>
                     <span className="text-xs font-medium text-gray-700">{prov.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Smartcard Number */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Smartcard/IUC Number</label>
               <div className="flex gap-2">
@@ -923,7 +971,6 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               </div>
             </div>
 
-            {/* Validated Smartcard Info */}
             {validatedSmartcard && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -934,7 +981,6 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               </div>
             )}
 
-            {/* Plan Category Tabs */}
             {provider && (
               <div>
                 <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Plan Type</label>
@@ -956,7 +1002,6 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               </div>
             )}
 
-            {/* TV Plan Cards */}
             {provider && !loadingPlans && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                 {filteredPlans.map((plan) => (
@@ -991,6 +1036,206 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
               disabled={!validatedSmartcard || !selectedPlan || processing}
             >
               {processing ? 'Processing...' : `Pay ₦${selectedPlan?.amount?.toLocaleString() || '0'}`}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============ Betting Sub-Section ============
+function BettingSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
+  const [provider, setProvider] = useState(null);
+  const [customerId, setCustomerId] = useState('');
+  const [amount, setAmount] = useState('');
+  const [validatedAccount, setValidatedAccount] = useState(null);
+  const [validating, setValidating] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+
+  const bettingProviders = [
+    { value: 'bet9ja', label: 'Bet9ja', logo: LOGOS.bet9ja, color: '#1a5336' },
+    { value: 'sportybet', label: 'SportyBet', logo: LOGOS.sportybet, color: '#ff6600' },
+    { value: '1xbet', label: '1xBet', logo: LOGOS['1xbet'], color: '#1a5fc6' },
+    { value: 'betway', label: 'Betway', logo: LOGOS.betway, color: '#00a826' },
+    { value: 'betking', label: 'BetKing', logo: LOGOS.betking, color: '#ffc107' },
+  ];
+
+  const handleValidateAccount = async () => {
+    if (!provider || !customerId) {
+      toast.error('Please select provider and enter customer ID');
+      return;
+    }
+
+    setValidating(true);
+    try {
+      const response = await axios.get(
+        `${API}/api/payscribe/validate-betting?bet_id=${provider.value}&customer_id=${customerId}`,
+        axiosConfig
+      );
+
+      if (response.data.status && response.data.customer) {
+        setValidatedAccount(response.data.customer);
+        toast.success(`Account validated: ${response.data.customer.name}`);
+      } else {
+        toast.error('Account validation failed');
+        setValidatedAccount(null);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Validation failed');
+      setValidatedAccount(null);
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleFundBetting = async () => {
+    if (!validatedAccount || !amount) {
+      toast.error('Please validate account and enter amount');
+      return;
+    }
+
+    if (parseFloat(amount) < 100) {
+      toast.error('Minimum amount is ₦100');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/payscribe/fund-betting`,
+        {
+          bet_id: provider.value,
+          customer_id: customerId,
+          amount: parseFloat(amount)
+        },
+        axiosConfig
+      );
+
+      if (response.data.success) {
+        toast.success('Betting wallet funded successfully!');
+        setProvider(null);
+        setCustomerId('');
+        setAmount('');
+        setValidatedAccount(null);
+        fetchProfile();
+        fetchTransactions();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Funding failed');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4" data-testid="betting-subsection">
+      <div>
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900">Betting</h2>
+        <p className="text-xs sm:text-sm text-gray-500">Fund your betting wallets</p>
+      </div>
+
+      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Plus className={`w-3 h-3 sm:w-4 sm:h-4 text-red-600 transition-transform ${expanded ? 'rotate-45' : ''}`} />
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Fund Betting Wallet</h3>
+          </div>
+          <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </button>
+
+        {expanded && (
+          <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Platform</label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {bettingProviders.map((prov) => (
+                  <button
+                    key={prov.value}
+                    onClick={() => { setProvider(prov); setValidatedAccount(null); }}
+                    className={`p-2 sm:p-3 rounded-xl border-2 transition-all text-center ${
+                      provider?.value === prov.value 
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200 hover:border-red-300'
+                    }`}
+                  >
+                    <div className="flex justify-center mb-1">
+                      <LogoImage src={prov.logo} alt={prov.label} fallbackColor={prov.color} />
+                    </div>
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-700">{prov.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Customer ID / User ID</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter your betting account ID"
+                  value={customerId}
+                  onChange={(e) => { setCustomerId(e.target.value); setValidatedAccount(null); }}
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-red-500 focus:outline-none text-gray-900 text-sm"
+                />
+                <button
+                  onClick={handleValidateAccount}
+                  disabled={!provider || !customerId || validating}
+                  className="px-4 py-2.5 bg-blue-600 text-white rounded-full font-medium text-xs hover:bg-blue-700 disabled:bg-gray-300"
+                >
+                  {validating ? '...' : 'Verify'}
+                </button>
+              </div>
+            </div>
+
+            {validatedAccount && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="font-semibold text-green-900 text-xs">Account Verified</span>
+                </div>
+                <p className="text-xs text-green-800"><strong>Name:</strong> {validatedAccount.name}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">₦</span>
+                <input
+                  type="number"
+                  placeholder="Enter amount (min ₦100)"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full pl-8 pr-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-red-500 focus:outline-none text-gray-900 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {['500', '1000', '2000', '5000', '10000'].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setAmount(preset)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    amount === preset ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-red-100'
+                  }`}
+                >
+                  ₦{parseInt(preset).toLocaleString()}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={handleFundBetting}
+              className="w-full py-3 bg-red-600 text-white rounded-full font-semibold text-sm hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={!validatedAccount || !amount || processing}
+            >
+              {processing ? 'Processing...' : `Fund ₦${amount || '0'}`}
             </button>
           </div>
         )}
@@ -1111,7 +1356,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
         <p className="text-xs sm:text-sm text-gray-500">Transfer funds to another user</p>
       </div>
 
-      {/* Balance Card */}
       <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white">
         <p className="text-xs opacity-80">Available Balance</p>
         <p className="text-2xl font-bold">₦{(user?.ngn_balance || 0).toLocaleString()}</p>
@@ -1131,7 +1375,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
 
         {expanded && (
           <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
-            {/* Recipient Email */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Recipient Email</label>
               <div className="flex gap-2">
@@ -1152,7 +1395,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
               </div>
             </div>
 
-            {/* Validated Recipient */}
             {validatedRecipient && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                 <div className="flex items-center gap-2">
@@ -1168,7 +1410,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
               </div>
             )}
 
-            {/* Amount */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Amount</label>
               <div className="relative">
@@ -1183,7 +1424,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
               </div>
             </div>
 
-            {/* Preset Amounts */}
             <div className="flex flex-wrap gap-2">
               {['500', '1000', '2000', '5000'].map((preset) => (
                 <button
@@ -1198,7 +1438,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
               ))}
             </div>
 
-            {/* Note */}
             <div>
               <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Note (Optional)</label>
               <input
@@ -1223,7 +1462,6 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
         )}
       </div>
 
-      {/* Recent Transfers */}
       {recentTransfers.length > 0 && (
         <div className="bg-white rounded-xl border shadow-sm p-4">
           <h3 className="font-semibold text-gray-900 text-sm mb-3">Recent Transfers</h3>
