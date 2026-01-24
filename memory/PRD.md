@@ -312,11 +312,17 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 - `/app/frontend/Dockerfile` - Frontend Docker
 
 ## Future Tasks (P2-P3)
-- Admin User Management - Edit user details
-- Verify Popup Notifications edit/delete
-- Refactor server.py into modular structure
+- CI/CD pipeline fix - Frontend Dockerfile uses node:20, verify GitHub Actions workflow
+- PaymentPoint virtual account generation not working
+- User migration from Digital Ocean to Contabo (waiting on user)
+- Reseller Portal horizontal scroll on mobile
+- Reseller buy/sell for 5sim broken after pricing changes
+- Mobile sidebar navigation flaky
+- Virtual Cards backend implementation
+- Gift card webhooks for real-time status
+- Gift card filtering by category/brand
+- Refactor server.py into modular structure (APIRouter)
 - Refactor large React components
-- Delete deprecated files
 
 ## 3rd Party Integrations
 - DaisySMS, SMS-pool, 5sim (OTP Services)
