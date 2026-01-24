@@ -792,6 +792,16 @@ const Landing = ({ setUser }) => {
                     style={{ '--tw-ring-color': buttonColor }}
                   />
                 </div>
+                <div className="text-right">
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgotPassword(true); setShowAuth(false); }}
+                    className="text-sm font-medium hover:underline"
+                    style={{ color: buttonColor }}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 <button
                   type="submit"
                   disabled={loading}
