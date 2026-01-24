@@ -1941,8 +1941,25 @@ const NewDashboard = () => {
     const [fullName, setFullName] = useState(user.full_name || '');
     const [phone, setPhone] = useState(user.phone || '');
     const [savingProfile, setSavingProfile] = useState(false);
+    const [activeTab, setActiveTab] = useState('profile');
+    
+    // KYC states
+    const [documentType, setDocumentType] = useState('');
+    const [documentNumber, setDocumentNumber] = useState('');
+    const [bvn, setBvn] = useState('');
+    const [idDocument, setIdDocument] = useState(null);
+    const [selfie, setSelfie] = useState(null);
+    const [street, setStreet] = useState('');
+    const [apartment, setApartment] = useState('');
+    const [city, setCity] = useState('');
+    const [kycState, setKycState] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [country, setCountry] = useState('NG');
+    const [dob, setDob] = useState('');
+    const [submittingKyc, setSubmittingKyc] = useState(false);
 
     const primaryColor = branding.primary_color_hex || '#059669';
+    const userTier = user.tier || 1;
 
     const handleUpdateProfile = async () => {
       if (!fullName.trim()) {
@@ -1991,121 +2008,371 @@ const NewDashboard = () => {
       }
     };
 
+    const handleSubmitKYC = async () => {
+      if (!documentType || !documentNumber || !bvn || !idDocument || !selfie || !street || !city || !kycState || !postalCode || !dob) {
+        toast.error('Please fill all required fields including BVN');
+        return;
+      }
+
+      if (bvn.length !== 11) {
+        toast.error('BVN must be 11 digits');
+        return;
+      }
+
+      setSubmittingKyc(true);
+      try {
+        const formData = new FormData();
+        formData.append('idDocument', idDocument);
+        formData.append('selfie', selfie);
+
+        const uploadRes = await axios.post(`${API}/api/user/upload-kyc-documents`, formData, {
+          ...axiosConfig,
+          headers: { ...axiosConfig.headers, 'Content-Type': 'multipart/form-data' }
+        });
+
+        const response = await axios.post(
+          `${API}/api/payscribe/create-customer`,
+          {
+            first_name: user.full_name?.split(' ')[0] || 'User',
+            last_name: user.full_name?.split(' ').slice(1).join(' ') || 'Name',
+            phone: user.phone,
+            email: user.email,
+            dob: dob,
+            country: country,
+            address: {
+              street: street + (apartment ? `, ${apartment}` : ''),
+              city: city,
+              state: kycState,
+              country: country,
+              postal_code: postalCode
+            },
+            identification_type: 'BVN',
+            identification_number: bvn,
+            photo: uploadRes.data.selfie_url,
+            identity: {
+              type: documentType,
+              number: documentNumber,
+              country: country,
+              image: uploadRes.data.id_document_url
+            }
+          },
+          axiosConfig
+        );
+
+        if (response.data.success) {
+          toast.success('KYC submitted successfully! Review in 1-2 business days.');
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'KYC submission failed');
+      } finally {
+        setSubmittingKyc(false);
+      }
+    };
+
+    const getTierLimit = (tier) => {
+      if (tier === 1) return '₦10,000';
+      if (tier === 2) return '₦100,000';
+      return '₦1,000,000';
+    };
+
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
         
-        {/* Profile Info Card */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ '--tw-ring-color': primaryColor }}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={user.email}
-                disabled
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Account Tier</label>
-              <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
-                <span className="font-semibold" style={{ color: primaryColor }}>Tier {user.tier || 1}</span>
-                <span className="text-gray-500 text-sm ml-2">
-                  (Limit: ₦{user.tier === 3 ? '1,000,000' : user.tier === 2 ? '100,000' : '10,000'})
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* Profile/KYC Tabs */}
+        <div className="flex gap-2 border-b border-gray-200 pb-2">
           <button
-            onClick={handleUpdateProfile}
-            disabled={savingProfile}
-            className="mt-4 px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
-            style={{ backgroundColor: primaryColor }}
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors ${
+              activeTab === 'profile' 
+                ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
           >
-            {savingProfile ? 'Saving...' : 'Save Profile'}
+            Profile Info
+          </button>
+          <button
+            onClick={() => setActiveTab('kyc')}
+            className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'kyc' 
+                ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Account Upgrade (KYC)
+            {userTier < 3 && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">Upgrade</span>}
           </button>
         </div>
 
-        {/* Balance Card */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Wallet Balances</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl" style={{ backgroundColor: `${primaryColor}10` }}>
-              <p className="text-sm text-gray-600">NGN Balance</p>
-              <p className="text-3xl font-bold" style={{ color: primaryColor }}>₦{(user.ngn_balance || 0).toLocaleString()}</p>
+        {activeTab === 'profile' && (
+          <>
+            {/* Profile Info Card */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': primaryColor }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={user.email}
+                    disabled
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Account Tier</label>
+                  <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
+                    <span className="font-semibold" style={{ color: primaryColor }}>Tier {userTier}</span>
+                    <span className="text-gray-500 text-sm ml-2">(Limit: {getTierLimit(userTier)})</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleUpdateProfile}
+                disabled={savingProfile}
+                className="mt-4 px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {savingProfile ? 'Saving...' : 'Save Profile'}
+              </button>
             </div>
-            <div className="p-4 bg-blue-50 rounded-xl">
-              <p className="text-sm text-gray-600">USD Balance</p>
-              <p className="text-3xl font-bold text-blue-600">${(user.usd_balance || 0).toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
 
-        {/* Change Password Card */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
-          <div className="space-y-4 max-w-md">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                placeholder="Enter current password"
-              />
+            {/* Balance Card */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Wallet Balances</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl" style={{ backgroundColor: `${primaryColor}10` }}>
+                  <p className="text-sm text-gray-600">NGN Balance</p>
+                  <p className="text-3xl font-bold" style={{ color: primaryColor }}>₦{(user.ngn_balance || 0).toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-xl">
+                  <p className="text-sm text-gray-600">USD Balance</p>
+                  <p className="text-3xl font-bold text-blue-600">${(user.usd_balance || 0).toFixed(2)}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                placeholder="Enter new password"
-              />
+
+            {/* Change Password Card */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
+              <div className="space-y-4 max-w-md">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Enter current password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Enter new password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <button
+                  onClick={handleChangePassword}
+                  disabled={savingPassword}
+                  className="px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {savingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
-                placeholder="Confirm new password"
-              />
+          </>
+        )}
+
+        {activeTab === 'kyc' && (
+          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            {/* Tier Progress */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Tier Status</h3>
+              <div className="flex items-center gap-4 mb-4">
+                {[1, 2, 3].map((tier) => (
+                  <div key={tier} className={`flex-1 text-center p-3 rounded-xl ${userTier >= tier ? 'bg-emerald-100 border-2 border-emerald-500' : 'bg-gray-100 border-2 border-gray-200'}`}>
+                    <p className={`font-bold text-lg ${userTier >= tier ? 'text-emerald-600' : 'text-gray-400'}`}>Tier {tier}</p>
+                    <p className="text-xs text-gray-500">
+                      {tier === 1 ? '₦10,000' : tier === 2 ? '₦100,000' : '₦1,000,000'}
+                    </p>
+                    {userTier === tier && <span className="text-xs text-emerald-600 font-medium">Current</span>}
+                  </div>
+                ))}
+              </div>
             </div>
-            <button
-              onClick={handleChangePassword}
-              disabled={savingPassword}
-              className="px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {savingPassword ? 'Changing...' : 'Change Password'}
-            </button>
+
+            {userTier >= 3 ? (
+              <div className="text-center py-8">
+                <Check className="w-16 h-16 mx-auto text-emerald-500 mb-4" />
+                <h4 className="text-xl font-bold text-gray-900 mb-2">Fully Verified!</h4>
+                <p className="text-gray-500">Your account is at maximum tier with ₦1,000,000 limit.</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Upgrade to Tier 3</h3>
+                <p className="text-sm text-gray-500 mb-6">Complete KYC verification to unlock higher transaction limits and Virtual Cards.</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                    <input
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">BVN (11 digits) *</label>
+                    <input
+                      type="text"
+                      value={bvn}
+                      onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Enter your BVN"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ID Document Type *</label>
+                    <select
+                      value={documentType}
+                      onChange={(e) => setDocumentType(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Select document type</option>
+                      <option value="NATIONAL_ID">National ID</option>
+                      <option value="DRIVERS_LICENSE">Driver's License</option>
+                      <option value="PASSPORT">International Passport</option>
+                      <option value="VOTERS_CARD">Voter's Card</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ID Document Number *</label>
+                    <input
+                      type="text"
+                      value={documentNumber}
+                      onChange={(e) => setDocumentNumber(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Enter document number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Street Address *</label>
+                    <input
+                      type="text"
+                      value={street}
+                      onChange={(e) => setStreet(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Street address"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Apartment/Suite</label>
+                    <input
+                      type="text"
+                      value={apartment}
+                      onChange={(e) => setApartment(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Apartment, suite, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                    <input
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="City"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                    <input
+                      type="text"
+                      value={kycState}
+                      onChange={(e) => setKycState(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="State"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code *</label>
+                    <input
+                      type="text"
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Postal code"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ID Document Photo *</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setIdDocument(e.target.files[0])}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Selfie Photo *</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setSelfie(e.target.files[0])}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSubmitKYC}
+                  disabled={submittingKyc}
+                  className="mt-6 w-full py-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-300"
+                >
+                  {submittingKyc ? 'Submitting...' : 'Submit KYC for Review'}
+                </button>
+              </>
+            )}
           </div>
-        </div>
+        )}
       </div>
     );
   }
