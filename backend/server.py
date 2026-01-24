@@ -2686,7 +2686,7 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         # Get base price
         if provider == 'daisysms':
             # Use LIVE pricing from DaisySMS API
-            api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
+            api_key = get_api_key(config, 'daisysms_api_key', DAISYSMS_API_KEY)
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     'https://daisysms.com/stubs/handler_api.php',
