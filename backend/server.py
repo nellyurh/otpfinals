@@ -2224,6 +2224,111 @@ async def login(data: UserLogin):
         }
     }
 
+# ============ Password Reset ============
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
+    """Send password reset code to user's email"""
+    user = await db.users.find_one({'email': data.email}, {'_id': 0})
+    if not user:
+        # Don't reveal if email exists
+        return {'success': True, 'message': 'If your email is registered, you will receive a reset code.'}
+    
+    # Generate 6-digit code
+    import random
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    # Store code with 15 min expiry
+    await db.password_resets.delete_many({'email': data.email})  # Remove old codes
+    await db.password_resets.insert_one({
+        'email': data.email,
+        'code': code,
+        'created_at': datetime.now(timezone.utc).isoformat(),
+        'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
+    })
+    
+    # Send email with code
+    background_tasks.add_task(
+        EmailService.send_email,
+        data.email,
+        'password_reset',
+        {
+            'name': user.get('full_name', '').split()[0] if user.get('full_name') else 'there',
+            'code': code
+        }
+    )
+    
+    return {'success': True, 'message': 'If your email is registered, you will receive a reset code.'}
+
+@api_router.post("/auth/verify-reset-code")
+async def verify_reset_code(data: dict):
+    """Verify the reset code is valid"""
+    email = data.get('email')
+    code = data.get('code')
+    
+    if not email or not code:
+        raise HTTPException(status_code=400, detail="Email and code are required")
+    
+    reset_record = await db.password_resets.find_one({
+        'email': email,
+        'code': code
+    })
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+    
+    # Check expiry
+    expires_at = datetime.fromisoformat(reset_record['expires_at'].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.password_resets.delete_one({'email': email})
+        raise HTTPException(status_code=400, detail="Code has expired. Please request a new one.")
+    
+    return {'success': True, 'message': 'Code verified successfully'}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPasswordRequest):
+    """Reset password with verified code"""
+    # Verify code again
+    reset_record = await db.password_resets.find_one({
+        'email': data.email,
+        'code': data.code
+    })
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+    
+    # Check expiry
+    expires_at = datetime.fromisoformat(reset_record['expires_at'].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.password_resets.delete_one({'email': data.email})
+        raise HTTPException(status_code=400, detail="Code has expired. Please request a new one.")
+    
+    # Validate password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # Update password
+    new_hash = hash_password(data.new_password)
+    result = await db.users.update_one(
+        {'email': data.email},
+        {'$set': {'password_hash': new_hash}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Failed to update password")
+    
+    # Delete used code
+    await db.password_resets.delete_many({'email': data.email})
+    
+    return {'success': True, 'message': 'Password reset successfully. You can now login.'}
+
 @api_router.put("/user/update-phone")
 async def update_phone(data: UpdatePhoneRequest, user: dict = Depends(get_current_user)):
     if not validate_nigerian_phone(data.phone):
