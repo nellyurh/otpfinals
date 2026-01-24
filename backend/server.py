@@ -4561,7 +4561,7 @@ async def ercaspay_initiate_payment(payload: ErcaspayInitiateRequest, user: dict
         if backend_url:
             frontend_url = backend_url.rstrip('/')
         else:
-            frontend_url = 'https://sea-lion-app-eu93r.ondigitalocean.app'
+            frontend_url = FRONTEND_URL or 'https://getucloudy.com'
     
     # Always allow all payment methods so users can choose at Ercaspay checkout
     # This gives users flexibility to select card, bank-transfer, ussd, or qrcode
