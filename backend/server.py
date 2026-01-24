@@ -86,6 +86,19 @@ def decrypt_secret(ciphertext: str) -> str:
         logger.error(f"Decryption error: {e}")
     return ciphertext
 
+def get_api_key(config: dict, key_name: str, env_fallback: str = '') -> str:
+    """Get API key from config, decrypting if needed, with env fallback."""
+    if not config:
+        return env_fallback
+    db_value = config.get(key_name)
+    if not db_value or db_value == '********':
+        return env_fallback
+    decrypted = decrypt_secret(db_value)
+    # If decryption failed (still has ENC: prefix), return env fallback
+    if decrypted.startswith('ENC:'):
+        return env_fallback
+    return decrypted or env_fallback
+
 async def log_audit_event(user_id: str, action: str, details: dict):
     """Log an audit event for security tracking."""
     try:
