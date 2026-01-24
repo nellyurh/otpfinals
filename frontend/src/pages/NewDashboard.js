@@ -4389,10 +4389,10 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
   };
 
   return (
-    <>
+    <AutoLogout timeoutMinutes={15} warningMinutes={2}>
       <LoginPopupModal />
       {renderDashboard()}
-    </>
+    </AutoLogout>
   );
 };
 
