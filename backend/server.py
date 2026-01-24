@@ -103,6 +103,311 @@ def get_api_key(config: dict, key_name: str, env_fallback: str = '') -> str:
         return env_fallback
     return decrypted or env_fallback
 
+# ============ Email Service ============
+class EmailService:
+    """Email service using SMTP with Titan email"""
+    
+    @staticmethod
+    async def get_email_config():
+        """Get email configuration from database"""
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        if not config:
+            return None
+        return {
+            'smtp_host': config.get('smtp_host', 'smtp.titan.email'),
+            'smtp_port': int(config.get('smtp_port', 465)),
+            'smtp_email': decrypt_secret(config.get('smtp_email', '')),
+            'smtp_password': decrypt_secret(config.get('smtp_password', '')),
+            'smtp_from_name': config.get('smtp_from_name', 'UltraCloud SMS'),
+            'brand_name': config.get('brand_name', 'UltraCloud SMS'),
+            'primary_color': config.get('primary_color_hex', '#059669'),
+        }
+    
+    @staticmethod
+    def get_email_template(template_type: str, data: dict) -> tuple:
+        """Generate HTML email templates"""
+        brand_name = data.get('brand_name', 'UltraCloud SMS')
+        primary_color = data.get('primary_color', '#059669')
+        
+        base_style = f"""
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f4f5; }}
+            .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; }}
+            .header {{ background: linear-gradient(135deg, {primary_color}, #10b981); padding: 40px 30px; text-align: center; }}
+            .header h1 {{ color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; }}
+            .header p {{ color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 14px; }}
+            .content {{ padding: 40px 30px; }}
+            .content h2 {{ color: #1f2937; font-size: 22px; margin: 0 0 20px; }}
+            .content p {{ color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 15px; }}
+            .button {{ display: inline-block; background: {primary_color}; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; margin: 20px 0; }}
+            .code-box {{ background: #f3f4f6; border: 2px dashed {primary_color}; border-radius: 12px; padding: 25px; text-align: center; margin: 25px 0; }}
+            .code {{ font-size: 36px; font-weight: 700; color: {primary_color}; letter-spacing: 8px; font-family: monospace; }}
+            .footer {{ background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }}
+            .footer p {{ color: #9ca3af; font-size: 13px; margin: 0 0 10px; }}
+            .social-links {{ margin-top: 15px; }}
+            .social-links a {{ color: {primary_color}; text-decoration: none; margin: 0 10px; font-size: 13px; }}
+            .divider {{ height: 1px; background: #e5e7eb; margin: 25px 0; }}
+            .highlight {{ background: linear-gradient(135deg, rgba(5,150,105,0.1), rgba(16,185,129,0.1)); padding: 20px; border-radius: 12px; border-left: 4px solid {primary_color}; margin: 20px 0; }}
+        </style>
+        """
+        
+        if template_type == 'welcome':
+            subject = f"Welcome to {brand_name}! 🎉"
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>{base_style}</head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Welcome to {brand_name}!</h1>
+                        <p>Your account has been created successfully</p>
+                    </div>
+                    <div class="content">
+                        <h2>Hello {data.get('name', 'there')}! 👋</h2>
+                        <p>Thank you for joining {brand_name}. We're thrilled to have you on board!</p>
+                        
+                        <div class="highlight">
+                            <p style="margin:0; color: #1f2937;"><strong>What you can do:</strong></p>
+                            <ul style="color: #4b5563; margin: 10px 0 0; padding-left: 20px;">
+                                <li>Get virtual phone numbers instantly</li>
+                                <li>Receive SMS verifications securely</li>
+                                <li>Access multiple OTP providers</li>
+                                <li>Buy gift cards & airtime</li>
+                            </ul>
+                        </div>
+                        
+                        <p>Get started by funding your wallet and purchasing your first virtual number.</p>
+                        
+                        <center>
+                            <a href="{data.get('login_url', '#')}" class="button">Go to Dashboard</a>
+                        </center>
+                        
+                        <div class="divider"></div>
+                        <p style="font-size: 13px; color: #9ca3af;">If you have any questions, feel free to reach out to our support team.</p>
+                    </div>
+                    <div class="footer">
+                        <p>© {datetime.now().year} {brand_name}. All rights reserved.</p>
+                        <div class="social-links">
+                            <a href="#">Support</a> | <a href="#">Terms</a> | <a href="#">Privacy</a>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+        elif template_type == 'password_reset':
+            subject = f"Reset Your Password - {brand_name}"
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>{base_style}</head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Password Reset</h1>
+                        <p>We received a request to reset your password</p>
+                    </div>
+                    <div class="content">
+                        <h2>Hello {data.get('name', 'there')},</h2>
+                        <p>We received a request to reset your password. Use the code below to reset it:</p>
+                        
+                        <div class="code-box">
+                            <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px;">Your reset code</p>
+                            <div class="code">{data.get('code', '000000')}</div>
+                        </div>
+                        
+                        <p>This code will expire in <strong>15 minutes</strong>.</p>
+                        
+                        <div class="highlight">
+                            <p style="margin: 0; color: #4b5563; font-size: 14px;">
+                                ⚠️ If you didn't request this, please ignore this email or contact support if you have concerns.
+                            </p>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        <p style="font-size: 13px; color: #9ca3af;">For security, never share this code with anyone.</p>
+                    </div>
+                    <div class="footer">
+                        <p>© {datetime.now().year} {brand_name}. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+        elif template_type == 'promo':
+            subject = data.get('subject', f"Special Offer from {brand_name}")
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>{base_style}</head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>{data.get('title', 'Special Announcement')}</h1>
+                        <p>From {brand_name}</p>
+                    </div>
+                    <div class="content">
+                        <h2>Hello {data.get('name', 'Valued Customer')},</h2>
+                        
+                        <div style="color: #4b5563; font-size: 15px; line-height: 1.8;">
+                            {data.get('message', '')}
+                        </div>
+                        
+                        <center>
+                            <a href="{data.get('cta_url', '#')}" class="button">{data.get('cta_text', 'Learn More')}</a>
+                        </center>
+                        
+                        <div class="divider"></div>
+                        <p style="font-size: 13px; color: #9ca3af;">Thank you for being a valued member of our community.</p>
+                    </div>
+                    <div class="footer">
+                        <p>© {datetime.now().year} {brand_name}. All rights reserved.</p>
+                        <p style="font-size: 11px; margin-top: 10px;">You received this email because you're a registered user of {brand_name}.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+        elif template_type == 'transaction':
+            subject = f"Transaction Notification - {brand_name}"
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>{base_style}</head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Transaction Alert</h1>
+                        <p>{data.get('transaction_type', 'Notification')}</p>
+                    </div>
+                    <div class="content">
+                        <h2>Hello {data.get('name', 'there')},</h2>
+                        <p>{data.get('message', 'A transaction has been processed on your account.')}</p>
+                        
+                        <div class="highlight">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 8px 0; color: #6b7280;">Amount</td>
+                                    <td style="padding: 8px 0; color: #1f2937; font-weight: 600; text-align: right;">₦{data.get('amount', '0.00')}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #6b7280;">Type</td>
+                                    <td style="padding: 8px 0; color: #1f2937; text-align: right;">{data.get('type', 'N/A')}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #6b7280;">Reference</td>
+                                    <td style="padding: 8px 0; color: #1f2937; text-align: right; font-family: monospace;">{data.get('reference', 'N/A')}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #6b7280;">New Balance</td>
+                                    <td style="padding: 8px 0; color: {primary_color}; font-weight: 700; text-align: right;">₦{data.get('balance', '0.00')}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <center>
+                            <a href="{data.get('dashboard_url', '#')}" class="button">View Dashboard</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© {datetime.now().year} {brand_name}. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+        else:
+            subject = f"Notification from {brand_name}"
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>{base_style}</head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>{brand_name}</h1>
+                    </div>
+                    <div class="content">
+                        <p>{data.get('message', '')}</p>
+                    </div>
+                    <div class="footer">
+                        <p>© {datetime.now().year} {brand_name}. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+        return subject, html
+    
+    @staticmethod
+    async def send_email(to_email: str, template_type: str, data: dict) -> bool:
+        """Send an email using SMTP"""
+        try:
+            config = await EmailService.get_email_config()
+            if not config or not config.get('smtp_email') or not config.get('smtp_password'):
+                logger.error("Email not configured. Set SMTP credentials in Admin → Email Settings")
+                return False
+            
+            # Add brand info to data
+            data['brand_name'] = config.get('brand_name', 'UltraCloud SMS')
+            data['primary_color'] = config.get('primary_color', '#059669')
+            
+            subject, html_content = EmailService.get_email_template(template_type, data)
+            
+            # Override subject if provided
+            if data.get('subject'):
+                subject = data['subject']
+            
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = f"{config.get('smtp_from_name', 'UltraCloud SMS')} <{config['smtp_email']}>"
+            msg['To'] = to_email
+            
+            # Attach HTML content
+            html_part = MIMEText(html_content, 'html')
+            msg.attach(html_part)
+            
+            # Send email via SMTP SSL
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(config['smtp_host'], config['smtp_port'], context=context) as server:
+                server.login(config['smtp_email'], config['smtp_password'])
+                server.sendmail(config['smtp_email'], to_email, msg.as_string())
+            
+            logger.info(f"Email sent successfully to {to_email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to send email to {to_email}: {str(e)}")
+            return False
+    
+    @staticmethod
+    async def send_bulk_email(user_emails: list, template_type: str, data: dict) -> dict:
+        """Send bulk emails to multiple users"""
+        results = {'success': 0, 'failed': 0, 'errors': []}
+        
+        for email in user_emails:
+            try:
+                # Personalize if user data available
+                user_data = data.copy()
+                success = await EmailService.send_email(email, template_type, user_data)
+                if success:
+                    results['success'] += 1
+                else:
+                    results['failed'] += 1
+                    results['errors'].append(email)
+                # Small delay to avoid rate limiting
+                await asyncio.sleep(0.5)
+            except Exception as e:
+                results['failed'] += 1
+                results['errors'].append(f"{email}: {str(e)}")
+        
+        return results
+
 async def log_audit_event(user_id: str, action: str, details: dict):
     """Log an audit event for security tracking."""
     try:
