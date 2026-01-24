@@ -5612,10 +5612,13 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         'ercaspay_secret_key', 'ercaspay_api_key',
         'plisio_secret_key', 'plisio_webhook_secret',
         'payscribe_api_key', 'payscribe_public_key',
-        'reloadly_client_secret'  # Mask Reloadly secret
+        'reloadly_client_id', 'reloadly_client_secret',  # Mask Reloadly credentials
+        'smtp_email', 'smtp_password'  # Mask SMTP credentials
     ]:
-        if key in config_sanitized and config_sanitized[key]:
+        if key in config_sanitized and config_sanitized[key] and str(config_sanitized[key]).startswith('ENC:'):
             config_sanitized[key] = '********'  # masked in GET; editable via PUT
+        elif key in config_sanitized and config_sanitized[key] and key in ['smtp_password', 'reloadly_client_secret']:
+            config_sanitized[key] = '********'  # Always mask passwords
 
     # Expose whether keys are configured (from DB or env)
     config_sanitized['paymentpoint_configured'] = bool(
