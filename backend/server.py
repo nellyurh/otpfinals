@@ -1177,9 +1177,9 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
     try:
         # Get keys from database first, fallback to env
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        pp_api_key = (config.get('paymentpoint_api_key') if config and config.get('paymentpoint_api_key') not in [None, '', '********'] else None) or PAYMENTPOINT_API_KEY
-        pp_secret = (config.get('paymentpoint_secret') if config and config.get('paymentpoint_secret') not in [None, '', '********'] else None) or PAYMENTPOINT_SECRET
-        pp_business_id = (config.get('paymentpoint_business_id') if config and config.get('paymentpoint_business_id') not in [None, '', '********'] else None) or PAYMENTPOINT_BUSINESS_ID
+        pp_api_key = get_api_key(config, 'paymentpoint_api_key', PAYMENTPOINT_API_KEY)
+        pp_secret = get_api_key(config, 'paymentpoint_secret', PAYMENTPOINT_SECRET)
+        pp_business_id = get_api_key(config, 'paymentpoint_business_id', PAYMENTPOINT_BUSINESS_ID)
         
         if not pp_api_key or not pp_secret or not pp_business_id:
             logger.error("PaymentPoint not configured. Set keys in Admin → Payment Gateways")
