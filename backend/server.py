@@ -431,7 +431,8 @@ SENSITIVE_FIELDS = [
     'ercaspay_secret_key', 'ercaspay_api_key',
     'plisio_secret_key', 'plisio_webhook_secret',
     'payscribe_api_key', 'payscribe_public_key',
-    'reloadly_client_id', 'reloadly_client_secret'
+    'reloadly_client_id', 'reloadly_client_secret',
+    'smtp_email', 'smtp_password'
 ]
 
 # MongoDB connection with error handling
