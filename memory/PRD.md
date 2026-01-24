@@ -30,64 +30,48 @@ Build a full-stack OTP service platform with JWT auth, wallet system, multiple p
 
 ## Latest Updates (January 24, 2026)
 
-### Session 15 - P0/P1 Feature Implementation
+### Session 15 - P0/P1 Feature Implementation (Revised)
 
-**Sidebar Redesign:**
-1. Removed "Betting" from sidebar menu
-2. Added "Send Money" with NEW badge (Wallet-to-Wallet transfers)
-3. Added "Bills Payment" with NEW badge
-4. Updated menu labels: "Buy Data" (was "Buy Data Bundle"), "Airtime" (was "Airtime Top-Up")
+**Sidebar Redesign (Per User Request):**
+1. Sidebar SERVICES now only shows:
+   - Fund Wallet
+   - Convert Currency
+   - Virtual Numbers (NEW)
+   - Gift Cards (NEW)
+   - Airtime
+   - Bills Payment (NEW)
+   - Virtual Cards
+2. Removed "Send Money" and "Buy Data" from sidebar - moved to Bills Payment
 
-**Bills Payment Page (NEW):**
-1. Two tabs: Electricity and TV Subscription
-2. Electricity tab features:
-   - Provider cards (EKEDC, IKEDC, AEDC, PHED, KEDCO, BEDC, JED, KAEDCO)
-   - Meter type toggle (Prepaid/Postpaid)
-   - Meter number input with Verify button
-   - Amount input with preset buttons (₦1,000 to ₦50,000)
-3. TV Subscription tab features:
-   - Provider cards (DSTV, GOtv, StarTimes)
-   - Smartcard/IUC input with Verify button
-   - Plan category tabs (All, Basic, Standard, Premium)
-   - Plan selection cards
+**Bills Payment Page (Landing with Service Cards):**
+1. New landing page shows 4 service cards:
+   - Buy Data (blue icon) - Internet data bundles
+   - Electricity (yellow icon) - Pay electricity bills
+   - TV Subscription (purple icon) - DSTV, GOtv, StarTimes
+   - Send Money (emerald icon) - Wallet to wallet transfer
+2. Clicking a card navigates to that service's form
+3. "Back to Bills" navigation for easy return
 
-**Wallet-to-Wallet Transfer (NEW):**
-1. Available Balance display card
-2. Recipient email input with search/verify button
-3. Amount input with preset buttons (₦500, ₦1,000, ₦2,000, ₦5,000)
-4. Optional note field
-5. Recent transfers history display
+**Design Improvements:**
+1. All bill payment pages now match Virtual Numbers style:
+   - Rounded corners (border-radius: 9999px on inputs)
+   - Collapsible card sections with Plus/ChevronDown icons
+   - Consistent Select component styling
+   - Card-based network selection
+2. Each service has its own color theme
 
-**Buy Data Redesign:**
-1. Card-based network selection (MTN yellow, Airtel red, Glo green, 9mobile dark green)
-2. Plan category tabs (Daily, Weekly, Monthly, Mega)
-3. Plan cards showing name and price
-4. Phone number input
+**Sub-Services Under Bills Payment:**
+- **Buy Data**: Network cards + Plan Type tabs (Daily/Weekly/Monthly/Mega)
+- **Electricity**: Provider dropdown + Meter type toggle + Meter validation
+- **TV Subscription**: Provider cards + Plan category tabs (All/Basic/Standard/Premium)
+- **Send Money**: Recipient validation + Amount presets + Recent transfers
 
-**Airtime Redesign:**
-1. Card-based network selection
-2. Custom amount input (min ₦50)
-3. Preset amount buttons (₦100 to ₦5,000)
+**API Endpoints (Same as before):**
+- `/api/wallet/validate-recipient`, `/api/wallet/transfer`, `/api/wallet/recent-transfers`
+- `/api/payscribe/validate-meter`, `/api/payscribe/buy-electricity`
+- `/api/payscribe/tv-plans`, `/api/payscribe/validate-smartcard`, `/api/payscribe/pay-tv`
 
-**New API Endpoints:**
-- `GET /api/wallet/validate-recipient?email=...` - Validate recipient for W2W transfer
-- `POST /api/wallet/transfer` - Transfer funds to another user
-- `GET /api/wallet/recent-transfers` - Get recent transfer history
-- `GET /api/payscribe/validate-meter?provider=&meter_number=&meter_type=` - Validate electricity meter
-- `POST /api/payscribe/buy-electricity` - Purchase electricity
-- `GET /api/payscribe/tv-plans?provider=` - Get TV subscription plans
-- `GET /api/payscribe/validate-smartcard?provider=&smartcard=` - Validate TV smartcard
-- `POST /api/payscribe/pay-tv` - Pay TV subscription
-
-**Files Modified:**
-- `/app/frontend/src/pages/NewDashboard.js` - Updated sidebar menu, section rendering
-- `/app/frontend/src/components/BillPaymentSections.js` - Complete rewrite with 4 new components
-- `/app/backend/server.py` - Added 8 new API endpoints
-
-**Testing Status:**
-- Backend: 100% (14/14 tests passed)
-- Frontend: 95% (All UI components working)
-- Note: Payscribe third-party API returning auth errors - API key configuration issue in admin panel
+**Note:** Airtime page shows "Maintenance" because `enable_airtime` toggle is false in admin. Enable it to show the page.
 
 ## Previous Updates (January 21, 2026)
 
