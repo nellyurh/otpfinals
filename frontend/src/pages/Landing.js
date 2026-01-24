@@ -71,6 +71,14 @@ const Landing = ({ setUser }) => {
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: email, 2: code, 3: new password
+  const [forgotPasswordData, setForgotPasswordData] = useState({
+    email: '',
+    code: '',
+    new_password: '',
+    confirm_password: ''
+  });
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({
@@ -79,6 +87,53 @@ const Landing = ({ setUser }) => {
     full_name: '',
     phone: ''
   });
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      if (forgotPasswordStep === 1) {
+        // Request reset code
+        await axios.post(`${API}/auth/forgot-password`, { email: forgotPasswordData.email });
+        toast.success('If your email is registered, you will receive a reset code.');
+        setForgotPasswordStep(2);
+      } else if (forgotPasswordStep === 2) {
+        // Verify code
+        await axios.post(`${API}/auth/verify-reset-code`, { 
+          email: forgotPasswordData.email, 
+          code: forgotPasswordData.code 
+        });
+        toast.success('Code verified!');
+        setForgotPasswordStep(3);
+      } else if (forgotPasswordStep === 3) {
+        // Reset password
+        if (forgotPasswordData.new_password !== forgotPasswordData.confirm_password) {
+          toast.error('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+        if (forgotPasswordData.new_password.length < 6) {
+          toast.error('Password must be at least 6 characters');
+          setLoading(false);
+          return;
+        }
+        await axios.post(`${API}/auth/reset-password`, {
+          email: forgotPasswordData.email,
+          code: forgotPasswordData.code,
+          new_password: forgotPasswordData.new_password
+        });
+        toast.success('Password reset successfully! Please login.');
+        setShowForgotPassword(false);
+        setForgotPasswordStep(1);
+        setForgotPasswordData({ email: '', code: '', new_password: '', confirm_password: '' });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
