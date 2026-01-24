@@ -1529,7 +1529,7 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                 return 'ACCESS_CANCEL' in response.text
         elif provider == '5sim':
             config = await db.pricing_config.find_one({}, {'_id': 0})
-            fivesim_key = config.get('fivesim_api_key') if config and config.get('fivesim_api_key') not in [None, '', '********'] else FIVESIM_API_KEY
+            fivesim_key = get_api_key(config, 'fivesim_api_key', FIVESIM_API_KEY)
             if not fivesim_key:
                 logger.error("FIVESIM_API_KEY not configured for cancel")
                 return False
