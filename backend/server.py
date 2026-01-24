@@ -2807,10 +2807,11 @@ async def purchase_number(
     # Calculate price
     if provider == 'daisysms':
         # Use LIVE pricing from DaisySMS API
+        daisysms_api_key = get_api_key(config, 'daisysms_api_key', DAISYSMS_API_KEY)
         async with httpx.AsyncClient() as client:
             price_response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': (config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY), 'action': 'getPricesVerification'},
+                params={'api_key': daisysms_api_key, 'action': 'getPricesVerification'},
                 timeout=10.0
             )
             if price_response.status_code == 200:
