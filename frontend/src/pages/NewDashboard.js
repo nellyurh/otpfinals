@@ -729,10 +729,8 @@ const NewDashboard = () => {
       items: [
         { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
         { id: 'convert-currency', icon: RefreshCw, label: 'Convert Currency' },
-        { id: 'wallet-transfer', icon: RefreshCw, label: 'Send Money', badge: 'NEW' },
         { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
         { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
-        { id: 'buy-data', icon: Wallet, label: 'Buy Data', toggle: 'enable_buy_data' },
         { id: 'airtime', icon: Phone, label: 'Airtime', toggle: 'enable_airtime' },
         { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', badge: 'NEW', toggle: 'enable_bills' },
         { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' }
