@@ -2132,9 +2132,7 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
     try:
         # Get API key and markup from config
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('smspool_api_key', SMSPOOL_API_KEY) if config else SMSPOOL_API_KEY
-        if api_key == '********':
-            api_key = SMSPOOL_API_KEY
+        api_key = get_api_key(config, 'smspool_api_key', SMSPOOL_API_KEY)
         markup_percent = config.get('smspool_markup', 50.0) if config else 50.0
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
         
