@@ -5250,6 +5250,7 @@ async def admin_list_transactions(admin: dict = Depends(require_admin)):
     )
     return {'transactions': txns}
 
+@api_router.post("/payscribe/buy-airtime")
 async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
     """Purchase airtime via Payscribe"""
     try:
