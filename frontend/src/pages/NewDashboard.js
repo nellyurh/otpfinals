@@ -766,7 +766,7 @@ const NewDashboard = () => {
       'virtual-numbers': 'enable_virtual_numbers',
       'buy-data': 'enable_buy_data',
       airtime: 'enable_airtime',
-      betting: 'enable_betting',
+      'bills-payment': 'enable_bills',
       'virtual-cards': 'enable_virtual_cards',
       'sms-history': 'enable_sms_history',
       'account-upgrade': 'enable_account_upgrade',
