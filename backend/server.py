@@ -966,6 +966,15 @@ class PricingConfig(BaseModel):
     giftcard_markup_percent: float = 0.0
     giftcard_is_sandbox: bool = True
 
+    # Email SMTP Settings (admin editable)
+    smtp_host: str = "smtp.titan.email"
+    smtp_port: int = 465
+    smtp_email: str = ""
+    smtp_password: str = ""
+    smtp_from_name: str = "UltraCloud SMS"
+    enable_welcome_email: bool = True
+    enable_transaction_email: bool = True
+
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ErcaspayPayment(BaseModel):
