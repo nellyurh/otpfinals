@@ -5880,6 +5880,130 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     
     return {'success': True, 'updated': list(update_fields.keys())}
 
+# ============ Admin Email Management ============
+class SendBulkEmailRequest(BaseModel):
+    subject: str
+    title: str
+    message: str
+    cta_text: Optional[str] = "Visit Dashboard"
+    cta_url: Optional[str] = None
+    send_to: str = "all"  # "all", "active", "verified"
+
+class TestEmailRequest(BaseModel):
+    to_email: EmailStr
+    template: str = "welcome"
+
+@api_router.post("/admin/email/test")
+async def admin_test_email(data: TestEmailRequest, admin: dict = Depends(require_admin)):
+    """Send a test email to verify SMTP settings"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    
+    if not config or not config.get('smtp_email') or not config.get('smtp_password'):
+        raise HTTPException(status_code=400, detail="Email not configured. Set SMTP credentials first.")
+    
+    test_data = {
+        'name': 'Test User',
+        'code': '123456',
+        'login_url': FRONTEND_URL or '#',
+        'subject': 'Test Email from Admin',
+        'title': 'Test Email',
+        'message': '<p>This is a test email to verify your SMTP configuration is working correctly.</p>',
+        'cta_text': 'Visit Dashboard',
+        'cta_url': FRONTEND_URL or '#'
+    }
+    
+    success = await EmailService.send_email(data.to_email, data.template, test_data)
+    
+    if success:
+        return {'success': True, 'message': f'Test email sent to {data.to_email}'}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send test email. Check SMTP settings.")
+
+@api_router.post("/admin/email/send-bulk")
+async def admin_send_bulk_email(data: SendBulkEmailRequest, background_tasks: BackgroundTasks, admin: dict = Depends(require_admin)):
+    """Send bulk promotional email to users"""
+    # Get target users
+    query = {}
+    if data.send_to == "active":
+        query['is_suspended'] = {'$ne': True}
+    elif data.send_to == "verified":
+        query['is_verified'] = True
+    
+    users = await db.users.find(query, {'email': 1, 'full_name': 1, '_id': 0}).to_list(length=10000)
+    
+    if not users:
+        raise HTTPException(status_code=400, detail="No users found matching criteria")
+    
+    # Prepare email data
+    email_data = {
+        'subject': data.subject,
+        'title': data.title,
+        'message': data.message,
+        'cta_text': data.cta_text or 'Visit Dashboard',
+        'cta_url': data.cta_url or FRONTEND_URL or '#'
+    }
+    
+    # Send emails in background
+    async def send_bulk():
+        results = {'success': 0, 'failed': 0}
+        for user in users:
+            try:
+                user_data = email_data.copy()
+                user_data['name'] = user.get('full_name', '').split()[0] if user.get('full_name') else 'Valued Customer'
+                success = await EmailService.send_email(user['email'], 'promo', user_data)
+                if success:
+                    results['success'] += 1
+                else:
+                    results['failed'] += 1
+                await asyncio.sleep(0.3)  # Rate limiting
+            except Exception as e:
+                logger.error(f"Bulk email error for {user.get('email')}: {e}")
+                results['failed'] += 1
+        
+        # Log the bulk email event
+        await log_audit_event(
+            user_id=admin['id'],
+            action='bulk_email_sent',
+            details={
+                'subject': data.subject,
+                'recipients_count': len(users),
+                'success': results['success'],
+                'failed': results['failed']
+            }
+        )
+        logger.info(f"Bulk email complete: {results}")
+    
+    background_tasks.add_task(send_bulk)
+    
+    return {
+        'success': True, 
+        'message': f'Sending emails to {len(users)} users in background',
+        'total_recipients': len(users)
+    }
+
+@api_router.get("/admin/email/stats")
+async def admin_email_stats(admin: dict = Depends(require_admin)):
+    """Get email sending statistics"""
+    # Get user counts for targeting
+    total_users = await db.users.count_documents({})
+    active_users = await db.users.count_documents({'is_suspended': {'$ne': True}})
+    verified_users = await db.users.count_documents({'is_verified': True})
+    
+    # Get recent bulk email logs
+    recent_emails = await db.audit_logs.find(
+        {'action': 'bulk_email_sent'},
+        {'_id': 0}
+    ).sort('timestamp', -1).limit(10).to_list(length=10)
+    
+    return {
+        'user_counts': {
+            'total': total_users,
+            'active': active_users,
+            'verified': verified_users
+        },
+        'recent_campaigns': recent_emails
+    }
+
 @api_router.get("/admin/stats")
 async def get_admin_stats(
     admin: dict = Depends(require_admin),
