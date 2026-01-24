@@ -3755,9 +3755,10 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
         await db.pricing_config.insert_one(cfg)
         config = cfg
 
-    daisysms_key = config.get('daisysms_api_key') or DAISYSMS_API_KEY
-    smspool_key = config.get('smspool_api_key') or SMSPOOL_API_KEY
-    fivesim_key = config.get('fivesim_api_key') or FIVESIM_API_KEY
+    # Decrypt API keys from database
+    daisysms_key = decrypt_secret(config.get('daisysms_api_key') or '') or DAISYSMS_API_KEY
+    smspool_key = decrypt_secret(config.get('smspool_api_key') or '') or SMSPOOL_API_KEY
+    fivesim_key = decrypt_secret(config.get('fivesim_api_key') or '') or FIVESIM_API_KEY
 
     balances = {
         'daisysms': None,
