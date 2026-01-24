@@ -880,6 +880,121 @@ const Landing = ({ setUser }) => {
           </div>
         </div>
       )}
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div 
+              className="p-6 text-white text-center"
+              style={{ background: `linear-gradient(135deg, ${buttonColor}, ${primaryColor})` }}
+            >
+              <h2 className="text-2xl font-bold">Reset Password</h2>
+              <p className="text-white/80 text-sm mt-1">
+                {forgotPasswordStep === 1 && "Enter your email to receive a reset code"}
+                {forgotPasswordStep === 2 && "Enter the 6-digit code sent to your email"}
+                {forgotPasswordStep === 3 && "Create your new password"}
+              </p>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6">
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                {forgotPasswordStep === 1 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={forgotPasswordData.email}
+                      onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, email: e.target.value })}
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-gray-900"
+                      style={{ '--tw-ring-color': buttonColor }}
+                    />
+                  </div>
+                )}
+                
+                {forgotPasswordStep === 2 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Reset Code</label>
+                    <input
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={forgotPasswordData.code}
+                      onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, code: e.target.value })}
+                      required
+                      maxLength={6}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-gray-900 text-center text-2xl tracking-widest font-mono"
+                      style={{ '--tw-ring-color': buttonColor }}
+                    />
+                    <p className="text-sm text-gray-500 mt-2 text-center">
+                      Didn't receive it? <button type="button" onClick={() => setForgotPasswordStep(1)} className="font-medium" style={{ color: buttonColor }}>Resend</button>
+                    </p>
+                  </div>
+                )}
+                
+                {forgotPasswordStep === 3 && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={forgotPasswordData.new_password}
+                        onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, new_password: e.target.value })}
+                        required
+                        minLength={6}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-gray-900"
+                        style={{ '--tw-ring-color': buttonColor }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={forgotPasswordData.confirm_password}
+                        onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, confirm_password: e.target.value })}
+                        required
+                        minLength={6}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all text-gray-900"
+                        style={{ '--tw-ring-color': buttonColor }}
+                      />
+                    </div>
+                  </>
+                )}
+                
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl font-bold transition-all text-white disabled:bg-gray-300 shadow-lg"
+                  style={{ backgroundColor: buttonColor, boxShadow: `0 10px 25px -5px ${buttonColor}40` }}
+                >
+                  {loading ? 'Please wait...' : (
+                    forgotPasswordStep === 1 ? 'Send Reset Code' :
+                    forgotPasswordStep === 2 ? 'Verify Code' :
+                    'Reset Password'
+                  )}
+                </button>
+              </form>
+              
+              <button
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setForgotPasswordStep(1);
+                  setForgotPasswordData({ email: '', code: '', new_password: '', confirm_password: '' });
+                  setShowAuth(true);
+                }}
+                className="w-full mt-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+              >
+                Back to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
