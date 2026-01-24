@@ -7486,9 +7486,12 @@ class ReloadlyAuthService:
         """Get Reloadly config from database or env"""
         config = await db.pricing_config.find_one({})
         if config:
+            # Decrypt the API keys from database
+            client_id = get_api_key(config, 'reloadly_client_id', os.environ.get('RELOADLY_CLIENT_ID', ''))
+            client_secret = get_api_key(config, 'reloadly_client_secret', os.environ.get('RELOADLY_CLIENT_SECRET', ''))
             return {
-                'client_id': config.get('reloadly_client_id') or os.environ.get('RELOADLY_CLIENT_ID', ''),
-                'client_secret': config.get('reloadly_client_secret') or os.environ.get('RELOADLY_CLIENT_SECRET', ''),
+                'client_id': client_id,
+                'client_secret': client_secret,
                 'is_sandbox': config.get('giftcard_is_sandbox', True),
                 'markup_percent': config.get('giftcard_markup_percent', 0)
             }
