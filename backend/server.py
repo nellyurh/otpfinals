@@ -1361,7 +1361,7 @@ async def purchase_number_daisysms(service: str, max_price: float, area_code: Op
     try:
         # Get API key from config
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('daisysms_api_key') if config and config.get('daisysms_api_key') not in [None, '********'] else DAISYSMS_API_KEY
+        api_key = get_api_key(config, 'daisysms_api_key', DAISYSMS_API_KEY)
         
         params = {
             'api_key': api_key,
