@@ -4277,7 +4277,7 @@ const AdminPanel = ({ user, setUser }) => {
 
             {/* Email Settings Section */}
             {activeSection === 'email-settings' && (
-              <EmailSettingsSection API={API} axiosConfig={axiosConfig} config={branding} setConfig={setBranding} saveConfig={handleUpdatePricing} />
+              <EmailSettingsSection API={API} axiosConfig={axiosConfig} config={branding} setConfig={setBranding} />
             )}
 
             {activeSection === 'users' && (
