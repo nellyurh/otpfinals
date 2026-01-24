@@ -1,6 +1,13 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-01-24**: P0/P1 Feature Implementation - Sidebar Redesign, Bills Payment, W2W Transfers
+  - Removed "Betting" from sidebar
+  - Added "Send Money" (Wallet-to-Wallet transfers) with NEW badge
+  - Added "Bills Payment" page with Electricity and TV Subscription tabs
+  - Redesigned Buy Data with card-based network selection and category tabs (Daily, Weekly, Monthly, Mega)
+  - Redesigned Airtime with custom amount input
+  - New backend endpoints: /api/wallet/transfer, /api/wallet/validate-recipient, /api/payscribe/validate-meter, /api/payscribe/buy-electricity, /api/payscribe/tv-plans, /api/payscribe/validate-smartcard, /api/payscribe/pay-tv
 - **2026-01-22**: Payscribe Integration Complete + Security Hardening + Deployment Configs
   - Fixed Payscribe Collections API integration (dynamic virtual accounts)
   - Added admin controls for Payscribe keys (public + secret)
