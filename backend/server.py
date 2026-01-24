@@ -1010,7 +1010,7 @@ DAISYSMS_PRICES = {
 async def _get_plisio_key():
     """Get Plisio secret key from database or env"""
     config = await db.pricing_config.find_one({}, {'_id': 0})
-    key = (config.get('plisio_secret_key') if config and config.get('plisio_secret_key') not in [None, '', '********'] else None) or PLISIO_SECRET_KEY
+    key = get_api_key(config, 'plisio_secret_key', PLISIO_SECRET_KEY)
     return key
 
 async def _plisio_request(method: str, endpoint: str, params: dict):
