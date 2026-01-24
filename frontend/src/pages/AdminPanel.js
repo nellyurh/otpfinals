@@ -638,7 +638,15 @@ const AdminPanel = ({ user, setUser }) => {
     banner_images: [],
     whatsapp_support_url: 'https://wa.me/2348000000000',
     telegram_support_url: 'https://t.me/yoursupport',
-    support_email: 'support@smsrelay.com'
+    support_email: 'support@smsrelay.com',
+    // Email SMTP settings
+    smtp_host: 'smtp.titan.email',
+    smtp_port: 465,
+    smtp_email: '',
+    smtp_password: '',
+    smtp_from_name: 'UltraCloud SMS',
+    enable_welcome_email: true,
+    enable_transaction_email: true
   });
 
   const [pageToggles, setPageToggles] = useState({
