@@ -1086,6 +1086,12 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'sms-providers'}
               onClick={() => { setActiveSection('sms-providers'); setAdminSidebarOpen(false); }}
             />
+            <SidebarItem
+              icon={Mail}
+              label="Email Settings"
+              active={activeSection === 'email-settings'}
+              onClick={() => { setActiveSection('email-settings'); setAdminSidebarOpen(false); }}
+            />
             
             <div className="mt-3 text-[9px] font-semibold text-slate-500 uppercase tracking-wide px-2">
               Management
