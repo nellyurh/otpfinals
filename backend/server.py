@@ -1194,6 +1194,15 @@ class UpdatePricingRequest(BaseModel):
     giftcard_markup_percent: Optional[float] = None
     giftcard_is_sandbox: Optional[bool] = None
 
+    # Email SMTP Settings
+    smtp_host: Optional[str] = None
+    smtp_port: Optional[int] = None
+    smtp_email: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_from_name: Optional[str] = None
+    enable_welcome_email: Optional[bool] = None
+    enable_transaction_email: Optional[bool] = None
+
 class ErcaspayInitiateRequest(BaseModel):
     amount: float  # NGN amount
     payment_method: str  # 'card' or 'bank-transfer'
