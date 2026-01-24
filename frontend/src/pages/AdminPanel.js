@@ -275,6 +275,309 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
   );
 };
 
+// Email Settings Section Component
+const EmailSettingsSection = ({ API, axiosConfig, config, setConfig, saveConfig }) => {
+  const [testEmail, setTestEmail] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
+  const [bulkEmail, setBulkEmail] = useState({
+    subject: '',
+    title: '',
+    message: '',
+    cta_text: 'Visit Dashboard',
+    cta_url: '',
+    send_to: 'all'
+  });
+  const [sendingBulk, setSendingBulk] = useState(false);
+  const [emailStats, setEmailStats] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    fetchEmailStats();
+  }, []);
+
+  const fetchEmailStats = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/email/stats`, axiosConfig);
+      setEmailStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch email stats:', error);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    if (!testEmail) {
+      toast.error('Please enter a test email address');
+      return;
+    }
+    setSendingTest(true);
+    try {
+      await axios.post(`${API}/admin/email/test`, {
+        to_email: testEmail,
+        template: 'welcome'
+      }, axiosConfig);
+      toast.success('Test email sent!');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to send test email');
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  const sendBulkEmail = async () => {
+    if (!bulkEmail.subject || !bulkEmail.title || !bulkEmail.message) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    setSendingBulk(true);
+    try {
+      const response = await axios.post(`${API}/admin/email/send-bulk`, bulkEmail, axiosConfig);
+      toast.success(response.data.message);
+      setBulkEmail({ subject: '', title: '', message: '', cta_text: 'Visit Dashboard', cta_url: '', send_to: 'all' });
+      fetchEmailStats();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to send bulk email');
+    } finally {
+      setSendingBulk(false);
+    }
+  };
+
+  return (
+    <section className="space-y-6 mt-4">
+      {/* SMTP Settings Card */}
+      <Card className="border border-slate-200 shadow-sm bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Mail className="w-4 h-4" /> SMTP Email Settings
+          </CardTitle>
+          <CardDescription className="text-xs">Configure your email service for notifications</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs">SMTP Host</Label>
+              <Input
+                value={config.smtp_host || 'smtp.titan.email'}
+                onChange={(e) => setConfig({ ...config, smtp_host: e.target.value })}
+                placeholder="smtp.titan.email"
+                className="text-xs h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">SMTP Port</Label>
+              <Input
+                type="number"
+                value={config.smtp_port || 465}
+                onChange={(e) => setConfig({ ...config, smtp_port: parseInt(e.target.value) })}
+                placeholder="465"
+                className="text-xs h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">SMTP Email</Label>
+              <Input
+                type="email"
+                value={config.smtp_email || ''}
+                onChange={(e) => setConfig({ ...config, smtp_email: e.target.value })}
+                placeholder="support@yourdomain.com"
+                className="text-xs h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">SMTP Password</Label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  value={config.smtp_password || ''}
+                  onChange={(e) => setConfig({ ...config, smtp_password: e.target.value })}
+                  placeholder="••••••••"
+                  className="text-xs h-9 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-xs">From Name</Label>
+              <Input
+                value={config.smtp_from_name || 'UltraCloud SMS'}
+                onChange={(e) => setConfig({ ...config, smtp_from_name: e.target.value })}
+                placeholder="UltraCloud SMS"
+                className="text-xs h-9"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6 pt-2">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={config.enable_welcome_email !== false}
+                onCheckedChange={(checked) => setConfig({ ...config, enable_welcome_email: checked })}
+              />
+              <Label className="text-xs">Send welcome email on signup</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={config.enable_transaction_email !== false}
+                onCheckedChange={(checked) => setConfig({ ...config, enable_transaction_email: checked })}
+              />
+              <Label className="text-xs">Send transaction notifications</Label>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 pt-2">
+            <Button onClick={saveConfig} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+              <Save className="w-3 h-3 mr-1" /> Save Settings
+            </Button>
+            <div className="flex-1 flex items-center gap-2">
+              <Input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="Enter email for test"
+                className="text-xs h-9 max-w-[200px]"
+              />
+              <Button onClick={sendTestEmail} disabled={sendingTest} size="sm" variant="outline">
+                {sendingTest ? 'Sending...' : 'Send Test Email'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bulk Email Card */}
+      <Card className="border border-slate-200 shadow-sm bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Send className="w-4 h-4" /> Send Bulk Email
+          </CardTitle>
+          <CardDescription className="text-xs">Send promotional emails to your users</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {emailStats && (
+            <div className="flex gap-4 mb-4">
+              <div className="bg-slate-50 rounded-lg px-4 py-2 text-center">
+                <p className="text-lg font-bold text-emerald-600">{emailStats.user_counts?.total || 0}</p>
+                <p className="text-[10px] text-slate-500">Total Users</p>
+              </div>
+              <div className="bg-slate-50 rounded-lg px-4 py-2 text-center">
+                <p className="text-lg font-bold text-blue-600">{emailStats.user_counts?.active || 0}</p>
+                <p className="text-[10px] text-slate-500">Active Users</p>
+              </div>
+              <div className="bg-slate-50 rounded-lg px-4 py-2 text-center">
+                <p className="text-lg font-bold text-purple-600">{emailStats.user_counts?.verified || 0}</p>
+                <p className="text-[10px] text-slate-500">Verified Users</p>
+              </div>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Label className="text-xs">Email Subject *</Label>
+              <Input
+                value={bulkEmail.subject}
+                onChange={(e) => setBulkEmail({ ...bulkEmail, subject: e.target.value })}
+                placeholder="Special Offer Just for You!"
+                className="text-xs h-9"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-xs">Email Title *</Label>
+              <Input
+                value={bulkEmail.title}
+                onChange={(e) => setBulkEmail({ ...bulkEmail, title: e.target.value })}
+                placeholder="Limited Time Offer"
+                className="text-xs h-9"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-xs">Message * (HTML supported)</Label>
+              <textarea
+                value={bulkEmail.message}
+                onChange={(e) => setBulkEmail({ ...bulkEmail, message: e.target.value })}
+                placeholder="<p>Hello!</p><p>We have an exciting offer for you...</p>"
+                className="w-full text-xs p-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[120px]"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Button Text</Label>
+              <Input
+                value={bulkEmail.cta_text}
+                onChange={(e) => setBulkEmail({ ...bulkEmail, cta_text: e.target.value })}
+                placeholder="Visit Dashboard"
+                className="text-xs h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Button URL</Label>
+              <Input
+                value={bulkEmail.cta_url}
+                onChange={(e) => setBulkEmail({ ...bulkEmail, cta_url: e.target.value })}
+                placeholder="https://getucloudy.com/dashboard"
+                className="text-xs h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Send To</Label>
+              <select
+                value={bulkEmail.send_to}
+                onChange={(e) => setBulkEmail({ ...bulkEmail, send_to: e.target.value })}
+                className="w-full text-xs h-9 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="all">All Users</option>
+                <option value="active">Active Users Only</option>
+                <option value="verified">Verified Users Only</option>
+              </select>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={sendBulkEmail} 
+            disabled={sendingBulk} 
+            className="bg-emerald-600 hover:bg-emerald-700 mt-2"
+          >
+            <Send className="w-4 h-4 mr-2" />
+            {sendingBulk ? 'Sending...' : 'Send Bulk Email'}
+          </Button>
+
+          {/* Recent Campaigns */}
+          {emailStats?.recent_campaigns && emailStats.recent_campaigns.length > 0 && (
+            <div className="mt-6">
+              <h4 className="text-xs font-semibold text-slate-700 mb-2">Recent Email Campaigns</h4>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left text-[11px]">
+                  <thead className="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                      <th className="px-2 py-1 font-semibold text-slate-600">Date</th>
+                      <th className="px-2 py-1 font-semibold text-slate-600">Subject</th>
+                      <th className="px-2 py-1 font-semibold text-slate-600">Sent</th>
+                      <th className="px-2 py-1 font-semibold text-slate-600">Failed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {emailStats.recent_campaigns.map((campaign, idx) => (
+                      <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="px-2 py-1 whitespace-nowrap">{new Date(campaign.timestamp).toLocaleDateString()}</td>
+                        <td className="px-2 py-1">{campaign.details?.subject || 'N/A'}</td>
+                        <td className="px-2 py-1 text-emerald-600">{campaign.details?.success || 0}</td>
+                        <td className="px-2 py-1 text-red-600">{campaign.details?.failed || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+};
+
 const AdminPanel = ({ user, setUser }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
