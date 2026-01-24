@@ -1069,10 +1069,8 @@ const NewDashboard = () => {
                 transactions={transactions}
               />
             ) : maintenanceContent("Fund Wallet"))}
-            {activeSection === 'buy-data' && (isPageEnabled('buy-data') ? <BuyDataSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Buy Data"))}
             {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Airtime"))}
-            {activeSection === 'bills-payment' && (isPageEnabled('bills-payment') ? <BillsPaymentSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Bills Payment"))}
-            {activeSection === 'wallet-transfer' && <WalletTransferSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} />}
+            {activeSection === 'bills-payment' && (isPageEnabled('bills-payment') ? <BillsPaymentSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} setActiveSection={setActiveSection} /> : maintenanceContent("Bills Payment"))}
             {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : maintenanceContent("Transactions"))}
             {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : maintenanceContent("Dashboard"))}
             {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : maintenanceContent("SMS History"))}
