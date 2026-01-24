@@ -4282,6 +4282,29 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
   }
 
   function VirtualCardsSection() {
+    const userTier = user?.tier || 1;
+    
+    // Only Tier 3 users can access Virtual Cards
+    if (userTier < 3) {
+      return (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+          <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
+            <CreditCard className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Tier 3 Required</h3>
+            <p className="text-gray-500 mb-4">Virtual Cards are only available for Tier 3 verified users.</p>
+            <p className="text-sm text-gray-400 mb-6">Your current tier: <span className="font-semibold text-emerald-600">Tier {userTier}</span></p>
+            <button 
+              onClick={() => setActiveSection('profile')}
+              className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 transition-colors"
+            >
+              Upgrade Account (KYC)
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
