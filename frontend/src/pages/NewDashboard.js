@@ -1073,7 +1073,6 @@ const NewDashboard = () => {
             {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : maintenanceContent("Transactions"))}
             {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : maintenanceContent("Dashboard"))}
             {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : maintenanceContent("SMS History"))}
-            {activeSection === 'account-upgrade' && (isPageEnabled('account-upgrade') ? <AccountUpgradeSection /> : maintenanceContent("Account Upgrade"))}
             {activeSection === 'profile' && (isPageEnabled('profile') ? <ProfileSection /> : maintenanceContent("Profile Settings"))}
             {activeSection === 'referral' && (isPageEnabled('referral') ? <ReferralSection /> : maintenanceContent("Referral Program"))}
             {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : maintenanceContent("Support Channels"))}
