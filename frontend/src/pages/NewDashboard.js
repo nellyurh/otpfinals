@@ -8,7 +8,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-import { BuyDataSection, AirtimeSection, BillsPaymentSection, WalletTransferSection } from '../components/BillPaymentSections';
+import { AirtimeSection, BillsPaymentSection } from '../components/BillPaymentSections';
 import { VirtualNumbersSection } from '../components/VirtualNumbersSection';
 import { FundWalletSection } from '../components/FundWalletSection';
 import AutoLogout from '../components/AutoLogout';
