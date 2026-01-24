@@ -2150,7 +2150,7 @@ async def otp_polling_task(order_id: str):
 # ============ API Routes ============
 
 @api_router.post("/auth/register")
-async def register(data: UserRegister):
+async def register(data: UserRegister, background_tasks: BackgroundTasks):
 
     # Validate phone number
     if not validate_nigerian_phone(data.phone):
@@ -2174,6 +2174,19 @@ async def register(data: UserRegister):
     
     await db.users.insert_one(user_dict)
     asyncio.create_task(create_paymentpoint_virtual_account(user_dict))
+    
+    # Send welcome email in background
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and config.get('enable_welcome_email', True):
+        background_tasks.add_task(
+            EmailService.send_email,
+            user.email,
+            'welcome',
+            {
+                'name': user.full_name.split()[0] if user.full_name else 'there',
+                'login_url': f"{FRONTEND_URL}/dashboard" if FRONTEND_URL else '#'
+            }
+        )
     
     token = create_token(user.id, user.email, user.is_admin)
     
