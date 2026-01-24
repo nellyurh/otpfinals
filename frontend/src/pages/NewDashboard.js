@@ -746,7 +746,6 @@ const NewDashboard = () => {
       category: 'MANAGEMENT',
       items: [
         { id: 'sms-history', icon: History, label: 'SMS History' },
-        { id: 'account-upgrade', icon: User, label: 'Account Upgrade', badge: 'KYC' },
         { id: 'referral', icon: Gift, label: 'Referral Program', toggle: 'enable_referral' },
         { id: 'profile', icon: UserCircle, label: 'Profile Settings' },
         { id: 'support', icon: MessageSquare, label: 'Support Channels' }
