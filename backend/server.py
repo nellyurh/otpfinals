@@ -5865,10 +5865,24 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'enable_plisio',
         'enable_ercaspay',
         'enable_payscribe',
+        # Email settings (non-sensitive)
+        'smtp_host',
+        'smtp_port',
+        'smtp_from_name',
+        'enable_welcome_email',
+        'enable_transaction_email',
     ]:
         val = getattr(data, key, None)
         if val is not None:
             update_fields[key] = val
+    
+    # Handle SMTP credentials (encrypt sensitive fields)
+    if data.smtp_email is not None and data.smtp_email != '********':
+        update_fields['smtp_email'] = encrypt_secret(data.smtp_email)
+        updated_sensitive_keys.append('smtp_email')
+    if data.smtp_password is not None and data.smtp_password != '********':
+        update_fields['smtp_password'] = encrypt_secret(data.smtp_password)
+        updated_sensitive_keys.append('smtp_password')
     
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
     
