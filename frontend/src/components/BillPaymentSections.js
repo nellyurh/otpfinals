@@ -1510,15 +1510,22 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
   const [selectedBank, setSelectedBank] = useState(null);
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
+  const [bankName, setBankName] = useState('');
   const [amount, setAmount] = useState('');
   const [narration, setNarration] = useState('');
   const [validating, setValidating] = useState(false);
   const [validated, setValidated] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [expanded, setExpanded] = useState(true);
-  const [needsManualVerify, setNeedsManualVerify] = useState(false);
+  const [loadingBanks, setLoadingBanks] = useState(true);
+  
+  // Confirmation modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [transferFee, setTransferFee] = useState(50);
+  const [loadingFee, setLoadingFee] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
 
-  const WITHDRAWAL_FEE = 50;
   const MIN_WITHDRAWAL = 1000;
 
   // Get tier limit
@@ -1532,7 +1539,19 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
     fetchBanks();
   }, []);
 
+  // Auto-validate when account number reaches 10 digits
+  useEffect(() => {
+    if (selectedBank && accountNumber.length === 10) {
+      validateAccount();
+    } else if (accountNumber.length < 10) {
+      setValidated(false);
+      setAccountName('');
+      setBankName('');
+    }
+  }, [accountNumber, selectedBank]);
+
   const fetchBanks = async () => {
+    setLoadingBanks(true);
     try {
       const response = await axios.get(`${API}/api/banks/list`, axiosConfig);
       if (response.data.success) {
@@ -1543,19 +1562,21 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
       }
     } catch (error) {
       console.error('Failed to fetch banks:', error);
+      toast.error('Failed to load banks. Please refresh.');
+    } finally {
+      setLoadingBanks(false);
     }
   };
 
   const validateAccount = async () => {
-    if (!selectedBank || accountNumber.length < 10) {
-      toast.error('Please select a bank and enter valid account number');
+    if (!selectedBank || accountNumber.length !== 10) {
       return;
     }
 
     setValidating(true);
     setValidated(false);
     setAccountName('');
-    setNeedsManualVerify(false);
+    setBankName('');
 
     try {
       const response = await axios.get(
@@ -1565,22 +1586,45 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
 
       if (response.data.valid) {
         setAccountName(response.data.account_name);
+        setBankName(response.data.bank_name || selectedBank.label);
         setValidated(true);
-        setNeedsManualVerify(response.data.needs_verification || false);
-        toast.success('Account validated!');
+        toast.success('Account verified!');
       } else {
-        toast.error('Account validation failed');
+        toast.error(response.data.message || 'Account validation failed');
+        setValidated(false);
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Validation failed');
+      setValidated(false);
     } finally {
       setValidating(false);
     }
   };
 
-  const handleTransfer = async () => {
-    if (!validated || !amount) {
-      toast.error('Please validate account and enter amount');
+  const fetchTransferFee = async () => {
+    if (!amount) return;
+    
+    setLoadingFee(true);
+    try {
+      const response = await axios.get(
+        `${API}/api/banks/transfer-fee?amount=${parseFloat(amount)}`,
+        axiosConfig
+      );
+      if (response.data.success) {
+        setTransferFee(response.data.fee);
+      }
+    } catch (error) {
+      console.error('Failed to fetch fee:', error);
+      setTransferFee(50); // Default fee
+    } finally {
+      setLoadingFee(false);
+    }
+  };
+
+  const openConfirmModal = async () => {
+    // Check if user has PIN set
+    if (!user?.has_transaction_pin) {
+      toast.error('Please set up your transaction PIN first in Profile Settings');
       return;
     }
 
@@ -1595,36 +1639,62 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
       return;
     }
 
-    const totalDeduction = amountNum + WITHDRAWAL_FEE;
+    // Fetch fee from Payscribe before showing modal
+    await fetchTransferFee();
+    
+    const totalDeduction = amountNum + transferFee;
     if ((user?.ngn_balance || 0) < totalDeduction) {
-      toast.error(`Insufficient balance. You need ₦${totalDeduction.toLocaleString()} (including ₦${WITHDRAWAL_FEE} fee)`);
+      toast.error(`Insufficient balance. You need ₦${totalDeduction.toLocaleString()}`);
+      return;
+    }
+
+    setPin('');
+    setPinError('');
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmTransfer = async () => {
+    if (pin.length !== 4) {
+      setPinError('Please enter your 4-digit PIN');
       return;
     }
 
     setProcessing(true);
+    setPinError('');
+    
     try {
       const response = await axios.post(`${API}/api/banks/transfer`, {
         bank_code: selectedBank.value,
         account_number: accountNumber,
         account_name: accountName,
-        amount: amountNum,
+        amount: parseFloat(amount),
+        pin: pin,
         narration: narration || 'Wallet withdrawal'
       }, axiosConfig);
 
       if (response.data.success) {
         toast.success(response.data.message || 'Transfer initiated!');
+        setShowConfirmModal(false);
         // Reset form
         setSelectedBank(null);
         setAccountNumber('');
         setAccountName('');
+        setBankName('');
         setAmount('');
         setNarration('');
         setValidated(false);
+        setPin('');
         fetchProfile();
         fetchTransactions();
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Transfer failed');
+      const errorMsg = error.response?.data?.detail || 'Transfer failed';
+      if (errorMsg.toLowerCase().includes('pin')) {
+        setPinError(errorMsg);
+      } else {
+        toast.error(errorMsg);
+        setShowConfirmModal(false);
+      }
     } finally {
       setProcessing(false);
     }
@@ -1656,159 +1726,252 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
             {/* Info Banner */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
               <p className="text-xs text-indigo-800">
-                <strong>Withdrawal Fee:</strong> ₦{WITHDRAWAL_FEE} per transfer • 
-                <strong> Min:</strong> ₦{MIN_WITHDRAWAL.toLocaleString()} • 
+                <strong>Min:</strong> ₦{MIN_WITHDRAWAL.toLocaleString()} • 
                 <strong> Your Limit:</strong> ₦{getTierLimit().toLocaleString()} (Tier {user?.tier || 1})
               </p>
             </div>
 
-            {/* Bank Selection */}
+            {/* Step 1: Bank Selection */}
             <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Bank</label>
-              <Select
-                options={banks}
-                value={selectedBank}
-                onChange={(val) => {
-                  setSelectedBank(val);
-                  setValidated(false);
-                  setAccountName('');
-                }}
-                placeholder="Choose your bank..."
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-            </div>
-
-            {/* Account Number */}
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Account Number</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter 10-digit account number"
-                  value={accountNumber}
-                  onChange={(e) => {
-                    setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                Step 1: Select Bank
+              </label>
+              {loadingBanks ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Loading banks...
+                </div>
+              ) : (
+                <Select
+                  options={banks}
+                  value={selectedBank}
+                  onChange={(val) => {
+                    setSelectedBank(val);
                     setValidated(false);
                     setAccountName('');
+                    setBankName('');
                   }}
-                  maxLength={10}
-                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
+                  placeholder="Choose your bank..."
+                  styles={selectStyles}
+                  menuPortalTarget={document.body}
                 />
-                <button
-                  onClick={validateAccount}
-                  disabled={!selectedBank || accountNumber.length < 10 || validating}
-                  className="px-4 py-2.5 bg-indigo-600 text-white rounded-full font-medium text-xs hover:bg-indigo-700 disabled:bg-gray-300"
-                >
-                  {validating ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Verify'}
-                </button>
-              </div>
+              )}
             </div>
 
-            {/* Validated Account */}
-            {validated && (
-              <div className={`border rounded-xl p-3 ${needsManualVerify ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+            {/* Step 2: Account Number (only show after bank selected) */}
+            {selectedBank && (
+              <div>
+                <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                  Step 2: Enter Account Number
+                  {accountNumber.length > 0 && accountNumber.length < 10 && (
+                    <span className="text-orange-500 ml-2">({10 - accountNumber.length} more digits needed)</span>
+                  )}
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Enter 10-digit account number"
+                    value={accountNumber}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setAccountNumber(val);
+                    }}
+                    maxLength={10}
+                    className={`w-full px-4 py-2.5 border-2 rounded-full focus:outline-none text-gray-900 text-sm ${
+                      accountNumber.length === 10 && validated ? 'border-green-500 bg-green-50' :
+                      accountNumber.length === 10 && validating ? 'border-blue-500' :
+                      'border-gray-200 focus:border-indigo-500'
+                    }`}
+                  />
+                  {validating && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+                    </div>
+                  )}
+                  {validated && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <Check className="w-4 h-4 text-green-500" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Validated Account Display */}
+            {validated && accountName && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3">
                 <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${needsManualVerify ? 'bg-yellow-500' : 'bg-green-500'}`}>
+                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
                     {accountName?.charAt(0)?.toUpperCase() || 'A'}
                   </div>
                   <div className="flex-1">
-                    <p className={`font-semibold text-xs ${needsManualVerify ? 'text-yellow-900' : 'text-green-900'}`}>{accountName}</p>
-                    <p className={`text-[10px] ${needsManualVerify ? 'text-yellow-700' : 'text-green-700'}`}>{selectedBank?.label} - {accountNumber}</p>
-                    {needsManualVerify && (
-                      <p className="text-[10px] text-yellow-600 mt-1">⚠️ Please verify this is the correct account</p>
-                    )}
+                    <p className="font-semibold text-green-900 text-sm">{accountName}</p>
+                    <p className="text-xs text-green-700">{bankName} - {accountNumber}</p>
                   </div>
-                  <Check className={`w-4 h-4 ${needsManualVerify ? 'text-yellow-600' : 'text-green-600'}`} />
+                  <Check className="w-5 h-5 text-green-600" />
                 </div>
               </div>
             )}
 
-            {/* Amount */}
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Amount</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">₦</span>
-                <input
-                  type="number"
-                  placeholder={`Min ₦${MIN_WITHDRAWAL.toLocaleString()}`}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-8 pr-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
-                />
-              </div>
-            </div>
+            {/* Step 3: Amount (only show after validated) */}
+            {validated && (
+              <>
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Step 3: Enter Amount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">₦</span>
+                    <input
+                      type="number"
+                      placeholder={`Min ₦${MIN_WITHDRAWAL.toLocaleString()}`}
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="w-full pl-8 pr-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
+                    />
+                  </div>
+                </div>
 
-            {/* Quick Amounts */}
-            <div className="flex flex-wrap gap-2">
-              {['1000', '2000', '5000', '10000', '20000'].map((preset) => (
+                {/* Quick Amounts */}
+                <div className="flex flex-wrap gap-2">
+                  {['1000', '2000', '5000', '10000', '20000', '50000'].map((preset) => (
+                    <button
+                      key={preset}
+                      onClick={() => setAmount(preset)}
+                      disabled={parseInt(preset) > getTierLimit()}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                        amount === preset ? 'bg-indigo-500 text-white' : 
+                        parseInt(preset) > getTierLimit() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' :
+                        'bg-gray-100 text-gray-700 hover:bg-indigo-100'
+                      }`}
+                    >
+                      ₦{parseInt(preset).toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Narration */}
+                <div>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                    Narration (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="What's this transfer for?"
+                    value={narration}
+                    onChange={(e) => setNarration(e.target.value)}
+                    maxLength={50}
+                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
+                  />
+                </div>
+
+                {/* Submit Button */}
                 <button
-                  key={preset}
-                  onClick={() => setAmount(preset)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                    amount === preset ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-indigo-100'
-                  }`}
+                  onClick={openConfirmModal}
+                  disabled={!amount || parseFloat(amount) < MIN_WITHDRAWAL}
+                  className="w-full py-3 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-full font-bold text-sm hover:from-indigo-600 hover:to-violet-600 disabled:from-gray-300 disabled:to-gray-300 transition-all flex items-center justify-center gap-2"
+                  data-testid="bank-transfer-btn"
                 >
-                  ₦{parseInt(preset).toLocaleString()}
+                  <Lock className="w-4 h-4" />
+                  Continue to Confirm
                 </button>
-              ))}
-            </div>
-
-            {/* Narration */}
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Narration (Optional)</label>
-              <input
-                type="text"
-                placeholder="What's this transfer for?"
-                value={narration}
-                onChange={(e) => setNarration(e.target.value)}
-                maxLength={50}
-                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
-              />
-            </div>
-
-            {/* Summary */}
-            {validated && amount && parseFloat(amount) >= MIN_WITHDRAWAL && (
-              <div className="bg-gray-50 rounded-xl p-3 space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-600">Transfer Amount:</span>
-                  <span className="font-semibold text-gray-900">₦{parseFloat(amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-600">Service Fee:</span>
-                  <span className="font-semibold text-gray-900">₦{WITHDRAWAL_FEE}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-1 mt-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-800 font-semibold">Total Deduction:</span>
-                    <span className="font-bold text-indigo-600">₦{(parseFloat(amount) + WITHDRAWAL_FEE).toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
+              </>
             )}
-
-            {/* Submit Button */}
-            <button
-              onClick={handleTransfer}
-              disabled={!validated || !amount || parseFloat(amount) < MIN_WITHDRAWAL || processing}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-full font-bold text-sm hover:from-indigo-600 hover:to-violet-600 disabled:from-gray-300 disabled:to-gray-300 transition-all flex items-center justify-center gap-2"
-              data-testid="bank-transfer-btn"
-            >
-              {processing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Building2 className="w-4 h-4" />
-                  Withdraw ₦{amount ? parseFloat(amount).toLocaleString() : '0'}
-                </>
-              )}
-            </button>
           </div>
         )}
       </div>
+
+      {/* PIN Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Confirm Transfer</h3>
+              <button onClick={() => setShowConfirmModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              {/* Transfer Summary */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">To:</span>
+                  <span className="font-medium text-gray-900">{accountName}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Bank:</span>
+                  <span className="font-medium text-gray-900">{bankName}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Account:</span>
+                  <span className="font-medium text-gray-900">{accountNumber}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-2 mt-2 space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Amount:</span>
+                    <span className="font-semibold text-gray-900">₦{parseFloat(amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Service Fee:</span>
+                    <span className="font-semibold text-gray-900">
+                      {loadingFee ? '...' : `₦${transferFee.toLocaleString()}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-base pt-1 border-t border-gray-200">
+                    <span className="text-gray-800 font-semibold">Total:</span>
+                    <span className="font-bold text-indigo-600">
+                      ₦{(parseFloat(amount) + transferFee).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PIN Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Enter Transaction PIN
+                </label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={pin}
+                  onChange={(e) => {
+                    setPin(e.target.value.replace(/\D/g, '').slice(0, 4));
+                    setPinError('');
+                  }}
+                  placeholder="••••"
+                  className={`w-full px-4 py-3 border-2 rounded-xl text-center text-2xl tracking-widest font-bold focus:outline-none ${
+                    pinError ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-indigo-500'
+                  }`}
+                />
+                {pinError && (
+                  <p className="text-sm text-red-500 mt-1">{pinError}</p>
+                )}
+              </div>
+
+              {/* Confirm Button */}
+              <button
+                onClick={handleConfirmTransfer}
+                disabled={processing || pin.length !== 4}
+                className="w-full py-3 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-xl font-bold text-sm hover:from-indigo-600 hover:to-violet-600 disabled:from-gray-300 disabled:to-gray-300 transition-all flex items-center justify-center gap-2"
+              >
+                {processing ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    Confirm & Transfer
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
