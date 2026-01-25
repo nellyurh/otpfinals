@@ -1205,10 +1205,13 @@ const AdminPanel = ({ user, setUser }) => {
   const openUserEditor = (u) => {
     setSelectedUser(u);
     setEditUser({
-      full_name: u.full_name || '',
+      first_name: u.first_name || '',
+      last_name: u.last_name || '',
       email: u.email || '',
+      phone: u.phone || '',
       ngn_balance: u.ngn_balance || 0,
       usd_balance: u.usd_balance || 0,
+      tier: u.tier || 1,
       is_admin: !!u.is_admin,
       is_suspended: !!u.is_suspended,
       is_blocked: !!u.is_blocked,
@@ -1221,11 +1224,13 @@ const AdminPanel = ({ user, setUser }) => {
       await axios.put(
         `${API}/admin/users/${selectedUser.id}`,
         {
-          full_name: editUser.full_name,
+          first_name: editUser.first_name,
+          last_name: editUser.last_name,
           email: editUser.email,
           phone: editUser.phone,
           ngn_balance: parseFloat(editUser.ngn_balance) || 0,
           usd_balance: parseFloat(editUser.usd_balance) || 0,
+          tier: parseInt(editUser.tier) || 1,
           is_admin: !!editUser.is_admin,
           is_suspended: !!editUser.is_suspended,
           is_blocked: !!editUser.is_blocked,
