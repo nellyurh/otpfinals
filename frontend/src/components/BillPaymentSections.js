@@ -1527,6 +1527,57 @@ function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, 
   const [pinError, setPinError] = useState('');
 
   const MIN_WITHDRAWAL = 1000;
+  const userTier = user?.tier || 1;
+  const isTier3 = userTier >= 3;
+
+  // Show Tier 3 requirement message if not verified
+  if (!isTier3) {
+    return (
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Shield className="w-6 h-6 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-slate-900 mb-1">Tier 3 Verification Required</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Bank transfers are only available for Tier 3 verified users. Complete your KYC verification to unlock this feature.
+            </p>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-slate-500">Your current tier:</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                userTier === 1 ? 'bg-slate-100 text-slate-700' :
+                userTier === 2 ? 'bg-blue-100 text-blue-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                Tier {userTier}
+              </span>
+            </div>
+            <div className="mt-4 p-3 bg-white/80 rounded-lg border border-amber-100">
+              <p className="text-xs text-slate-600 mb-2">To upgrade to Tier 3:</p>
+              <ul className="text-xs text-slate-500 space-y-1">
+                <li className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 text-[10px] flex items-center justify-center">1</span>
+                  Verify your BVN
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 text-[10px] flex items-center justify-center">2</span>
+                  Verify your NIN
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 text-[10px] flex items-center justify-center">3</span>
+                  Take a selfie for verification
+                </li>
+              </ul>
+            </div>
+            <p className="text-xs text-amber-600 mt-3">
+              Go to <strong>Profile → Account Verification</strong> to complete KYC
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Get tier limit
   const getTierLimit = () => {
