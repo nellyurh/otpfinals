@@ -6284,11 +6284,22 @@ async def validate_bank_account(bank_code: str, account_number: str, user: dict 
 
 @api_router.post("/banks/transfer")
 async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(get_current_user)):
-    """Transfer funds from wallet to bank account"""
+    """Transfer funds from wallet to bank account - Tier 3 users only"""
     try:
+        # Check Tier 3 requirement
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user_tier = db_user.get('tier', 1)
+        if user_tier < 3:
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Bank transfers are only available for Tier 3 verified users. You are currently Tier {user_tier}. Please complete KYC verification to unlock this feature."
+            )
+        
         # Verify PIN
-        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'transaction_pin_hash': 1})
-        if not db_user or not db_user.get('transaction_pin_hash'):
+        if not db_user.get('transaction_pin_hash'):
             raise HTTPException(status_code=400, detail="Please set up your transaction PIN first in Profile Settings")
         
         if not verify_password(request.pin, db_user['transaction_pin_hash']):
@@ -6300,13 +6311,12 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
         if request.amount < MINIMUM_WITHDRAWAL:
             raise HTTPException(status_code=400, detail=f"Minimum withdrawal is ₦{MINIMUM_WITHDRAWAL:,}")
         
-        # Check tier limits
-        tier = user.get('tier', 1)
+        # Check tier limits (Tier 3 has 2M limit)
         tier_limits = {1: 10000, 2: 100000, 3: 2000000}
-        if request.amount > tier_limits.get(tier, 10000):
+        if request.amount > tier_limits.get(user_tier, 10000):
             raise HTTPException(
                 status_code=400, 
-                detail=f"Amount exceeds your Tier {tier} limit of ₦{tier_limits[tier]:,}. Upgrade your KYC to increase limits."
+                detail=f"Amount exceeds your Tier {user_tier} limit of ₦{tier_limits[user_tier]:,}."
             )
         
         # Get fee from Payscribe - correct endpoint: payouts/fee/?amount=X&currency=ngn
