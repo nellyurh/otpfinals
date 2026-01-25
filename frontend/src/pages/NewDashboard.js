@@ -2114,6 +2114,8 @@ const NewDashboard = () => {
           toast.success('Tier 2 verified! Your limit is now ₦100,000');
           setUser({ ...user, tier: 2, bvn: bvn });
           fetchProfile();
+        } else {
+          toast.error(response.data.message || 'Tier 2 upgrade failed');
         }
       } catch (error) {
         toast.error(error.response?.data?.detail || 'Tier 2 submission failed');
