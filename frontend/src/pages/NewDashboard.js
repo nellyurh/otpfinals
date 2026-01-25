@@ -1947,6 +1947,22 @@ const NewDashboard = () => {
     const [nin, setNin] = useState('');
     const [kycPhone, setKycPhone] = useState(user.phone || '');
     const [dob, setDob] = useState('');
+    const [address, setAddress] = useState(user.address || '');
+    
+    // First/Last name for profile (editable only before Tier 2)
+    const [firstName, setFirstName] = useState(user.first_name || '');
+    const [lastName, setLastName] = useState(user.last_name || '');
+    
+    // Selfie camera states
+    const [showCamera, setShowCamera] = useState(false);
+    const [selfieImage, setSelfieImage] = useState(null);
+    const [cameraError, setCameraError] = useState('');
+    const [isCapturing, setIsCapturing] = useState(false);
+    const [livenessCheck, setLivenessCheck] = useState(''); // 'blink', 'turn', 'smile'
+    const [livenessVerified, setLivenessVerified] = useState(false);
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const streamRef = useRef(null);
     
     // Verification popup states
     const [showVerificationPopup, setShowVerificationPopup] = useState(false);
@@ -1958,8 +1974,9 @@ const NewDashboard = () => {
     const [verificationSuccess, setVerificationSuccess] = useState('');
 
     const primaryColor = branding.primary_color_hex || '#059669';
+    const accentColor = branding.accent_color_hex || '#7c3aed';
     const userTier = user.tier || 1;
-    const KYC_FEE = 100;
+    const KYC_FEE = 100; // Total fee for Express KYC (₦100)
 
     const handleUpdateProfile = async () => {
       if (!fullName.trim()) {
