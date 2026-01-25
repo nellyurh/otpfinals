@@ -1979,19 +1979,91 @@ const NewDashboard = () => {
     const KYC_FEE = 100; // Total fee for Express KYC (₦100)
 
     const handleUpdateProfile = async () => {
-      if (!fullName.trim()) {
-        toast.error('Full name is required');
+      if (!firstName.trim() || !lastName.trim()) {
+        toast.error('First and Last name are required');
         return;
       }
       setSavingProfile(true);
       try {
-        const response = await axios.put(`${API}/api/user/profile`, { full_name: fullName, phone: phone }, axiosConfig);
-        setUser({ ...user, full_name: fullName, phone: phone });
+        const fullNameCombined = `${firstName.trim()} ${lastName.trim()}`;
+        const response = await axios.put(`${API}/api/user/profile`, { 
+          full_name: fullNameCombined, 
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          phone: phone,
+          address: address
+        }, axiosConfig);
+        setUser({ ...user, full_name: fullNameCombined, first_name: firstName.trim(), last_name: lastName.trim(), phone: phone, address: address });
         toast.success('Profile updated successfully');
       } catch (error) {
         toast.error(error.response?.data?.detail || 'Failed to update profile');
       } finally {
         setSavingProfile(false);
+      }
+    };
+    
+    // Camera functions for selfie capture
+    const startCamera = async () => {
+      setCameraError('');
+      setLivenessCheck('blink');
+      setLivenessVerified(false);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
+        });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setShowCamera(true);
+      } catch (err) {
+        setCameraError('Camera access denied. Please allow camera access to take a selfie.');
+      }
+    };
+    
+    const stopCamera = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      setShowCamera(false);
+      setLivenessCheck('');
+      setLivenessVerified(false);
+    };
+    
+    const captureSelfie = () => {
+      if (!livenessVerified) {
+        toast.error('Please complete the liveness check first');
+        return;
+      }
+      setIsCapturing(true);
+      setTimeout(() => {
+        if (videoRef.current && canvasRef.current) {
+          const canvas = canvasRef.current;
+          const video = videoRef.current;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0);
+          const imageData = canvas.toDataURL('image/jpeg', 0.8);
+          setSelfieImage(imageData);
+          stopCamera();
+        }
+        setIsCapturing(false);
+      }, 500);
+    };
+    
+    // Simulate liveness check - in production this would use face detection
+    const performLivenessCheck = () => {
+      if (livenessCheck === 'blink') {
+        toast.success('Blink detected! Now turn your head slightly.');
+        setLivenessCheck('turn');
+      } else if (livenessCheck === 'turn') {
+        toast.success('Movement detected! Now smile.');
+        setLivenessCheck('smile');
+      } else if (livenessCheck === 'smile') {
+        toast.success('Liveness verified! You can now capture your selfie.');
+        setLivenessVerified(true);
       }
     };
 
