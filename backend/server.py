@@ -6032,9 +6032,16 @@ async def validate_bank_account(bank_code: str, account_number: str, user: dict 
 async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(get_current_user)):
     """Transfer funds from wallet to bank account"""
     try:
+        # Verify PIN
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'transaction_pin_hash': 1})
+        if not db_user or not db_user.get('transaction_pin_hash'):
+            raise HTTPException(status_code=400, detail="Please set up your transaction PIN first in Profile Settings")
+        
+        if not verify_password(request.pin, db_user['transaction_pin_hash']):
+            raise HTTPException(status_code=400, detail="Invalid transaction PIN")
+        
         # Validate amount
         MINIMUM_WITHDRAWAL = 1000
-        WITHDRAWAL_FEE = 50  # ₦50 transfer fee
         
         if request.amount < MINIMUM_WITHDRAWAL:
             raise HTTPException(status_code=400, detail=f"Minimum withdrawal is ₦{MINIMUM_WITHDRAWAL:,}")
@@ -6047,6 +6054,13 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
                 status_code=400, 
                 detail=f"Amount exceeds your Tier {tier} limit of ₦{tier_limits[tier]:,}. Upgrade your KYC to increase limits."
             )
+        
+        # Get fee from Payscribe
+        fee_result = await payscribe_request(f'payout/fee?amount={request.amount}', 'GET')
+        WITHDRAWAL_FEE = 50  # Default fee
+        if fee_result and fee_result.get('status'):
+            fee_data = fee_result.get('message', {}).get('details', {})
+            WITHDRAWAL_FEE = fee_data.get('fee', 50)
         
         total_deduction = request.amount + WITHDRAWAL_FEE
         
