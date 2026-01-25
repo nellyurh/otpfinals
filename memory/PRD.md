@@ -28,7 +28,42 @@
 ## Original Problem Statement
 Build a full-stack OTP service platform with JWT auth, wallet system, multiple payment gateways, and admin panel.
 
-## Latest Updates (January 24, 2026)
+## Latest Updates (January 25, 2026)
+
+### Session 16 - KYC System + Bills Payment Enhancements
+
+**KYC Verification System (NEW):**
+1. **Tier System**:
+   - Tier 1: ₦10,000 limit (default, no verification)
+   - Tier 2: ₦100,000 limit (BVN stored, not verified)
+   - Tier 3: ₦2,000,000 limit (Express KYC - BVN + NIN lookup via Payscribe)
+2. **Express KYC** (Tier 3):
+   - ₦100 fee per lookup (₦200 total)
+   - BVN verification: matches phone, DOB, names
+   - NIN verification: matches DOB, names
+   - Animated popup showing verification progress
+3. **KYC moved to Profile Settings tab** - removed from sidebar
+
+**Registration Form Updated:**
+1. Separate First Name and Last Name fields (side by side)
+2. Required for name matching during KYC verification
+
+**Bills Payment with Betting:**
+1. Bills Payment landing page now includes 5 services:
+   - Buy Data, Electricity, TV Subscription, Betting, Send Money
+2. Betting sub-section with platform logos (Bet9ja, SportyBet, 1xBet, Betway, BetKing)
+
+**Virtual Cards Tier 3 Restriction:**
+1. Only Tier 3 users can access Virtual Cards
+2. Lower tiers see "Tier 3 Required" with upgrade button
+
+**New API Endpoints:**
+- `POST /api/kyc/tier2/submit` - Submit BVN for Tier 2
+- `POST /api/kyc/tier3/verify-bvn` - Verify BVN via Payscribe (₦100 fee)
+- `POST /api/kyc/tier3/verify-nin` - Verify NIN via Payscribe (₦100 fee)
+- `GET /api/kyc/status` - Get KYC verification status
+
+## Previous Updates (January 24, 2026)
 
 ### Session 15 - P0/P1 Feature Implementation (Revised)
 
