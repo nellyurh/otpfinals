@@ -5913,26 +5913,21 @@ async def get_recent_transfers(user: dict = Depends(get_current_user)):
 
 # ============ Bank Transfer (Withdrawal) ============
 
-NIGERIAN_BANKS = [
+# Fallback bank list (used if Payscribe API fails)
+FALLBACK_BANKS = [
     {"code": "044", "name": "Access Bank"},
     {"code": "023", "name": "Citibank Nigeria"},
-    {"code": "063", "name": "Diamond Bank"},
     {"code": "050", "name": "Ecobank Nigeria"},
-    {"code": "084", "name": "Enterprise Bank"},
     {"code": "070", "name": "Fidelity Bank"},
     {"code": "011", "name": "First Bank of Nigeria"},
     {"code": "214", "name": "First City Monument Bank"},
     {"code": "058", "name": "Guaranty Trust Bank"},
     {"code": "030", "name": "Heritage Bank"},
-    {"code": "301", "name": "Jaiz Bank"},
     {"code": "082", "name": "Keystone Bank"},
-    {"code": "526", "name": "Parallex Bank"},
     {"code": "076", "name": "Polaris Bank"},
     {"code": "101", "name": "Providus Bank"},
     {"code": "221", "name": "Stanbic IBTC Bank"},
-    {"code": "068", "name": "Standard Chartered Bank"},
     {"code": "232", "name": "Sterling Bank"},
-    {"code": "100", "name": "Suntrust Bank"},
     {"code": "032", "name": "Union Bank of Nigeria"},
     {"code": "033", "name": "United Bank For Africa"},
     {"code": "215", "name": "Unity Bank"},
@@ -5946,8 +5941,52 @@ NIGERIAN_BANKS = [
 
 @api_router.get("/banks/list")
 async def get_nigerian_banks(user: dict = Depends(get_current_user)):
-    """Get list of Nigerian banks"""
-    return {"success": True, "banks": NIGERIAN_BANKS}
+    """Get list of Nigerian banks from Payscribe API"""
+    try:
+        # Fetch banks from Payscribe
+        result = await payscribe_request('payout/banks', 'GET')
+        
+        if result and result.get('status'):
+            banks_data = result.get('message', {}).get('details', [])
+            if banks_data:
+                banks = [{'code': b.get('code'), 'name': b.get('name')} for b in banks_data if b.get('code') and b.get('name')]
+                return {"success": True, "banks": banks, "source": "payscribe"}
+        
+        # Fallback to hardcoded list
+        logger.warning("Failed to fetch banks from Payscribe, using fallback list")
+        return {"success": True, "banks": FALLBACK_BANKS, "source": "fallback"}
+    except Exception as e:
+        logger.error(f"Error fetching banks: {str(e)}")
+        return {"success": True, "banks": FALLBACK_BANKS, "source": "fallback"}
+
+
+@api_router.get("/banks/transfer-fee")
+async def get_transfer_fee(amount: float, user: dict = Depends(get_current_user)):
+    """Get transfer fee from Payscribe for a given amount"""
+    try:
+        # Fetch fee from Payscribe
+        result = await payscribe_request(f'payout/fee?amount={amount}', 'GET')
+        
+        if result and result.get('status'):
+            fee_data = result.get('message', {}).get('details', {})
+            return {
+                "success": True,
+                "fee": fee_data.get('fee', 50),
+                "total": amount + fee_data.get('fee', 50),
+                "source": "payscribe"
+            }
+        
+        # Fallback to default fee
+        default_fee = 50
+        return {
+            "success": True,
+            "fee": default_fee,
+            "total": amount + default_fee,
+            "source": "default"
+        }
+    except Exception as e:
+        logger.error(f"Error fetching transfer fee: {str(e)}")
+        return {"success": True, "fee": 50, "total": amount + 50, "source": "default"}
 
 
 class BankTransferRequest(BaseModel):
@@ -5955,6 +5994,7 @@ class BankTransferRequest(BaseModel):
     account_number: str
     account_name: str
     amount: float
+    pin: str
     narration: Optional[str] = "Wallet withdrawal"
 
 
@@ -5962,8 +6002,11 @@ class BankTransferRequest(BaseModel):
 async def validate_bank_account(bank_code: str, account_number: str, user: dict = Depends(get_current_user)):
     """Validate bank account number using Payscribe"""
     try:
+        if len(account_number) != 10:
+            return {'valid': False, 'message': 'Account number must be 10 digits'}
+        
         # Use Payscribe account lookup API
-        endpoint = f'account/lookup?bank_code={bank_code}&account_number={account_number}'
+        endpoint = f'payout/account/lookup?bank_code={bank_code}&account_number={account_number}'
         result = await payscribe_request(endpoint, 'GET')
         
         if result and result.get('status'):
@@ -5971,25 +6014,18 @@ async def validate_bank_account(bank_code: str, account_number: str, user: dict 
             return {
                 'valid': True,
                 'account_name': account_data.get('account_name', 'Unknown'),
-                'bank_name': next((b['name'] for b in NIGERIAN_BANKS if b['code'] == bank_code), 'Unknown Bank')
+                'bank_name': account_data.get('bank_name', 'Unknown Bank')
             }
         
-        # Fallback - return account number without validation if API fails
-        return {
-            'valid': True,
-            'account_name': 'Account validation unavailable',
-            'bank_name': next((b['name'] for b in NIGERIAN_BANKS if b['code'] == bank_code), 'Unknown Bank'),
-            'needs_verification': True
-        }
+        # Check for error message
+        error_msg = result.get('message') if result else 'Validation failed'
+        if isinstance(error_msg, str):
+            return {'valid': False, 'message': error_msg}
+        
+        return {'valid': False, 'message': 'Account validation failed. Please check the account number.'}
     except Exception as e:
         logger.error(f"Bank account validation error: {str(e)}")
-        # Still allow the user to proceed
-        return {
-            'valid': True,
-            'account_name': 'Unable to verify - please confirm manually',
-            'bank_name': next((b['name'] for b in NIGERIAN_BANKS if b['code'] == bank_code), 'Unknown Bank'),
-            'needs_verification': True
-        }
+        return {'valid': False, 'message': 'Account validation failed. Please try again.'}
 
 
 @api_router.post("/banks/transfer")
