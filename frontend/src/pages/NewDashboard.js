@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Receipt, Wallet, CreditCard, History, UserCircle, 
   MessageSquare, Gift, Settings, ChevronDown, Search, Phone, Plus,
-  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera
+  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
