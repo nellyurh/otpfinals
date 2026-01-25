@@ -6366,7 +6366,9 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
         
         # Attempt Payscribe payout (in production this should be async/webhook based)
         try:
-            result = await payscribe_request('payout/initiate', 'POST', payout_data)
+            result = await payscribe_request('payouts/transfer', 'POST', payout_data)
+            
+            logger.info(f"Payscribe payout result for {transfer_ref}: {result}")
             
             if result and result.get('status'):
                 # Update transaction to completed
