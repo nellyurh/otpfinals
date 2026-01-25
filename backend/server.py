@@ -9655,11 +9655,107 @@ class Tier2KYCRequest(BaseModel):
     bvn: str
     phone: str
 
+class Tier3Address(BaseModel):
+    street: str
+    city: str
+    state: str
+    postal_code: str = "100001"  # Default Lagos postal code
+
 class Tier3KYCRequest(BaseModel):
     bvn: str
     nin: str
     phone: str
     dob: str  # YYYY-MM-DD format
+    address: Optional[Tier3Address] = None  # Address for Payscribe customer creation
+
+
+async def create_payscribe_customer(user: dict, dob: str, address: Optional[Tier3Address] = None) -> Optional[str]:
+    """
+    Create a customer on Payscribe after successful Tier 3 verification.
+    Returns the customer_id if successful, None otherwise.
+    """
+    try:
+        # Get full user data from DB
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        
+        if not db_user:
+            logger.error(f"User not found for Payscribe customer creation: {user['id']}")
+            return None
+        
+        # Build photo URL from selfie filename
+        selfie_filename = db_user.get('selfie_filename')
+        photo_url = None
+        if selfie_filename:
+            # Use the API endpoint to serve the selfie
+            api_base = os.environ.get('REACT_APP_BACKEND_URL', 'https://api.payscribe.ng')
+            photo_url = f"{api_base}/api/kyc/uploads/{user['id']}/{selfie_filename}"
+        
+        # Prepare address - use provided address or default
+        addr = address or Tier3Address(
+            street=db_user.get('address', 'Lagos, Nigeria'),
+            city="Lagos",
+            state="Lagos",
+            postal_code="100001"
+        )
+        
+        # Build customer creation payload
+        payload = {
+            "first_name": db_user.get('first_name', ''),
+            "last_name": db_user.get('last_name', ''),
+            "phone": f"+234{db_user.get('phone', '').lstrip('0')[-10:]}",  # Format: +234XXXXXXXXXX
+            "email": db_user.get('email', ''),
+            "dob": dob,  # YYYY-MM-DD format
+            "country": "NG",
+            "address": {
+                "street": addr.street,
+                "city": addr.city,
+                "state": addr.state,
+                "country": "NG",
+                "postal_code": addr.postal_code
+            },
+            "identification_type": "BVN",
+            "identification_number": db_user.get('bvn', ''),
+            "photo": photo_url or "https://via.placeholder.com/200",  # Fallback if no selfie
+            "identity": {
+                "type": "NIN",
+                "number": db_user.get('nin', ''),
+                "country": "NG",
+                "image": photo_url or "https://via.placeholder.com/200"  # Use selfie as fallback
+            }
+        }
+        
+        logger.info(f"Creating Payscribe customer for user {user['id']}: {db_user.get('email')}")
+        
+        # Call Payscribe API - use PUBLIC key for customer creation
+        result = await payscribe_request('customers/create/full', 'POST', payload, use_public_key=True)
+        
+        logger.info(f"Payscribe customer creation response: {result}")
+        
+        if result and result.get('status'):
+            message = result.get('message', {})
+            customer_id = message.get('customer_id')
+            
+            if customer_id:
+                # Store customer_id in user record
+                await db.users.update_one(
+                    {'id': user['id']},
+                    {'$set': {
+                        'payscribe_customer_id': customer_id,
+                        'payscribe_customer_created_at': datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+                logger.info(f"Payscribe customer created successfully: {customer_id}")
+                return customer_id
+            else:
+                logger.warning(f"No customer_id in Payscribe response: {result}")
+        else:
+            logger.error(f"Payscribe customer creation failed: {result}")
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"Payscribe customer creation error: {str(e)}")
+        return None
 
 @api_router.post("/kyc/tier2/submit")
 async def submit_tier2_kyc(request: Tier2KYCRequest, user: dict = Depends(get_current_user)):
