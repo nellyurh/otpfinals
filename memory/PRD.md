@@ -1,6 +1,14 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-01-25 (Session 5)**: Virtual Cards + Payscribe Customer + Tier 3 Restrictions
+  - NEW: Automatic Payscribe customer creation on Tier 3 KYC verification
+  - NEW: Bank Transfer restricted to Tier 3 users only
+  - NEW: Complete Virtual Cards system with Payscribe integration
+  - NEW: Card creation, funding, withdrawal features
+  - NEW: Card fees (creation, funding, transaction, decline, monthly, withdrawal)
+  - NEW: Admin Panel → Card Fees section for fee management
+  - NEW: Card webhooks for transaction events
 - **2026-01-25 (Session 4)**: Payscribe Payout API Fix + Admin Payouts Management
   - FIXED: Bank list now uses correct Payscribe endpoint (`payouts/bank/list`)
   - FIXED: Transfer fee now uses correct endpoint (`payouts/fee/?amount=X&currency=ngn`)
@@ -11,23 +19,55 @@
   - NEW: Admin can verify, complete, or refund payouts
   - NEW: `/api/payouts/verify/{ref}` - Verify payout status with Payscribe
 - **2026-01-25 (Session 3)**: Transaction PIN System + Improved Bank Transfer Flow
-  - Implemented complete Transaction PIN management system
-  - PIN set, change, verify, reset with email code + BVN verification
-  - Security & PIN tab added to Profile Settings
-  - Bank list now fetched from Payscribe API (with fallback)
-  - Auto account lookup when 10-digit account number entered
-  - Transfer fee fetched from Payscribe API
-  - PIN confirmation modal for all bank transfers
 - **2026-01-25 (Session 2)**: Payscribe API Fixes + Page Toggles + Payout Webhook
-  - Improved Payscribe API error handling
-  - Page toggles for all bill payment services
-  - Implemented Payscribe payout webhook endpoint
 - **2026-01-25 (Session 1)**: KYC System Complete + Bank Transfer Feature + Admin Enhancements
-  - Three-tier KYC system with BVN/NIN verification
-  - Bank Transfer withdrawal feature
-  - Admin Panel tier control and KYC viewing
 
 ## Latest Updates (January 25, 2026)
+
+### Session 5 - Virtual Cards System
+
+**Payscribe Customer Creation:**
+- Automatic customer creation when user completes Tier 3 KYC verification
+- Customer ID stored in user record (`payscribe_customer_id`)
+- Required for virtual card services
+
+**Tier 3 Restrictions:**
+- Bank transfers now require Tier 3 verification
+- Virtual cards require Tier 3 verification
+- Frontend shows "Tier 3 Required" message with upgrade instructions
+
+**Virtual Cards Features:**
+- Create VISA/Mastercard virtual cards
+- Fund cards from USD balance
+- Withdraw from card to USD balance
+- Freeze/unfreeze cards
+- View card details and transactions
+
+**Card Fee Structure (Admin Adjustable):**
+| Fee Type | Default | Description |
+|----------|---------|-------------|
+| Creation Fee | $2.50 | One-time fee to create a card |
+| Funding Fee | $0.30 | Fee per funding operation |
+| Transaction Fee | $0.15 | Fee per successful transaction |
+| Declined Fee | $0.50 | Fee when transaction is declined |
+| Monthly Fee | $0.50 | Monthly maintenance fee |
+| Withdrawal Fee | $0.10 | Fee to withdraw from card |
+
+**New API Endpoints:**
+- `GET /api/cards` - List user's virtual cards
+- `POST /api/cards/create` - Create a new virtual card
+- `POST /api/cards/fund` - Fund a card from USD balance
+- `POST /api/cards/withdraw` - Withdraw from card to USD balance
+- `GET /api/cards/{card_id}` - Get card details
+- `GET /api/cards/{card_id}/transactions` - Get card transactions
+- `POST /api/cards/{card_id}/freeze` - Freeze a card
+- `POST /api/cards/{card_id}/unfreeze` - Unfreeze a card
+- `POST /api/webhooks/payscribe/cards` - Card webhook handler
+
+**Admin Endpoints:**
+- `GET /api/admin/cards` - List all virtual cards
+- `GET /api/admin/card-fees` - Get card fee configuration
+- `PUT /api/admin/card-fees` - Update card fees
 
 ### Session 4 - Payscribe Payout API Integration Fix
 
