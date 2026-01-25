@@ -4360,38 +4360,123 @@ const AdminPanel = ({ user, setUser }) => {
                                         <div className="space-y-4 text-sm">
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                              <Label className="text-xs">Full name</Label>
-                                              <Input value={editUser?.full_name || u.full_name || ''} onChange={(e) => setEditUser({ ...(editUser || {}), full_name: e.target.value, email: editUser?.email ?? u.email, phone: editUser?.phone ?? u.phone, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Label className="text-xs">First Name</Label>
+                                              <Input 
+                                                value={editUser?.first_name ?? u.first_name ?? ''} 
+                                                onChange={(e) => setEditUser({ ...editUser, first_name: e.target.value })} 
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label className="text-xs">Last Name</Label>
+                                              <Input 
+                                                value={editUser?.last_name ?? u.last_name ?? ''} 
+                                                onChange={(e) => setEditUser({ ...editUser, last_name: e.target.value })} 
+                                              />
                                             </div>
                                             <div>
                                               <Label className="text-xs">Email</Label>
-                                              <Input value={editUser?.email || u.email || ''} onChange={(e) => setEditUser({ ...(editUser || {}), email: e.target.value, full_name: editUser?.full_name ?? u.full_name, phone: editUser?.phone ?? u.phone, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Input 
+                                                value={editUser?.email ?? u.email ?? ''} 
+                                                onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} 
+                                              />
                                             </div>
                                             <div>
                                               <Label className="text-xs">Phone</Label>
-                                              <Input value={editUser?.phone || u.phone || ''} onChange={(e) => setEditUser({ ...(editUser || {}), phone: e.target.value, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} placeholder="+234..." />
+                                              <Input 
+                                                value={editUser?.phone ?? u.phone ?? ''} 
+                                                onChange={(e) => setEditUser({ ...editUser, phone: e.target.value })} 
+                                                placeholder="+234..." 
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label className="text-xs">Account Tier</Label>
+                                              <select
+                                                value={editUser?.tier ?? u.tier ?? 1}
+                                                onChange={(e) => setEditUser({ ...editUser, tier: parseInt(e.target.value) })}
+                                                className="w-full h-9 px-3 text-sm rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                              >
+                                                <option value={1}>Tier 1 (₦10,000)</option>
+                                                <option value={2}>Tier 2 (₦100,000)</option>
+                                                <option value={3}>Tier 3 (₦2,000,000)</option>
+                                              </select>
                                             </div>
                                             <div>
                                               <Label className="text-xs">NGN balance</Label>
-                                              <Input type="number" value={editUser?.ngn_balance ?? (u.ngn_balance || 0)} onChange={(e) => setEditUser({ ...(editUser || {}), ngn_balance: e.target.value, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Input 
+                                                type="number" 
+                                                value={editUser?.ngn_balance ?? u.ngn_balance ?? 0} 
+                                                onChange={(e) => setEditUser({ ...editUser, ngn_balance: e.target.value })} 
+                                              />
                                             </div>
                                             <div>
                                               <Label className="text-xs">USD balance</Label>
-                                              <Input type="number" value={editUser?.usd_balance ?? (u.usd_balance || 0)} onChange={(e) => setEditUser({ ...(editUser || {}), usd_balance: e.target.value, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Input 
+                                                type="number" 
+                                                value={editUser?.usd_balance ?? u.usd_balance ?? 0} 
+                                                onChange={(e) => setEditUser({ ...editUser, usd_balance: e.target.value })} 
+                                              />
                                             </div>
                                           </div>
 
+                                          {/* KYC Data View */}
+                                          {(u.bvn || u.nin || u.selfie_url || u.id_document_url) && (
+                                            <div className="bg-slate-50 rounded-lg p-3 space-y-2">
+                                              <Label className="text-xs font-semibold text-slate-700">KYC Data</Label>
+                                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                                {u.bvn && (
+                                                  <div>
+                                                    <span className="text-slate-500">BVN:</span>{' '}
+                                                    <span className="font-medium">{u.bvn.slice(0, 4)}****{u.bvn.slice(-3)}</span>
+                                                    {u.bvn_verified && <span className="ml-1 text-emerald-600">✓</span>}
+                                                  </div>
+                                                )}
+                                                {u.nin && (
+                                                  <div>
+                                                    <span className="text-slate-500">NIN:</span>{' '}
+                                                    <span className="font-medium">{u.nin.slice(0, 4)}****{u.nin.slice(-3)}</span>
+                                                    {u.nin_verified && <span className="ml-1 text-emerald-600">✓</span>}
+                                                  </div>
+                                                )}
+                                                {u.address && (
+                                                  <div className="col-span-2">
+                                                    <span className="text-slate-500">Address:</span>{' '}
+                                                    <span className="font-medium">{u.address}</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                              {(u.selfie_url || u.id_document_url) && (
+                                                <div className="flex gap-2 mt-2">
+                                                  {u.selfie_url && (
+                                                    <a href={u.selfie_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View Selfie</a>
+                                                  )}
+                                                  {u.id_document_url && (
+                                                    <a href={u.id_document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View ID</a>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+
                                           <div className="flex items-center gap-6">
                                             <div className="flex items-center gap-2">
-                                              <Checkbox checked={editUser?.is_admin ?? !!u.is_admin} onCheckedChange={(v) => setEditUser({ ...(editUser || {}), is_admin: !!v, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_suspended: editUser?.is_suspended ?? !!u.is_suspended, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Checkbox 
+                                                checked={editUser?.is_admin ?? !!u.is_admin} 
+                                                onCheckedChange={(v) => setEditUser({ ...editUser, is_admin: !!v })} 
+                                              />
                                               <span className="text-xs">Admin</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <Checkbox checked={editUser?.is_suspended ?? !!u.is_suspended} onCheckedChange={(v) => setEditUser({ ...(editUser || {}), is_suspended: !!v, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_blocked: editUser?.is_blocked ?? !!u.is_blocked })} />
+                                              <Checkbox 
+                                                checked={editUser?.is_suspended ?? !!u.is_suspended} 
+                                                onCheckedChange={(v) => setEditUser({ ...editUser, is_suspended: !!v })} 
+                                              />
                                               <span className="text-xs">Suspended</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <Checkbox checked={editUser?.is_blocked ?? !!u.is_blocked} onCheckedChange={(v) => setEditUser({ ...(editUser || {}), is_blocked: !!v, full_name: editUser?.full_name ?? u.full_name, email: editUser?.email ?? u.email, ngn_balance: editUser?.ngn_balance ?? (u.ngn_balance || 0), usd_balance: editUser?.usd_balance ?? (u.usd_balance || 0), is_admin: editUser?.is_admin ?? !!u.is_admin, is_suspended: editUser?.is_suspended ?? !!u.is_suspended })} />
+                                              <Checkbox 
+                                                checked={editUser?.is_blocked ?? !!u.is_blocked} 
+                                                onCheckedChange={(v) => setEditUser({ ...editUser, is_blocked: !!v })} 
+                                              />
                                               <span className="text-xs">Blocked</span>
                                             </div>
                                           </div>
