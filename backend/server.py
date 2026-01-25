@@ -8634,6 +8634,257 @@ async def get_exchange_rate(user: dict = Depends(get_current_user)):
     }
 
 
+# ============ KYC Verification Endpoints ============
+
+KYC_VERIFICATION_FEE = 100  # ₦100 per lookup
+
+class Tier2KYCRequest(BaseModel):
+    bvn: str
+    phone: str
+
+class Tier3KYCRequest(BaseModel):
+    bvn: str
+    nin: str
+    phone: str
+    dob: str  # YYYY-MM-DD format
+
+@api_router.post("/kyc/tier2/submit")
+async def submit_tier2_kyc(request: Tier2KYCRequest, user: dict = Depends(get_current_user)):
+    """Submit Tier 2 KYC - Store BVN without verification"""
+    try:
+        if len(request.bvn) != 11:
+            raise HTTPException(status_code=400, detail="BVN must be 11 digits")
+        
+        # Just store BVN without verification for Tier 2
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$set': {
+                'bvn': request.bvn,
+                'tier': 2,
+                'kyc_phone': request.phone
+            }}
+        )
+        
+        return {
+            'success': True,
+            'message': 'Tier 2 verification complete',
+            'tier': 2
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Tier 2 KYC error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/kyc/tier3/verify-bvn")
+async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(get_current_user)):
+    """Verify BVN via Payscribe lookup for Tier 3 Express KYC - costs ₦100"""
+    try:
+        if len(request.bvn) != 11:
+            raise HTTPException(status_code=400, detail="BVN must be 11 digits")
+        
+        # Check if user has enough balance for the fee
+        if user.get('ngn_balance', 0) < KYC_VERIFICATION_FEE:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. KYC verification costs ₦{KYC_VERIFICATION_FEE}")
+        
+        # Call Payscribe BVN lookup
+        endpoint = f'lookup/bvn?bvn={request.bvn}'
+        result = await payscribe_request(endpoint, 'GET')
+        
+        if not result or not result.get('status'):
+            raise HTTPException(status_code=400, detail="BVN lookup failed. Please check your BVN and try again.")
+        
+        bvn_data = result.get('message', {}).get('details', {})
+        
+        # Verify the data matches
+        user_first_name = user.get('first_name', '').lower().strip()
+        user_last_name = user.get('last_name', '').lower().strip()
+        user_phone = user.get('phone', '').replace('+234', '0').replace('234', '0')
+        
+        bvn_first_name = bvn_data.get('first_name', '').lower().strip()
+        bvn_last_name = bvn_data.get('last_name', '').lower().strip()
+        bvn_phone = bvn_data.get('phone', '').replace('+234', '0').replace('234', '0')
+        bvn_dob = bvn_data.get('date_of_birth', '')
+        
+        # Check name match (at least first name or last name should match)
+        name_match = (user_first_name in bvn_first_name or bvn_first_name in user_first_name or 
+                      user_last_name in bvn_last_name or bvn_last_name in user_last_name)
+        
+        # Check phone match
+        phone_match = request.phone.replace('+234', '0').replace('234', '0') in bvn_phone or bvn_phone in request.phone
+        
+        # Check DOB match
+        dob_match = request.dob in bvn_dob or bvn_dob in request.dob
+        
+        if not name_match:
+            raise HTTPException(status_code=400, detail="BVN name does not match your registered name")
+        
+        if not phone_match:
+            raise HTTPException(status_code=400, detail="Phone number does not match BVN records")
+        
+        if not dob_match:
+            raise HTTPException(status_code=400, detail="Date of birth does not match BVN records")
+        
+        # Deduct fee
+        await db.users.update_one(
+            {'id': user['id']},
+            {
+                '$inc': {'ngn_balance': -KYC_VERIFICATION_FEE},
+                '$set': {
+                    'bvn': request.bvn,
+                    'bvn_verified': True,
+                    'bvn_verified_at': datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        # Create transaction for the fee
+        fee_tx = Transaction(
+            user_id=user['id'],
+            type='kyc_fee',
+            amount=KYC_VERIFICATION_FEE,
+            currency='NGN',
+            status='completed',
+            reference=f"KYC-BVN-{uuid.uuid4().hex[:8].upper()}",
+            metadata={'service': 'bvn_verification', 'bvn': request.bvn[:4] + '****' + request.bvn[-3:]}
+        )
+        fee_dict = fee_tx.model_dump()
+        fee_dict['created_at'] = fee_dict['created_at'].isoformat()
+        await db.transactions.insert_one(fee_dict)
+        
+        return {
+            'success': True,
+            'message': 'BVN verified successfully',
+            'bvn_verified': True,
+            'matched_data': {
+                'name': f"{bvn_data.get('first_name', '')} {bvn_data.get('last_name', '')}",
+                'phone_match': phone_match,
+                'dob_match': dob_match
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"BVN verification error: {str(e)}")
+        raise HTTPException(status_code=500, detail="BVN verification failed. Please try again.")
+
+@api_router.post("/kyc/tier3/verify-nin")
+async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(get_current_user)):
+    """Verify NIN via Payscribe lookup for Tier 3 Express KYC - costs ₦100"""
+    try:
+        if len(request.nin) != 11:
+            raise HTTPException(status_code=400, detail="NIN must be 11 digits")
+        
+        # Check if BVN is already verified
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        if not db_user.get('bvn_verified'):
+            raise HTTPException(status_code=400, detail="Please verify your BVN first")
+        
+        # Check if user has enough balance for the fee
+        if db_user.get('ngn_balance', 0) < KYC_VERIFICATION_FEE:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. KYC verification costs ₦{KYC_VERIFICATION_FEE}")
+        
+        # Call Payscribe NIN lookup
+        endpoint = f'lookup/nin?nin={request.nin}'
+        result = await payscribe_request(endpoint, 'GET')
+        
+        if not result or not result.get('status'):
+            raise HTTPException(status_code=400, detail="NIN lookup failed. Please check your NIN and try again.")
+        
+        nin_data = result.get('message', {}).get('details', {})
+        
+        # Verify the data matches
+        user_first_name = db_user.get('first_name', '').lower().strip()
+        user_last_name = db_user.get('last_name', '').lower().strip()
+        
+        nin_first_name = nin_data.get('first_name', '').lower().strip()
+        nin_last_name = nin_data.get('last_name', '').lower().strip()
+        nin_dob = nin_data.get('date_of_birth', '') or nin_data.get('birthdate', '')
+        
+        # Check name match
+        name_match = (user_first_name in nin_first_name or nin_first_name in user_first_name or 
+                      user_last_name in nin_last_name or nin_last_name in user_last_name)
+        
+        # Check DOB match
+        dob_match = request.dob in nin_dob or nin_dob in request.dob
+        
+        if not name_match:
+            raise HTTPException(status_code=400, detail="NIN name does not match your registered name")
+        
+        if not dob_match:
+            raise HTTPException(status_code=400, detail="Date of birth does not match NIN records")
+        
+        # Deduct fee and upgrade to Tier 3
+        await db.users.update_one(
+            {'id': user['id']},
+            {
+                '$inc': {'ngn_balance': -KYC_VERIFICATION_FEE},
+                '$set': {
+                    'nin': request.nin,
+                    'nin_verified': True,
+                    'nin_verified_at': datetime.now(timezone.utc).isoformat(),
+                    'tier': 3,
+                    'tier3_verified_at': datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        # Create transaction for the fee
+        fee_tx = Transaction(
+            user_id=user['id'],
+            type='kyc_fee',
+            amount=KYC_VERIFICATION_FEE,
+            currency='NGN',
+            status='completed',
+            reference=f"KYC-NIN-{uuid.uuid4().hex[:8].upper()}",
+            metadata={'service': 'nin_verification', 'nin': request.nin[:4] + '****' + request.nin[-3:]}
+        )
+        fee_dict = fee_tx.model_dump()
+        fee_dict['created_at'] = fee_dict['created_at'].isoformat()
+        await db.transactions.insert_one(fee_dict)
+        
+        await _create_transaction_notification(
+            user['id'],
+            'Tier 3 Verified!',
+            'Congratulations! Your account has been upgraded to Tier 3 with a ₦2,000,000 limit.',
+            metadata={'type': 'kyc_upgrade', 'tier': 3}
+        )
+        
+        return {
+            'success': True,
+            'message': 'NIN verified successfully. Account upgraded to Tier 3!',
+            'nin_verified': True,
+            'tier': 3,
+            'matched_data': {
+                'name': f"{nin_data.get('first_name', '')} {nin_data.get('last_name', '')}",
+                'dob_match': dob_match
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"NIN verification error: {str(e)}")
+        raise HTTPException(status_code=500, detail="NIN verification failed. Please try again.")
+
+@api_router.get("/kyc/status")
+async def get_kyc_status(user: dict = Depends(get_current_user)):
+    """Get user's KYC verification status"""
+    db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+    
+    return {
+        'tier': db_user.get('tier', 1),
+        'bvn_verified': db_user.get('bvn_verified', False),
+        'nin_verified': db_user.get('nin_verified', False),
+        'limits': {
+            1: 10000,
+            2: 100000,
+            3: 2000000
+        },
+        'current_limit': 10000 if db_user.get('tier', 1) == 1 else (100000 if db_user.get('tier', 1) == 2 else 2000000),
+        'verification_fee': KYC_VERIFICATION_FEE
+    }
+
+
 app.include_router(api_router)
 
 # CORS Configuration - Secure settings
