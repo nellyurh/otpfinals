@@ -6558,6 +6558,232 @@ async def payscribe_payout_webhook(request: Request):
         return {"success": False, "message": str(e)}
 
 
+
+# ============ Payscribe Payout Verification ============
+
+@api_router.get("/payouts/verify/{reference}")
+async def verify_payout_status(reference: str, user: dict = Depends(get_current_user)):
+    """Verify payout status from Payscribe API"""
+    try:
+        # First check local transaction
+        transaction = await db.transactions.find_one({'reference': reference, 'user_id': user['id']}, {'_id': 0})
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Call Payscribe verification endpoint
+        result = await payscribe_request(f'payouts/verify/{reference}', 'GET')
+        
+        logger.info(f"Payout verification for {reference}: {result}")
+        
+        if result and result.get('status'):
+            payout_data = result.get('message', {})
+            if isinstance(payout_data, dict):
+                payout_data = payout_data.get('details', payout_data)
+            
+            payout_status = payout_data.get('status', '').lower() if isinstance(payout_data, dict) else ''
+            
+            # Map Payscribe status to our status
+            status_map = {
+                'success': 'completed',
+                'successful': 'completed',
+                'completed': 'completed',
+                'pending': 'processing',
+                'processing': 'processing',
+                'failed': 'failed',
+                'reversed': 'failed'
+            }
+            
+            new_status = status_map.get(payout_status, transaction.get('status', 'processing'))
+            
+            # Update local transaction if status changed
+            if new_status != transaction.get('status'):
+                await db.transactions.update_one(
+                    {'reference': reference},
+                    {'$set': {'status': new_status, 'payscribe_status': payout_status}}
+                )
+            
+            return {
+                'success': True,
+                'reference': reference,
+                'status': new_status,
+                'payscribe_status': payout_status,
+                'amount': transaction.get('amount'),
+                'fee': transaction.get('metadata', {}).get('fee'),
+                'account_number': transaction.get('metadata', {}).get('account_number'),
+                'account_name': transaction.get('metadata', {}).get('account_name'),
+                'created_at': transaction.get('created_at')
+            }
+        
+        # Return local status if Payscribe verification fails
+        return {
+            'success': True,
+            'reference': reference,
+            'status': transaction.get('status', 'processing'),
+            'amount': transaction.get('amount'),
+            'fee': transaction.get('metadata', {}).get('fee'),
+            'account_number': transaction.get('metadata', {}).get('account_number'),
+            'account_name': transaction.get('metadata', {}).get('account_name'),
+            'created_at': transaction.get('created_at'),
+            'note': 'Unable to verify with Payscribe API'
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Payout verification error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Verification failed")
+
+
+@api_router.get("/admin/payouts")
+async def admin_list_payouts(
+    admin: dict = Depends(require_admin),
+    limit: int = 50,
+    status: Optional[str] = None
+):
+    """Get all bank transfer/payout transactions for admin"""
+    try:
+        query = {'type': 'bank_transfer'}
+        if status:
+            query['status'] = status
+        
+        payouts_cursor = db.transactions.find(query, {'_id': 0}).sort('created_at', -1).limit(limit)
+        payouts = await payouts_cursor.to_list(limit)
+        
+        # Enrich with user info
+        for payout in payouts:
+            user = await db.users.find_one({'id': payout.get('user_id')}, {'_id': 0, 'email': 1, 'first_name': 1, 'last_name': 1})
+            if user:
+                payout['user_email'] = user.get('email')
+                payout['user_name'] = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() or user.get('email')
+        
+        return {'success': True, 'payouts': payouts}
+    except Exception as e:
+        logger.error(f"Admin payouts list error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch payouts")
+
+
+@api_router.post("/admin/payouts/{reference}/verify")
+async def admin_verify_payout(reference: str, admin: dict = Depends(require_admin)):
+    """Admin: Manually verify/refresh payout status from Payscribe"""
+    try:
+        transaction = await db.transactions.find_one({'reference': reference}, {'_id': 0})
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Call Payscribe verification
+        result = await payscribe_request(f'payouts/verify/{reference}', 'GET')
+        
+        logger.info(f"Admin payout verification for {reference}: {result}")
+        
+        return {
+            'success': True,
+            'reference': reference,
+            'local_status': transaction.get('status'),
+            'payscribe_response': result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin payout verification error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Verification failed")
+
+
+@api_router.post("/admin/payouts/{reference}/manual-complete")
+async def admin_manual_complete_payout(reference: str, admin: dict = Depends(require_admin)):
+    """Admin: Manually mark a payout as completed"""
+    try:
+        transaction = await db.transactions.find_one({'reference': reference}, {'_id': 0})
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        if transaction.get('status') == 'completed':
+            return {'success': True, 'message': 'Transaction already completed'}
+        
+        # Update transaction to completed
+        await db.transactions.update_one(
+            {'reference': reference},
+            {'$set': {
+                'status': 'completed',
+                'manual_completed_by': admin['id'],
+                'manual_completed_at': datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        # Notify user
+        await _create_transaction_notification(
+            transaction['user_id'],
+            'Bank Transfer Completed',
+            f"Your bank transfer of ₦{transaction.get('amount', 0):,.2f} has been completed.",
+            metadata={'reference': reference, 'type': 'bank_transfer'}
+        )
+        
+        logger.info(f"Admin {admin['email']} manually completed payout {reference}")
+        
+        return {'success': True, 'message': 'Payout marked as completed'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin manual complete error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Operation failed")
+
+
+@api_router.post("/admin/payouts/{reference}/refund")
+async def admin_refund_payout(reference: str, admin: dict = Depends(require_admin)):
+    """Admin: Refund a failed/stuck payout back to user wallet"""
+    try:
+        transaction = await db.transactions.find_one({'reference': reference}, {'_id': 0})
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        if transaction.get('status') == 'refunded':
+            return {'success': True, 'message': 'Transaction already refunded'}
+        
+        if transaction.get('status') == 'completed':
+            raise HTTPException(status_code=400, detail="Cannot refund a completed transaction")
+        
+        # Calculate refund amount (amount + fee)
+        refund_amount = transaction.get('amount', 0) + transaction.get('metadata', {}).get('fee', 0)
+        
+        # Refund to user
+        await db.users.update_one(
+            {'id': transaction['user_id']},
+            {'$inc': {'ngn_balance': refund_amount}}
+        )
+        
+        # Update transaction
+        await db.transactions.update_one(
+            {'reference': reference},
+            {'$set': {
+                'status': 'refunded',
+                'refunded_by': admin['id'],
+                'refunded_at': datetime.now(timezone.utc).isoformat(),
+                'refund_amount': refund_amount
+            }}
+        )
+        
+        # Notify user
+        await _create_transaction_notification(
+            transaction['user_id'],
+            'Bank Transfer Refunded',
+            f"₦{refund_amount:,.2f} has been refunded to your wallet (Ref: {reference})",
+            metadata={'reference': reference, 'type': 'refund'}
+        )
+        
+        logger.info(f"Admin {admin['email']} refunded payout {reference}, amount: ₦{refund_amount}")
+        
+        return {'success': True, 'message': f'Refunded ₦{refund_amount:,.2f} to user wallet'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin refund error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Refund failed")
+
+
+
 @api_router.get("/admin/users")
 async def admin_list_users(admin: dict = Depends(require_admin)):
     """List users for admin view (basic snapshot)."""
