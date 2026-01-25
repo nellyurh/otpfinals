@@ -19,6 +19,7 @@ import requests
 import asyncio
 import hashlib
 import hmac
+import random
 import re
 import shutil
 import phpserialize
