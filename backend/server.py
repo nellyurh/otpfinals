@@ -2453,7 +2453,7 @@ async def change_password(data: ChangePasswordRequest, user: dict = Depends(get_
     if len(data.new_password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
     
-    new_hash = get_password_hash(data.new_password)
+    new_hash = hash_password(data.new_password)
     await db.users.update_one({'id': user['id']}, {'$set': {'password_hash': new_hash}})
     
     return {"success": True, "message": "Password changed successfully"}
