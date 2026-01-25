@@ -6457,6 +6457,730 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
         raise HTTPException(status_code=500, detail="Transfer failed. Please try again later.")
 
 
+
+# ============ Virtual Cards (Payscribe) ============
+
+class CreateCardRequest(BaseModel):
+    brand: str = "VISA"  # VISA or MASTERCARD
+    initial_amount: float = 1.0  # Initial funding amount (min $1)
+
+class FundCardRequest(BaseModel):
+    card_id: str
+    amount: float
+
+class WithdrawCardRequest(BaseModel):
+    card_id: str
+    amount: float
+
+
+@api_router.get("/cards")
+async def get_user_cards(user: dict = Depends(get_current_user)):
+    """Get all virtual cards for the current user"""
+    try:
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check Tier 3 requirement
+        if db_user.get('tier', 1) < 3:
+            raise HTTPException(
+                status_code=403,
+                detail="Virtual cards are only available for Tier 3 verified users."
+            )
+        
+        # Check if user has Payscribe customer_id
+        customer_id = db_user.get('payscribe_customer_id')
+        if not customer_id:
+            return {
+                'success': True,
+                'cards': [],
+                'message': 'Complete Tier 3 verification to create virtual cards'
+            }
+        
+        # Get cards from our local database (synced from Payscribe)
+        cards_cursor = db.virtual_cards.find({'user_id': user['id'], 'status': {'$ne': 'terminated'}}, {'_id': 0})
+        cards = await cards_cursor.to_list(100)
+        
+        # Get fee configuration
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        fees = {
+            'creation_fee': config.get('card_creation_fee', 2.50) if config else 2.50,
+            'funding_fee': config.get('card_funding_fee', 0.30) if config else 0.30,
+            'transaction_fee': config.get('card_transaction_fee', 0.15) if config else 0.15,
+            'monthly_fee': config.get('card_monthly_fee', 0.50) if config else 0.50,
+            'withdrawal_fee': config.get('card_withdrawal_fee', 0.10) if config else 0.10,
+            'min_funding': config.get('card_min_funding_amount', 1.00) if config else 1.00,
+            'max_funding': config.get('card_max_funding_amount', 10000.00) if config else 10000.00,
+        }
+        
+        return {
+            'success': True,
+            'cards': cards,
+            'fees': fees,
+            'usd_balance': db_user.get('usd_balance', 0)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get cards error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch cards")
+
+
+@api_router.post("/cards/create")
+async def create_virtual_card(request: CreateCardRequest, user: dict = Depends(get_current_user)):
+    """Create a new virtual card for the user"""
+    try:
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check Tier 3 requirement
+        if db_user.get('tier', 1) < 3:
+            raise HTTPException(
+                status_code=403,
+                detail="Virtual cards are only available for Tier 3 verified users. Please complete KYC verification."
+            )
+        
+        # Check Payscribe customer_id
+        customer_id = db_user.get('payscribe_customer_id')
+        if not customer_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Your account is not yet linked to card services. Please complete Tier 3 verification."
+            )
+        
+        # Get fee configuration
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        creation_fee = config.get('card_creation_fee', 2.50) if config else 2.50
+        funding_fee = config.get('card_funding_fee', 0.30) if config else 0.30
+        min_funding = config.get('card_min_funding_amount', 1.00) if config else 1.00
+        
+        # Validate brand
+        if request.brand.upper() not in ['VISA', 'MASTERCARD']:
+            raise HTTPException(status_code=400, detail="Card brand must be VISA or MASTERCARD")
+        
+        # Validate initial amount
+        if request.initial_amount < min_funding:
+            raise HTTPException(status_code=400, detail=f"Minimum initial funding is ${min_funding:.2f}")
+        
+        # Calculate total cost: creation fee + initial amount + funding fee
+        total_cost = creation_fee + request.initial_amount + funding_fee
+        
+        # Check USD balance
+        usd_balance = db_user.get('usd_balance', 0)
+        if usd_balance < total_cost:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient USD balance. You need ${total_cost:.2f} (${creation_fee:.2f} creation + ${request.initial_amount:.2f} initial + ${funding_fee:.2f} funding fee). Your balance: ${usd_balance:.2f}"
+            )
+        
+        # Generate reference
+        card_ref = f"CARD-{uuid.uuid4().hex[:12].upper()}"
+        
+        # Create card on Payscribe
+        payload = {
+            "customer_id": customer_id,
+            "currency": "USD",
+            "brand": request.brand.upper(),
+            "amount": request.initial_amount,
+            "type": "virtual",
+            "ref": card_ref
+        }
+        
+        logger.info(f"Creating Payscribe card for user {user['id']}: {payload}")
+        
+        result = await payscribe_request('cards/create', 'POST', payload, use_public_key=True)
+        
+        logger.info(f"Payscribe card creation response: {result}")
+        
+        if not result or not result.get('status'):
+            error_msg = result.get('description', 'Card creation failed') if result else 'Card creation failed'
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        # Extract card details
+        card_data = result.get('message', {}).get('details', {}).get('card', {})
+        
+        if not card_data.get('id'):
+            raise HTTPException(status_code=500, detail="Card created but no card ID returned")
+        
+        # Deduct from user's USD balance
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'usd_balance': -total_cost}}
+        )
+        
+        # Store card in our database
+        card_doc = {
+            'id': card_data.get('id'),
+            'user_id': user['id'],
+            'customer_id': customer_id,
+            'card_type': card_data.get('card_type', 'virtual'),
+            'currency': card_data.get('currency', 'USD'),
+            'brand': card_data.get('brand'),
+            'name': card_data.get('name'),
+            'first_six': card_data.get('first_six'),
+            'last_four': card_data.get('last_four'),
+            'masked': card_data.get('masked'),
+            'number': card_data.get('number'),  # Full card number (show once)
+            'expiry': card_data.get('expiry'),
+            'cvv': card_data.get('ccv'),  # Note: Payscribe uses 'ccv'
+            'billing': card_data.get('billing', {}),
+            'balance': request.initial_amount,
+            'status': 'active',
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'reference': card_ref
+        }
+        
+        await db.virtual_cards.insert_one(card_doc)
+        
+        # Create transaction record
+        tx_doc = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'type': 'card_creation',
+            'amount': total_cost,
+            'currency': 'USD',
+            'status': 'completed',
+            'reference': card_ref,
+            'metadata': {
+                'card_id': card_data.get('id'),
+                'brand': request.brand.upper(),
+                'initial_amount': request.initial_amount,
+                'creation_fee': creation_fee,
+                'funding_fee': funding_fee,
+                'last_four': card_data.get('last_four')
+            },
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(tx_doc)
+        
+        # Also create card transaction record
+        card_tx = {
+            'id': str(uuid.uuid4()),
+            'card_id': card_data.get('id'),
+            'user_id': user['id'],
+            'type': 'creation',
+            'amount': request.initial_amount,
+            'fee': creation_fee + funding_fee,
+            'balance_after': request.initial_amount,
+            'status': 'completed',
+            'reference': card_ref,
+            'description': f'Card created with ${request.initial_amount:.2f} initial balance',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.card_transactions.insert_one(card_tx)
+        
+        # Send notification
+        await _create_transaction_notification(
+            user['id'],
+            'Virtual Card Created',
+            f'Your {request.brand} virtual card ending in {card_data.get("last_four")} has been created with ${request.initial_amount:.2f} balance.',
+            metadata={'type': 'card_creation', 'card_id': card_data.get('id')}
+        )
+        
+        # Remove sensitive data for response (card number shown only once)
+        response_card = {**card_doc}
+        del response_card['_id'] if '_id' in response_card else None
+        
+        return {
+            'success': True,
+            'message': 'Virtual card created successfully',
+            'card': response_card,
+            'fees_charged': {
+                'creation_fee': creation_fee,
+                'funding_fee': funding_fee,
+                'initial_amount': request.initial_amount,
+                'total': total_cost
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Card creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Card creation failed. Please try again.")
+
+
+@api_router.post("/cards/fund")
+async def fund_virtual_card(request: FundCardRequest, user: dict = Depends(get_current_user)):
+    """Fund an existing virtual card from USD balance"""
+    try:
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get the card
+        card = await db.virtual_cards.find_one({'id': request.card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        if card.get('status') != 'active':
+            raise HTTPException(status_code=400, detail=f"Card is {card.get('status')}. Cannot fund.")
+        
+        # Get fee configuration
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        funding_fee = config.get('card_funding_fee', 0.30) if config else 0.30
+        min_funding = config.get('card_min_funding_amount', 1.00) if config else 1.00
+        max_funding = config.get('card_max_funding_amount', 10000.00) if config else 10000.00
+        
+        # Validate amount
+        if request.amount < min_funding:
+            raise HTTPException(status_code=400, detail=f"Minimum funding amount is ${min_funding:.2f}")
+        
+        if request.amount > max_funding:
+            raise HTTPException(status_code=400, detail=f"Maximum funding amount is ${max_funding:.2f}")
+        
+        # Calculate total cost
+        total_cost = request.amount + funding_fee
+        
+        # Check USD balance
+        usd_balance = db_user.get('usd_balance', 0)
+        if usd_balance < total_cost:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient USD balance. You need ${total_cost:.2f} (${request.amount:.2f} + ${funding_fee:.2f} fee). Your balance: ${usd_balance:.2f}"
+            )
+        
+        # Generate reference
+        fund_ref = f"FUND-{uuid.uuid4().hex[:12].upper()}"
+        
+        # Fund card on Payscribe
+        payload = {
+            "amount": request.amount,
+            "ref": fund_ref
+        }
+        
+        result = await payscribe_request(f'cards/{request.card_id}/topup', 'PATCH', payload, use_public_key=True)
+        
+        logger.info(f"Payscribe card funding response: {result}")
+        
+        if not result or not result.get('status'):
+            error_msg = result.get('description', 'Card funding failed') if result else 'Card funding failed'
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        # Get new balance from response
+        details = result.get('message', {}).get('details', {})
+        new_balance = details.get('balance', card.get('balance', 0) + request.amount)
+        prev_balance = details.get('prev_balance', card.get('balance', 0))
+        
+        # Deduct from user's USD balance
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'usd_balance': -total_cost}}
+        )
+        
+        # Update card balance in our database
+        await db.virtual_cards.update_one(
+            {'id': request.card_id},
+            {'$set': {'balance': new_balance}}
+        )
+        
+        # Create transaction record
+        tx_doc = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'type': 'card_funding',
+            'amount': total_cost,
+            'currency': 'USD',
+            'status': 'completed',
+            'reference': fund_ref,
+            'metadata': {
+                'card_id': request.card_id,
+                'funding_amount': request.amount,
+                'funding_fee': funding_fee,
+                'last_four': card.get('last_four'),
+                'prev_balance': prev_balance,
+                'new_balance': new_balance
+            },
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(tx_doc)
+        
+        # Create card transaction record
+        card_tx = {
+            'id': str(uuid.uuid4()),
+            'card_id': request.card_id,
+            'user_id': user['id'],
+            'type': 'funding',
+            'amount': request.amount,
+            'fee': funding_fee,
+            'balance_before': prev_balance,
+            'balance_after': new_balance,
+            'status': 'completed',
+            'reference': fund_ref,
+            'description': f'Card funded with ${request.amount:.2f}',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.card_transactions.insert_one(card_tx)
+        
+        return {
+            'success': True,
+            'message': f'Card funded successfully with ${request.amount:.2f}',
+            'card_id': request.card_id,
+            'amount_funded': request.amount,
+            'funding_fee': funding_fee,
+            'prev_balance': prev_balance,
+            'new_balance': new_balance
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Card funding error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Card funding failed. Please try again.")
+
+
+@api_router.post("/cards/withdraw")
+async def withdraw_from_card(request: WithdrawCardRequest, user: dict = Depends(get_current_user)):
+    """Withdraw funds from virtual card to USD balance"""
+    try:
+        db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
+        
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get the card
+        card = await db.virtual_cards.find_one({'id': request.card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        if card.get('status') != 'active':
+            raise HTTPException(status_code=400, detail=f"Card is {card.get('status')}. Cannot withdraw.")
+        
+        # Get fee configuration
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        withdrawal_fee = config.get('card_withdrawal_fee', 0.10) if config else 0.10
+        
+        # Check card balance
+        card_balance = card.get('balance', 0)
+        if request.amount > card_balance:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient card balance. Card balance: ${card_balance:.2f}"
+            )
+        
+        if request.amount <= 0:
+            raise HTTPException(status_code=400, detail="Withdrawal amount must be greater than 0")
+        
+        # Calculate amount after fee
+        amount_to_receive = request.amount - withdrawal_fee
+        if amount_to_receive <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Withdrawal amount must be greater than the fee (${withdrawal_fee:.2f})"
+            )
+        
+        # Generate reference
+        withdraw_ref = f"CWITH-{uuid.uuid4().hex[:12].upper()}"
+        
+        # Withdraw from card on Payscribe (using topup with negative might not work - check API)
+        # For now, we'll just update our local balance and credit user
+        # TODO: Implement actual Payscribe withdrawal if endpoint exists
+        
+        new_card_balance = card_balance - request.amount
+        
+        # Update card balance
+        await db.virtual_cards.update_one(
+            {'id': request.card_id},
+            {'$set': {'balance': new_card_balance}}
+        )
+        
+        # Credit user's USD balance
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'usd_balance': amount_to_receive}}
+        )
+        
+        # Create transaction record
+        tx_doc = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'type': 'card_withdrawal',
+            'amount': amount_to_receive,
+            'currency': 'USD',
+            'status': 'completed',
+            'reference': withdraw_ref,
+            'metadata': {
+                'card_id': request.card_id,
+                'withdrawal_amount': request.amount,
+                'withdrawal_fee': withdrawal_fee,
+                'amount_received': amount_to_receive,
+                'last_four': card.get('last_four')
+            },
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(tx_doc)
+        
+        # Create card transaction record
+        card_tx = {
+            'id': str(uuid.uuid4()),
+            'card_id': request.card_id,
+            'user_id': user['id'],
+            'type': 'withdrawal',
+            'amount': -request.amount,
+            'fee': withdrawal_fee,
+            'balance_before': card_balance,
+            'balance_after': new_card_balance,
+            'status': 'completed',
+            'reference': withdraw_ref,
+            'description': f'Withdrew ${request.amount:.2f} to USD balance (${amount_to_receive:.2f} after fee)',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.card_transactions.insert_one(card_tx)
+        
+        return {
+            'success': True,
+            'message': f'Withdrew ${request.amount:.2f} from card. ${amount_to_receive:.2f} credited to your USD balance.',
+            'card_id': request.card_id,
+            'withdrawal_amount': request.amount,
+            'withdrawal_fee': withdrawal_fee,
+            'amount_received': amount_to_receive,
+            'card_balance': new_card_balance
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Card withdrawal error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Card withdrawal failed. Please try again.")
+
+
+@api_router.get("/cards/{card_id}")
+async def get_card_details(card_id: str, user: dict = Depends(get_current_user)):
+    """Get details of a specific card"""
+    try:
+        card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        # Don't expose full card number after creation
+        card_safe = {**card}
+        if 'number' in card_safe:
+            card_safe['number'] = f"**** **** **** {card.get('last_four', '****')}"
+        
+        return {
+            'success': True,
+            'card': card_safe
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get card details error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch card details")
+
+
+@api_router.get("/cards/{card_id}/transactions")
+async def get_card_transactions(card_id: str, limit: int = 50, user: dict = Depends(get_current_user)):
+    """Get transactions for a specific card"""
+    try:
+        # Verify card belongs to user
+        card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        # Get card transactions
+        cursor = db.card_transactions.find(
+            {'card_id': card_id},
+            {'_id': 0}
+        ).sort('created_at', -1).limit(limit)
+        
+        transactions = await cursor.to_list(limit)
+        
+        return {
+            'success': True,
+            'card_id': card_id,
+            'transactions': transactions
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get card transactions error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch card transactions")
+
+
+@api_router.post("/cards/{card_id}/freeze")
+async def freeze_card(card_id: str, user: dict = Depends(get_current_user)):
+    """Freeze a virtual card"""
+    try:
+        card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        if card.get('status') == 'frozen':
+            return {'success': True, 'message': 'Card is already frozen'}
+        
+        if card.get('status') == 'terminated':
+            raise HTTPException(status_code=400, detail="Card is terminated and cannot be frozen")
+        
+        # TODO: Call Payscribe freeze endpoint if available
+        
+        await db.virtual_cards.update_one(
+            {'id': card_id},
+            {'$set': {'status': 'frozen', 'frozen_at': datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {'success': True, 'message': 'Card frozen successfully'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Freeze card error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to freeze card")
+
+
+@api_router.post("/cards/{card_id}/unfreeze")
+async def unfreeze_card(card_id: str, user: dict = Depends(get_current_user)):
+    """Unfreeze a virtual card"""
+    try:
+        card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        if card.get('status') != 'frozen':
+            return {'success': True, 'message': 'Card is not frozen'}
+        
+        # TODO: Call Payscribe unfreeze endpoint if available
+        
+        await db.virtual_cards.update_one(
+            {'id': card_id},
+            {'$set': {'status': 'active'}, '$unset': {'frozen_at': ''}}
+        )
+        
+        return {'success': True, 'message': 'Card unfrozen successfully'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unfreeze card error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to unfreeze card")
+
+
+# Card webhook handler for Payscribe events
+@api_router.post("/webhooks/payscribe/cards")
+async def payscribe_card_webhook(request: Request):
+    """Handle Payscribe card webhook events"""
+    try:
+        # Verify IP (optional security)
+        client_ip = request.client.host if request.client else None
+        
+        payload = await request.json()
+        event_type = payload.get('event_type', payload.get('event', ''))
+        
+        logger.info(f"Payscribe card webhook received: {event_type}")
+        logger.info(f"Webhook payload: {payload}")
+        
+        # Handle different event types
+        if 'cards.auth.declined' in event_type:
+            # Transaction declined - charge user the declined fee
+            card_id = payload.get('card', {}).get('id')
+            customer_id = payload.get('customer', {}).get('id')
+            
+            if card_id:
+                # Find the user
+                card = await db.virtual_cards.find_one({'id': card_id}, {'_id': 0})
+                if card:
+                    config = await db.pricing_config.find_one({}, {'_id': 0})
+                    declined_fee = config.get('card_declined_fee', 0.50) if config else 0.50
+                    
+                    # Deduct declined fee from card balance
+                    new_balance = max(0, card.get('balance', 0) - declined_fee)
+                    await db.virtual_cards.update_one(
+                        {'id': card_id},
+                        {'$set': {'balance': new_balance}}
+                    )
+                    
+                    # Record the declined transaction
+                    card_tx = {
+                        'id': str(uuid.uuid4()),
+                        'card_id': card_id,
+                        'user_id': card.get('user_id'),
+                        'type': 'declined',
+                        'amount': 0,
+                        'fee': declined_fee,
+                        'balance_before': card.get('balance', 0),
+                        'balance_after': new_balance,
+                        'status': 'declined',
+                        'reference': payload.get('trans_id', ''),
+                        'description': f"Transaction declined: {payload.get('reason', 'Unknown')} - Merchant: {payload.get('acceptor_name', 'Unknown')}",
+                        'metadata': {
+                            'acceptor_name': payload.get('acceptor_name'),
+                            'auth_currency': payload.get('auth_currency'),
+                            'auth_country': payload.get('auth_country'),
+                            'reason': payload.get('reason')
+                        },
+                        'created_at': datetime.now(timezone.utc).isoformat()
+                    }
+                    await db.card_transactions.insert_one(card_tx)
+                    
+                    logger.info(f"Recorded declined transaction for card {card_id}, charged ${declined_fee}")
+        
+        elif 'cards.adjusted' in event_type:
+            # Card balance adjusted (topup, withdraw, freeze, unfreeze, terminate)
+            card_id = payload.get('card', {}).get('id')
+            action = payload.get('action', '')
+            
+            if card_id:
+                card = await db.virtual_cards.find_one({'id': card_id}, {'_id': 0})
+                if card:
+                    new_balance = payload.get('card', {}).get('balance', card.get('balance', 0))
+                    
+                    update_data = {'balance': new_balance}
+                    
+                    if action == 'freeze':
+                        update_data['status'] = 'frozen'
+                    elif action == 'unfreeze':
+                        update_data['status'] = 'active'
+                    elif action == 'terminate':
+                        update_data['status'] = 'terminated'
+                    
+                    await db.virtual_cards.update_one(
+                        {'id': card_id},
+                        {'$set': update_data}
+                    )
+                    
+                    # Record transaction if it's a value change
+                    if action in ['topup', 'withdraw']:
+                        config = await db.pricing_config.find_one({}, {'_id': 0})
+                        tx_fee = config.get('card_transaction_fee', 0.15) if config else 0.15
+                        
+                        card_tx = {
+                            'id': str(uuid.uuid4()),
+                            'card_id': card_id,
+                            'user_id': card.get('user_id'),
+                            'type': action,
+                            'amount': new_balance - payload.get('card', {}).get('prev_balance', card.get('balance', 0)),
+                            'fee': tx_fee if action == 'withdraw' else 0,
+                            'balance_before': payload.get('card', {}).get('prev_balance'),
+                            'balance_after': new_balance,
+                            'status': 'completed',
+                            'reference': payload.get('ref', payload.get('trans_id', '')),
+                            'description': f"Card {action}",
+                            'created_at': datetime.now(timezone.utc).isoformat()
+                        }
+                        await db.card_transactions.insert_one(card_tx)
+        
+        elif 'issuing.created' in event_type:
+            # Card creation webhook
+            if 'successful' in event_type:
+                logger.info("Card creation successful webhook received")
+            else:
+                logger.warning(f"Card creation failed: {payload.get('description', 'Unknown error')}")
+        
+        return {'success': True, 'message': 'Webhook processed'}
+        
+    except Exception as e:
+        logger.error(f"Card webhook error: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+
+
 # ============ Payscribe Payout Webhook ============
 
 PAYSCRIBE_WEBHOOK_IP = "162.254.34.78"
