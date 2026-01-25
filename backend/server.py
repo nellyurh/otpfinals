@@ -2178,12 +2178,17 @@ async def register(data: UserRegister, background_tasks: BackgroundTasks):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    full_name = f"{data.first_name} {data.last_name}".strip()
+    
     user = User(
         email=data.email,
-        full_name=data.full_name,
+        first_name=data.first_name,
+        last_name=data.last_name,
+        full_name=full_name,
         phone=data.phone,
         is_suspended=False,
         is_blocked=False,
+        tier=1,
     )
     
     user_dict = user.model_dump()
@@ -2201,7 +2206,7 @@ async def register(data: UserRegister, background_tasks: BackgroundTasks):
             user.email,
             'welcome',
             {
-                'name': user.full_name.split()[0] if user.full_name else 'there',
+                'name': data.first_name or 'there',
                 'login_url': f"{FRONTEND_URL}/dashboard" if FRONTEND_URL else '#'
             }
         )
@@ -2213,11 +2218,14 @@ async def register(data: UserRegister, background_tasks: BackgroundTasks):
         'user': {
             'id': user.id,
             'email': user.email,
-            'full_name': user.full_name,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'full_name': full_name,
             'phone': user.phone,
             'ngn_balance': user.ngn_balance,
             'usd_balance': user.usd_balance,
-            'is_admin': user.is_admin
+            'is_admin': user.is_admin,
+            'tier': user.tier
         }
     }
 
