@@ -1943,22 +1943,23 @@ const NewDashboard = () => {
     const [activeTab, setActiveTab] = useState('profile');
     
     // KYC states
-    const [documentType, setDocumentType] = useState('');
-    const [documentNumber, setDocumentNumber] = useState('');
     const [bvn, setBvn] = useState('');
-    const [idDocument, setIdDocument] = useState(null);
-    const [selfie, setSelfie] = useState(null);
-    const [street, setStreet] = useState('');
-    const [apartment, setApartment] = useState('');
-    const [city, setCity] = useState('');
-    const [kycState, setKycState] = useState('');
-    const [postalCode, setPostalCode] = useState('');
-    const [country, setCountry] = useState('NG');
+    const [nin, setNin] = useState('');
+    const [kycPhone, setKycPhone] = useState(user.phone || '');
     const [dob, setDob] = useState('');
-    const [submittingKyc, setSubmittingKyc] = useState(false);
+    
+    // Verification popup states
+    const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+    const [verificationStep, setVerificationStep] = useState(''); // 'bvn' or 'nin'
+    const [verifying, setVerifying] = useState(false);
+    const [bvnVerified, setBvnVerified] = useState(user.bvn_verified || false);
+    const [ninVerified, setNinVerified] = useState(user.nin_verified || false);
+    const [verificationError, setVerificationError] = useState('');
+    const [verificationSuccess, setVerificationSuccess] = useState('');
 
     const primaryColor = branding.primary_color_hex || '#059669';
     const userTier = user.tier || 1;
+    const KYC_FEE = 100;
 
     const handleUpdateProfile = async () => {
       if (!fullName.trim()) {
@@ -1978,6 +1979,557 @@ const NewDashboard = () => {
     };
 
     const handleChangePassword = async () => {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast.error('All password fields are required');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        toast.error('New passwords do not match');
+        return;
+      }
+      if (newPassword.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
+      setSavingPassword(true);
+      try {
+        await axios.put(`${API}/api/user/change-password`, { 
+          current_password: currentPassword, 
+          new_password: newPassword 
+        }, axiosConfig);
+        toast.success('Password changed successfully');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to change password');
+      } finally {
+        setSavingPassword(false);
+      }
+    };
+
+    // Tier 2 submission (just store BVN, no verification)
+    const handleTier2Submit = async () => {
+      if (bvn.length !== 11) {
+        toast.error('BVN must be 11 digits');
+        return;
+      }
+      
+      try {
+        const response = await axios.post(`${API}/api/kyc/tier2/submit`, {
+          bvn: bvn,
+          phone: kycPhone
+        }, axiosConfig);
+        
+        if (response.data.success) {
+          toast.success('Tier 2 verified! Your limit is now ₦100,000');
+          setUser({ ...user, tier: 2, bvn: bvn });
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Tier 2 submission failed');
+      }
+    };
+
+    // Start Tier 3 Express KYC verification
+    const startTier3Verification = () => {
+      if (bvn.length !== 11) {
+        toast.error('Please enter a valid 11-digit BVN');
+        return;
+      }
+      if (nin.length !== 11) {
+        toast.error('Please enter a valid 11-digit NIN');
+        return;
+      }
+      if (!kycPhone) {
+        toast.error('Please enter your phone number');
+        return;
+      }
+      if (!dob) {
+        toast.error('Please enter your date of birth');
+        return;
+      }
+      if ((user.ngn_balance || 0) < KYC_FEE * 2) {
+        toast.error(`Insufficient balance. You need at least ₦${KYC_FEE * 2} for Express KYC verification.`);
+        return;
+      }
+      
+      setVerificationStep('bvn');
+      setVerificationError('');
+      setVerificationSuccess('');
+      setShowVerificationPopup(true);
+      verifyBVN();
+    };
+
+    // Verify BVN
+    const verifyBVN = async () => {
+      setVerifying(true);
+      setVerificationError('');
+      
+      try {
+        const response = await axios.post(`${API}/api/kyc/tier3/verify-bvn`, {
+          bvn: bvn,
+          nin: nin,
+          phone: kycPhone,
+          dob: dob
+        }, axiosConfig);
+        
+        if (response.data.success) {
+          setBvnVerified(true);
+          setVerificationSuccess('BVN verified! Proceeding to NIN verification...');
+          
+          // Wait 2 seconds then start NIN verification
+          setTimeout(() => {
+            setVerificationStep('nin');
+            setVerificationSuccess('');
+            verifyNIN();
+          }, 2000);
+        }
+      } catch (error) {
+        setVerificationError(error.response?.data?.detail || 'BVN verification failed');
+        setVerifying(false);
+      }
+    };
+
+    // Verify NIN
+    const verifyNIN = async () => {
+      setVerifying(true);
+      setVerificationError('');
+      
+      try {
+        const response = await axios.post(`${API}/api/kyc/tier3/verify-nin`, {
+          bvn: bvn,
+          nin: nin,
+          phone: kycPhone,
+          dob: dob
+        }, axiosConfig);
+        
+        if (response.data.success) {
+          setNinVerified(true);
+          setVerificationSuccess('NIN verified! Your account is now Tier 3!');
+          setUser({ ...user, tier: 3, bvn_verified: true, nin_verified: true });
+          fetchProfile();
+          
+          // Close popup after 3 seconds
+          setTimeout(() => {
+            setShowVerificationPopup(false);
+          }, 3000);
+        }
+      } catch (error) {
+        setVerificationError(error.response?.data?.detail || 'NIN verification failed');
+      } finally {
+        setVerifying(false);
+      }
+    };
+
+    const getTierLimit = (tier) => {
+      if (tier === 1) return '₦10,000';
+      if (tier === 2) return '₦100,000';
+      return '₦2,000,000';
+    };
+
+    // Verification Popup Component
+    const VerificationPopup = () => (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-pulse-slow">
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Express KYC Verification</h3>
+            <p className="text-sm text-gray-500 mb-6">₦{KYC_FEE} will be deducted for each verification</p>
+            
+            {/* Progress Steps */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              {/* BVN Step */}
+              <div className={`flex flex-col items-center ${verificationStep === 'bvn' ? 'scale-110' : ''} transition-transform`}>
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                  bvnVerified ? 'bg-green-500' : verificationStep === 'bvn' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
+                }`}>
+                  {bvnVerified ? <Check className="w-7 h-7" /> : 'BVN'}
+                </div>
+                <span className="text-xs mt-2 font-medium text-gray-600">BVN</span>
+                {verificationStep === 'bvn' && !bvnVerified && (
+                  <RefreshCw className="w-4 h-4 mt-1 animate-spin text-blue-500" />
+                )}
+              </div>
+              
+              {/* Connector */}
+              <div className={`w-12 h-1 rounded ${bvnVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
+              
+              {/* NIN Step */}
+              <div className={`flex flex-col items-center ${verificationStep === 'nin' ? 'scale-110' : ''} transition-transform`}>
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg ${
+                  ninVerified ? 'bg-green-500' : verificationStep === 'nin' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
+                }`}>
+                  {ninVerified ? <Check className="w-7 h-7" /> : 'NIN'}
+                </div>
+                <span className="text-xs mt-2 font-medium text-gray-600">NIN</span>
+                {verificationStep === 'nin' && !ninVerified && (
+                  <RefreshCw className="w-4 h-4 mt-1 animate-spin text-blue-500" />
+                )}
+              </div>
+            </div>
+            
+            {/* Status Message */}
+            <div className="min-h-[60px] flex items-center justify-center">
+              {verifying && !verificationError && !verificationSuccess && (
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 text-blue-600">
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span className="font-medium">Verifying {verificationStep.toUpperCase()}...</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {verificationStep === 'bvn' 
+                      ? 'Matching phone, DOB & name with BVN records...'
+                      : 'Matching DOB & name with NIN records...'
+                    }
+                  </p>
+                </div>
+              )}
+              
+              {verificationSuccess && (
+                <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2">
+                  <Check className="w-5 h-5" />
+                  <span className="font-medium">{verificationSuccess}</span>
+                </div>
+              )}
+              
+              {verificationError && (
+                <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl">
+                  <p className="font-medium">{verificationError}</p>
+                  <button 
+                    onClick={() => setShowVerificationPopup(false)}
+                    className="mt-2 text-sm underline"
+                  >
+                    Close and try again
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Tier 3 Success */}
+            {ninVerified && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white">
+                <h4 className="font-bold text-lg">🎉 Congratulations!</h4>
+                <p className="text-sm opacity-90">Your account is now Tier 3 with ₦2,000,000 limit</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="space-y-6">
+        {showVerificationPopup && <VerificationPopup />}
+        
+        <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
+        
+        {/* Profile/KYC Tabs */}
+        <div className="flex gap-2 border-b border-gray-200 pb-2">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors ${
+              activeTab === 'profile' 
+                ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Profile Info
+          </button>
+          <button
+            onClick={() => setActiveTab('kyc')}
+            className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'kyc' 
+                ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Account Upgrade (KYC)
+            {userTier < 3 && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">Upgrade</span>}
+          </button>
+        </div>
+
+        {activeTab === 'profile' && (
+          <>
+            {/* Profile Info Card */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': primaryColor }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={user.email}
+                    disabled
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Account Tier</label>
+                  <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
+                    <span className="font-semibold" style={{ color: primaryColor }}>Tier {userTier}</span>
+                    <span className="text-gray-500 text-sm ml-2">(Limit: {getTierLimit(userTier)})</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleUpdateProfile}
+                disabled={savingProfile}
+                className="mt-4 px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {savingProfile ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+
+            {/* Balance Card */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Wallet Balances</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl" style={{ backgroundColor: `${primaryColor}10` }}>
+                  <p className="text-sm text-gray-600">NGN Balance</p>
+                  <p className="text-3xl font-bold" style={{ color: primaryColor }}>₦{(user.ngn_balance || 0).toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-xl">
+                  <p className="text-sm text-gray-600">USD Balance</p>
+                  <p className="text-3xl font-bold text-blue-600">${(user.usd_balance || 0).toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Change Password Card */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
+              <div className="space-y-4 max-w-md">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Enter current password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Enter new password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <button
+                  onClick={handleChangePassword}
+                  disabled={savingPassword}
+                  className="px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {savingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'kyc' && (
+          <div className="space-y-6">
+            {/* Tier Progress */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Tier Status</h3>
+              <div className="flex items-center gap-4 mb-4">
+                {[
+                  { tier: 1, limit: '₦10,000', desc: 'Basic' },
+                  { tier: 2, limit: '₦100,000', desc: 'BVN' },
+                  { tier: 3, limit: '₦2,000,000', desc: 'Express KYC' }
+                ].map((t) => (
+                  <div key={t.tier} className={`flex-1 text-center p-3 rounded-xl transition-all ${
+                    userTier >= t.tier 
+                      ? 'bg-emerald-100 border-2 border-emerald-500' 
+                      : 'bg-gray-100 border-2 border-gray-200'
+                  }`}>
+                    <p className={`font-bold text-lg ${userTier >= t.tier ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      Tier {t.tier}
+                    </p>
+                    <p className="text-xs text-gray-500">{t.limit}</p>
+                    <p className="text-[10px] text-gray-400">{t.desc}</p>
+                    {userTier === t.tier && <span className="text-xs text-emerald-600 font-medium">Current</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tier 1 → Tier 2 Upgrade */}
+            {userTier === 1 && (
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Upgrade to Tier 2</h3>
+                <p className="text-sm text-gray-500 mb-4">Increase your limit to ₦100,000 by providing your BVN.</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">BVN (11 digits)</label>
+                    <input
+                      type="text"
+                      value={bvn}
+                      onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Enter your BVN"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={kycPhone}
+                      onChange={(e) => setKycPhone(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="08012345678"
+                    />
+                  </div>
+                  <button
+                    onClick={handleTier2Submit}
+                    disabled={bvn.length !== 11}
+                    className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:bg-gray-300"
+                  >
+                    Upgrade to Tier 2
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tier 2 → Tier 3 Express KYC */}
+            {userTier === 2 && (
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Express KYC Verification</h3>
+                    <p className="text-sm text-gray-500">Upgrade to Tier 3 with ₦2,000,000 limit</p>
+                  </div>
+                  <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
+                    ₦{KYC_FEE * 2} total fee
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                  <h4 className="font-medium text-blue-900 mb-2">What we verify:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• <strong>BVN:</strong> Phone number, Date of Birth, Names</li>
+                    <li>• <strong>NIN:</strong> Date of Birth, Names</li>
+                  </ul>
+                  <p className="text-xs text-blue-600 mt-2">Verification is instant - results in seconds!</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">BVN (11 digits) *</label>
+                    <input
+                      type="text"
+                      value={bvn}
+                      onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Enter your BVN"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">NIN (11 digits) *</label>
+                    <input
+                      type="text"
+                      value={nin}
+                      onChange={(e) => setNin(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Enter your NIN"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                    <input
+                      type="tel"
+                      value={kycPhone}
+                      onChange={(e) => setKycPhone(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="Must match BVN phone"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                    <input
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-gray-600">
+                    <strong>Important:</strong> Your registered name ({user.first_name} {user.last_name}) must match your BVN/NIN records.
+                  </p>
+                </div>
+                
+                <button
+                  onClick={startTier3Verification}
+                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob}
+                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold hover:from-emerald-600 hover:to-teal-600 disabled:from-gray-300 disabled:to-gray-300 transition-all shadow-lg"
+                >
+                  Start Express KYC (₦{KYC_FEE * 2})
+                </button>
+              </div>
+            )}
+
+            {/* Tier 3 Complete */}
+            {userTier >= 3 && (
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mb-4">
+                  <Check className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Fully Verified!</h3>
+                <p className="text-gray-500 mb-4">Your account is at maximum tier with ₦2,000,000 limit.</p>
+                <div className="flex justify-center gap-4">
+                  <div className="bg-green-50 px-4 py-2 rounded-lg">
+                    <span className="text-green-700 font-medium">BVN ✓</span>
+                  </div>
+                  <div className="bg-green-50 px-4 py-2 rounded-lg">
+                    <span className="text-green-700 font-medium">NIN ✓</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
       if (!currentPassword || !newPassword || !confirmPassword) {
         toast.error('All password fields are required');
         return;
