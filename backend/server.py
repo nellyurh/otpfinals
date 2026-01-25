@@ -6240,12 +6240,13 @@ async def validate_bank_account(bank_code: str, account_number: str, user: dict 
         
         # Use Payscribe account lookup API - POST request
         # Endpoint: payouts/account/lookup
+        # NOTE: Payscribe payout APIs require PUBLIC key
         payload = {
             "account": account_number,
             "bank": bank_code
         }
         
-        result = await payscribe_request('payouts/account/lookup', 'POST', payload)
+        result = await payscribe_request('payouts/account/lookup', 'POST', payload, use_public_key=True)
         
         logger.info(f"Account lookup response for {bank_code}/{account_number}: {result}")
         
