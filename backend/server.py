@@ -5857,15 +5857,24 @@ async def admin_get_user(user_id: str, admin: dict = Depends(require_admin)):
 
 @api_router.put("/admin/users/{user_id}")
 async def admin_update_user(user_id: str, data: AdminUserUpdate, admin: dict = Depends(require_admin)):
-    """Update user details (balance, status, etc.) by admin."""
+    """Update user details (balance, status, tier, etc.) by admin."""
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     update_fields = {}
     
+    if data.first_name is not None:
+        update_fields['first_name'] = data.first_name
+    if data.last_name is not None:
+        update_fields['last_name'] = data.last_name
     if data.full_name is not None:
         update_fields['full_name'] = data.full_name
+    # Auto-update full_name if first/last provided
+    if data.first_name is not None or data.last_name is not None:
+        fn = data.first_name if data.first_name is not None else user.get('first_name', '')
+        ln = data.last_name if data.last_name is not None else user.get('last_name', '')
+        update_fields['full_name'] = f"{fn} {ln}".strip()
     if data.email is not None:
         # Check email uniqueness
         existing = await db.users.find_one({"email": data.email, "id": {"$ne": user_id}}, {"_id": 0})
@@ -5884,6 +5893,18 @@ async def admin_update_user(user_id: str, data: AdminUserUpdate, admin: dict = D
         update_fields['is_blocked'] = data.is_blocked
     if data.is_admin is not None:
         update_fields['is_admin'] = data.is_admin
+    if data.tier is not None:
+        if data.tier not in [1, 2, 3]:
+            raise HTTPException(status_code=400, detail="Tier must be 1, 2, or 3")
+        update_fields['tier'] = data.tier
+        # Reset verification status if downgrading
+        if data.tier < user.get('tier', 1):
+            if data.tier < 3:
+                update_fields['nin_verified'] = False
+                update_fields['nin'] = None
+            if data.tier < 2:
+                update_fields['bvn_verified'] = False
+                update_fields['bvn'] = None
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")
