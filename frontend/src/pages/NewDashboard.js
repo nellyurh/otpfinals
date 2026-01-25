@@ -2123,7 +2123,7 @@ const NewDashboard = () => {
     };
 
     // Start Tier 3 Express KYC verification
-    const startTier3Verification = () => {
+    const startTier3Verification = async () => {
       if (bvn.length !== 11) {
         toast.error('Please enter a valid 11-digit BVN');
         return;
@@ -2144,8 +2144,22 @@ const NewDashboard = () => {
         toast.error('Please enter your address');
         return;
       }
+      if (!selfieImage) {
+        toast.error('Please take a selfie first');
+        return;
+      }
       if ((user.ngn_balance || 0) < KYC_FEE) {
         toast.error(`Insufficient balance. You need at least ₦${KYC_FEE} for Express KYC verification.`);
+        return;
+      }
+      
+      // Upload selfie first
+      try {
+        await axios.post(`${API}/api/user/upload-selfie`, {
+          selfie_data: selfieImage
+        }, axiosConfig);
+      } catch (err) {
+        toast.error('Failed to upload selfie. Please try again.');
         return;
       }
       
