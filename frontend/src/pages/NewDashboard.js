@@ -2108,6 +2108,113 @@ const NewDashboard = () => {
       }
     };
 
+    // Transaction PIN Management
+    const handleSetPin = async () => {
+      if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+        toast.error('PIN must be exactly 4 digits');
+        return;
+      }
+      if (newPin !== confirmPin) {
+        toast.error('PINs do not match');
+        return;
+      }
+      setSavingPin(true);
+      try {
+        await axios.post(`${API}/api/user/pin/set`, { pin: newPin, confirm_pin: confirmPin }, axiosConfig);
+        toast.success('Transaction PIN set successfully');
+        setHasPin(true);
+        setPinAction('');
+        setNewPin('');
+        setConfirmPin('');
+        fetchProfile();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to set PIN');
+      } finally {
+        setSavingPin(false);
+      }
+    };
+
+    const handleChangePin = async () => {
+      if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+        toast.error('PIN must be exactly 4 digits');
+        return;
+      }
+      if (newPin !== confirmPin) {
+        toast.error('PINs do not match');
+        return;
+      }
+      if (!currentPin) {
+        toast.error('Current PIN is required');
+        return;
+      }
+      setSavingPin(true);
+      try {
+        await axios.put(`${API}/api/user/pin/change`, { 
+          current_pin: currentPin, 
+          new_pin: newPin, 
+          confirm_pin: confirmPin 
+        }, axiosConfig);
+        toast.success('Transaction PIN changed successfully');
+        setPinAction('');
+        setCurrentPin('');
+        setNewPin('');
+        setConfirmPin('');
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to change PIN');
+      } finally {
+        setSavingPin(false);
+      }
+    };
+
+    const handleRequestPinReset = async () => {
+      setRequestingReset(true);
+      try {
+        await axios.post(`${API}/api/user/pin/reset-request`, {}, axiosConfig);
+        toast.success('Reset code sent to your email');
+        setPinAction('reset');
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to send reset code');
+      } finally {
+        setRequestingReset(false);
+      }
+    };
+
+    const handleResetPin = async () => {
+      if (!resetCode || resetCode.length !== 6) {
+        toast.error('Please enter the 6-digit reset code from your email');
+        return;
+      }
+      if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+        toast.error('PIN must be exactly 4 digits');
+        return;
+      }
+      if (newPin !== confirmPin) {
+        toast.error('PINs do not match');
+        return;
+      }
+      setSavingPin(true);
+      try {
+        await axios.post(`${API}/api/user/pin/reset-verify`, { 
+          reset_code: resetCode, 
+          bvn: resetBvn,
+          new_pin: newPin, 
+          confirm_pin: confirmPin 
+        }, axiosConfig);
+        toast.success('Transaction PIN reset successfully');
+        setHasPin(true);
+        setPinAction('');
+        setResetCode('');
+        setResetBvn('');
+        setNewPin('');
+        setConfirmPin('');
+        fetchProfile();
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to reset PIN');
+      } finally {
+        setSavingPin(false);
+      }
+    };
+
     // Tier 2 submission (just store BVN, no verification)
     const handleTier2Submit = async () => {
       if (bvn.length !== 11) {
