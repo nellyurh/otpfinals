@@ -55,7 +55,7 @@ class TestPINManagementEndpoints:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.token = response.json()["access_token"]
+        self.token = response.json()["token"]
         self.headers = {"Authorization": f"Bearer {self.token}"}
     
     def test_pin_status_endpoint_exists(self):
@@ -134,7 +134,7 @@ class TestPINValidation:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.token = response.json()["access_token"]
+        self.token = response.json()["token"]
         self.headers = {"Authorization": f"Bearer {self.token}"}
     
     def test_pin_must_be_4_digits(self):
@@ -179,7 +179,7 @@ class TestBankEndpoints:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.token = response.json()["access_token"]
+        self.token = response.json()["token"]
         self.headers = {"Authorization": f"Bearer {self.token}"}
     
     def test_banks_list_endpoint(self):
@@ -246,7 +246,7 @@ class TestProfileHasTransactionPin:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.token = response.json()["access_token"]
+        self.token = response.json()["token"]
         self.headers = {"Authorization": f"Bearer {self.token}"}
     
     def test_profile_has_transaction_pin_field(self):
@@ -270,7 +270,7 @@ class TestPINFlowIntegration:
             "password": ADMIN_PASSWORD
         })
         assert response.status_code == 200
-        self.token = response.json()["access_token"]
+        self.token = response.json()["token"]
         self.headers = {"Authorization": f"Bearer {self.token}"}
     
     def test_pin_status_matches_profile(self):
