@@ -4301,7 +4301,9 @@ const AdminPanel = ({ user, setUser }) => {
                           <thead className="border-b border-slate-200 bg-slate-50">
                             <tr>
                               <th className="px-2 py-1 font-semibold text-slate-600">Email</th>
-                              <th className="px-2 py-1 font-semibold text-slate-600">Full Name</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">First Name</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Last Name</th>
+                              <th className="px-2 py-1 font-semibold text-slate-600">Tier</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">Phone</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">NGN Balance</th>
                               <th className="px-2 py-1 font-semibold text-slate-600">USD Balance</th>
@@ -4314,7 +4316,17 @@ const AdminPanel = ({ user, setUser }) => {
                             {users.map((u) => (
                               <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 whitespace-nowrap">{u.email}</td>
-                                <td className="px-2 py-1 whitespace-nowrap">{u.full_name || '-'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">{u.first_name || '-'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">{u.last_name || '-'}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                    u.tier === 3 ? 'bg-emerald-100 text-emerald-700' :
+                                    u.tier === 2 ? 'bg-blue-100 text-blue-700' :
+                                    'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    Tier {u.tier || 1}
+                                  </span>
+                                </td>
                                 <td className="px-2 py-1 whitespace-nowrap">{u.phone || '-'}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">₦{(u.ngn_balance || 0).toLocaleString()}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">${(u.usd_balance || 0).toLocaleString()}</td>
