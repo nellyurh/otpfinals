@@ -8998,6 +8998,15 @@ async def get_kyc_status(user: dict = Depends(get_current_user)):
 
 app.include_router(api_router)
 
+# Serve static KYC upload files
+@app.get("/api/uploads/kyc/{filename}")
+async def serve_kyc_file(filename: str):
+    """Serve uploaded KYC documents (selfies, IDs)"""
+    file_path = Path("/app/backend/uploads/kyc") / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
 # CORS Configuration - Secure settings
 # When allow_credentials=True, allow_origins cannot be "*"
 # Use specific origins from CORS_ORIGINS env var
