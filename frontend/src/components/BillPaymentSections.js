@@ -6,32 +6,38 @@ import Select from 'react-select';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Network/Company Logo URLs
+// Network/Company Logo URLs - Using reliable CDN sources
 const LOGOS = {
-  // Networks
-  mtn: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/New-mtn-logo.svg/120px-New-mtn-logo.svg.png',
-  airtel: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Airtel_logo.svg/120px-Airtel_logo.svg.png',
-  glo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Glo_logo.svg/120px-Glo_logo.svg.png',
-  '9mobile': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Etisalat-Logo.svg/120px-Etisalat-Logo.svg.png',
-  // Electricity
-  ekedc: 'https://logos.fancode.com/ng_electric/ekedc.png',
-  ikedc: 'https://logos.fancode.com/ng_electric/ikedc.png',
-  aedc: 'https://logos.fancode.com/ng_electric/aedc.png',
-  phed: 'https://logos.fancode.com/ng_electric/phed.png',
-  kedco: 'https://logos.fancode.com/ng_electric/kedco.png',
-  bedc: 'https://logos.fancode.com/ng_electric/bedc.png',
-  jed: 'https://logos.fancode.com/ng_electric/jed.png',
-  kaedco: 'https://logos.fancode.com/ng_electric/kaedco.png',
-  // TV
-  dstv: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/DStv_logo.svg/120px-DStv_logo.svg.png',
-  gotv: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/GOtv_logo.svg/120px-GOtv_logo.svg.png',
-  startimes: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/StarTimes_logo.svg/120px-StarTimes_logo.svg.png',
-  // Betting
-  bet9ja: 'https://bet9ja.com/icons/logo.svg',
-  sportybet: 'https://www.sportybet.com/images/logo.png',
-  '1xbet': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/1xBet_logo.svg/120px-1xBet_logo.svg.png',
-  betway: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Betway_logo.svg/120px-Betway_logo.svg.png',
-  betking: 'https://www.betking.com/assets/images/logo.png',
+  // Networks (Airtime/Data)
+  mtn: 'https://nigerianinfopedia.com.ng/wp-content/uploads/2021/01/MTN-Nigeria-Logo.png',
+  airtel: 'https://nigerianinfopedia.com.ng/wp-content/uploads/2021/02/airtel.png',
+  glo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Glo_logo.svg/200px-Glo_logo.svg.png',
+  '9mobile': 'https://upload.wikimedia.org/wikipedia/en/thumb/0/09/9mobile_logo.png/200px-9mobile_logo.png',
+  // Electricity Distribution Companies
+  ekedc: 'https://ekedc.com/wp-content/uploads/2023/03/ekedc-logo-1.png',
+  ikedc: 'https://www.ikejaelectric.com/wp-content/uploads/2020/09/IKEDC-LOGO.png',
+  aedc: 'https://www.aabornedc.com/wp-content/uploads/2022/01/AEDC-Logo.png',
+  phed: 'https://peloruscompany.com/wp-content/uploads/2020/01/Port-Harcourt-Distribution.png',
+  kedco: 'https://kedco.ng/wp-content/uploads/2019/08/kedco-logo.png',
+  bedc: 'https://bedc.com.ng/wp-content/uploads/2020/01/bedc-logo.png',
+  jed: 'https://www.jedplc.com/wp-content/uploads/2021/03/JED-LOGO-e1617110533768.png',
+  kaedco: 'https://www.kadunaelectric.com/wp-content/uploads/2018/01/kaedco-logo.png',
+  eedc: 'https://www.enabornedc.com/wp-content/uploads/2022/01/EEDC-LOGO.png',
+  ibedc: 'https://www.iabornedc.com/wp-content/uploads/2019/07/IBEDC-Logo.png',
+  // TV Subscriptions
+  dstv: 'https://www.dstv.com/media/mhqp34za/dstv-logo.png',
+  gotv: 'https://www.gotvafrica.com/media/5tzl4ihv/gotv-logo.png',
+  startimes: 'https://www.startimes.com.ng/wp-content/uploads/2020/03/startimes-logo.png',
+  showmax: 'https://www.showmax.com/favicon.ico',
+  // Betting Platforms
+  bet9ja: 'https://web.bet9ja.com/Assets/img/logo.png',
+  sportybet: 'https://www.sportybet.com/ng/static/img/logo.png',
+  '1xbet': 'https://1xbet.com/favicon.ico',
+  betway: 'https://www.betway.com/favicon.ico',
+  betking: 'https://www.betking.com/assets/images/bk-logo.svg',
+  nairabet: 'https://www.nairabet.com/images/logo.png',
+  betnaija: 'https://www.betnaija.com/images/logo.png',
+  msport: 'https://www.msport.com/images/logo.png',
 };
 
 // Shared Select styles matching Virtual Numbers
