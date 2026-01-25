@@ -39,9 +39,9 @@ class TestHealthAndAuth:
         })
         assert response.status_code == 200
         data = response.json()
-        assert "access_token" in data
+        assert "token" in data
         print("✓ Admin login successful")
-        return data["access_token"]
+        return data["token"]
 
 
 class TestPINManagementEndpoints:
