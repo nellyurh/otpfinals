@@ -6679,7 +6679,8 @@ async def admin_verify_payout(reference: str, admin: dict = Depends(require_admi
             raise HTTPException(status_code=404, detail="Transaction not found")
         
         # Call Payscribe verification
-        result = await payscribe_request(f'payouts/verify/{reference}', 'GET')
+        # NOTE: Payscribe payout APIs require PUBLIC key
+        result = await payscribe_request(f'payouts/verify/{reference}', 'GET', use_public_key=True)
         
         logger.info(f"Admin payout verification for {reference}: {result}")
         
