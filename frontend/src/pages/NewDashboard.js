@@ -5327,37 +5327,740 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
   }
 
   function VirtualCardsSection() {
-    const userTier = user?.tier || 1;
+    const [cards, setCards] = useState([]);
+    const [fees, setFees] = useState({});
+    const [usdBalance, setUsdBalance] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [selectedCard, setSelectedCard] = useState(null);
+    const [cardTransactions, setCardTransactions] = useState([]);
+    const [loadingTxns, setLoadingTxns] = useState(false);
     
-    // Only Tier 3 users can access Virtual Cards
+    // Create card modal
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [cardBrand, setCardBrand] = useState('VISA');
+    const [initialAmount, setInitialAmount] = useState('5');
+    const [creating, setCreating] = useState(false);
+    
+    // Fund card modal
+    const [showFundModal, setShowFundModal] = useState(false);
+    const [fundingCard, setFundingCard] = useState(null);
+    const [fundAmount, setFundAmount] = useState('');
+    const [funding, setFunding] = useState(false);
+    
+    // Withdraw modal
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [withdrawingCard, setWithdrawingCard] = useState(null);
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [withdrawing, setWithdrawing] = useState(false);
+    
+    // Card details modal
+    const [showCardDetails, setShowCardDetails] = useState(false);
+    const [detailsCard, setDetailsCard] = useState(null);
+    const [showCardNumber, setShowCardNumber] = useState(false);
+    const [showCVV, setShowCVV] = useState(false);
+
+    const userTier = user?.tier || 1;
+    const hasPayscribeCustomer = !!user?.payscribe_customer_id;
+
+    useEffect(() => {
+      if (userTier >= 3) {
+        fetchCards();
+      }
+    }, [userTier]);
+
+    const fetchCards = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${API}/api/cards`, axiosConfig);
+        if (response.data.success) {
+          setCards(response.data.cards || []);
+          setFees(response.data.fees || {});
+          setUsdBalance(response.data.usd_balance || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch cards:', error);
+        if (error.response?.status !== 403) {
+          toast.error('Failed to load cards');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchCardTransactions = async (cardId) => {
+      setLoadingTxns(true);
+      try {
+        const response = await axios.get(`${API}/api/cards/${cardId}/transactions`, axiosConfig);
+        if (response.data.success) {
+          setCardTransactions(response.data.transactions || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch card transactions:', error);
+      } finally {
+        setLoadingTxns(false);
+      }
+    };
+
+    const handleCreateCard = async () => {
+      if (!initialAmount || parseFloat(initialAmount) < (fees.min_funding || 1)) {
+        toast.error(`Minimum initial amount is $${fees.min_funding || 1}`);
+        return;
+      }
+
+      const totalCost = parseFloat(initialAmount) + (fees.creation_fee || 2.50) + (fees.funding_fee || 0.30);
+      if (totalCost > usdBalance) {
+        toast.error(`Insufficient USD balance. You need $${totalCost.toFixed(2)}`);
+        return;
+      }
+
+      setCreating(true);
+      try {
+        const response = await axios.post(`${API}/api/cards/create`, {
+          brand: cardBrand,
+          initial_amount: parseFloat(initialAmount)
+        }, axiosConfig);
+
+        if (response.data.success) {
+          toast.success('Virtual card created successfully!');
+          setShowCreateModal(false);
+          setInitialAmount('5');
+          fetchCards();
+          fetchProfile();
+          
+          // Show the new card details
+          if (response.data.card) {
+            setDetailsCard(response.data.card);
+            setShowCardDetails(true);
+            setShowCardNumber(true); // Show card number once on creation
+          }
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to create card');
+      } finally {
+        setCreating(false);
+      }
+    };
+
+    const handleFundCard = async () => {
+      if (!fundAmount || parseFloat(fundAmount) < (fees.min_funding || 1)) {
+        toast.error(`Minimum funding amount is $${fees.min_funding || 1}`);
+        return;
+      }
+
+      const totalCost = parseFloat(fundAmount) + (fees.funding_fee || 0.30);
+      if (totalCost > usdBalance) {
+        toast.error(`Insufficient USD balance. You need $${totalCost.toFixed(2)}`);
+        return;
+      }
+
+      setFunding(true);
+      try {
+        const response = await axios.post(`${API}/api/cards/fund`, {
+          card_id: fundingCard.id,
+          amount: parseFloat(fundAmount)
+        }, axiosConfig);
+
+        if (response.data.success) {
+          toast.success(`Card funded with $${fundAmount}`);
+          setShowFundModal(false);
+          setFundAmount('');
+          setFundingCard(null);
+          fetchCards();
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to fund card');
+      } finally {
+        setFunding(false);
+      }
+    };
+
+    const handleWithdrawCard = async () => {
+      if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+        toast.error('Please enter a valid amount');
+        return;
+      }
+
+      if (parseFloat(withdrawAmount) > (withdrawingCard?.balance || 0)) {
+        toast.error('Amount exceeds card balance');
+        return;
+      }
+
+      setWithdrawing(true);
+      try {
+        const response = await axios.post(`${API}/api/cards/withdraw`, {
+          card_id: withdrawingCard.id,
+          amount: parseFloat(withdrawAmount)
+        }, axiosConfig);
+
+        if (response.data.success) {
+          toast.success(response.data.message);
+          setShowWithdrawModal(false);
+          setWithdrawAmount('');
+          setWithdrawingCard(null);
+          fetchCards();
+          fetchProfile();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Withdrawal failed');
+      } finally {
+        setWithdrawing(false);
+      }
+    };
+
+    const handleFreezeCard = async (card) => {
+      try {
+        const endpoint = card.status === 'frozen' ? 'unfreeze' : 'freeze';
+        const response = await axios.post(`${API}/api/cards/${card.id}/${endpoint}`, {}, axiosConfig);
+        if (response.data.success) {
+          toast.success(response.data.message);
+          fetchCards();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Operation failed');
+      }
+    };
+
+    // Tier 3 requirement check
     if (userTier < 3) {
+      return (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Shield className="w-6 h-6 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-slate-900 mb-1">Tier 3 Verification Required</h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  Virtual Cards are only available for Tier 3 verified users. Complete your KYC verification to unlock this feature.
+                </p>
+                <div className="flex items-center gap-2 text-sm mb-4">
+                  <span className="text-slate-500">Your current tier:</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                    Tier {userTier}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setActiveSection('profile')}
+                  className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 transition-colors text-sm"
+                >
+                  Upgrade Account (KYC)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // No Payscribe customer ID
+    if (!hasPayscribeCustomer) {
       return (
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
           <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
             <CreditCard className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Tier 3 Required</h3>
-            <p className="text-gray-500 mb-4">Virtual Cards are only available for Tier 3 verified users.</p>
-            <p className="text-sm text-gray-400 mb-6">Your current tier: <span className="font-semibold text-emerald-600">Tier {userTier}</span></p>
-            <button 
-              onClick={() => setActiveSection('profile')}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 transition-colors"
-            >
-              Upgrade Account (KYC)
-            </button>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Account Setup Required</h3>
+            <p className="text-gray-500 mb-4">Your account is being set up for virtual card services.</p>
+            <p className="text-sm text-gray-400">Please contact support if this persists.</p>
           </div>
         </div>
       );
     }
-    
+
+    if (loading) {
+      return (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-8 h-8 animate-spin text-emerald-600" />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
-        <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
-          <CreditCard className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">Create virtual cards for online payments</p>
-          <p className="text-sm text-gray-400 mt-2">Coming soon!</p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+            <p className="text-sm text-gray-500">USD Balance: <span className="font-semibold text-emerald-600">${usdBalance.toFixed(2)}</span></p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Create Card
+          </button>
         </div>
+
+        {/* Fee Info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-xs text-blue-700">
+            <strong>Fees:</strong> Creation ${fees.creation_fee?.toFixed(2) || '2.50'} • 
+            Funding ${fees.funding_fee?.toFixed(2) || '0.30'} • 
+            Transaction ${fees.transaction_fee?.toFixed(2) || '0.15'} • 
+            Withdrawal ${fees.withdrawal_fee?.toFixed(2) || '0.10'} • 
+            Monthly ${fees.monthly_fee?.toFixed(2) || '0.50'}
+          </p>
+        </div>
+
+        {/* Cards Grid */}
+        {cards.length === 0 ? (
+          <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
+            <CreditCard className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500 mb-4">You don't have any virtual cards yet</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 transition-colors"
+            >
+              Create Your First Card
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className={`relative rounded-2xl p-6 text-white overflow-hidden ${
+                  card.brand === 'VISA' 
+                    ? 'bg-gradient-to-br from-blue-600 to-purple-700' 
+                    : 'bg-gradient-to-br from-orange-500 to-red-600'
+                } ${card.status === 'frozen' ? 'opacity-70' : ''}`}
+              >
+                {/* Card chip */}
+                <div className="absolute top-6 left-6">
+                  <div className="w-10 h-8 bg-yellow-400 rounded-md opacity-80"></div>
+                </div>
+                
+                {/* Card brand */}
+                <div className="absolute top-6 right-6 text-2xl font-bold opacity-80">
+                  {card.brand}
+                </div>
+
+                {/* Card number */}
+                <div className="mt-12 mb-6 font-mono text-lg tracking-wider">
+                  {card.masked || '**** **** **** ' + card.last_four}
+                </div>
+
+                {/* Card details */}
+                <div className="flex justify-between items-end">
+                  <div>
+                    <p className="text-xs opacity-70">CARDHOLDER</p>
+                    <p className="font-medium">{card.name || user?.first_name + ' ' + user?.last_name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs opacity-70">EXPIRES</p>
+                    <p className="font-medium">{card.expiry}</p>
+                  </div>
+                </div>
+
+                {/* Balance */}
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-xs opacity-70">BALANCE</p>
+                      <p className="text-2xl font-bold">${(card.balance || 0).toFixed(2)}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        card.status === 'active' ? 'bg-green-500/30 text-green-200' :
+                        card.status === 'frozen' ? 'bg-blue-500/30 text-blue-200' :
+                        'bg-red-500/30 text-red-200'
+                      }`}>
+                        {card.status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status badge */}
+                {card.status === 'frozen' && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <span className="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold">FROZEN</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Card Actions */}
+        {cards.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {cards.map((card) => (
+              <div key={card.id + '-actions'} className="bg-white rounded-xl border p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-medium text-sm">•••• {card.last_four}</span>
+                  <span className="text-emerald-600 font-semibold">${(card.balance || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => { setFundingCard(card); setShowFundModal(true); }}
+                    disabled={card.status !== 'active'}
+                    className="flex-1 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium hover:bg-emerald-200 disabled:opacity-50"
+                  >
+                    Fund
+                  </button>
+                  <button
+                    onClick={() => { setWithdrawingCard(card); setShowWithdrawModal(true); }}
+                    disabled={card.status !== 'active' || (card.balance || 0) === 0}
+                    className="flex-1 px-3 py-2 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200 disabled:opacity-50"
+                  >
+                    Withdraw
+                  </button>
+                  <button
+                    onClick={() => { setDetailsCard(card); setShowCardDetails(true); fetchCardTransactions(card.id); }}
+                    className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200"
+                  >
+                    Details
+                  </button>
+                  <button
+                    onClick={() => handleFreezeCard(card)}
+                    disabled={card.status === 'terminated'}
+                    className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium ${
+                      card.status === 'frozen' 
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                        : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                    } disabled:opacity-50`}
+                  >
+                    {card.status === 'frozen' ? 'Unfreeze' : 'Freeze'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Create Card Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
+              <div className="p-6 border-b">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Create Virtual Card</h3>
+                  <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                {/* Card Brand */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Card Brand</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setCardBrand('VISA')}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        cardBrand === 'VISA' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="font-bold text-blue-700">VISA</span>
+                    </button>
+                    <button
+                      onClick={() => setCardBrand('MASTERCARD')}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        cardBrand === 'MASTERCARD' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="font-bold text-orange-600">MASTERCARD</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Initial Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Initial Funding Amount (USD)</label>
+                  <input
+                    type="number"
+                    min={fees.min_funding || 1}
+                    max={fees.max_funding || 10000}
+                    value={initialAmount}
+                    onChange={(e) => setInitialAmount(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="5.00"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Min: ${fees.min_funding || 1} • Max: ${fees.max_funding || 10000}</p>
+                </div>
+
+                {/* Cost Breakdown */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Cost Breakdown</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Creation Fee</span>
+                      <span>${(fees.creation_fee || 2.50).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Initial Amount</span>
+                      <span>${parseFloat(initialAmount || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Funding Fee</span>
+                      <span>${(fees.funding_fee || 0.30).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold pt-2 border-t">
+                      <span>Total</span>
+                      <span className="text-emerald-600">
+                        ${((fees.creation_fee || 2.50) + parseFloat(initialAmount || 0) + (fees.funding_fee || 0.30)).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Your USD Balance: ${usdBalance.toFixed(2)}</p>
+                </div>
+
+                <button
+                  onClick={handleCreateCard}
+                  disabled={creating || !initialAmount || parseFloat(initialAmount) < (fees.min_funding || 1)}
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {creating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {creating ? 'Creating...' : 'Create Card'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Fund Card Modal */}
+        {showFundModal && fundingCard && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
+              <div className="p-6 border-b">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Fund Card</h3>
+                  <button onClick={() => { setShowFundModal(false); setFundingCard(null); }} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500">Card ending in</p>
+                  <p className="font-mono font-semibold">•••• {fundingCard.last_four}</p>
+                  <p className="text-sm text-gray-500 mt-2">Current Balance: <span className="font-semibold text-emerald-600">${(fundingCard.balance || 0).toFixed(2)}</span></p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount to Fund (USD)</label>
+                  <input
+                    type="number"
+                    min={fees.min_funding || 1}
+                    max={fees.max_funding || 10000}
+                    value={fundAmount}
+                    onChange={(e) => setFundAmount(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="10.00"
+                  />
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Funding Amount</span>
+                    <span>${parseFloat(fundAmount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Funding Fee</span>
+                    <span>${(fees.funding_fee || 0.30).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold pt-2 border-t mt-2">
+                    <span>Total Deduction</span>
+                    <span className="text-emerald-600">${(parseFloat(fundAmount || 0) + (fees.funding_fee || 0.30)).toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Your USD Balance: ${usdBalance.toFixed(2)}</p>
+                </div>
+
+                <button
+                  onClick={handleFundCard}
+                  disabled={funding || !fundAmount || parseFloat(fundAmount) < (fees.min_funding || 1)}
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {funding ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                  {funding ? 'Funding...' : 'Fund Card'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Withdraw Modal */}
+        {showWithdrawModal && withdrawingCard && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
+              <div className="p-6 border-b">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Withdraw from Card</h3>
+                  <button onClick={() => { setShowWithdrawModal(false); setWithdrawingCard(null); }} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-500">Card ending in</p>
+                  <p className="font-mono font-semibold">•••• {withdrawingCard.last_four}</p>
+                  <p className="text-sm text-gray-500 mt-2">Card Balance: <span className="font-semibold text-emerald-600">${(withdrawingCard.balance || 0).toFixed(2)}</span></p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount to Withdraw (USD)</label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    max={withdrawingCard.balance || 0}
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="5.00"
+                  />
+                  <button 
+                    onClick={() => setWithdrawAmount(String(withdrawingCard.balance || 0))}
+                    className="text-xs text-emerald-600 hover:underline mt-1"
+                  >
+                    Withdraw All
+                  </button>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Withdrawal Amount</span>
+                    <span>${parseFloat(withdrawAmount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Withdrawal Fee</span>
+                    <span>-${(fees.withdrawal_fee || 0.10).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold pt-2 border-t mt-2">
+                    <span>You'll Receive</span>
+                    <span className="text-emerald-600">${Math.max(0, parseFloat(withdrawAmount || 0) - (fees.withdrawal_fee || 0.10)).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleWithdrawCard}
+                  disabled={withdrawing || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (withdrawingCard.balance || 0)}
+                  className="w-full py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {withdrawing ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                  {withdrawing ? 'Processing...' : 'Withdraw to USD Balance'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Card Details Modal */}
+        {showCardDetails && detailsCard && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-auto">
+              <div className="p-6 border-b sticky top-0 bg-white">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Card Details</h3>
+                  <button onClick={() => { setShowCardDetails(false); setDetailsCard(null); setShowCardNumber(false); setShowCVV(false); }} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                {/* Card Preview */}
+                <div className={`rounded-2xl p-6 text-white ${
+                  detailsCard.brand === 'VISA' 
+                    ? 'bg-gradient-to-br from-blue-600 to-purple-700' 
+                    : 'bg-gradient-to-br from-orange-500 to-red-600'
+                }`}>
+                  <div className="flex justify-between items-start mb-8">
+                    <div className="w-10 h-8 bg-yellow-400 rounded-md opacity-80"></div>
+                    <span className="text-xl font-bold opacity-80">{detailsCard.brand}</span>
+                  </div>
+                  <div className="font-mono text-lg tracking-wider mb-4">
+                    {showCardNumber ? (detailsCard.number || detailsCard.masked) : detailsCard.masked}
+                  </div>
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="text-xs opacity-70">EXPIRES</p>
+                      <p>{detailsCard.expiry}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs opacity-70">CVV</p>
+                      <p>{showCVV ? detailsCard.cvv : '***'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs opacity-70">BALANCE</p>
+                      <p className="font-bold">${(detailsCard.balance || 0).toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Show/Hide buttons */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowCardNumber(!showCardNumber)}
+                    className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 flex items-center justify-center gap-2"
+                  >
+                    {showCardNumber ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showCardNumber ? 'Hide Number' : 'Show Number'}
+                  </button>
+                  <button
+                    onClick={() => setShowCVV(!showCVV)}
+                    className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 flex items-center justify-center gap-2"
+                  >
+                    {showCVV ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showCVV ? 'Hide CVV' : 'Show CVV'}
+                  </button>
+                </div>
+
+                {/* Billing Address */}
+                {detailsCard.billing && (
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Billing Address</p>
+                    <p className="text-sm text-gray-600">
+                      {detailsCard.billing.street || detailsCard.billing.address}<br />
+                      {detailsCard.billing.city}, {detailsCard.billing.state}<br />
+                      {detailsCard.billing.country} {detailsCard.billing.postal_code}
+                    </p>
+                  </div>
+                )}
+
+                {/* Card Transactions */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Card Transactions</h4>
+                  {loadingTxns ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+                    </div>
+                  ) : cardTransactions.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">No transactions yet</p>
+                  ) : (
+                    <div className="space-y-2 max-h-60 overflow-auto">
+                      {cardTransactions.map((tx) => (
+                        <div key={tx.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 capitalize">{tx.type}</p>
+                            <p className="text-xs text-gray-500">{tx.description}</p>
+                            <p className="text-xs text-gray-400">{new Date(tx.created_at).toLocaleString()}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-semibold ${
+                              tx.type === 'funding' || tx.type === 'creation' ? 'text-emerald-600' : 
+                              tx.type === 'withdrawal' || tx.type === 'declined' ? 'text-red-600' : 'text-gray-700'
+                            }`}>
+                              {tx.type === 'withdrawal' || tx.type === 'declined' ? '-' : '+'}${Math.abs(tx.amount || 0).toFixed(2)}
+                            </p>
+                            {tx.fee > 0 && <p className="text-xs text-gray-400">Fee: ${tx.fee.toFixed(2)}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
