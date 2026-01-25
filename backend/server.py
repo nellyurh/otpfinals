@@ -1924,7 +1924,7 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         
         if not payscribe_key:
             logger.error("Payscribe not configured. Set keys in Admin → Payment Gateways")
-            return None
+            return {'status': False, 'message': 'Payscribe API key not configured', 'error_code': 'NOT_CONFIGURED'}
         
         url = f'{PAYSCRIBE_BASE_URL}/{endpoint}'
         headers = {
@@ -1950,16 +1950,21 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
             
             if response.status_code == 200:
                 try:
-                    return response.json()
+                    result = response.json()
+                    # Check for authentication errors in the response body
+                    if result.get('status') == False and 'authenticated' in str(result.get('description', '')).lower():
+                        result['error_code'] = 'INVALID_API_KEY'
+                    return result
                 except Exception as json_err:
                     logger.error(f"Payscribe JSON parse error: {json_err}")
                     logger.error(f"Payscribe raw response: {response.text[:500]}")
-                    return None
+                    return {'status': False, 'message': 'Invalid response from Payscribe', 'error_code': 'PARSE_ERROR'}
+            
             logger.error(f"Payscribe error ({response.status_code}): {response.text[:500]}")
-            return None
+            return {'status': False, 'message': f'Payscribe API error: {response.status_code}', 'status_code': response.status_code}
     except Exception as e:
         logger.error(f"Payscribe request error: {str(e)}")
-        return None
+        return {'status': False, 'message': f'Payscribe connection error: {str(e)}', 'error_code': 'CONNECTION_ERROR'}
 
 # ============ Payscribe Services ============
 
