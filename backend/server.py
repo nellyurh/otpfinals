@@ -6306,12 +6306,15 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
                 detail=f"Amount exceeds your Tier {tier} limit of ₦{tier_limits[tier]:,}. Upgrade your KYC to increase limits."
             )
         
-        # Get fee from Payscribe
-        fee_result = await payscribe_request(f'payout/fee?amount={request.amount}', 'GET')
+        # Get fee from Payscribe - correct endpoint: payouts/fee/?amount=X&currency=ngn
+        fee_result = await payscribe_request(f'payouts/fee/?amount={request.amount}&currency=ngn', 'GET')
         WITHDRAWAL_FEE = 50  # Default fee
         if fee_result and fee_result.get('status'):
-            fee_data = fee_result.get('message', {}).get('details', {})
-            WITHDRAWAL_FEE = fee_data.get('fee', 50)
+            fee_data = fee_result.get('message', {})
+            if isinstance(fee_data, dict):
+                fee_data = fee_data.get('details', fee_data)
+            if isinstance(fee_data, dict) and fee_data.get('fee') is not None:
+                WITHDRAWAL_FEE = float(fee_data.get('fee', 50))
         
         total_deduction = request.amount + WITHDRAWAL_FEE
         
