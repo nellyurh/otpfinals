@@ -2229,7 +2229,7 @@ const NewDashboard = () => {
         <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-pulse-slow">
           <div className="text-center">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Express KYC Verification</h3>
-            <p className="text-sm text-gray-500 mb-6">₦{KYC_FEE} will be deducted for each verification</p>
+            <p className="text-sm text-gray-500 mb-6">₦{KYC_FEE} total will be deducted for verification</p>
             
             {/* Progress Steps */}
             <div className="flex items-center justify-center gap-4 mb-8">
