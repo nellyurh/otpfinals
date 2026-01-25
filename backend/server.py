@@ -863,6 +863,8 @@ class ResellerOrder(BaseModel):
 
 
 class AdminUserUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     full_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -871,6 +873,7 @@ class AdminUserUpdate(BaseModel):
     is_suspended: Optional[bool] = None
     is_blocked: Optional[bool] = None
     is_admin: Optional[bool] = None
+    tier: Optional[int] = None  # Admin can set tier 1, 2, or 3
 
 
 class PricingConfig(BaseModel):
