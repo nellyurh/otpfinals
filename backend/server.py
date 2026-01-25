@@ -956,6 +956,16 @@ class PricingConfig(BaseModel):
     enable_profile: bool = True
     enable_support: bool = True
 
+    # Virtual Card Fees (USD)
+    card_creation_fee: float = 2.50  # One-time fee to create a card
+    card_funding_fee: float = 0.30  # Fee per funding operation
+    card_transaction_fee: float = 0.15  # Fee per successful transaction
+    card_declined_fee: float = 0.50  # Fee when transaction is declined (Payscribe charges this)
+    card_monthly_fee: float = 0.50  # Monthly maintenance fee
+    card_withdrawal_fee: float = 0.10  # Fee to withdraw from card to USD balance
+    card_min_funding_amount: float = 1.00  # Minimum funding amount
+    card_max_funding_amount: float = 10000.00  # Maximum funding amount
+
     # Reseller API Settings - reads from environment, can be overridden in admin
     reseller_api_base_url: str = Field(default_factory=lambda: os.environ.get('RESELLER_API_BASE_URL', ''))
 
