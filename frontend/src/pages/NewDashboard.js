@@ -2634,15 +2634,122 @@ const NewDashboard = () => {
                     <strong>Important:</strong> Your registered name ({user.first_name} {user.last_name}) must match your BVN/NIN records.
                   </p>
                 </div>
+
+                {/* Selfie Verification Section */}
+                <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="font-medium text-gray-900">Selfie Verification</h4>
+                      <p className="text-xs text-gray-500">Take a selfie to prove you're a real person</p>
+                    </div>
+                    {selfieImage && <Check className="w-5 h-5 text-green-500" />}
+                  </div>
+                  
+                  {!selfieImage ? (
+                    <button
+                      onClick={startCamera}
+                      className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Camera className="w-5 h-5" />
+                      Open Camera to Take Selfie
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <img src={selfieImage} alt="Selfie" className="w-16 h-16 rounded-lg object-cover" />
+                      <div className="flex-1">
+                        <p className="text-sm text-green-600 font-medium">Selfie captured!</p>
+                        <button 
+                          onClick={() => setSelfieImage(null)} 
+                          className="text-xs text-red-500 hover:underline"
+                        >
+                          Retake
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {cameraError && (
+                    <p className="text-sm text-red-500 mt-2">{cameraError}</p>
+                  )}
+                </div>
                 
                 <button
                   onClick={startTier3Verification}
-                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob || !address.trim()}
+                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob || !address.trim() || !selfieImage}
                   className="w-full py-4 text-white rounded-xl font-bold transition-all shadow-lg disabled:bg-gray-300 disabled:shadow-none"
-                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && address.trim() ? primaryColor : undefined }}
+                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && address.trim() && selfieImage ? primaryColor : undefined }}
                 >
                   Start Express KYC (₦{KYC_FEE})
                 </button>
+
+                {/* Camera Modal */}
+                {showCamera && (
+                  <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+                      <div className="p-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-gray-900">Take a Selfie</h3>
+                          <button onClick={stopCamera} className="text-gray-500 hover:text-gray-700">
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Complete the liveness check to verify you're a real person</p>
+                      </div>
+                      
+                      <div className="relative aspect-[4/3] bg-black">
+                        <video 
+                          ref={videoRef} 
+                          autoPlay 
+                          playsInline 
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                        <canvas ref={canvasRef} className="hidden" />
+                        
+                        {/* Liveness Instructions Overlay */}
+                        <div className="absolute top-4 left-0 right-0 text-center">
+                          <div className="inline-block bg-black/60 text-white px-4 py-2 rounded-full text-sm">
+                            {livenessCheck === 'blink' && '👁️ Please blink your eyes'}
+                            {livenessCheck === 'turn' && '↔️ Slowly turn your head'}
+                            {livenessCheck === 'smile' && '😊 Now smile!'}
+                            {livenessVerified && '✅ Ready to capture!'}
+                          </div>
+                        </div>
+                        
+                        {/* Face Guide */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-48 h-56 border-4 border-white/50 rounded-full" />
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 space-y-3">
+                        {!livenessVerified ? (
+                          <button
+                            onClick={performLivenessCheck}
+                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                          >
+                            {livenessCheck === 'blink' && 'I Blinked'}
+                            {livenessCheck === 'turn' && 'I Turned My Head'}
+                            {livenessCheck === 'smile' && 'I Smiled'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={captureSelfie}
+                            disabled={isCapturing}
+                            className="w-full py-3 text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
+                            style={{ backgroundColor: primaryColor }}
+                          >
+                            {isCapturing ? 'Capturing...' : '📸 Capture Selfie'}
+                          </button>
+                        )}
+                        
+                        <p className="text-xs text-center text-gray-500">
+                          Position your face within the oval and follow the instructions
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
