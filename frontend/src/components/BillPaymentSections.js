@@ -378,6 +378,12 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
         axiosConfig
       );
       
+      // Check for API key error
+      if (response.data.error_code === 'INVALID_API_KEY') {
+        toast.error('Payscribe API key is invalid. Please contact admin to update API keys.');
+        return;
+      }
+      
       if (response.data.status && response.data.message?.details) {
         const plans = response.data.message.details[0]?.plans || [];
         setDataPlans(plans.map(plan => ({
@@ -388,6 +394,8 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
           name: plan.name,
           category: categorizePlan(plan.name)
         })));
+      } else if (response.data.message) {
+        toast.error(response.data.message);
       }
     } catch (error) {
       console.error('Failed to fetch data plans:', error);
