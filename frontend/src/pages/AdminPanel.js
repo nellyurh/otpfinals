@@ -703,10 +703,17 @@ const AdminPanel = ({ user, setUser }) => {
     enable_referral: true,
     enable_profile: true,
     enable_support: true,
+    // Bills Payment sub-services
+    enable_bills_payment: true,
+    enable_electricity: true,
+    enable_tv: true,
+    enable_bank_transfer: true,
+    enable_wallet_transfer: true,
     // Payment gateway toggles
     enable_paymentpoint: true,
     enable_plisio: true,
     enable_ercaspay: true,
+    enable_payscribe: true,
   });
 
   const [promoCodes, setPromoCodes] = useState(null);
