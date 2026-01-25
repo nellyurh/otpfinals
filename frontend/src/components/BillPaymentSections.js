@@ -282,6 +282,7 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
     { id: 'tv', label: 'TV Subscription', icon: Tv, color: 'from-purple-500 to-pink-500', description: 'DSTV, GOtv, StarTimes' },
     { id: 'betting', label: 'Betting', icon: Gamepad2, color: 'from-red-500 to-rose-500', description: 'Fund betting wallets' },
     { id: 'transfer', label: 'Send Money', icon: Send, color: 'from-emerald-500 to-teal-500', description: 'Wallet to wallet transfer' },
+    { id: 'bank', label: 'Bank Transfer', icon: Building2, color: 'from-indigo-500 to-violet-500', description: 'Withdraw to bank account' },
   ];
 
   if (activeService) {
