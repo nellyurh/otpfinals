@@ -6519,6 +6519,13 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
             'enable_referral': True,
             'enable_profile': True,
             'enable_support': True,
+            # Bills Payment sub-services
+            'enable_bills_payment': True,
+            'enable_electricity': True,
+            'enable_tv': True,
+            'enable_bank_transfer': True,
+            'enable_wallet_transfer': True,
+            'enable_giftcards': True,
             # Payment gateway toggles
             'enable_paymentpoint': True,
             'enable_plisio': True,
@@ -6539,6 +6546,13 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
         'enable_referral': config.get('enable_referral', True),
         'enable_profile': config.get('enable_profile', True),
         'enable_support': config.get('enable_support', True),
+        # Bills Payment sub-services
+        'enable_bills_payment': config.get('enable_bills_payment', True),
+        'enable_electricity': config.get('enable_electricity', True),
+        'enable_tv': config.get('enable_tv', True),
+        'enable_bank_transfer': config.get('enable_bank_transfer', True),
+        'enable_wallet_transfer': config.get('enable_wallet_transfer', True),
+        'enable_giftcards': config.get('enable_giftcards', True),
         # Payment gateway toggles
         'enable_paymentpoint': config.get('enable_paymentpoint', True),
         'enable_plisio': config.get('enable_plisio', True),
