@@ -6310,7 +6310,8 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
             )
         
         # Get fee from Payscribe - correct endpoint: payouts/fee/?amount=X&currency=ngn
-        fee_result = await payscribe_request(f'payouts/fee/?amount={request.amount}&currency=ngn', 'GET')
+        # NOTE: Payscribe payout APIs require PUBLIC key
+        fee_result = await payscribe_request(f'payouts/fee/?amount={request.amount}&currency=ngn', 'GET', use_public_key=True)
         WITHDRAWAL_FEE = 50  # Default fee
         if fee_result and fee_result.get('status'):
             fee_data = fee_result.get('message', {})
