@@ -6108,6 +6108,132 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
         raise HTTPException(status_code=500, detail="Transfer failed. Please try again later.")
 
 
+# ============ Payscribe Payout Webhook ============
+
+PAYSCRIBE_WEBHOOK_IP = "162.254.34.78"
+
+class PayscribePayoutWebhook(BaseModel):
+    event_id: str
+    event_type: str
+    trans_id: str
+    ref: str
+    session_id: Optional[str] = None
+    amount: float
+    fee: Optional[float] = 0
+    total: Optional[float] = 0
+    beneficiary: Optional[Dict] = None
+    currency: Optional[str] = "ngn"
+    narration: Optional[str] = None
+    status: str
+    created_at: Optional[str] = None
+
+
+@api_router.post("/webhooks/payscribe/payout")
+async def payscribe_payout_webhook(request: Request):
+    """
+    Handle Payscribe payout webhooks for bank transfer status updates.
+    
+    Webhook events:
+    - payouts.created: Payout initiated
+    - payouts.success: Payout completed successfully
+    - payouts.failed: Payout failed
+    """
+    try:
+        # Verify webhook source IP (optional security check)
+        client_ip = request.client.host
+        forwarded_for = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        source_ip = forwarded_for or client_ip
+        
+        # Log webhook receipt
+        logger.info(f"Payscribe payout webhook received from IP: {source_ip}")
+        
+        # Parse webhook payload
+        payload = await request.json()
+        logger.info(f"Payscribe payout webhook payload: {payload}")
+        
+        # Extract key fields
+        event_type = payload.get('event_type', '')
+        trans_id = payload.get('trans_id', '')
+        ref = payload.get('ref', '')
+        status = payload.get('status', '').lower()
+        amount = payload.get('amount', 0)
+        beneficiary = payload.get('beneficiary', {})
+        
+        if not ref:
+            logger.warning("Payscribe webhook missing ref field")
+            return {"success": False, "message": "Missing reference"}
+        
+        # Find the transaction by reference
+        transaction = await db.transactions.find_one({'reference': ref}, {'_id': 0})
+        
+        if not transaction:
+            logger.warning(f"Payscribe webhook: Transaction not found for ref {ref}")
+            return {"success": False, "message": "Transaction not found"}
+        
+        # Check for duplicate webhook (idempotency)
+        if transaction.get('webhook_processed'):
+            logger.info(f"Payscribe webhook already processed for ref {ref}")
+            return {"success": True, "message": "Already processed"}
+        
+        # Update transaction status based on webhook event
+        new_status = 'pending'
+        notification_title = ''
+        notification_message = ''
+        
+        if event_type == 'payouts.success' or status == 'success':
+            new_status = 'completed'
+            notification_title = 'Bank Transfer Successful'
+            notification_message = f"₦{amount:,.2f} has been sent to {beneficiary.get('account_name', 'your bank account')}"
+            
+        elif event_type == 'payouts.failed' or status == 'failed':
+            new_status = 'failed'
+            notification_title = 'Bank Transfer Failed'
+            notification_message = f"Your transfer of ₦{amount:,.2f} failed. The amount will be refunded to your wallet."
+            
+            # Refund user on failed payout
+            user = await db.users.find_one({'id': transaction['user_id']})
+            if user:
+                refund_amount = transaction.get('amount', 0) + transaction.get('metadata', {}).get('fee', 0)
+                await db.users.update_one(
+                    {'id': transaction['user_id']},
+                    {'$inc': {'ngn_balance': refund_amount}}
+                )
+                logger.info(f"Refunded ₦{refund_amount} to user {transaction['user_id']} for failed payout {ref}")
+                
+        elif event_type == 'payouts.created':
+            new_status = 'processing'
+            # No notification for created - just update status
+        
+        # Update transaction
+        update_data = {
+            'status': new_status,
+            'webhook_processed': True,
+            'webhook_event': event_type,
+            'webhook_received_at': datetime.now(timezone.utc).isoformat(),
+            'payscribe_trans_id': trans_id,
+            'payscribe_session_id': payload.get('session_id', '')
+        }
+        
+        await db.transactions.update_one({'reference': ref}, {'$set': update_data})
+        
+        # Send notification to user
+        if notification_title:
+            await _create_transaction_notification(
+                transaction['user_id'],
+                notification_title,
+                notification_message,
+                metadata={'reference': ref, 'type': 'bank_transfer', 'status': new_status}
+            )
+        
+        logger.info(f"Payscribe payout webhook processed: ref={ref}, status={new_status}")
+        
+        return {"success": True, "message": f"Webhook processed: {event_type}"}
+        
+    except Exception as e:
+        logger.error(f"Payscribe payout webhook error: {str(e)}")
+        return {"success": False, "message": str(e)}
+
+
 @api_router.get("/admin/users")
 async def admin_list_users(admin: dict = Depends(require_admin)):
     """List users for admin view (basic snapshot)."""
