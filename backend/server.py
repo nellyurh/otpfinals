@@ -6236,17 +6236,37 @@ async def validate_bank_account(bank_code: str, account_number: str, user: dict 
         if len(account_number) != 10:
             return {'valid': False, 'message': 'Account number must be 10 digits'}
         
-        # Use Payscribe account lookup API
-        endpoint = f'payout/account/lookup?bank_code={bank_code}&account_number={account_number}'
-        result = await payscribe_request(endpoint, 'GET')
+        # Use Payscribe account lookup API - POST request
+        # Endpoint: payouts/account/lookup
+        payload = {
+            "account": account_number,
+            "bank": bank_code
+        }
+        
+        result = await payscribe_request('payouts/account/lookup', 'POST', payload)
+        
+        logger.info(f"Account lookup response for {bank_code}/{account_number}: {result}")
         
         if result and result.get('status'):
-            account_data = result.get('message', {}).get('details', {})
-            return {
-                'valid': True,
-                'account_name': account_data.get('account_name', 'Unknown'),
-                'bank_name': account_data.get('bank_name', 'Unknown Bank')
-            }
+            # Try different response structures
+            account_data = result.get('message', {})
+            if isinstance(account_data, dict):
+                account_data = account_data.get('details', account_data)
+            
+            # Also check 'data' field
+            if not account_data and result.get('data'):
+                account_data = result.get('data')
+            
+            if isinstance(account_data, dict):
+                account_name = account_data.get('account_name') or account_data.get('name')
+                bank_name = account_data.get('bank_name') or account_data.get('bank')
+                
+                if account_name:
+                    return {
+                        'valid': True,
+                        'account_name': account_name,
+                        'bank_name': bank_name or 'Unknown Bank'
+                    }
         
         # Check for error message
         error_msg = result.get('message') if result else 'Validation failed'
