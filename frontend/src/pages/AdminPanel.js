@@ -1565,6 +1565,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => { setActiveSection('payscribe'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
+              icon={Send}
+              label="Bank Payouts"
+              active={activeSection === 'bank-payouts'}
+              onClick={() => { setActiveSection('bank-payouts'); fetchBankPayouts(); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
               icon={Bell}
               label="Popup Notifications"
               active={activeSection === 'notifications'}
