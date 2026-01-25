@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 class FiveSimTester:
-    def __init__(self, base_url="https://billhub-16.preview.emergentagent.com"):
+    def __init__(self, base_url="https://billhub-pay.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.admin_token = None
