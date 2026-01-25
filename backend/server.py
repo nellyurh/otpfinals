@@ -6182,7 +6182,8 @@ async def get_transfer_fee(amount: float, user: dict = Depends(get_current_user)
     """Get transfer fee from Payscribe for a given amount"""
     try:
         # Fetch fee from Payscribe - correct endpoint: payouts/fee/?amount=X&currency=ngn
-        result = await payscribe_request(f'payouts/fee/?amount={amount}&currency=ngn', 'GET')
+        # NOTE: Payscribe payout APIs require PUBLIC key
+        result = await payscribe_request(f'payouts/fee/?amount={amount}&currency=ngn', 'GET', use_public_key=True)
         
         logger.info(f"Payscribe fee response for amount {amount}: {result}")
         
