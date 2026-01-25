@@ -6139,7 +6139,8 @@ async def get_nigerian_banks(user: dict = Depends(get_current_user)):
     """Get list of Nigerian banks from Payscribe API"""
     try:
         # Fetch banks from Payscribe - correct endpoint: payouts/bank/list
-        result = await payscribe_request('payouts/bank/list', 'GET')
+        # NOTE: Payscribe payout APIs require PUBLIC key (not secret key)
+        result = await payscribe_request('payouts/bank/list', 'GET', use_public_key=True)
         
         logger.info(f"Payscribe banks response: {result}")
         
