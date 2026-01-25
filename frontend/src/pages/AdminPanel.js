@@ -955,6 +955,35 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  // Card Fees functions
+  const fetchCardFees = async () => {
+    setLoadingCardFees(true);
+    try {
+      const resp = await axios.get(`${API}/admin/card-fees`, axiosConfig);
+      if (resp.data.success) {
+        setCardFees(resp.data.fees);
+      }
+    } catch (e) {
+      console.error('Failed to fetch card fees');
+    } finally {
+      setLoadingCardFees(false);
+    }
+  };
+
+  const saveCardFees = async () => {
+    setSavingCardFees(true);
+    try {
+      const resp = await axios.put(`${API}/admin/card-fees`, cardFees, axiosConfig);
+      if (resp.data.success) {
+        toast.success('Card fees updated successfully');
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to update card fees');
+    } finally {
+      setSavingCardFees(false);
+    }
+  };
+
   const fetchAdminTransactions = async () => {
     try {
       const resp = await axios.get(`${API}/admin/transactions`, axiosConfig);
