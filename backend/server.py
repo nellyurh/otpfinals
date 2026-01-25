@@ -2399,16 +2399,25 @@ async def get_profile(user: dict = Depends(get_current_user)):
 
 class UpdateProfileRequest(BaseModel):
     full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone: Optional[str] = None
+    address: Optional[str] = None
 
 @api_router.put("/user/profile")
 async def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_user)):
-    """Update user profile (full name, phone)."""
+    """Update user profile (full name, first name, last name, phone, address)."""
     update_fields = {}
     if data.full_name is not None:
         update_fields['full_name'] = data.full_name
+    if data.first_name is not None:
+        update_fields['first_name'] = data.first_name
+    if data.last_name is not None:
+        update_fields['last_name'] = data.last_name
     if data.phone is not None:
         update_fields['phone'] = data.phone
+    if data.address is not None:
+        update_fields['address'] = data.address
     
     if not update_fields:
         raise HTTPException(status_code=400, detail="No fields to update")
