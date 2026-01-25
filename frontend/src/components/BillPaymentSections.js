@@ -1488,3 +1488,313 @@ function WalletTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions
     </div>
   );
 }
+
+
+// ============ Bank Transfer (Withdrawal) Sub-Section ============
+function BankTransferSubSection({ axiosConfig, fetchProfile, fetchTransactions, user }) {
+  const [banks, setBanks] = useState([]);
+  const [selectedBank, setSelectedBank] = useState(null);
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [narration, setNarration] = useState('');
+  const [validating, setValidating] = useState(false);
+  const [validated, setValidated] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+  const [needsManualVerify, setNeedsManualVerify] = useState(false);
+
+  const WITHDRAWAL_FEE = 50;
+  const MIN_WITHDRAWAL = 1000;
+
+  // Get tier limit
+  const getTierLimit = () => {
+    const tier = user?.tier || 1;
+    const limits = { 1: 10000, 2: 100000, 3: 2000000 };
+    return limits[tier] || 10000;
+  };
+
+  useEffect(() => {
+    fetchBanks();
+  }, []);
+
+  const fetchBanks = async () => {
+    try {
+      const response = await axios.get(`${API}/api/banks/list`, axiosConfig);
+      if (response.data.success) {
+        setBanks(response.data.banks.map(b => ({
+          value: b.code,
+          label: b.name
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch banks:', error);
+    }
+  };
+
+  const validateAccount = async () => {
+    if (!selectedBank || accountNumber.length < 10) {
+      toast.error('Please select a bank and enter valid account number');
+      return;
+    }
+
+    setValidating(true);
+    setValidated(false);
+    setAccountName('');
+    setNeedsManualVerify(false);
+
+    try {
+      const response = await axios.get(
+        `${API}/api/banks/validate-account?bank_code=${selectedBank.value}&account_number=${accountNumber}`,
+        axiosConfig
+      );
+
+      if (response.data.valid) {
+        setAccountName(response.data.account_name);
+        setValidated(true);
+        setNeedsManualVerify(response.data.needs_verification || false);
+        toast.success('Account validated!');
+      } else {
+        toast.error('Account validation failed');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Validation failed');
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!validated || !amount) {
+      toast.error('Please validate account and enter amount');
+      return;
+    }
+
+    const amountNum = parseFloat(amount);
+    if (amountNum < MIN_WITHDRAWAL) {
+      toast.error(`Minimum withdrawal is ₦${MIN_WITHDRAWAL.toLocaleString()}`);
+      return;
+    }
+
+    if (amountNum > getTierLimit()) {
+      toast.error(`Amount exceeds your Tier ${user?.tier || 1} limit of ₦${getTierLimit().toLocaleString()}`);
+      return;
+    }
+
+    const totalDeduction = amountNum + WITHDRAWAL_FEE;
+    if ((user?.ngn_balance || 0) < totalDeduction) {
+      toast.error(`Insufficient balance. You need ₦${totalDeduction.toLocaleString()} (including ₦${WITHDRAWAL_FEE} fee)`);
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const response = await axios.post(`${API}/api/banks/transfer`, {
+        bank_code: selectedBank.value,
+        account_number: accountNumber,
+        account_name: accountName,
+        amount: amountNum,
+        narration: narration || 'Wallet withdrawal'
+      }, axiosConfig);
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Transfer initiated!');
+        // Reset form
+        setSelectedBank(null);
+        setAccountNumber('');
+        setAccountName('');
+        setAmount('');
+        setNarration('');
+        setValidated(false);
+        fetchProfile();
+        fetchTransactions();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Transfer failed');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4" data-testid="bank-transfer-subsection">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Bank Transfer</h2>
+          <p className="text-xs sm:text-sm text-gray-500">Withdraw to your bank account</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Building2 className={`w-3 h-3 sm:w-4 sm:h-4 text-indigo-600 transition-transform ${expanded ? 'rotate-12' : ''}`} />
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Withdraw to Bank</h3>
+          </div>
+          <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </button>
+
+        {expanded && (
+          <div className="p-3 sm:p-4 pt-0 space-y-3 border-t">
+            {/* Info Banner */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+              <p className="text-xs text-indigo-800">
+                <strong>Withdrawal Fee:</strong> ₦{WITHDRAWAL_FEE} per transfer • 
+                <strong> Min:</strong> ₦{MIN_WITHDRAWAL.toLocaleString()} • 
+                <strong> Your Limit:</strong> ₦{getTierLimit().toLocaleString()} (Tier {user?.tier || 1})
+              </p>
+            </div>
+
+            {/* Bank Selection */}
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Bank</label>
+              <Select
+                options={banks}
+                value={selectedBank}
+                onChange={(val) => {
+                  setSelectedBank(val);
+                  setValidated(false);
+                  setAccountName('');
+                }}
+                placeholder="Choose your bank..."
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+              />
+            </div>
+
+            {/* Account Number */}
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Account Number</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter 10-digit account number"
+                  value={accountNumber}
+                  onChange={(e) => {
+                    setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
+                    setValidated(false);
+                    setAccountName('');
+                  }}
+                  maxLength={10}
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
+                />
+                <button
+                  onClick={validateAccount}
+                  disabled={!selectedBank || accountNumber.length < 10 || validating}
+                  className="px-4 py-2.5 bg-indigo-600 text-white rounded-full font-medium text-xs hover:bg-indigo-700 disabled:bg-gray-300"
+                >
+                  {validating ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Verify'}
+                </button>
+              </div>
+            </div>
+
+            {/* Validated Account */}
+            {validated && (
+              <div className={`border rounded-xl p-3 ${needsManualVerify ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${needsManualVerify ? 'bg-yellow-500' : 'bg-green-500'}`}>
+                    {accountName?.charAt(0)?.toUpperCase() || 'A'}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`font-semibold text-xs ${needsManualVerify ? 'text-yellow-900' : 'text-green-900'}`}>{accountName}</p>
+                    <p className={`text-[10px] ${needsManualVerify ? 'text-yellow-700' : 'text-green-700'}`}>{selectedBank?.label} - {accountNumber}</p>
+                    {needsManualVerify && (
+                      <p className="text-[10px] text-yellow-600 mt-1">⚠️ Please verify this is the correct account</p>
+                    )}
+                  </div>
+                  <Check className={`w-4 h-4 ${needsManualVerify ? 'text-yellow-600' : 'text-green-600'}`} />
+                </div>
+              </div>
+            )}
+
+            {/* Amount */}
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">₦</span>
+                <input
+                  type="number"
+                  placeholder={`Min ₦${MIN_WITHDRAWAL.toLocaleString()}`}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full pl-8 pr-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Quick Amounts */}
+            <div className="flex flex-wrap gap-2">
+              {['1000', '2000', '5000', '10000', '20000'].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setAmount(preset)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    amount === preset ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-indigo-100'
+                  }`}
+                >
+                  ₦{parseInt(preset).toLocaleString()}
+                </button>
+              ))}
+            </div>
+
+            {/* Narration */}
+            <div>
+              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Narration (Optional)</label>
+              <input
+                type="text"
+                placeholder="What's this transfer for?"
+                value={narration}
+                onChange={(e) => setNarration(e.target.value)}
+                maxLength={50}
+                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none text-gray-900 text-sm"
+              />
+            </div>
+
+            {/* Summary */}
+            {validated && amount && parseFloat(amount) >= MIN_WITHDRAWAL && (
+              <div className="bg-gray-50 rounded-xl p-3 space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600">Transfer Amount:</span>
+                  <span className="font-semibold text-gray-900">₦{parseFloat(amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600">Service Fee:</span>
+                  <span className="font-semibold text-gray-900">₦{WITHDRAWAL_FEE}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-1 mt-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-800 font-semibold">Total Deduction:</span>
+                    <span className="font-bold text-indigo-600">₦{(parseFloat(amount) + WITHDRAWAL_FEE).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              onClick={handleTransfer}
+              disabled={!validated || !amount || parseFloat(amount) < MIN_WITHDRAWAL || processing}
+              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-full font-bold text-sm hover:from-indigo-600 hover:to-violet-600 disabled:from-gray-300 disabled:to-gray-300 transition-all flex items-center justify-center gap-2"
+              data-testid="bank-transfer-btn"
+            >
+              {processing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Building2 className="w-4 h-4" />
+                  Withdraw ₦{amount ? parseFloat(amount).toLocaleString() : '0'}
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
