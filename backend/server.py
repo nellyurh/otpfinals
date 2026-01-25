@@ -2463,6 +2463,199 @@ async def change_password(data: ChangePasswordRequest, user: dict = Depends(get_
     
     return {"success": True, "message": "Password changed successfully"}
 
+
+# ============ Transaction PIN Management ============
+
+class SetPinRequest(BaseModel):
+    pin: str
+    confirm_pin: str
+
+
+class VerifyPinRequest(BaseModel):
+    pin: str
+
+
+class ResetPinRequest(BaseModel):
+    email: str
+    bvn: str
+    new_pin: str
+    reset_code: str
+
+
+@api_router.post("/user/pin/set")
+async def set_transaction_pin(data: SetPinRequest, user: dict = Depends(get_current_user)):
+    """Set transaction PIN for the first time"""
+    # Check if PIN is already set
+    db_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'transaction_pin_hash': 1})
+    if db_user and db_user.get('transaction_pin_hash'):
+        raise HTTPException(status_code=400, detail="PIN already set. Use change PIN instead.")
+    
+    # Validate PIN
+    if len(data.pin) != 4 or not data.pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be exactly 4 digits")
+    
+    if data.pin != data.confirm_pin:
+        raise HTTPException(status_code=400, detail="PINs do not match")
+    
+    # Hash and store PIN
+    pin_hash = hash_password(data.pin)
+    await db.users.update_one(
+        {'id': user['id']},
+        {'$set': {'transaction_pin_hash': pin_hash}}
+    )
+    
+    return {"success": True, "message": "Transaction PIN set successfully"}
+
+
+@api_router.post("/user/pin/verify")
+async def verify_transaction_pin(data: VerifyPinRequest, user: dict = Depends(get_current_user)):
+    """Verify transaction PIN"""
+    db_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'transaction_pin_hash': 1})
+    
+    if not db_user or not db_user.get('transaction_pin_hash'):
+        raise HTTPException(status_code=400, detail="PIN not set")
+    
+    if not verify_password(data.pin, db_user['transaction_pin_hash']):
+        raise HTTPException(status_code=400, detail="Invalid PIN")
+    
+    return {"success": True, "valid": True}
+
+
+class ChangePinRequest(BaseModel):
+    current_pin: str
+    new_pin: str
+    confirm_pin: str
+
+
+@api_router.put("/user/pin/change")
+async def change_transaction_pin(data: ChangePinRequest, user: dict = Depends(get_current_user)):
+    """Change transaction PIN"""
+    db_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'transaction_pin_hash': 1})
+    
+    if not db_user or not db_user.get('transaction_pin_hash'):
+        raise HTTPException(status_code=400, detail="PIN not set. Use set PIN first.")
+    
+    # Verify current PIN
+    if not verify_password(data.current_pin, db_user['transaction_pin_hash']):
+        raise HTTPException(status_code=400, detail="Current PIN is incorrect")
+    
+    # Validate new PIN
+    if len(data.new_pin) != 4 or not data.new_pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be exactly 4 digits")
+    
+    if data.new_pin != data.confirm_pin:
+        raise HTTPException(status_code=400, detail="PINs do not match")
+    
+    # Hash and store new PIN
+    pin_hash = hash_password(data.new_pin)
+    await db.users.update_one(
+        {'id': user['id']},
+        {'$set': {'transaction_pin_hash': pin_hash}}
+    )
+    
+    return {"success": True, "message": "Transaction PIN changed successfully"}
+
+
+@api_router.post("/user/pin/reset-request")
+async def request_pin_reset(user: dict = Depends(get_current_user)):
+    """Request PIN reset code via email"""
+    # Generate 6-digit reset code
+    reset_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    # Store code with expiry (10 minutes)
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
+    await db.users.update_one(
+        {'id': user['id']},
+        {'$set': {
+            'pin_reset_code': reset_code,
+            'pin_reset_expiry': expiry.isoformat()
+        }}
+    )
+    
+    # Send email with reset code
+    try:
+        await send_email(
+            to_email=user['email'],
+            subject="PIN Reset Code",
+            html_body=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>PIN Reset Request</h2>
+                <p>Your PIN reset code is:</p>
+                <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+                    {reset_code}
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+            </div>
+            """
+        )
+    except Exception as e:
+        logger.error(f"Failed to send PIN reset email: {str(e)}")
+    
+    return {"success": True, "message": "Reset code sent to your email"}
+
+
+class PinResetVerifyRequest(BaseModel):
+    reset_code: str
+    bvn: str
+    new_pin: str
+    confirm_pin: str
+
+
+@api_router.post("/user/pin/reset-verify")
+async def verify_and_reset_pin(data: PinResetVerifyRequest, user: dict = Depends(get_current_user)):
+    """Verify reset code and BVN, then reset PIN"""
+    db_user = await db.users.find_one(
+        {'id': user['id']},
+        {'_id': 0, 'pin_reset_code': 1, 'pin_reset_expiry': 1, 'bvn': 1}
+    )
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify reset code
+    if not db_user.get('pin_reset_code') or db_user['pin_reset_code'] != data.reset_code:
+        raise HTTPException(status_code=400, detail="Invalid reset code")
+    
+    # Check expiry
+    expiry_str = db_user.get('pin_reset_expiry')
+    if expiry_str:
+        expiry = datetime.fromisoformat(expiry_str.replace('Z', '+00:00'))
+        if datetime.now(timezone.utc) > expiry:
+            raise HTTPException(status_code=400, detail="Reset code has expired. Please request a new one.")
+    
+    # Verify BVN (only if user has BVN set)
+    if db_user.get('bvn') and db_user['bvn'] != data.bvn:
+        raise HTTPException(status_code=400, detail="BVN does not match our records")
+    
+    # Validate new PIN
+    if len(data.new_pin) != 4 or not data.new_pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be exactly 4 digits")
+    
+    if data.new_pin != data.confirm_pin:
+        raise HTTPException(status_code=400, detail="PINs do not match")
+    
+    # Hash and store new PIN, clear reset code
+    pin_hash = hash_password(data.new_pin)
+    await db.users.update_one(
+        {'id': user['id']},
+        {
+            '$set': {'transaction_pin_hash': pin_hash},
+            '$unset': {'pin_reset_code': '', 'pin_reset_expiry': ''}
+        }
+    )
+    
+    return {"success": True, "message": "PIN reset successfully"}
+
+
+@api_router.get("/user/pin/status")
+async def get_pin_status(user: dict = Depends(get_current_user)):
+    """Check if user has PIN set"""
+    db_user = await db.users.find_one({'id': user['id']}, {'_id': 0, 'transaction_pin_hash': 1})
+    has_pin = bool(db_user and db_user.get('transaction_pin_hash'))
+    return {"success": True, "has_pin": has_pin}
+
+
 @api_router.get("/user/virtual-accounts")
 async def get_virtual_accounts(user: dict = Depends(get_current_user)):
     accounts = await db.virtual_accounts.find({'user_id': user['id']}, {'_id': 0}).to_list(10)
