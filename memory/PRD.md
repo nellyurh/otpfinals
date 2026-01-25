@@ -1,6 +1,15 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-01-25 (Session 4)**: Payscribe Payout API Fix + Admin Payouts Management
+  - FIXED: Bank list now uses correct Payscribe endpoint (`payouts/bank/list`)
+  - FIXED: Transfer fee now uses correct endpoint (`payouts/fee/?amount=X&currency=ngn`)
+  - FIXED: Account validation now uses POST to `payouts/account/lookup`
+  - FIXED: Bank transfer uses `payouts/transfer` with correct payload
+  - FIXED: All payout APIs now use PUBLIC KEY (not secret key)
+  - NEW: Admin "Bank Payouts" section for managing bank transfers
+  - NEW: Admin can verify, complete, or refund payouts
+  - NEW: `/api/payouts/verify/{ref}` - Verify payout status with Payscribe
 - **2026-01-25 (Session 3)**: Transaction PIN System + Improved Bank Transfer Flow
   - Implemented complete Transaction PIN management system
   - PIN set, change, verify, reset with email code + BVN verification
@@ -19,6 +28,34 @@
   - Admin Panel tier control and KYC viewing
 
 ## Latest Updates (January 25, 2026)
+
+### Session 4 - Payscribe Payout API Integration Fix
+
+**Problem Solved:**
+The Payscribe payout API was returning 401 errors because:
+1. Wrong API endpoints were being used
+2. Secret key was used instead of PUBLIC key
+
+**Correct Payscribe Payout Endpoints (all use PUBLIC key):**
+| Feature | Endpoint | Method |
+|---------|----------|--------|
+| Bank List | `/api/v1/payouts/bank/list` | GET |
+| Transfer Fee | `/api/v1/payouts/fee/?amount=X&currency=ngn` | GET |
+| Account Lookup | `/api/v1/payouts/account/lookup` | POST |
+| Transfer | `/api/v1/payouts/transfer` | POST |
+| Verify | `/api/v1/payouts/verify/{ref}` | GET |
+
+**Results:**
+- Bank list now returns 560+ Nigerian banks (from Payscribe)
+- Transfer fees fetched dynamically (e.g., ₦25 for ₦5,000)
+- Account validation working correctly
+
+**New Admin Features:**
+- Admin Panel → Bank Payouts section
+- View all bank transfer history
+- Verify payout status with Payscribe
+- Manually mark payouts as completed
+- Refund stuck payouts to user wallet
 
 ### Session 3 - Transaction PIN System + Bank Transfer Improvements
 
