@@ -6138,17 +6138,38 @@ FALLBACK_BANKS = [
 async def get_nigerian_banks(user: dict = Depends(get_current_user)):
     """Get list of Nigerian banks from Payscribe API"""
     try:
-        # Fetch banks from Payscribe
-        result = await payscribe_request('payout/banks', 'GET')
+        # Fetch banks from Payscribe - correct endpoint: payouts/bank/list
+        result = await payscribe_request('payouts/bank/list', 'GET')
+        
+        logger.info(f"Payscribe banks response: {result}")
         
         if result and result.get('status'):
-            banks_data = result.get('message', {}).get('details', [])
-            if banks_data:
-                banks = [{'code': b.get('code'), 'name': b.get('name')} for b in banks_data if b.get('code') and b.get('name')]
-                return {"success": True, "banks": banks, "source": "payscribe"}
+            # The response structure may vary - handle different formats
+            banks_data = result.get('message', {})
+            if isinstance(banks_data, dict):
+                banks_data = banks_data.get('details', [])
+            elif not isinstance(banks_data, list):
+                banks_data = []
+            
+            # Also check for 'data' field directly
+            if not banks_data and result.get('data'):
+                banks_data = result.get('data', [])
+            
+            if banks_data and isinstance(banks_data, list):
+                banks = []
+                for b in banks_data:
+                    # Handle different field names: code/bank_code, name/bank_name
+                    code = b.get('code') or b.get('bank_code') or b.get('sort_code')
+                    name = b.get('name') or b.get('bank_name')
+                    if code and name:
+                        banks.append({'code': str(code), 'name': name})
+                
+                if banks:
+                    logger.info(f"Fetched {len(banks)} banks from Payscribe")
+                    return {"success": True, "banks": banks, "source": "payscribe"}
         
         # Fallback to hardcoded list
-        logger.warning("Failed to fetch banks from Payscribe, using fallback list")
+        logger.warning(f"Failed to fetch banks from Payscribe, using fallback list. Response: {result}")
         return {"success": True, "banks": FALLBACK_BANKS, "source": "fallback"}
     except Exception as e:
         logger.error(f"Error fetching banks: {str(e)}")
