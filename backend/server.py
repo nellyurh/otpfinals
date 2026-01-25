@@ -5892,6 +5892,222 @@ async def get_recent_transfers(user: dict = Depends(get_current_user)):
         logger.error(f"Recent transfers fetch error: {str(e)}")
         return {'transfers': []}
 
+
+# ============ Bank Transfer (Withdrawal) ============
+
+NIGERIAN_BANKS = [
+    {"code": "044", "name": "Access Bank"},
+    {"code": "023", "name": "Citibank Nigeria"},
+    {"code": "063", "name": "Diamond Bank"},
+    {"code": "050", "name": "Ecobank Nigeria"},
+    {"code": "084", "name": "Enterprise Bank"},
+    {"code": "070", "name": "Fidelity Bank"},
+    {"code": "011", "name": "First Bank of Nigeria"},
+    {"code": "214", "name": "First City Monument Bank"},
+    {"code": "058", "name": "Guaranty Trust Bank"},
+    {"code": "030", "name": "Heritage Bank"},
+    {"code": "301", "name": "Jaiz Bank"},
+    {"code": "082", "name": "Keystone Bank"},
+    {"code": "526", "name": "Parallex Bank"},
+    {"code": "076", "name": "Polaris Bank"},
+    {"code": "101", "name": "Providus Bank"},
+    {"code": "221", "name": "Stanbic IBTC Bank"},
+    {"code": "068", "name": "Standard Chartered Bank"},
+    {"code": "232", "name": "Sterling Bank"},
+    {"code": "100", "name": "Suntrust Bank"},
+    {"code": "032", "name": "Union Bank of Nigeria"},
+    {"code": "033", "name": "United Bank For Africa"},
+    {"code": "215", "name": "Unity Bank"},
+    {"code": "035", "name": "Wema Bank"},
+    {"code": "057", "name": "Zenith Bank"},
+    {"code": "999992", "name": "OPay"},
+    {"code": "999991", "name": "PalmPay"},
+    {"code": "999994", "name": "Kuda Bank"},
+    {"code": "999995", "name": "Moniepoint"},
+]
+
+@api_router.get("/banks/list")
+async def get_nigerian_banks(user: dict = Depends(get_current_user)):
+    """Get list of Nigerian banks"""
+    return {"success": True, "banks": NIGERIAN_BANKS}
+
+
+class BankTransferRequest(BaseModel):
+    bank_code: str
+    account_number: str
+    account_name: str
+    amount: float
+    narration: Optional[str] = "Wallet withdrawal"
+
+
+@api_router.get("/banks/validate-account")
+async def validate_bank_account(bank_code: str, account_number: str, user: dict = Depends(get_current_user)):
+    """Validate bank account number using Payscribe"""
+    try:
+        # Use Payscribe account lookup API
+        endpoint = f'account/lookup?bank_code={bank_code}&account_number={account_number}'
+        result = await payscribe_request(endpoint, 'GET')
+        
+        if result and result.get('status'):
+            account_data = result.get('message', {}).get('details', {})
+            return {
+                'valid': True,
+                'account_name': account_data.get('account_name', 'Unknown'),
+                'bank_name': next((b['name'] for b in NIGERIAN_BANKS if b['code'] == bank_code), 'Unknown Bank')
+            }
+        
+        # Fallback - return account number without validation if API fails
+        return {
+            'valid': True,
+            'account_name': 'Account validation unavailable',
+            'bank_name': next((b['name'] for b in NIGERIAN_BANKS if b['code'] == bank_code), 'Unknown Bank'),
+            'needs_verification': True
+        }
+    except Exception as e:
+        logger.error(f"Bank account validation error: {str(e)}")
+        # Still allow the user to proceed
+        return {
+            'valid': True,
+            'account_name': 'Unable to verify - please confirm manually',
+            'bank_name': next((b['name'] for b in NIGERIAN_BANKS if b['code'] == bank_code), 'Unknown Bank'),
+            'needs_verification': True
+        }
+
+
+@api_router.post("/banks/transfer")
+async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(get_current_user)):
+    """Transfer funds from wallet to bank account"""
+    try:
+        # Validate amount
+        MINIMUM_WITHDRAWAL = 1000
+        WITHDRAWAL_FEE = 50  # ₦50 transfer fee
+        
+        if request.amount < MINIMUM_WITHDRAWAL:
+            raise HTTPException(status_code=400, detail=f"Minimum withdrawal is ₦{MINIMUM_WITHDRAWAL:,}")
+        
+        # Check tier limits
+        tier = user.get('tier', 1)
+        tier_limits = {1: 10000, 2: 100000, 3: 2000000}
+        if request.amount > tier_limits.get(tier, 10000):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Amount exceeds your Tier {tier} limit of ₦{tier_limits[tier]:,}. Upgrade your KYC to increase limits."
+            )
+        
+        total_deduction = request.amount + WITHDRAWAL_FEE
+        
+        # Check balance including fee
+        if user.get('ngn_balance', 0) < total_deduction:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Insufficient balance. You need ₦{total_deduction:,.2f} (₦{request.amount:,.2f} + ₦{WITHDRAWAL_FEE} fee)"
+            )
+        
+        # Generate transfer reference
+        transfer_ref = f"BT-{uuid.uuid4().hex[:8].upper()}"
+        
+        # Try Payscribe payout
+        payout_data = {
+            'bank_code': request.bank_code,
+            'account_number': request.account_number,
+            'account_name': request.account_name,
+            'amount': request.amount,
+            'narration': request.narration or f"Withdrawal from wallet - {transfer_ref}",
+            'ref': transfer_ref
+        }
+        
+        # Deduct from user balance (including fee)
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'ngn_balance': -total_deduction}}
+        )
+        
+        # Create pending transaction
+        transaction = Transaction(
+            user_id=user['id'],
+            type='bank_transfer',
+            amount=request.amount,
+            currency='NGN',
+            status='pending',
+            reference=transfer_ref,
+            metadata={
+                'bank_code': request.bank_code,
+                'account_number': request.account_number,
+                'account_name': request.account_name,
+                'fee': WITHDRAWAL_FEE,
+                'narration': request.narration
+            }
+        )
+        tx_doc = transaction.model_dump()
+        tx_doc['created_at'] = tx_doc['created_at'].isoformat()
+        await db.transactions.insert_one(tx_doc)
+        
+        # Attempt Payscribe payout (in production this should be async/webhook based)
+        try:
+            result = await payscribe_request('payout/initiate', 'POST', payout_data)
+            
+            if result and result.get('status'):
+                # Update transaction to completed
+                await db.transactions.update_one(
+                    {'reference': transfer_ref},
+                    {'$set': {'status': 'completed'}}
+                )
+                
+                # Send notification
+                await _create_transaction_notification(
+                    user['id'],
+                    'Bank Transfer Successful',
+                    f"₦{request.amount:,.2f} sent to {request.account_name} ({request.account_number})",
+                    metadata={'reference': transfer_ref, 'type': 'bank_transfer'}
+                )
+                
+                return {
+                    'success': True,
+                    'message': 'Transfer initiated successfully',
+                    'reference': transfer_ref,
+                    'amount': request.amount,
+                    'fee': WITHDRAWAL_FEE,
+                    'status': 'completed'
+                }
+            else:
+                # Payout failed - update transaction status
+                await db.transactions.update_one(
+                    {'reference': transfer_ref},
+                    {'$set': {'status': 'processing'}}
+                )
+                
+                return {
+                    'success': True,
+                    'message': 'Transfer is being processed. You will be notified when completed.',
+                    'reference': transfer_ref,
+                    'amount': request.amount,
+                    'fee': WITHDRAWAL_FEE,
+                    'status': 'processing'
+                }
+        except Exception as payout_error:
+            logger.error(f"Payout API error: {str(payout_error)}")
+            # Keep transaction as pending for manual review
+            await db.transactions.update_one(
+                {'reference': transfer_ref},
+                {'$set': {'status': 'processing', 'error': str(payout_error)}}
+            )
+            
+            return {
+                'success': True,
+                'message': 'Transfer is being processed. Admin will complete this shortly.',
+                'reference': transfer_ref,
+                'amount': request.amount,
+                'fee': WITHDRAWAL_FEE,
+                'status': 'processing'
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bank transfer error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Transfer failed. Please try again later.")
+
+
 @api_router.get("/admin/users")
 async def admin_list_users(admin: dict = Depends(require_admin)):
     """List users for admin view (basic snapshot)."""
