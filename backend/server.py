@@ -657,7 +657,8 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 class UserRegister(BaseModel):
     email: EmailStr
     password: str
-    full_name: str
+    first_name: str
+    last_name: str
     phone: str  # NOW REQUIRED
 
 class UserLogin(BaseModel):
@@ -671,11 +672,18 @@ class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: EmailStr
-    full_name: str
+    first_name: str = ''
+    last_name: str = ''
+    full_name: str = ''  # Keep for backwards compatibility
     phone: str  # NOW REQUIRED
     ngn_balance: float = 0.0
     usd_balance: float = 0.0
     is_admin: bool = False
+    tier: int = 1  # 1=10k, 2=100k, 3=2M
+    bvn: Optional[str] = None
+    bvn_verified: bool = False
+    nin: Optional[str] = None
+    nin_verified: bool = False
     
     # PaymentPoint Virtual Account Details
     paymentpoint_customer_id: Optional[str] = None
