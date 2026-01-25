@@ -2350,12 +2350,30 @@ const NewDashboard = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                    {userTier >= 2 && <span className="ml-2 text-xs text-gray-400">(Locked after KYC)</span>}
+                  </label>
                   <input
                     type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    disabled={userTier >= 2}
+                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent ${userTier >= 2 ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
+                    style={{ '--tw-ring-color': primaryColor }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                    {userTier >= 2 && <span className="ml-2 text-xs text-gray-400">(Locked after KYC)</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    disabled={userTier >= 2}
+                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent ${userTier >= 2 ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
                     style={{ '--tw-ring-color': primaryColor }}
                   />
                 </div>
@@ -2375,6 +2393,16 @@ const NewDashboard = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    placeholder="Enter your address"
                   />
                 </div>
                 <div>
