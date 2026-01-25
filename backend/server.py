@@ -2408,6 +2408,7 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'payscribe_customer_id': user.get('payscribe_customer_id'),
         'selfie_url': user.get('selfie_url'),
         'id_document_url': user.get('id_document_url'),
+        'has_transaction_pin': bool(user.get('transaction_pin_hash')),
         'referral_code': user.get('referral_code', user['email'].split('@')[0].upper()),
         'referral_count': user.get('referral_count', 0),
         'referral_earnings': user.get('referral_earnings', 0)
