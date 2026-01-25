@@ -815,17 +815,31 @@ const Landing = ({ setUser }) => {
               </form>
             ) : (
               <form onSubmit={handleRegister} data-testid="register-form" className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={registerData.full_name}
-                    onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })}
-                    required
-                    data-testid="register-name-input"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input
+                      type="text"
+                      placeholder="John"
+                      value={registerData.first_name}
+                      onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
+                      required
+                      data-testid="register-firstname-input"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      placeholder="Doe"
+                      value={registerData.last_name}
+                      onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
+                      required
+                      data-testid="register-lastname-input"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-900"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
