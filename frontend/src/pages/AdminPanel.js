@@ -767,6 +767,12 @@ const AdminPanel = ({ user, setUser }) => {
   const [payscribeTempAccounts, setPayscribeTempAccounts] = useState([]);
   const [selectedPayscribeAccount, setSelectedPayscribeAccount] = useState(null);
 
+  // Bank Payouts Management State
+  const [bankPayouts, setBankPayouts] = useState([]);
+  const [bankPayoutsLoading, setBankPayoutsLoading] = useState(false);
+  const [selectedPayout, setSelectedPayout] = useState(null);
+  const [payoutAction, setPayoutAction] = useState(null); // 'verify' | 'complete' | 'refund'
+
   // Notification management state
   const [adminNotifications, setAdminNotifications] = useState([]);
   const [showNotifModal, setShowNotifModal] = useState(false);
