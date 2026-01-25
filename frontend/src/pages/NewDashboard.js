@@ -2463,6 +2463,17 @@ const NewDashboard = () => {
             Profile Info
           </button>
           <button
+            onClick={() => setActiveTab('security')}
+            className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'security' 
+                ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500' 
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Security & PIN
+            {!hasPin && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">Set PIN</span>}
+          </button>
+          <button
             onClick={() => setActiveTab('kyc')}
             className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'kyc' 
