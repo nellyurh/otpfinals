@@ -3981,7 +3981,20 @@ async def get_payscribe_services(user: dict = Depends(get_current_user)):
 async def get_data_plans_endpoint(network: str, category: str = None, user: dict = Depends(get_current_user)):
     """Get data plans for a network"""
     result = await get_data_plans_service(network.lower(), category)
-    return result or {'status': False, 'message': 'Failed to fetch plans'}
+    
+    if not result:
+        return {'status': False, 'message': 'Failed to fetch plans. Please check Payscribe API configuration.', 'plans': []}
+    
+    # Check for Payscribe authentication error
+    if result.get('status_code') == 401 or 'not authenticated' in str(result.get('description', '')).lower():
+        return {
+            'status': False, 
+            'message': 'Payscribe API key is invalid or expired. Please update API keys in Admin → Payment Gateways.',
+            'plans': [],
+            'error_code': 'INVALID_API_KEY'
+        }
+    
+    return result
 
 # ============ Promo Codes (Admin) ============
 
