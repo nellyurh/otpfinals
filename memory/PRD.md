@@ -142,14 +142,16 @@ Six services (all require PIN confirmation):
 ## Known Issues
 
 ### P0 (Critical)
-None currently
+None currently - Payscribe payout API integration is now working!
 
 ### P1 (High Priority)
-- **Payscribe API**: May return 500 errors intermittently. Fallback mechanisms in place.
+- **Bill Payments PIN**: PIN protection not yet implemented for Data, Airtime, TV, Betting (only Bank Transfer has PIN)
+- **Payscribe Bill Payments**: Data/TV/Electricity may still return 401 if secret key doesn't have permissions
 
 ### P2 (Medium Priority)
 - Refactor monolithic server.py into modular routers
 - Break down large NewDashboard.js into smaller components
+- Mobile horizontal scroll on Reseller Portal
 
 ## Technology Stack
 - **Frontend**: React, Tailwind CSS, shadcn/ui
