@@ -2140,8 +2140,12 @@ const NewDashboard = () => {
         toast.error('Please enter your date of birth');
         return;
       }
-      if ((user.ngn_balance || 0) < KYC_FEE * 2) {
-        toast.error(`Insufficient balance. You need at least ₦${KYC_FEE * 2} for Express KYC verification.`);
+      if (!address.trim()) {
+        toast.error('Please enter your address');
+        return;
+      }
+      if ((user.ngn_balance || 0) < KYC_FEE) {
+        toast.error(`Insufficient balance. You need at least ₦${KYC_FEE} for Express KYC verification.`);
         return;
       }
       
