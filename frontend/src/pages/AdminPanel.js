@@ -1614,6 +1614,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => { setActiveSection('bank-payouts'); fetchBankPayouts(); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
+              icon={CreditCard}
+              label="Card Fees"
+              active={activeSection === 'card-fees'}
+              onClick={() => { setActiveSection('card-fees'); fetchCardFees(); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
               icon={Bell}
               label="Popup Notifications"
               active={activeSection === 'notifications'}
