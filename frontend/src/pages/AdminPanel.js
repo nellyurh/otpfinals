@@ -892,6 +892,55 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  // Bank Payouts functions
+  const fetchBankPayouts = async () => {
+    setBankPayoutsLoading(true);
+    try {
+      const resp = await axios.get(`${API}/admin/payouts`, axiosConfig);
+      setBankPayouts(resp.data.payouts || []);
+    } catch (e) {
+      console.error('Failed to fetch bank payouts');
+      toast.error('Failed to fetch bank payouts');
+    } finally {
+      setBankPayoutsLoading(false);
+    }
+  };
+
+  const verifyPayout = async (reference) => {
+    try {
+      const resp = await axios.post(`${API}/admin/payouts/${reference}/verify`, {}, axiosConfig);
+      toast.success('Payout verification fetched');
+      console.log('Payscribe verification:', resp.data.payscribe_response);
+      fetchBankPayouts();
+    } catch (e) {
+      toast.error('Failed to verify payout');
+    }
+  };
+
+  const completePayout = async (reference) => {
+    if (!window.confirm('Mark this payout as completed? This cannot be undone.')) return;
+    try {
+      await axios.post(`${API}/admin/payouts/${reference}/manual-complete`, {}, axiosConfig);
+      toast.success('Payout marked as completed');
+      fetchBankPayouts();
+      setSelectedPayout(null);
+    } catch (e) {
+      toast.error('Failed to complete payout');
+    }
+  };
+
+  const refundPayout = async (reference) => {
+    if (!window.confirm('Refund this payout to user wallet? This cannot be undone.')) return;
+    try {
+      const resp = await axios.post(`${API}/admin/payouts/${reference}/refund`, {}, axiosConfig);
+      toast.success(resp.data.message || 'Payout refunded');
+      fetchBankPayouts();
+      setSelectedPayout(null);
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Failed to refund payout');
+    }
+  };
+
   const fetchAdminTransactions = async () => {
     try {
       const resp = await axios.get(`${API}/admin/transactions`, axiosConfig);
