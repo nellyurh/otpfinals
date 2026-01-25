@@ -3054,6 +3054,165 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* Virtual Card Fees Management */}
+            {activeSection === 'card-fees' && (
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-900">Virtual Card Fees</h2>
+                    <p className="text-[10px] text-slate-500">Configure fees for virtual card services (USD)</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={fetchCardFees}
+                      disabled={loadingCardFees}
+                      className="text-[10px] h-7"
+                    >
+                      <RefreshCw className={`w-3 h-3 mr-1 ${loadingCardFees ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={saveCardFees}
+                      disabled={savingCardFees}
+                      className="text-[10px] h-7 bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      <Save className="w-3 h-3 mr-1" />
+                      {savingCardFees ? 'Saving...' : 'Save Fees'}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Card Creation Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Card Creation Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_creation_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_creation_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">One-time fee to create a card</p>
+                  </div>
+
+                  {/* Funding Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Funding Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_funding_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_funding_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Fee per funding operation</p>
+                  </div>
+
+                  {/* Transaction Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Transaction Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_transaction_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_transaction_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Fee per successful transaction</p>
+                  </div>
+
+                  {/* Declined Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Declined Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_declined_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_declined_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Fee when transaction is declined</p>
+                  </div>
+
+                  {/* Monthly Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Monthly Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_monthly_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_monthly_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Monthly maintenance fee</p>
+                  </div>
+
+                  {/* Withdrawal Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Withdrawal Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_withdrawal_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_withdrawal_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Fee to withdraw from card</p>
+                  </div>
+
+                  {/* Min Funding */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Min Funding Amount ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_min_funding_amount}
+                      onChange={(e) => setCardFees({...cardFees, card_min_funding_amount: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Minimum amount to fund</p>
+                  </div>
+
+                  {/* Max Funding */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Max Funding Amount ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_max_funding_amount}
+                      onChange={(e) => setCardFees({...cardFees, card_max_funding_amount: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Maximum amount to fund</p>
+                  </div>
+                </div>
+
+                {/* Fee Summary */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-2">Fee Summary</h3>
+                  <p className="text-xs text-blue-700">
+                    Creating a card with $10 initial balance costs user: 
+                    <strong> ${(cardFees.card_creation_fee + 10 + cardFees.card_funding_fee).toFixed(2)}</strong> 
+                    (${cardFees.card_creation_fee} creation + $10 funding + ${cardFees.card_funding_fee} funding fee)
+                  </p>
+                </div>
+              </section>
+            )}
+
+
+
             {/* Popup Notifications Management */}
             {activeSection === 'notifications' && (
               <section className="space-y-4">
