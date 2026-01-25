@@ -2762,6 +2762,249 @@ const AdminPanel = ({ user, setUser }) => {
               </section>
             )}
 
+            {/* Bank Payouts Management */}
+            {activeSection === 'bank-payouts' && (
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-900">Bank Payouts</h2>
+                    <p className="text-[10px] text-slate-500">Manage bank transfers initiated by users</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchBankPayouts}
+                    disabled={bankPayoutsLoading}
+                    className="text-[10px] h-7"
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${bankPayoutsLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+
+                {/* Payout Stats */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Total Payouts</p>
+                    <p className="text-lg font-bold text-slate-900">{bankPayouts.length}</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Completed</p>
+                    <p className="text-lg font-bold text-green-600">
+                      {bankPayouts.filter(p => p.status === 'completed').length}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Pending</p>
+                    <p className="text-lg font-bold text-yellow-600">
+                      {bankPayouts.filter(p => p.status === 'pending' || p.status === 'processing').length}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Failed/Refunded</p>
+                    <p className="text-lg font-bold text-red-600">
+                      {bankPayouts.filter(p => p.status === 'failed' || p.status === 'refunded').length}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                    <p className="text-[10px] text-slate-500">Total Volume</p>
+                    <p className="text-lg font-bold text-purple-600">
+                      ₦{bankPayouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payouts Table */}
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="p-3 border-b border-slate-200 bg-slate-50">
+                    <h3 className="text-xs font-semibold text-slate-800">Payout History</h3>
+                  </div>
+                  {bankPayoutsLoading ? (
+                    <div className="p-8 text-center text-slate-500 text-sm">Loading payouts...</div>
+                  ) : bankPayouts.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[10px]">
+                        <thead className="bg-slate-50 text-slate-600 uppercase text-[9px]">
+                          <tr>
+                            <th className="py-2 px-2 text-left">Date</th>
+                            <th className="py-2 px-2 text-left">Reference</th>
+                            <th className="py-2 px-2 text-left">User</th>
+                            <th className="py-2 px-2 text-left">Amount</th>
+                            <th className="py-2 px-2 text-left">Fee</th>
+                            <th className="py-2 px-2 text-left">Account</th>
+                            <th className="py-2 px-2 text-left">Status</th>
+                            <th className="py-2 px-2 text-left">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {bankPayouts.map((payout) => (
+                            <tr key={payout.reference} className="hover:bg-slate-50">
+                              <td className="py-2 px-2 text-slate-600">
+                                {new Date(payout.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="py-2 px-2 text-slate-800 font-mono text-[9px]">
+                                {payout.reference}
+                              </td>
+                              <td className="py-2 px-2 text-slate-800">
+                                <div className="truncate max-w-[120px]" title={payout.user_email}>
+                                  {payout.user_name || payout.user_email}
+                                </div>
+                              </td>
+                              <td className="py-2 px-2 text-slate-800 font-medium">
+                                ₦{(payout.amount || 0).toLocaleString()}
+                              </td>
+                              <td className="py-2 px-2 text-slate-500">
+                                ₦{(payout.metadata?.fee || 0).toLocaleString()}
+                              </td>
+                              <td className="py-2 px-2 text-slate-600">
+                                <div className="truncate max-w-[150px]">
+                                  {payout.metadata?.account_name}<br/>
+                                  <span className="font-mono text-[9px]">{payout.metadata?.account_number}</span>
+                                </div>
+                              </td>
+                              <td className="py-2 px-2">
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
+                                  payout.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                  payout.status === 'pending' || payout.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
+                                  payout.status === 'refunded' ? 'bg-blue-100 text-blue-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {payout.status}
+                                </span>
+                              </td>
+                              <td className="py-2 px-2">
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => setSelectedPayout(payout)}
+                                    className="text-blue-600 hover:text-blue-800 p-1"
+                                    title="View Details"
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                  </button>
+                                  {(payout.status === 'pending' || payout.status === 'processing') && (
+                                    <>
+                                      <button
+                                        onClick={() => verifyPayout(payout.reference)}
+                                        className="text-purple-600 hover:text-purple-800 p-1"
+                                        title="Verify with Payscribe"
+                                      >
+                                        <RefreshCw className="w-3 h-3" />
+                                      </button>
+                                      <button
+                                        onClick={() => completePayout(payout.reference)}
+                                        className="text-green-600 hover:text-green-800 p-1"
+                                        title="Mark Completed"
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={() => refundPayout(payout.reference)}
+                                        className="text-red-600 hover:text-red-800 p-1"
+                                        title="Refund to Wallet"
+                                      >
+                                        ↩
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-slate-500 text-sm">
+                      No bank payouts found
+                    </div>
+                  )}
+                </div>
+
+                {/* Payout Detail Modal */}
+                {selectedPayout && (
+                  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
+                      <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+                        <h3 className="font-semibold text-slate-900">Payout Details</h3>
+                        <button onClick={() => setSelectedPayout(null)} className="text-slate-400 hover:text-slate-600">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-xs">
+                          <div>
+                            <p className="text-slate-500">Reference</p>
+                            <p className="font-mono font-medium">{selectedPayout.reference}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-500">Status</p>
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
+                              selectedPayout.status === 'completed' ? 'bg-green-100 text-green-700' :
+                              selectedPayout.status === 'pending' || selectedPayout.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
+                              selectedPayout.status === 'refunded' ? 'bg-blue-100 text-blue-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              {selectedPayout.status}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-slate-500">Amount</p>
+                            <p className="font-bold text-lg">₦{(selectedPayout.amount || 0).toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-500">Fee</p>
+                            <p className="font-medium">₦{(selectedPayout.metadata?.fee || 0).toLocaleString()}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-slate-500">Beneficiary</p>
+                            <p className="font-medium">{selectedPayout.metadata?.account_name}</p>
+                            <p className="font-mono text-slate-600">{selectedPayout.metadata?.account_number}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-slate-500">User</p>
+                            <p className="font-medium">{selectedPayout.user_name || selectedPayout.user_email}</p>
+                            <p className="text-slate-600">{selectedPayout.user_email}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="text-slate-500">Date</p>
+                            <p className="font-medium">{new Date(selectedPayout.created_at).toLocaleString()}</p>
+                          </div>
+                        </div>
+
+                        {(selectedPayout.status === 'pending' || selectedPayout.status === 'processing') && (
+                          <div className="flex gap-2 pt-4 border-t">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => verifyPayout(selectedPayout.reference)}
+                              className="flex-1 text-xs"
+                            >
+                              <RefreshCw className="w-3 h-3 mr-1" /> Verify
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => completePayout(selectedPayout.reference)}
+                              className="flex-1 text-xs bg-green-600 hover:bg-green-700"
+                            >
+                              Mark Complete
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => refundPayout(selectedPayout.reference)}
+                              className="flex-1 text-xs"
+                            >
+                              Refund
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
             {/* Popup Notifications Management */}
             {activeSection === 'notifications' && (
               <section className="space-y-4">
