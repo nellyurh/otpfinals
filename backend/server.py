@@ -6684,7 +6684,7 @@ async def create_virtual_card(request: CreateCardRequest, user: dict = Depends(g
         
         # Remove sensitive data for response (card number shown only once)
         response_card = {**card_doc}
-        del response_card['_id'] if '_id' in response_card else None
+        response_card.pop('_id', None)
         
         return {
             'success': True,
