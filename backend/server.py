@@ -2541,6 +2541,53 @@ async def upload_kyc_documents(
         logger.error(f"Error uploading KYC documents: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class SelfieUploadRequest(BaseModel):
+    selfie_data: str  # Base64 encoded image data
+
+
+@api_router.post("/user/upload-selfie")
+async def upload_selfie(data: SelfieUploadRequest, user: dict = Depends(get_current_user)):
+    """Upload selfie captured from camera (base64 encoded)"""
+    try:
+        # Create uploads directory
+        upload_dir = Path("/app/backend/uploads/kyc")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Remove data URL prefix if present
+        selfie_base64 = data.selfie_data
+        if ',' in selfie_base64:
+            selfie_base64 = selfie_base64.split(',')[1]
+        
+        # Decode and save selfie
+        selfie_bytes = base64.b64decode(selfie_base64)
+        selfie_filename = f"{user['id']}_selfie_{uuid.uuid4().hex[:8]}.jpg"
+        selfie_path = upload_dir / selfie_filename
+        
+        with open(selfie_path, "wb") as f:
+            f.write(selfie_bytes)
+        
+        # Get base URL for serving files
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')
+        selfie_url = f"{base_url}/api/uploads/kyc/{selfie_filename}"
+        
+        # Update user with selfie URL
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$set': {'selfie_url': selfie_url}}
+        )
+        
+        logger.info(f"Selfie uploaded for user {user['id']}: {selfie_filename}")
+        
+        return {
+            'success': True,
+            'selfie_url': selfie_url
+        }
+    except Exception as e:
+        logger.error(f"Error uploading selfie: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/payscribe/create-customer")
 async def create_payscribe_customer(request: Dict[str, Any], user: dict = Depends(get_current_user)):
     """Create Payscribe customer for USDT/USDC and Virtual Cards"""
