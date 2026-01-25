@@ -1161,10 +1161,17 @@ const AdminPanel = ({ user, setUser }) => {
         enable_referral: response.data.enable_referral !== false,
         enable_profile: response.data.enable_profile !== false,
         enable_support: response.data.enable_support !== false,
+        // Bills Payment sub-services
+        enable_bills_payment: response.data.enable_bills_payment !== false,
+        enable_electricity: response.data.enable_electricity !== false,
+        enable_tv: response.data.enable_tv !== false,
+        enable_bank_transfer: response.data.enable_bank_transfer !== false,
+        enable_wallet_transfer: response.data.enable_wallet_transfer !== false,
         // Payment gateway toggles
         enable_ercaspay: response.data.enable_ercaspay !== false,
         enable_paymentpoint: response.data.enable_paymentpoint !== false,
         enable_plisio: response.data.enable_plisio !== false,
+        enable_payscribe: response.data.enable_payscribe !== false,
       });
 
       // Load Gift Cards Provider config
