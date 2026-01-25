@@ -11,7 +11,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ultraotp.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://billhub-16.preview.emergentagent.com')
 
 # Test credentials
 ADMIN_EMAIL = "admin@smsrelay.com"
