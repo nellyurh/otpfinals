@@ -9963,18 +9963,24 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
             }
         )
         
+        # Create Payscribe customer for virtual card access
+        payscribe_customer_id = await create_payscribe_customer(user, request.dob, request.address)
+        
         await _create_transaction_notification(
             user['id'],
             'Tier 3 Verified!',
-            'Congratulations! Your account has been upgraded to Tier 3 with a ₦2,000,000 limit.',
-            metadata={'type': 'kyc_upgrade', 'tier': 3}
+            'Congratulations! Your account has been upgraded to Tier 3 with a ₦2,000,000 limit.' + 
+            (' Virtual cards are now available!' if payscribe_customer_id else ''),
+            metadata={'type': 'kyc_upgrade', 'tier': 3, 'payscribe_customer_id': payscribe_customer_id}
         )
         
         return {
             'success': True,
-            'message': 'NIN verified successfully. Account upgraded to Tier 3!',
+            'message': 'NIN verified successfully. Account upgraded to Tier 3!' + 
+                      (' Virtual cards enabled.' if payscribe_customer_id else ''),
             'nin_verified': True,
             'tier': 3,
+            'payscribe_customer_id': payscribe_customer_id,
             'matched_data': {
                 'name': f"{nin_data.get('first_name', '')} {nin_data.get('last_name', '')}",
                 'dob_match': dob_match
