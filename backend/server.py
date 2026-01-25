@@ -6369,8 +6369,9 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
         await db.transactions.insert_one(tx_doc)
         
         # Attempt Payscribe payout (in production this should be async/webhook based)
+        # NOTE: Payscribe payout APIs require PUBLIC key
         try:
-            result = await payscribe_request('payouts/transfer', 'POST', payout_data)
+            result = await payscribe_request('payouts/transfer', 'POST', payout_data, use_public_key=True)
             
             logger.info(f"Payscribe payout result for {transfer_ref}: {result}")
             
