@@ -6577,7 +6577,8 @@ async def verify_payout_status(reference: str, user: dict = Depends(get_current_
             raise HTTPException(status_code=404, detail="Transaction not found")
         
         # Call Payscribe verification endpoint
-        result = await payscribe_request(f'payouts/verify/{reference}', 'GET')
+        # NOTE: Payscribe payout APIs require PUBLIC key
+        result = await payscribe_request(f'payouts/verify/{reference}', 'GET', use_public_key=True)
         
         logger.info(f"Payout verification for {reference}: {result}")
         
