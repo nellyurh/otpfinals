@@ -748,6 +748,20 @@ const AdminPanel = ({ user, setUser }) => {
 
   // Reseller Sales state
   const [resellerSalesOrders, setResellerSalesOrders] = useState([]);
+  
+  // Virtual Card Fees state
+  const [cardFees, setCardFees] = useState({
+    card_creation_fee: 2.50,
+    card_funding_fee: 0.30,
+    card_transaction_fee: 0.15,
+    card_declined_fee: 0.50,
+    card_monthly_fee: 0.50,
+    card_withdrawal_fee: 0.10,
+    card_min_funding_amount: 1.00,
+    card_max_funding_amount: 10000.00
+  });
+  const [loadingCardFees, setLoadingCardFees] = useState(false);
+  const [savingCardFees, setSavingCardFees] = useState(false);
   const [resellerSalesStats, setResellerSalesStats] = useState(null);
   const [resellerSalesStatusFilter, setResellerSalesStatusFilter] = useState('');
   const [selectedResellerOrder, setSelectedResellerOrder] = useState(null);
