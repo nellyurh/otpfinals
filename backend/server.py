@@ -6328,14 +6328,14 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
         # Generate transfer reference
         transfer_ref = f"BT-{uuid.uuid4().hex[:8].upper()}"
         
-        # Try Payscribe payout
+        # Try Payscribe payout - correct endpoint: payouts/transfer
         payout_data = {
-            'bank_code': request.bank_code,
-            'account_number': request.account_number,
-            'account_name': request.account_name,
-            'amount': request.amount,
+            'bank': request.bank_code,  # Changed from bank_code to bank
+            'account': request.account_number,  # Changed from account_number to account
+            'amount': str(int(request.amount)),  # Amount as string
             'narration': request.narration or f"Withdrawal from wallet - {transfer_ref}",
-            'ref': transfer_ref
+            'ref': transfer_ref,
+            'currency': 'ngn'  # Added currency
         }
         
         # Deduct from user balance (including fee)
