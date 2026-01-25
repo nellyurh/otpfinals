@@ -1952,6 +1952,8 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
         async with httpx.AsyncClient() as client:
             if method == 'GET':
                 response = await client.get(url, headers=headers, timeout=30.0)
+            elif method == 'PATCH':
+                response = await client.patch(url, json=data, headers=headers, timeout=30.0)
             else:
                 response = await client.post(url, json=data, headers=headers, timeout=30.0)
             
