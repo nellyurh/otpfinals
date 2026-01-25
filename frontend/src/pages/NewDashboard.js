@@ -2628,6 +2628,241 @@ const NewDashboard = () => {
           </>
         )}
 
+        {/* Security & PIN Tab */}
+        {activeTab === 'security' && (
+          <div className="space-y-6">
+            {/* Transaction PIN Section */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Transaction PIN</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Your 4-digit PIN is required to confirm all bill payments and bank transfers.
+              </p>
+              
+              {!hasPin && !pinAction && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-red-800">
+                    <strong>PIN not set!</strong> You must set a transaction PIN before making any transfers or bill payments.
+                  </p>
+                </div>
+              )}
+
+              {!pinAction && (
+                <div className="flex flex-wrap gap-3">
+                  {!hasPin ? (
+                    <button
+                      onClick={() => setPinAction('set')}
+                      className="px-4 py-2 text-white rounded-lg font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      Set Transaction PIN
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setPinAction('change')}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+                      >
+                        Change PIN
+                      </button>
+                      <button
+                        onClick={handleRequestPinReset}
+                        disabled={requestingReset}
+                        className="px-4 py-2 bg-amber-100 text-amber-700 rounded-lg font-medium hover:bg-amber-200"
+                      >
+                        {requestingReset ? 'Sending...' : 'Forgot PIN?'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Set PIN Form */}
+              {pinAction === 'set' && (
+                <div className="space-y-4 mt-4 p-4 bg-gray-50 rounded-xl">
+                  <h4 className="font-medium text-gray-900">Create Transaction PIN</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSetPin}
+                      disabled={savingPin}
+                      className="px-4 py-2 text-white rounded-lg font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {savingPin ? 'Setting...' : 'Set PIN'}
+                    </button>
+                    <button
+                      onClick={() => { setPinAction(''); setNewPin(''); setConfirmPin(''); }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Change PIN Form */}
+              {pinAction === 'change' && (
+                <div className="space-y-4 mt-4 p-4 bg-gray-50 rounded-xl">
+                  <h4 className="font-medium text-gray-900">Change Transaction PIN</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={currentPin}
+                        onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleChangePin}
+                      disabled={savingPin}
+                      className="px-4 py-2 text-white rounded-lg font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {savingPin ? 'Changing...' : 'Change PIN'}
+                    </button>
+                    <button
+                      onClick={() => { setPinAction(''); setCurrentPin(''); setNewPin(''); setConfirmPin(''); }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset PIN Form */}
+              {pinAction === 'reset' && (
+                <div className="space-y-4 mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                  <h4 className="font-medium text-amber-900">Reset Transaction PIN</h4>
+                  <p className="text-sm text-amber-700">
+                    A reset code has been sent to your email. Enter the code and your BVN to reset your PIN.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Reset Code (from email)</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={resetCode}
+                        onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="123456"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">BVN (for verification)</label>
+                      <input
+                        type="text"
+                        maxLength={11}
+                        value={resetBvn}
+                        onChange={(e) => setResetBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                        placeholder="Enter your BVN"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm PIN</label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        placeholder="••••"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleResetPin}
+                      disabled={savingPin}
+                      className="px-4 py-2 text-white rounded-lg font-medium"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {savingPin ? 'Resetting...' : 'Reset PIN'}
+                    </button>
+                    <button
+                      onClick={() => { setPinAction(''); setResetCode(''); setResetBvn(''); setNewPin(''); setConfirmPin(''); }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {hasPin && !pinAction && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="text-sm text-green-800">Transaction PIN is active</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'kyc' && (
           <div className="space-y-6">
             {/* Tier Progress */}
