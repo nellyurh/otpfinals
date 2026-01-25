@@ -7537,6 +7537,139 @@ async def admin_refund_payout(reference: str, admin: dict = Depends(require_admi
 
 
 
+# ============ Admin Virtual Cards Management ============
+
+@api_router.get("/admin/cards")
+async def admin_list_cards(admin: dict = Depends(require_admin), limit: int = 100):
+    """Admin: List all virtual cards"""
+    try:
+        cursor = db.virtual_cards.find({}, {'_id': 0}).sort('created_at', -1).limit(limit)
+        cards = await cursor.to_list(limit)
+        
+        # Enrich with user info
+        for card in cards:
+            user = await db.users.find_one(
+                {'id': card.get('user_id')}, 
+                {'_id': 0, 'email': 1, 'first_name': 1, 'last_name': 1}
+            )
+            if user:
+                card['user_email'] = user.get('email')
+                card['user_name'] = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
+            
+            # Hide sensitive card number
+            if 'number' in card:
+                card['number'] = f"**** **** **** {card.get('last_four', '****')}"
+        
+        # Get stats
+        total_cards = await db.virtual_cards.count_documents({})
+        active_cards = await db.virtual_cards.count_documents({'status': 'active'})
+        frozen_cards = await db.virtual_cards.count_documents({'status': 'frozen'})
+        terminated_cards = await db.virtual_cards.count_documents({'status': 'terminated'})
+        
+        # Calculate total balance
+        pipeline = [
+            {'$match': {'status': {'$ne': 'terminated'}}},
+            {'$group': {'_id': None, 'total': {'$sum': '$balance'}}}
+        ]
+        balance_result = await db.virtual_cards.aggregate(pipeline).to_list(1)
+        total_balance = balance_result[0]['total'] if balance_result else 0
+        
+        return {
+            'success': True,
+            'cards': cards,
+            'stats': {
+                'total': total_cards,
+                'active': active_cards,
+                'frozen': frozen_cards,
+                'terminated': terminated_cards,
+                'total_balance': total_balance
+            }
+        }
+    except Exception as e:
+        logger.error(f"Admin list cards error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch cards")
+
+
+@api_router.get("/admin/cards/{card_id}/transactions")
+async def admin_card_transactions(card_id: str, limit: int = 100, admin: dict = Depends(require_admin)):
+    """Admin: Get transactions for a specific card"""
+    try:
+        cursor = db.card_transactions.find({'card_id': card_id}, {'_id': 0}).sort('created_at', -1).limit(limit)
+        transactions = await cursor.to_list(limit)
+        
+        return {'success': True, 'transactions': transactions}
+    except Exception as e:
+        logger.error(f"Admin card transactions error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch transactions")
+
+
+@api_router.get("/admin/card-fees")
+async def admin_get_card_fees(admin: dict = Depends(require_admin)):
+    """Admin: Get current card fee configuration"""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        fees = {
+            'card_creation_fee': config.get('card_creation_fee', 2.50) if config else 2.50,
+            'card_funding_fee': config.get('card_funding_fee', 0.30) if config else 0.30,
+            'card_transaction_fee': config.get('card_transaction_fee', 0.15) if config else 0.15,
+            'card_declined_fee': config.get('card_declined_fee', 0.50) if config else 0.50,
+            'card_monthly_fee': config.get('card_monthly_fee', 0.50) if config else 0.50,
+            'card_withdrawal_fee': config.get('card_withdrawal_fee', 0.10) if config else 0.10,
+            'card_min_funding_amount': config.get('card_min_funding_amount', 1.00) if config else 1.00,
+            'card_max_funding_amount': config.get('card_max_funding_amount', 10000.00) if config else 10000.00,
+        }
+        
+        return {'success': True, 'fees': fees}
+    except Exception as e:
+        logger.error(f"Admin get card fees error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch fees")
+
+
+class UpdateCardFeesRequest(BaseModel):
+    card_creation_fee: Optional[float] = None
+    card_funding_fee: Optional[float] = None
+    card_transaction_fee: Optional[float] = None
+    card_declined_fee: Optional[float] = None
+    card_monthly_fee: Optional[float] = None
+    card_withdrawal_fee: Optional[float] = None
+    card_min_funding_amount: Optional[float] = None
+    card_max_funding_amount: Optional[float] = None
+
+
+@api_router.put("/admin/card-fees")
+async def admin_update_card_fees(request: UpdateCardFeesRequest, admin: dict = Depends(require_admin)):
+    """Admin: Update card fee configuration"""
+    try:
+        update_data = {}
+        
+        for field, value in request.model_dump().items():
+            if value is not None:
+                if value < 0:
+                    raise HTTPException(status_code=400, detail=f"{field} cannot be negative")
+                update_data[field] = value
+        
+        if not update_data:
+            return {'success': True, 'message': 'No changes made'}
+        
+        await db.pricing_config.update_one(
+            {},
+            {'$set': update_data},
+            upsert=True
+        )
+        
+        logger.info(f"Admin {admin['email']} updated card fees: {update_data}")
+        
+        return {'success': True, 'message': 'Card fees updated successfully', 'updated': update_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Admin update card fees error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update fees")
+
+
+
+
 @api_router.get("/admin/users")
 async def admin_list_users(admin: dict = Depends(require_admin)):
     """List users for admin view (basic snapshot)."""
