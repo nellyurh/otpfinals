@@ -6180,19 +6180,34 @@ async def get_nigerian_banks(user: dict = Depends(get_current_user)):
 async def get_transfer_fee(amount: float, user: dict = Depends(get_current_user)):
     """Get transfer fee from Payscribe for a given amount"""
     try:
-        # Fetch fee from Payscribe
-        result = await payscribe_request(f'payout/fee?amount={amount}', 'GET')
+        # Fetch fee from Payscribe - correct endpoint: payouts/fee/?amount=X&currency=ngn
+        result = await payscribe_request(f'payouts/fee/?amount={amount}&currency=ngn', 'GET')
+        
+        logger.info(f"Payscribe fee response for amount {amount}: {result}")
         
         if result and result.get('status'):
-            fee_data = result.get('message', {}).get('details', {})
-            return {
-                "success": True,
-                "fee": fee_data.get('fee', 50),
-                "total": amount + fee_data.get('fee', 50),
-                "source": "payscribe"
-            }
+            # Try different response structures
+            fee_data = result.get('message', {})
+            if isinstance(fee_data, dict):
+                fee_data = fee_data.get('details', fee_data)
+            
+            fee = fee_data.get('fee') if isinstance(fee_data, dict) else None
+            
+            # Also try 'data' field
+            if fee is None and result.get('data'):
+                data = result.get('data')
+                fee = data.get('fee') if isinstance(data, dict) else None
+            
+            if fee is not None:
+                return {
+                    "success": True,
+                    "fee": float(fee),
+                    "total": amount + float(fee),
+                    "source": "payscribe"
+                }
         
         # Fallback to default fee
+        logger.warning(f"Failed to fetch fee from Payscribe, using default. Response: {result}")
         default_fee = 50
         return {
             "success": True,
