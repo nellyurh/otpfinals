@@ -2558,8 +2558,8 @@ const NewDashboard = () => {
                     <h3 className="text-lg font-semibold text-gray-900">Express KYC Verification</h3>
                     <p className="text-sm text-gray-500">Upgrade to Tier 3 with ₦2,000,000 limit</p>
                   </div>
-                  <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
-                    ₦{KYC_FEE * 2} total fee
+                  <div className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
+                    ₦{KYC_FEE} total fee
                   </div>
                 </div>
                 
@@ -2579,7 +2579,8 @@ const NewDashboard = () => {
                       type="text"
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                       placeholder="Enter your BVN"
                     />
                   </div>
@@ -2589,7 +2590,8 @@ const NewDashboard = () => {
                       type="text"
                       value={nin}
                       onChange={(e) => setNin(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                       placeholder="Enter your NIN"
                     />
                   </div>
@@ -2599,7 +2601,8 @@ const NewDashboard = () => {
                       type="tel"
                       value={kycPhone}
                       onChange={(e) => setKycPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                       placeholder="Must match BVN phone"
                     />
                   </div>
@@ -2609,7 +2612,19 @@ const NewDashboard = () => {
                       type="date"
                       value={dob}
                       onChange={(e) => setDob(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
+                      placeholder="Enter your residential address"
                     />
                   </div>
                 </div>
@@ -2622,10 +2637,11 @@ const NewDashboard = () => {
                 
                 <button
                   onClick={startTier3Verification}
-                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob}
-                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold hover:from-emerald-600 hover:to-teal-600 disabled:from-gray-300 disabled:to-gray-300 transition-all shadow-lg"
+                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob || !address.trim()}
+                  className="w-full py-4 text-white rounded-xl font-bold transition-all shadow-lg disabled:bg-gray-300 disabled:shadow-none"
+                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && address.trim() ? primaryColor : undefined }}
                 >
-                  Start Express KYC (₦{KYC_FEE * 2})
+                  Start Express KYC (₦{KYC_FEE})
                 </button>
               </div>
             )}
