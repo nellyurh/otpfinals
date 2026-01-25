@@ -1972,6 +1972,17 @@ const NewDashboard = () => {
     const [ninVerified, setNinVerified] = useState(user.nin_verified || false);
     const [verificationError, setVerificationError] = useState('');
     const [verificationSuccess, setVerificationSuccess] = useState('');
+    
+    // Transaction PIN states
+    const [hasPin, setHasPin] = useState(user.has_transaction_pin || false);
+    const [pinAction, setPinAction] = useState(''); // 'set', 'change', 'reset'
+    const [newPin, setNewPin] = useState('');
+    const [confirmPin, setConfirmPin] = useState('');
+    const [currentPin, setCurrentPin] = useState('');
+    const [resetCode, setResetCode] = useState('');
+    const [resetBvn, setResetBvn] = useState('');
+    const [savingPin, setSavingPin] = useState(false);
+    const [requestingReset, setRequestingReset] = useState(false);
 
     const primaryColor = branding.primary_color_hex || '#059669';
     const accentColor = branding.accent_color_hex || '#7c3aed';
