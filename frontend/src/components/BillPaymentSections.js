@@ -1,10 +1,152 @@
 import { useState, useEffect } from 'react';
-import { Check, RefreshCw, Zap, Tv, Send, User, Search, Wifi, ArrowLeft, ChevronDown, Plus, Gamepad2, Building2, Lock, X, Shield } from 'lucide-react';
+import { Check, RefreshCw, Zap, Tv, Send, User, Search, Wifi, ArrowLeft, ChevronDown, Plus, Gamepad2, Building2, Lock, X, Shield, Download, Share2, Printer } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import Select from 'react-select';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Receipt Modal Component
+function ReceiptModal({ receipt, onClose, primaryColor }) {
+  if (!receipt) return null;
+  
+  const formatDate = (isoDate) => {
+    return new Date(isoDate).toLocaleString('en-NG', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleShare = async () => {
+    const text = `BillHub Receipt\n` +
+      `Type: ${receipt.type?.toUpperCase()}\n` +
+      `Amount: ₦${receipt.amount?.toLocaleString()}\n` +
+      `Status: ${receipt.status}\n` +
+      `Trans ID: ${receipt.trans_id}\n` +
+      `Date: ${formatDate(receipt.date)}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'BillHub Receipt', text });
+      } catch (err) {
+        navigator.clipboard.writeText(text);
+        toast.success('Receipt copied to clipboard!');
+      }
+    } else {
+      navigator.clipboard.writeText(text);
+      toast.success('Receipt copied to clipboard!');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden print:shadow-none">
+        {/* Header */}
+        <div className="p-4 text-white text-center" style={{ backgroundColor: primaryColor || '#059669' }}>
+          <div className="flex items-center justify-between mb-2">
+            <span></span>
+            <h3 className="text-lg font-bold">Payment Receipt</h3>
+            <button onClick={onClose} className="text-white/80 hover:text-white print:hidden">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+            <Check className="w-10 h-10" />
+          </div>
+          <p className="mt-2 text-2xl font-bold">₦{receipt.amount?.toLocaleString()}</p>
+          <p className="text-white/80 text-sm">{receipt.status}</p>
+        </div>
+
+        {/* Details */}
+        <div className="p-4 space-y-3">
+          <div className="flex justify-between py-2 border-b border-gray-100">
+            <span className="text-gray-500 text-sm">Transaction ID</span>
+            <span className="text-gray-900 font-medium text-sm">{receipt.trans_id || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between py-2 border-b border-gray-100">
+            <span className="text-gray-500 text-sm">Type</span>
+            <span className="text-gray-900 font-medium text-sm capitalize">{receipt.type}</span>
+          </div>
+          {receipt.network && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Network</span>
+              <span className="text-gray-900 font-medium text-sm">{receipt.network}</span>
+            </div>
+          )}
+          {receipt.recipient && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Recipient</span>
+              <span className="text-gray-900 font-medium text-sm">{receipt.recipient}</span>
+            </div>
+          )}
+          {receipt.provider && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Provider</span>
+              <span className="text-gray-900 font-medium text-sm">{receipt.provider}</span>
+            </div>
+          )}
+          {receipt.meter_number && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Meter Number</span>
+              <span className="text-gray-900 font-medium text-sm">{receipt.meter_number}</span>
+            </div>
+          )}
+          {receipt.customer_name && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Customer Name</span>
+              <span className="text-gray-900 font-medium text-sm">{receipt.customer_name}</span>
+            </div>
+          )}
+          {receipt.address && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Address</span>
+              <span className="text-gray-900 font-medium text-sm text-right max-w-[200px]">{receipt.address}</span>
+            </div>
+          )}
+          {receipt.token && (
+            <div className="bg-green-50 p-3 rounded-xl border border-green-200">
+              <p className="text-green-700 text-xs font-medium mb-1">Electricity Token</p>
+              <p className="text-green-900 font-bold text-lg tracking-wider">{receipt.token}</p>
+            </div>
+          )}
+          {receipt.smartcard && (
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500 text-sm">Smartcard/IUC</span>
+              <span className="text-gray-900 font-medium text-sm">{receipt.smartcard}</span>
+            </div>
+          )}
+          <div className="flex justify-between py-2">
+            <span className="text-gray-500 text-sm">Date</span>
+            <span className="text-gray-900 font-medium text-sm">{formatDate(receipt.date)}</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="p-4 bg-gray-50 flex gap-2 print:hidden">
+          <button 
+            onClick={handlePrint}
+            className="flex-1 py-2.5 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+          >
+            <Printer className="w-4 h-4" />
+            Print
+          </button>
+          <button 
+            onClick={handleShare}
+            className="flex-1 py-2.5 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+            style={{ backgroundColor: primaryColor || '#059669' }}
+          >
+            <Share2 className="w-4 h-4" />
+            Share
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Network/Company Logo URLs - Using reliable CDN sources
 const LOGOS = {
