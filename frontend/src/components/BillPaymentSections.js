@@ -720,12 +720,15 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions, prima
           </div>
         )}
       </div>
+      
+      {/* Receipt Modal */}
+      {receipt && <ReceiptModal receipt={receipt} onClose={() => setReceipt(null)} primaryColor={primaryColor} />}
     </div>
   );
 }
 
 // ============ Electricity Sub-Section ============
-function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
+function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryColor }) {
   const [provider, setProvider] = useState(null);
   const [meterNumber, setMeterNumber] = useState('');
   const [meterType, setMeterType] = useState('prepaid');
@@ -734,6 +737,7 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
   const [validating, setValidating] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [expanded, setExpanded] = useState(true);
+  const [receipt, setReceipt] = useState(null);
 
   const providers = [
     { value: 'ekedc', label: 'EKEDC', fullName: 'Eko Electricity' },
