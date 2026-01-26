@@ -810,6 +810,10 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions, p
         if (response.data.token) {
           toast.success(`Token: ${response.data.token}`, { duration: 10000 });
         }
+        // Show receipt
+        if (response.data.receipt) {
+          setReceipt(response.data.receipt);
+        }
         setProvider(null);
         setMeterNumber('');
         setAmount('');
