@@ -5681,7 +5681,7 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
     """
     try:
         # First lookup the plan to get the amount
-        plans_result = await get_data_plans(request.network)
+        plans_result = await get_data_plans_service(request.network)
         if not plans_result or not plans_result.get('status'):
             raise HTTPException(status_code=400, detail="Failed to fetch data plans")
         
