@@ -607,8 +607,9 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
 
     setValidating(true);
     try {
+      // Include default amount of 1000 for validation (Payscribe requires it)
       const response = await axios.get(
-        `${API}/api/payscribe/validate-meter?provider=${provider.value}&meter_number=${meterNumber}&meter_type=${meterType}`,
+        `${API}/api/payscribe/validate-meter?provider=${provider.value}&meter_number=${meterNumber}&meter_type=${meterType}&amount=1000`,
         axiosConfig
       );
 
@@ -616,7 +617,7 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
         setValidatedMeter(response.data.customer);
         toast.success(`Meter validated: ${response.data.customer.name}`);
       } else {
-        toast.error('Meter validation failed');
+        toast.error(response.data.message || 'Meter validation failed');
         setValidatedMeter(null);
       }
     } catch (error) {
