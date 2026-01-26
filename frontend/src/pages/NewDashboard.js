@@ -2016,8 +2016,6 @@ const NewDashboard = () => {
     // Camera functions for selfie capture
     const startCamera = async () => {
       setCameraError('');
-      setLivenessCheck('blink');
-      setLivenessVerified(false);
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
@@ -2038,15 +2036,9 @@ const NewDashboard = () => {
         streamRef.current = null;
       }
       setShowCamera(false);
-      setLivenessCheck('');
-      setLivenessVerified(false);
     };
     
     const captureSelfie = () => {
-      if (!livenessVerified) {
-        toast.error('Please complete the liveness check first');
-        return;
-      }
       setIsCapturing(true);
       setTimeout(() => {
         if (videoRef.current && canvasRef.current) {
@@ -2058,25 +2050,14 @@ const NewDashboard = () => {
           ctx.drawImage(video, 0, 0);
           const imageData = canvas.toDataURL('image/jpeg', 0.8);
           setSelfieImage(imageData);
+          toast.success('Selfie captured successfully!');
           stopCamera();
         }
         setIsCapturing(false);
       }, 500);
     };
     
-    // Simulate liveness check - in production this would use face detection
-    const performLivenessCheck = () => {
-      if (livenessCheck === 'blink') {
-        toast.success('Blink detected! Now turn your head slightly.');
-        setLivenessCheck('turn');
-      } else if (livenessCheck === 'turn') {
-        toast.success('Movement detected! Now smile.');
-        setLivenessCheck('smile');
-      } else if (livenessCheck === 'smile') {
-        toast.success('Liveness verified! You can now capture your selfie.');
-        setLivenessVerified(true);
-      }
-    };
+    // Liveness check removed - selfies will be manually reviewed
 
     const handleChangePassword = async () => {
       if (!currentPassword || !newPassword || !confirmPassword) {
