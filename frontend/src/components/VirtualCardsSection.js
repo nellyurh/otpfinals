@@ -7,7 +7,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 // Card design templates
 const CARD_DESIGNS = [
-  { id: 'classic', name: 'Classic White', gradient: 'bg-white', textColor: 'text-gray-800', accentColor: '#3B82F6' },
+  { id: 'classic', name: 'Classic White', gradient: 'bg-white', textColor: 'text-gray-800', accentColor: '#3B82F6', borderClass: 'border border-gray-200' },
   { id: 'ocean', name: 'Ocean Blue', gradient: 'bg-gradient-to-br from-blue-500 to-blue-700', textColor: 'text-white', accentColor: '#fff' },
   { id: 'sunset', name: 'Sunset', gradient: 'bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-400', textColor: 'text-white', accentColor: '#fff' },
   { id: 'neon', name: 'Neon Waves', gradient: 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900', textColor: 'text-white', accentColor: '#10B981', hasWaves: true },
@@ -16,7 +16,7 @@ const CARD_DESIGNS = [
 ];
 
 // Virtual Card Component Display
-function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false, compact = false }) {
+function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false, compact = false, brandLogo, brandName = 'BillHub' }) {
   const cardDesign = CARD_DESIGNS.find(d => d.id === (design || 'classic')) || CARD_DESIGNS[0];
   
   const formatCardNumber = (num) => {
@@ -25,7 +25,7 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
   };
 
   return (
-    <div className={`relative ${cardDesign.gradient} rounded-2xl ${compact ? 'p-4' : 'p-6'} shadow-xl overflow-hidden ${cardDesign.id === 'classic' ? 'border border-gray-200' : ''}`}>
+    <div className={`relative ${cardDesign.gradient} rounded-2xl ${compact ? 'p-4' : 'p-6'} shadow-xl overflow-hidden ${cardDesign.borderClass || ''}`}>
       {/* Wave design for neon card */}
       {cardDesign.hasWaves && (
         <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 400 250" preserveAspectRatio="none">
@@ -39,18 +39,21 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
       {/* Brand Logo */}
       <div className="flex items-center justify-between mb-4 relative z-10">
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cardDesign.id === 'classic' ? 'bg-blue-500' : 'bg-white/20'}`}>
-            <CreditCard className={`w-4 h-4 ${cardDesign.id === 'classic' ? 'text-white' : cardDesign.textColor}`} />
-          </div>
+          {brandLogo ? (
+            <img src={brandLogo} alt={brandName} className="w-8 h-8 rounded-lg object-contain" />
+          ) : (
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cardDesign.id === 'classic' ? 'bg-blue-500' : 'bg-white/20'}`}>
+              <CreditCard className={`w-4 h-4 ${cardDesign.id === 'classic' ? 'text-white' : cardDesign.textColor}`} />
+            </div>
+          )}
           <span className={`font-bold ${compact ? 'text-sm' : 'text-lg'} ${cardDesign.textColor}`}>
-            {card?.alias || 'BillHub'}
+            {card?.alias || brandName}
           </span>
         </div>
-        {/* Visa/Mastercard style curve */}
-        <svg className="w-16 h-10" viewBox="0 0 60 40">
-          <path d="M30,5 Q50,5 55,20 Q50,35 30,35" fill="none" stroke={cardDesign.accentColor} strokeWidth="2" opacity="0.6" />
-          <path d="M25,8 Q45,8 50,20 Q45,32 25,32" fill="none" stroke={cardDesign.accentColor} strokeWidth="2" opacity="0.4" />
-        </svg>
+        {/* Visa style curve */}
+        <div className="text-right">
+          <span className={`text-xs font-bold ${cardDesign.textColor} opacity-70`}>VISA</span>
+        </div>
       </div>
 
       {/* Card Number */}
@@ -61,7 +64,8 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
       {/* Card Details */}
       <div className="flex justify-between items-end relative z-10">
         <div>
-          <p className={`text-xs opacity-60 ${cardDesign.textColor}`}>{card?.name || 'CARD HOLDER'}</p>
+          <p className={`text-[10px] opacity-60 ${cardDesign.textColor}`}>CARD HOLDER</p>
+          <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${cardDesign.textColor}`}>{card?.name || 'YOUR NAME'}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right">
@@ -80,47 +84,29 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
   );
 }
 
-// Step Indicator Component
-function StepIndicator({ currentStep, steps }) {
-  return (
-    <div className="flex items-center justify-center gap-2 mb-6">
-      {steps.map((step, index) => (
-        <div key={step} className="flex items-center">
-          <div className="flex flex-col items-center">
-            <div className={`w-2 h-2 rounded-full ${index <= currentStep ? 'bg-blue-600' : 'bg-gray-300'}`} />
-            <span className={`text-xs mt-1 ${index === currentStep ? 'text-blue-600 font-medium' : 'text-gray-400'}`}>
-              {step}
-            </span>
-          </div>
-          {index < steps.length - 1 && (
-            <div className={`w-24 h-0.5 mx-2 ${index < currentStep ? 'bg-blue-600' : 'bg-gray-200'}`} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // Main Virtual Cards Section Component
-export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#059669' }) {
+export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#059669', branding = {} }) {
   const [cards, setCards] = useState([]);
-  const [fees, setFees] = useState({});
+  const [fees, setFees] = useState({
+    creation_fee: 2.50,
+    funding_fee: 0.30,
+    transaction_fee: 0.15,
+    monthly_fee: 0.50,
+    min_funding: 5
+  });
   const [usdBalance, setUsdBalance] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [selectedCard, setSelectedCard] = useState(null);
   const [cardTransactions, setCardTransactions] = useState([]);
   const [loadingTxns, setLoadingTxns] = useState(false);
   
   // Create card wizard state
   const [showCreateWizard, setShowCreateWizard] = useState(false);
-  const [createStep, setCreateStep] = useState(0); // 0: theme, 1: pin, 2: fund, 3: success
+  const [createStep, setCreateStep] = useState(0); // 0: design, 1: fees, 2: alias & amount, 3: success
   const [selectedDesign, setSelectedDesign] = useState('classic');
   const [cardAlias, setCardAlias] = useState('');
-  const [cardPin, setCardPin] = useState(['', '', '', '']);
-  const [confirmPin, setConfirmPin] = useState(['', '', '', '']);
-  const [fundingMethod, setFundingMethod] = useState('wallet');
-  const [initialAmount, setInitialAmount] = useState('50');
+  const [initialAmount, setInitialAmount] = useState('5');
   const [creating, setCreating] = useState(false);
+  const [createdCard, setCreatedCard] = useState(null);
   
   // Card detail view state
   const [showCardDetail, setShowCardDetail] = useState(false);
@@ -134,13 +120,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const [funding, setFunding] = useState(false);
 
   const userTier = user?.tier || 1;
-  const hasPayscribeCustomer = !!user?.payscribe_customer_id;
+  const brandLogo = branding?.logo_url || null;
+  const brandName = branding?.company_name || 'BillHub';
 
   useEffect(() => {
-    if (userTier >= 3) {
-      fetchCards();
-    }
-  }, [userTier]);
+    fetchCards();
+  }, []);
 
   const fetchCards = async () => {
     setLoading(true);
@@ -148,13 +133,16 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       const response = await axios.get(`${API}/api/cards`, axiosConfig);
       if (response.data.success) {
         setCards(response.data.cards || []);
-        setFees(response.data.fees || {});
+        if (response.data.fees) {
+          setFees(prev => ({ ...prev, ...response.data.fees }));
+        }
         setUsdBalance(response.data.usd_balance || 0);
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
+      // If 403, user might not have access yet - that's ok
       if (error.response?.status !== 403) {
-        toast.error('Failed to load cards');
+        // toast.error('Failed to load cards');
       }
     } finally {
       setLoading(false);
@@ -176,40 +164,23 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     }
   };
 
-  const handlePinInput = (index, value, isPinConfirm = false) => {
-    if (!/^\d*$/.test(value)) return;
-    const pins = isPinConfirm ? [...confirmPin] : [...cardPin];
-    pins[index] = value.slice(-1);
-    if (isPinConfirm) {
-      setConfirmPin(pins);
-    } else {
-      setCardPin(pins);
-    }
-    // Auto-focus next input
-    if (value && index < 3) {
-      const nextInput = document.getElementById(isPinConfirm ? `confirm-pin-${index + 1}` : `pin-${index + 1}`);
-      nextInput?.focus();
-    }
-  };
-
   const handleCreateCard = async () => {
-    const pin = cardPin.join('');
-    const confirm = confirmPin.join('');
+    const amount = parseFloat(initialAmount);
     
-    if (pin.length !== 4) {
-      toast.error('Please enter a 4-digit PIN');
+    if (!cardAlias.trim()) {
+      toast.error('Please enter a card name');
       return;
     }
-    if (pin !== confirm) {
-      toast.error('PINs do not match');
+    
+    if (amount < (fees.min_funding || 5)) {
+      toast.error(`Minimum amount is $${fees.min_funding || 5}`);
       return;
     }
 
-    const amount = parseFloat(initialAmount);
     const totalCost = amount + (fees.creation_fee || 2.50) + (fees.funding_fee || 0.30);
     
     if (totalCost > usdBalance) {
-      toast.error(`Insufficient USD balance. You need $${totalCost.toFixed(2)}`);
+      toast.error(`Insufficient USD balance. You need $${totalCost.toFixed(2)} but have $${usdBalance.toFixed(2)}`);
       return;
     }
 
@@ -219,11 +190,11 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         brand: 'VISA',
         initial_amount: amount,
         design: selectedDesign,
-        alias: cardAlias || 'My Card',
-        pin: pin
+        alias: cardAlias.trim()
       }, axiosConfig);
 
       if (response.data.success) {
+        setCreatedCard(response.data.card);
         setCreateStep(3); // Success step
         fetchCards();
         fetchProfile();
@@ -261,7 +232,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         setFundAmount('');
         fetchCards();
         fetchProfile();
-        // Update detail card balance
         setDetailCard(prev => ({ ...prev, balance: (prev.balance || 0) + amount }));
       }
     } catch (error) {
@@ -292,9 +262,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     setCreateStep(0);
     setSelectedDesign('classic');
     setCardAlias('');
-    setCardPin(['', '', '', '']);
-    setConfirmPin(['', '', '', '']);
-    setInitialAmount('50');
+    setInitialAmount('5');
+    setCreatedCard(null);
   };
 
   const openCardDetail = (card) => {
@@ -333,59 +302,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // No Payscribe customer ID - Show promo to encourage card creation
-  // The customer will be created when they try to create a card
-  if (!hasPayscribeCustomer && cards.length === 0) {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
-        
-        <div className="bg-gray-50 rounded-2xl p-8 text-center">
-          {/* Demo Card */}
-          <div className="max-w-sm mx-auto mb-6">
-            <VirtualCardDisplay 
-              card={{ last_four: '5678', name: 'JOHN DOE', expiry: '01/01', alias: 'BillHub' }} 
-              design="classic" 
-            />
-          </div>
-          
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">The all new BillHub prepaid virtual debit card</h3>
-          
-          <div className="space-y-3 mb-6 text-left max-w-md mx-auto">
-            <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <span className="text-gray-700">Use it anywhere in the world that accept Visa or Mastercard online</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <span className="text-gray-700">No hidden charges and low transaction fees</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <span className="text-gray-700">Simple, transparent and secure</span>
-            </div>
-          </div>
-          
-          <button
-            onClick={() => setShowCreateWizard(true)}
-            className="px-8 py-3 text-white rounded-xl font-semibold transition-colors"
-            style={{ backgroundColor: primaryColor }}
-          >
-            Get a Card
-          </button>
-          
-          <p className="mt-4 text-sm text-gray-500 hover:text-gray-700 cursor-pointer">Learn more about the card</p>
-        </div>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
         <div className="flex items-center justify-center py-12">
-          <RefreshCw className="w-8 h-8 animate-spin text-emerald-600" />
+          <RefreshCw className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
         </div>
       </div>
     );
@@ -410,27 +332,33 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
           design={detailCard.design} 
           showNumber={showCardNumber}
           showCVV={showCVV}
+          brandLogo={brandLogo}
+          brandName={brandName}
         />
 
         {/* Action Buttons */}
         <div className="flex gap-3">
           <button
             onClick={() => setShowCardNumber(!showCardNumber)}
-            className="flex-1 py-3 border-2 border-blue-600 text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-colors"
+            className="flex-1 py-3 border-2 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            style={{ borderColor: primaryColor, color: primaryColor }}
           >
+            {showCardNumber ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showCardNumber ? 'Hide Number' : 'View Number'}
           </button>
           <button
             onClick={() => setShowCVV(!showCVV)}
-            className="flex-1 py-3 border-2 border-blue-600 text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-colors"
+            className="flex-1 py-3 border-2 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            style={{ borderColor: primaryColor, color: primaryColor }}
           >
+            {showCVV ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showCVV ? 'Hide CVV' : 'View CVV'}
           </button>
         </div>
 
         {/* Balance */}
         <div className="text-center py-4">
-          <p className="text-2xl font-bold text-gray-900">Balance : ${(detailCard.balance || 0).toLocaleString()} USD</p>
+          <p className="text-2xl font-bold text-gray-900">Balance: ${(detailCard.balance || 0).toLocaleString()} USD</p>
         </div>
 
         {/* Card Info */}
@@ -463,8 +391,9 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         {/* Block Card */}
         <button
           onClick={() => handleBlockCard(detailCard)}
-          className="w-full text-center text-red-600 font-medium hover:text-red-700"
+          className="w-full text-center text-red-600 font-medium hover:text-red-700 flex items-center justify-center gap-2"
         >
+          {detailCard.status === 'frozen' ? <Flame className="w-4 h-4" /> : <Snowflake className="w-4 h-4" />}
           {detailCard.status === 'frozen' ? 'Unblock Card' : 'Block Card'}
         </button>
 
@@ -519,7 +448,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 value={fundAmount}
                 onChange={(e) => setFundAmount(e.target.value)}
                 placeholder="Enter amount"
-                className="w-full px-4 py-3 border-2 rounded-xl mb-4 focus:border-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 border-2 rounded-xl mb-4 focus:outline-none"
+                style={{ borderColor: fundAmount ? primaryColor : '#e5e7eb' }}
                 min={fees.min_funding || 1}
               />
               
@@ -552,125 +482,124 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
 
   // ============ Create Card Wizard ============
   if (showCreateWizard) {
-    const steps = ['Select card theme', 'Set pin', 'Add money'];
-    
     return (
       <div className="max-w-lg mx-auto">
         {/* Close Button */}
         <button 
           onClick={resetCreateWizard}
-          className="mb-4 text-gray-600 hover:text-gray-900"
+          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
-          <X className="w-6 h-6" />
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back</span>
         </button>
 
-        {/* Step Indicator */}
-        {createStep < 3 && <StepIndicator currentStep={createStep} steps={steps} />}
-
-        {/* Step 0: Select Card Theme */}
+        {/* Step 0: Select Card Design */}
         {createStep === 0 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Set your card appearance, choose from templates and make it more outstanding</h2>
-            </div>
-
-            {/* Card Name/Alias */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Card Name (Alias)</label>
-              <input
-                type="text"
-                value={cardAlias}
-                onChange={(e) => setCardAlias(e.target.value)}
-                placeholder="e.g., Shopping Card, Travel Card"
-                className="w-full px-4 py-3 border-2 rounded-xl focus:border-blue-500 focus:outline-none"
-                maxLength={20}
-              />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Choose Your Card Design</h2>
+              <p className="text-gray-500">Select a design that matches your style</p>
             </div>
 
             {/* Card Designs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {CARD_DESIGNS.map((design) => (
                 <button
                   key={design.id}
                   onClick={() => setSelectedDesign(design.id)}
                   className={`relative rounded-xl overflow-hidden transition-all ${
-                    selectedDesign === design.id ? 'ring-4 ring-blue-500 ring-offset-2' : ''
+                    selectedDesign === design.id ? 'ring-4 ring-offset-2 scale-105' : 'hover:scale-102'
                   }`}
+                  style={{ ringColor: selectedDesign === design.id ? primaryColor : 'transparent' }}
                 >
                   <VirtualCardDisplay 
-                    card={{ last_four: '5678', name: 'JOHN DOE', expiry: '01/01', alias: 'BillHub' }} 
-                    design={design.id} 
+                    card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: brandName }} 
+                    design={design.id}
+                    brandLogo={brandLogo}
+                    brandName={brandName}
                     compact 
                   />
+                  {selectedDesign === design.id && (
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
+                  <p className="text-center text-sm font-medium text-gray-700 mt-2">{design.name}</p>
                 </button>
               ))}
             </div>
 
-            {/* Navigation */}
-            <div className="flex gap-3 pt-4">
-              <button
-                onClick={resetCreateWizard}
-                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => setCreateStep(1)}
-                className="flex-1 py-3 text-white rounded-xl font-semibold"
-                style={{ backgroundColor: primaryColor }}
-              >
-                Next
-              </button>
-            </div>
+            {/* Next Button */}
+            <button
+              onClick={() => setCreateStep(1)}
+              className="w-full py-3 text-white rounded-xl font-semibold"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Continue
+            </button>
           </div>
         )}
 
-        {/* Step 1: Set PIN */}
+        {/* Step 1: Show Card Fees */}
         {createStep === 1 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Set your card PIN</h2>
-              <p className="text-gray-500">Create a 4-digit PIN for your card transactions</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Card Fees</h2>
+              <p className="text-gray-500">Here's what you need to know about fees</p>
             </div>
 
-            {/* PIN Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Enter PIN</label>
-              <div className="flex gap-3 justify-center">
-                {cardPin.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    id={`pin-${idx}`}
-                    type="password"
-                    value={digit}
-                    onChange={(e) => handlePinInput(idx, e.target.value)}
-                    className="w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:border-blue-500 focus:outline-none"
-                    maxLength={1}
-                  />
-                ))}
+            {/* Selected Card Preview */}
+            <div className="max-w-xs mx-auto">
+              <VirtualCardDisplay 
+                card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: brandName }} 
+                design={selectedDesign}
+                brandLogo={brandLogo}
+                brandName={brandName}
+                compact 
+              />
+            </div>
+
+            {/* Fees List */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <div>
+                  <p className="font-medium text-gray-900">Card Creation Fee</p>
+                  <p className="text-xs text-gray-500">One-time fee to create your card</p>
+                </div>
+                <span className="font-bold text-gray-900">${(fees.creation_fee || 2.50).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <div>
+                  <p className="font-medium text-gray-900">Funding Fee</p>
+                  <p className="text-xs text-gray-500">Per funding transaction</p>
+                </div>
+                <span className="font-bold text-gray-900">${(fees.funding_fee || 0.30).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                <div>
+                  <p className="font-medium text-gray-900">Transaction Fee</p>
+                  <p className="text-xs text-gray-500">Per card purchase</p>
+                </div>
+                <span className="font-bold text-gray-900">${(fees.transaction_fee || 0.15).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <div>
+                  <p className="font-medium text-gray-900">Monthly Maintenance</p>
+                  <p className="text-xs text-gray-500">Charged monthly</p>
+                </div>
+                <span className="font-bold text-gray-900">${(fees.monthly_fee || 0.50).toFixed(2)}</span>
               </div>
             </div>
 
-            {/* Confirm PIN */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm PIN</label>
-              <div className="flex gap-3 justify-center">
-                {confirmPin.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    id={`confirm-pin-${idx}`}
-                    type="password"
-                    value={digit}
-                    onChange={(e) => handlePinInput(idx, e.target.value, true)}
-                    className="w-14 h-14 text-center text-2xl font-bold border-2 rounded-xl focus:border-blue-500 focus:outline-none"
-                    maxLength={1}
-                  />
-                ))}
-              </div>
+            {/* Info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-blue-700">
+                <strong>Minimum funding:</strong> ${fees.min_funding || 5} USD
+              </p>
             </div>
 
             {/* Navigation */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => setCreateStep(0)}
                 className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
@@ -678,111 +607,98 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 Back
               </button>
               <button
-                onClick={() => {
-                  if (cardPin.join('').length !== 4) {
-                    toast.error('Please enter a 4-digit PIN');
-                    return;
-                  }
-                  if (cardPin.join('') !== confirmPin.join('')) {
-                    toast.error('PINs do not match');
-                    return;
-                  }
-                  setCreateStep(2);
-                }}
+                onClick={() => setCreateStep(2)}
                 className="flex-1 py-3 text-white rounded-xl font-semibold"
                 style={{ backgroundColor: primaryColor }}
               >
-                Next
+                Continue
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Add Money */}
+        {/* Step 2: Card Alias & Amount */}
         {createStep === 2 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Yay! this is final step</h2>
-              <p className="text-gray-500">Add money (minimum ${fees.min_funding || 50}) to your card so that you can start using it soon after activation.</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Almost There!</h2>
+              <p className="text-gray-500">Name your card and add initial funds</p>
             </div>
 
-            {/* Funding Methods */}
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => setFundingMethod('wallet')}
-                className={`p-4 rounded-xl border-2 text-center transition-all ${
-                  fundingMethod === 'wallet' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                }`}
-              >
-                <div className="w-1 h-1 bg-blue-600 rounded-full mx-auto mb-3" style={{ opacity: fundingMethod === 'wallet' ? 1 : 0 }} />
-                <Wallet className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                <p className="text-sm font-medium text-blue-600">BillHub Wallet</p>
-                <p className="text-xs text-gray-500">Load from your wallet instantly</p>
-              </button>
-              <button
-                onClick={() => setFundingMethod('bank')}
-                className={`p-4 rounded-xl border-2 text-center transition-all ${
-                  fundingMethod === 'bank' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                }`}
-              >
-                <div className="w-1 h-1 bg-blue-600 rounded-full mx-auto mb-3" style={{ opacity: fundingMethod === 'bank' ? 1 : 0 }} />
-                <Building2 className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                <p className="text-sm font-medium text-blue-600">Bank account</p>
-                <p className="text-xs text-gray-500">Add money via bank transfer</p>
-              </button>
-              <button
-                onClick={() => setFundingMethod('other')}
-                className={`p-4 rounded-xl border-2 text-center transition-all ${
-                  fundingMethod === 'other' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                }`}
-              >
-                <div className="w-1 h-1 bg-blue-600 rounded-full mx-auto mb-3" style={{ opacity: fundingMethod === 'other' ? 1 : 0 }} />
-                <MoreHorizontal className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                <p className="text-sm font-medium text-blue-600">Other method</p>
-                <p className="text-xs text-gray-500">Load from other payment methods</p>
-              </button>
+            {/* Selected Card Preview with custom name */}
+            <div className="max-w-xs mx-auto">
+              <VirtualCardDisplay 
+                card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: cardAlias || brandName }} 
+                design={selectedDesign}
+                brandLogo={brandLogo}
+                brandName={cardAlias || brandName}
+                compact 
+              />
             </div>
 
-            {/* Amount Input */}
-            {fundingMethod === 'wallet' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (Available: ${usdBalance.toFixed(2)})
-                </label>
-                <input
-                  type="number"
-                  value={initialAmount}
-                  onChange={(e) => setInitialAmount(e.target.value)}
-                  placeholder="Enter amount"
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:border-blue-500 focus:outline-none"
-                  min={fees.min_funding || 50}
-                />
-                <div className="flex gap-2 mt-2">
-                  {[50, 100, 200, 500].map(amt => (
-                    <button
-                      key={amt}
-                      onClick={() => setInitialAmount(String(amt))}
-                      className="flex-1 py-2 border rounded-lg hover:bg-gray-50 text-sm"
-                    >
-                      ${amt}
-                    </button>
-                  ))}
-                </div>
+            {/* Card Alias */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Card Name</label>
+              <input
+                type="text"
+                value={cardAlias}
+                onChange={(e) => setCardAlias(e.target.value)}
+                placeholder="e.g., Shopping Card, Netflix Card"
+                className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none"
+                style={{ borderColor: cardAlias ? primaryColor : '#e5e7eb' }}
+                maxLength={20}
+              />
+            </div>
+
+            {/* Initial Amount */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Initial Funding (Available: ${usdBalance.toFixed(2)})
+              </label>
+              <input
+                type="number"
+                value={initialAmount}
+                onChange={(e) => setInitialAmount(e.target.value)}
+                placeholder={`Min $${fees.min_funding || 5}`}
+                className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none"
+                style={{ borderColor: initialAmount ? primaryColor : '#e5e7eb' }}
+                min={fees.min_funding || 5}
+              />
+              <div className="flex gap-2 mt-2">
+                {[5, 10, 50, 100].map(amt => (
+                  <button
+                    key={amt}
+                    onClick={() => setInitialAmount(String(amt))}
+                    className={`flex-1 py-2 border rounded-lg text-sm transition-colors ${
+                      initialAmount === String(amt) ? 'text-white' : 'hover:bg-gray-50'
+                    }`}
+                    style={{ 
+                      backgroundColor: initialAmount === String(amt) ? primaryColor : 'transparent',
+                      borderColor: initialAmount === String(amt) ? primaryColor : '#e5e7eb'
+                    }}
+                  >
+                    ${amt}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* Fee Info */}
-            <div className="bg-gray-50 rounded-xl p-4 text-sm space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Card Creation Fee</span>
+            {/* Cost Summary */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Initial Amount</span>
+                <span className="font-medium">${parseFloat(initialAmount || 0).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Creation Fee</span>
                 <span className="font-medium">${(fees.creation_fee || 2.50).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Funding Fee</span>
                 <span className="font-medium">${(fees.funding_fee || 0.30).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between border-t pt-2">
-                <span className="text-gray-700 font-medium">Total</span>
+              <div className="flex justify-between pt-2 border-t border-gray-200">
+                <span className="font-semibold text-gray-900">Total</span>
                 <span className="font-bold text-gray-900">
                   ${(parseFloat(initialAmount || 0) + (fees.creation_fee || 2.50) + (fees.funding_fee || 0.30)).toFixed(2)}
                 </span>
@@ -790,7 +706,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             </div>
 
             {/* Navigation */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => setCreateStep(1)}
                 className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
@@ -799,11 +715,11 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </button>
               <button
                 onClick={handleCreateCard}
-                disabled={creating}
+                disabled={creating || !cardAlias.trim() || parseFloat(initialAmount) < (fees.min_funding || 5)}
                 className="flex-1 py-3 text-white rounded-xl font-semibold disabled:opacity-50"
                 style={{ backgroundColor: primaryColor }}
               >
-                {creating ? 'Creating...' : 'Finish'}
+                {creating ? 'Creating...' : 'Create Card'}
               </button>
             </div>
           </div>
@@ -812,21 +728,34 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         {/* Step 3: Success */}
         {createStep === 3 && (
           <div className="text-center space-y-6 py-8">
-            <h2 className="text-2xl font-semibold text-gray-900">All Done!</h2>
-            
-            <div className="w-24 h-24 mx-auto bg-green-500 rounded-full flex items-center justify-center">
-              <Check className="w-12 h-12 text-white" />
+            <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+              <Check className="w-10 h-10" />
             </div>
             
+            <h2 className="text-2xl font-bold text-gray-900">Card Created!</h2>
+            
             <p className="text-gray-500">
-              Perfect! You have setup your personal virtual card which will be available to use shortly. We will notify you soon about card activation via email.
+              Your virtual card is ready to use. You can start making online purchases right away.
             </p>
+
+            {/* Created Card Preview */}
+            {createdCard && (
+              <div className="max-w-sm mx-auto">
+                <VirtualCardDisplay 
+                  card={createdCard} 
+                  design={selectedDesign}
+                  brandLogo={brandLogo}
+                  brandName={cardAlias || brandName}
+                />
+              </div>
+            )}
             
             <button
               onClick={resetCreateWizard}
-              className="px-8 py-3 border-2 border-blue-600 text-blue-600 rounded-xl font-semibold hover:bg-blue-50"
+              className="px-8 py-3 text-white rounded-xl font-semibold"
+              style={{ backgroundColor: primaryColor }}
             >
-              Great! Thanks
+              Done
             </button>
           </div>
         )}
@@ -834,7 +763,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // ============ Main Cards List View ============
+  // ============ Main Cards List / Promo View ============
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -843,40 +772,50 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
           <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
           <p className="text-sm text-gray-500">USD Balance: <span className="font-semibold" style={{ color: primaryColor }}>${usdBalance.toFixed(2)}</span></p>
         </div>
-        <button
-          onClick={() => setShowCreateWizard(true)}
-          className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-          style={{ backgroundColor: primaryColor }}
-        >
-          <Plus className="w-4 h-4" />
-          Get a Card
-        </button>
+        {cards.length > 0 && (
+          <button
+            onClick={() => setShowCreateWizard(true)}
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <Plus className="w-4 h-4" />
+            Get a Card
+          </button>
+        )}
       </div>
 
       {/* No Cards - Promo View */}
       {cards.length === 0 ? (
         <div className="bg-gray-50 rounded-2xl p-8 text-center">
-          {/* Demo Card */}
+          {/* Demo Card with Brand Logo */}
           <div className="max-w-sm mx-auto mb-6">
             <VirtualCardDisplay 
-              card={{ last_four: '5678', name: 'JOHN DOE', expiry: '01/01', alias: 'BillHub' }} 
-              design="classic" 
+              card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: brandName }} 
+              design="classic"
+              brandLogo={brandLogo}
+              brandName={brandName}
             />
           </div>
           
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">The all new BillHub prepaid virtual debit card</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">The all new {brandName} prepaid virtual debit card</h3>
           
           <div className="space-y-3 mb-6 text-left max-w-md mx-auto">
             <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                <Check className="w-3 h-3 text-white" />
+              </div>
               <span className="text-gray-700">Use it anywhere in the world that accept Visa or Mastercard online</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                <Check className="w-3 h-3 text-white" />
+              </div>
               <span className="text-gray-700">No hidden charges and low transaction fees</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                <Check className="w-3 h-3 text-white" />
+              </div>
               <span className="text-gray-700">Simple, transparent and secure</span>
             </div>
           </div>
@@ -889,7 +828,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             Get a Card
           </button>
           
-          <p className="mt-4 text-sm text-gray-500 hover:text-gray-700 cursor-pointer">Learn more about the card</p>
+          <p className="mt-4 text-sm text-gray-500">Starting from ${(fees.creation_fee || 2.50) + (fees.min_funding || 5)} (includes ${fees.min_funding || 5} initial funding)</p>
         </div>
       ) : (
         /* Cards Grid */
@@ -900,11 +839,16 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               onClick={() => openCardDetail(card)}
               className="text-left transition-transform hover:scale-[1.02]"
             >
-              <VirtualCardDisplay card={card} design={card.design || 'classic'} />
+              <VirtualCardDisplay 
+                card={card} 
+                design={card.design || 'classic'}
+                brandLogo={brandLogo}
+                brandName={card.alias || brandName}
+              />
               <div className="mt-2 flex items-center justify-between px-2">
                 <span className="text-sm font-medium text-gray-700">{card.alias || 'Virtual Card'}</span>
-                <span className={`text-sm ${card.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
-                  {card.status === 'frozen' && <Snowflake className="w-4 h-4 inline mr-1" />}
+                <span className={`text-sm flex items-center gap-1 ${card.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
+                  {card.status === 'frozen' && <Snowflake className="w-3 h-3" />}
                   {card.status}
                 </span>
               </div>
@@ -914,8 +858,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       )}
 
       {/* Fee Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <p className="text-xs text-blue-700">
+      <div className="rounded-xl p-4" style={{ backgroundColor: `${primaryColor}10`, borderColor: `${primaryColor}30`, borderWidth: 1 }}>
+        <p className="text-xs" style={{ color: primaryColor }}>
           <strong>Fees:</strong> Creation ${fees.creation_fee?.toFixed(2) || '2.50'} • 
           Funding ${fees.funding_fee?.toFixed(2) || '0.30'} • 
           Transaction ${fees.transaction_fee?.toFixed(2) || '0.15'} • 
