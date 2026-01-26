@@ -333,16 +333,48 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // No Payscribe customer ID
-  if (!hasPayscribeCustomer) {
+  // No Payscribe customer ID - Show promo to encourage card creation
+  // The customer will be created when they try to create a card
+  if (!hasPayscribeCustomer && cards.length === 0) {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
-        <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
-          <CreditCard className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Account Setup Required</h3>
-          <p className="text-gray-500 mb-4">Your account is being set up for virtual card services.</p>
-          <p className="text-sm text-gray-400">Please contact support if this persists.</p>
+        
+        <div className="bg-gray-50 rounded-2xl p-8 text-center">
+          {/* Demo Card */}
+          <div className="max-w-sm mx-auto mb-6">
+            <VirtualCardDisplay 
+              card={{ last_four: '5678', name: 'JOHN DOE', expiry: '01/01', alias: 'BillHub' }} 
+              design="classic" 
+            />
+          </div>
+          
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">The all new BillHub prepaid virtual debit card</h3>
+          
+          <div className="space-y-3 mb-6 text-left max-w-md mx-auto">
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span className="text-gray-700">Use it anywhere in the world that accept Visa or Mastercard online</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span className="text-gray-700">No hidden charges and low transaction fees</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span className="text-gray-700">Simple, transparent and secure</span>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setShowCreateWizard(true)}
+            className="px-8 py-3 text-white rounded-xl font-semibold transition-colors"
+            style={{ backgroundColor: primaryColor }}
+          >
+            Get a Card
+          </button>
+          
+          <p className="mt-4 text-sm text-gray-500 hover:text-gray-700 cursor-pointer">Learn more about the card</p>
         </div>
       </div>
     );
