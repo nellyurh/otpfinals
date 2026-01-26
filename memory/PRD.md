@@ -1,6 +1,15 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-01-26 (Session 6)**: Payscribe Bill Payment API Fix + KYC Verification Fix + Selfie Simplification
+  - FIXED: KYC Verification endpoints use correct Payscribe API format (`kyc/lookup?type=bvn&value=...`)
+  - FIXED: Data purchase uses correct API format (`network`, `plan`, `recipient`)
+  - FIXED: Electricity purchase uses correct API format with `customer_name` required
+  - FIXED: TV subscription uses `multichoice/topup` for DSTV/GOTV
+  - FIXED: Betting uses correct `/betting/vend` endpoint with `customer_name`
+  - NEW: Transaction requery endpoint for pending transactions
+  - SIMPLIFIED: Selfie capture - removed liveness detection, manual review instead
+  - FIXED: Minimum electricity amount changed to ₦1,000 (per Payscribe API)
 - **2026-01-25 (Session 5)**: Virtual Cards + Payscribe Customer + Tier 3 Restrictions
   - NEW: Automatic Payscribe customer creation on Tier 3 KYC verification
   - NEW: Bank Transfer restricted to Tier 3 users only
