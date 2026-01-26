@@ -10715,9 +10715,9 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         user_phone = db_user.get('phone', '').replace('+234', '0').replace('234', '0')
         
         bvn_first_name = bvn_data.get('first_name', '').lower().strip()
-        bvn_last_name = bvn_data.get('last_name', '').lower().strip()
-        bvn_phone = bvn_data.get('phone', '').replace('+234', '0').replace('234', '0')
-        bvn_dob = bvn_data.get('date_of_birth', '')
+        bvn_last_name = (bvn_data.get('last_name') or '').lower().strip()  # Can be null
+        bvn_phone = (bvn_data.get('phone_number') or bvn_data.get('phone', '')).replace('+234', '0').replace('234', '0')
+        bvn_dob = bvn_data.get('dob') or bvn_data.get('date_of_birth', '')
         
         # Check name match (at least first name or last name should match)
         name_match = (user_first_name in bvn_first_name or bvn_first_name in user_first_name or 
