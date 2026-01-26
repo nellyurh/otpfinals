@@ -6031,9 +6031,10 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
     or POST /cable/vend for others
     """
     try:
-        # Check balance
-        if user.get('ngn_balance', 0) < request.amount:
-            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+        # Check balance FIRST
+        user_balance = user.get('ngn_balance', 0)
+        if user_balance < request.amount:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{request.amount:,.2f} but have ₦{user_balance:,.2f}")
 
         provider = request.provider.lower()
         
@@ -6080,7 +6081,7 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
                 currency='NGN',
                 status='completed',
                 reference=details.get('trans_id'),
-                metadata={'service': 'tv', 'provider': request.provider, 'smartcard': request.smartcard, 'plan': request.plan_code}
+                metadata={'service': 'tv', 'provider': request.provider, 'smartcard': request.smartcard, 'plan': request.plan_code, 'customer_name': request.customer_name}
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -6093,7 +6094,20 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment'}
             )
 
-            return {'success': True, 'message': 'TV subscription successful', 'details': details}
+            # Generate receipt data
+            receipt = {
+                'type': 'tv',
+                'trans_id': details.get('trans_id'),
+                'provider': request.provider.upper(),
+                'smartcard': request.smartcard,
+                'customer_name': request.customer_name,
+                'plan': request.plan_code,
+                'amount': request.amount,
+                'status': 'Successful',
+                'date': datetime.now(timezone.utc).isoformat()
+            }
+
+            return {'success': True, 'message': 'TV subscription successful', 'details': details, 'receipt': receipt}
 
         error_msg = result.get('description', 'TV subscription failed') if result else 'TV subscription failed'
         raise HTTPException(status_code=400, detail=error_msg)
