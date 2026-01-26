@@ -1078,6 +1078,10 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryCol
 
       if (response.data.success) {
         toast.success('TV subscription successful!');
+        // Show receipt
+        if (response.data.receipt) {
+          setReceipt(response.data.receipt);
+        }
         setProvider(null);
         setSmartcardNumber('');
         setSelectedPlan(null);
