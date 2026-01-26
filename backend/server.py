@@ -2001,7 +2001,7 @@ async def create_stablecoin_address(user_id: str, currency: str, network: str, c
             'customer_id': user_id
         }
         
-        result = await payscribe_request('stable/address/create', 'POST', data)
+        result = await payscribe_request('stable/address/create', 'POST', data, use_public_key=True)
         if result and result.get('status'):
             return result.get('message', {}).get('details')
         return None
