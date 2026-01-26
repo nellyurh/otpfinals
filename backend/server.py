@@ -6042,6 +6042,46 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
         logger.error(f"TV subscription error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============ Transaction Requery ============
+
+@api_router.get("/payscribe/requery/{trans_id}")
+async def requery_transaction(trans_id: str, user: dict = Depends(get_current_user)):
+    """Requery a pending transaction status
+    
+    Use this for transactions with status 201 (pending).
+    Can only be called once per minute per transaction.
+    """
+    try:
+        endpoint = f'requery/?trans_id={trans_id}'
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
+        
+        if result and result.get('status'):
+            details = result.get('message', {}).get('details', {})
+            new_status = details.get('transaction_status', 'pending')
+            
+            # Update local transaction status if changed
+            if new_status == 'success':
+                await db.transactions.update_one(
+                    {'reference': trans_id, 'user_id': user['id']},
+                    {'$set': {'status': 'completed'}}
+                )
+            elif new_status == 'fail':
+                # Refund user balance
+                trans = await db.transactions.find_one({'reference': trans_id, 'user_id': user['id']})
+                if trans and trans.get('status') == 'pending':
+                    await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': trans.get('amount', 0)}})
+                await db.transactions.update_one(
+                    {'reference': trans_id, 'user_id': user['id']},
+                    {'$set': {'status': 'failed'}}
+                )
+            
+            return {'status': True, 'transaction_status': new_status, 'details': details}
+        
+        return {'status': False, 'message': 'Failed to requery transaction'}
+    except Exception as e:
+        logger.error(f"Requery error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ============ Wallet-to-Wallet Transfer ============
 
 class WalletTransferRequest(BaseModel):
