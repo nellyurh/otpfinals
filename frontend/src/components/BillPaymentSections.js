@@ -578,6 +578,10 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions, prima
 
       if (response.data.success) {
         toast.success('Data bundle purchased successfully!');
+        // Show receipt
+        if (response.data.receipt) {
+          setReceipt(response.data.receipt);
+        }
         setNetwork(null);
         setSelectedPlan(null);
         setPhoneNumber('');
