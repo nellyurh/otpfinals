@@ -1248,14 +1248,16 @@ class CreateStablecoinWalletRequest(BaseModel):
     label: Optional[str] = "My Wallet"
 
 class DataPurchaseRequest(BaseModel):
-    plan_code: str
-    recipient: str
+    network: str  # mtn, glo, airtel, 9mobile
+    plan: str  # plan ID from lookup
+    recipient: str  # phone number
     ref: Optional[str] = None
 
 class BettingFundRequest(BaseModel):
     bet_id: str
     customer_id: str
-    amount: float
+    customer_name: str  # Required - from validation
+    amount: float  # Min 100, Max 50,000
     ref: Optional[str] = None
 
 class UpdatePhoneRequest(BaseModel):
