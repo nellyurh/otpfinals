@@ -5680,21 +5680,42 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
     Uses correct Payscribe endpoint: POST /data/vend
     """
     try:
+        # First lookup the plan to get the amount
+        plans_result = await get_data_plans(request.network)
+        if not plans_result or not plans_result.get('status'):
+            raise HTTPException(status_code=400, detail="Failed to fetch data plans")
+        
+        # Find the plan amount
+        plan_amount = 0
+        plans_list = plans_result.get('message', {}).get('details', [{}])[0].get('plans', [])
+        for plan in plans_list:
+            if plan.get('plan_code') == request.plan:
+                plan_amount = float(plan.get('amount', 0))
+                break
+        
+        if plan_amount <= 0:
+            raise HTTPException(status_code=400, detail="Invalid plan selected")
+        
+        # Check user balance BEFORE purchase
+        user_balance = user.get('ngn_balance', 0)
+        if user_balance < plan_amount:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{plan_amount:,.2f} but have ₦{user_balance:,.2f}")
+        
         # Purchase data with correct parameters
         result = await purchase_data(request.network, request.plan, request.recipient, request.ref)
         
         if result and result.get('status'):
             # Deduct from user balance
             details = result.get('message', {}).get('details', {})
-            amount = details.get('amount', 0) or details.get('total_charge', 0)
+            amount = float(details.get('amount', 0) or details.get('total_charge', 0) or plan_amount)
             
-            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -float(amount)}})
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -amount}})
             
             # Create transaction record
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
-                amount=float(amount),
+                amount=amount,
                 currency='NGN',
                 status='completed',
                 reference=details.get('trans_id'),
@@ -5711,7 +5732,18 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'data'},
             )
             
-            return {'success': True, 'message': 'Data purchase successful', 'details': result}
+            # Generate receipt data
+            receipt = {
+                'type': 'data',
+                'trans_id': details.get('trans_id'),
+                'network': request.network.upper(),
+                'recipient': request.recipient,
+                'amount': amount,
+                'status': 'Successful',
+                'date': datetime.now(timezone.utc).isoformat()
+            }
+            
+            return {'success': True, 'message': 'Data purchase successful', 'details': result, 'receipt': receipt}
         
         error_msg = result.get('description', 'Data purchase failed') if result else 'Data purchase failed'
         raise HTTPException(status_code=400, detail=error_msg)
