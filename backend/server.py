@@ -2815,7 +2815,7 @@ async def create_payscribe_customer(request: Dict[str, Any], user: dict = Depend
     """Create Payscribe customer for USDT/USDC and Virtual Cards"""
     try:
         # Call Payscribe customer creation
-        result = await payscribe_request('customers/create/full', 'POST', request)
+        result = await payscribe_request('customers/create/full', 'POST', request, use_public_key=True)
         
         if result and result.get('status'):
             customer_id = result.get('message', {}).get('details', {}).get('customer_id')
