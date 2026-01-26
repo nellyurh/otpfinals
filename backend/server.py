@@ -5799,16 +5799,20 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
 # ============ Electricity Bill Payment ============
 
 class ElectricityRequest(BaseModel):
-    provider: str
+    provider: str  # service short name: ikedc, ekedc, eedc, phedc, aedc, ibedc, kedco, jed
     meter_number: str
     meter_type: str  # prepaid or postpaid
-    amount: float
+    amount: float  # Min ₦1,000
+    customer_name: str  # Required - from validation
+    address: Optional[str] = None
+    phone: Optional[str] = None
 
 @api_router.get("/payscribe/validate-meter")
 async def validate_meter(provider: str, meter_number: str, meter_type: str, user: dict = Depends(get_current_user)):
     """Validate electricity meter number"""
     try:
-        endpoint = f'electricity/lookup?disco={provider}&meter={meter_number}&type={meter_type}'
+        # Use correct parameter names for Payscribe
+        endpoint = f'electricity/lookup?disco={provider.lower()}&meter={meter_number}&type={meter_type}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if result and result.get('status'):
@@ -5828,24 +5832,36 @@ async def validate_meter(provider: str, meter_number: str, meter_type: str, user
 
 @api_router.post("/payscribe/buy-electricity")
 async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_current_user)):
-    """Purchase electricity via Payscribe"""
+    """Purchase electricity via Payscribe
+    
+    Uses correct Payscribe endpoint: POST /electricity/vend
+    Required: meter_number, meter_type, amount, service, customer_name
+    """
     try:
         # Check balance
         if user.get('ngn_balance', 0) < request.amount:
             raise HTTPException(status_code=400, detail="Insufficient NGN balance")
 
-        if request.amount < 500:
-            raise HTTPException(status_code=400, detail="Minimum amount is ₦500")
+        if request.amount < 1000:
+            raise HTTPException(status_code=400, detail="Minimum amount is ₦1,000")
 
-        # Purchase electricity
+        # Purchase electricity with correct parameters
         data = {
-            'disco': request.provider,
-            'meter': request.meter_number,
-            'type': request.meter_type,
-            'amount': request.amount,
+            'meter_number': request.meter_number,
+            'meter_type': request.meter_type,
+            'amount': int(request.amount),
+            'service': request.provider.lower(),  # ikedc, ekedc, etc.
+            'customer_name': request.customer_name,
             'ref': str(uuid.uuid4())
         }
         
+        # Add optional fields
+        if request.phone:
+            data['phone'] = request.phone
+        if request.address:
+            data['address'] = request.address
+        
+        logger.info(f"Payscribe electricity vend request: {data}")
         result = await payscribe_request('electricity/vend', 'POST', data, use_public_key=True)
         
         if result and result.get('status'):
@@ -5878,7 +5894,8 @@ async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_
 
             return {'success': True, 'message': 'Electricity purchase successful', 'token': token, 'details': details}
 
-        raise HTTPException(status_code=400, detail="Electricity purchase failed")
+        error_msg = result.get('description', 'Electricity purchase failed') if result else 'Electricity purchase failed'
+        raise HTTPException(status_code=400, detail=error_msg)
     except HTTPException:
         raise
     except Exception as e:
