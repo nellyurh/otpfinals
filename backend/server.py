@@ -5617,7 +5617,7 @@ async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_curr
 @api_router.get("/payscribe/stablecoin-currencies")
 async def get_stablecoin_currencies(user: dict = Depends(get_current_user)):
     """Get available stablecoin currencies and networks"""
-    result = await payscribe_request('stable/addresses/currencies')
+    result = await payscribe_request('stable/addresses/currencies', 'GET', use_public_key=True)
     return result or {'status': False, 'message': 'Failed to fetch currencies'}
 
 @api_router.post("/payscribe/create-stablecoin-wallet")
@@ -5631,7 +5631,7 @@ async def create_stablecoin_wallet(request: CreateStablecoinWalletRequest, user:
         'customer_id': user['id']
     }
     
-    result = await payscribe_request('stable/address/create', 'POST', data)
+    result = await payscribe_request('stable/address/create', 'POST', data, use_public_key=True)
     
     if result and result.get('status'):
         details = result.get('message', {}).get('details', {})
