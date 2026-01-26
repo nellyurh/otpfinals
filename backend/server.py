@@ -5735,24 +5735,36 @@ async def validate_betting_account(bet_id: str, customer_id: str, user: dict = D
 
 @api_router.post("/payscribe/fund-betting")
 async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(get_current_user)):
-    """Fund betting wallet via Payscribe"""
+    """Fund betting wallet via Payscribe
+    
+    Uses correct Payscribe endpoint: POST /betting/vend
+    """
     try:
         # Check balance
         if user.get('ngn_balance', 0) < request.amount:
             raise HTTPException(status_code=400, detail="Insufficient NGN balance")
 
-        # Validate account first
-        validation = await validate_bet_account(request.bet_id, request.customer_id)
-        if not validation or not validation.get('status'):
-            raise HTTPException(status_code=400, detail="Invalid betting account")
+        # Validate amount limits
+        if request.amount < 100:
+            raise HTTPException(status_code=400, detail="Minimum amount is ₦100")
+        if request.amount > 50000:
+            raise HTTPException(status_code=400, detail="Maximum amount is ₦50,000 per transaction")
 
-        # Fund wallet
-        result = await fund_bet_wallet(request.bet_id, request.customer_id, request.amount, request.ref)
+        # Fund wallet with correct parameters including customer_name
+        result = await fund_bet_wallet(
+            request.bet_id, 
+            request.customer_id, 
+            request.customer_name,
+            request.amount, 
+            request.ref
+        )
 
         if result and result.get('status'):
             # Deduct from user balance
             await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
 
+            details = result.get('message', {}).get('details', {})
+            
             # Create transaction record
             transaction = Transaction(
                 user_id=user['id'],
@@ -5760,8 +5772,8 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
                 amount=request.amount,
                 currency='NGN',
                 status='completed',
-                reference=result.get('message', {}).get('details', {}).get('trans_id'),
-                metadata={'service': 'betting', 'bet_id': request.bet_id, 'customer_id': request.customer_id}
+                reference=details.get('trans_id'),
+                metadata={'service': 'betting', 'bet_id': request.bet_id, 'customer_id': request.customer_id, 'customer_name': request.customer_name}
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -5770,13 +5782,14 @@ async def fund_betting_wallet(request: BettingFundRequest, user: dict = Depends(
             await _create_transaction_notification(
                 user['id'],
                 'Betting funded',
-                f"₦{request.amount:,.2f} was used to fund betting wallet.",
+                f"₦{request.amount:,.2f} was used to fund {request.customer_name} ({request.bet_id}) wallet.",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment'},
             )
 
             return {'success': True, 'message': 'Betting wallet funded successfully', 'details': result}
 
-        raise HTTPException(status_code=400, detail="Betting wallet funding failed")
+        error_msg = result.get('description', 'Betting wallet funding failed') if result else 'Betting wallet funding failed'
+        raise HTTPException(status_code=400, detail=error_msg)
     except HTTPException:
         raise
     except Exception as e:
