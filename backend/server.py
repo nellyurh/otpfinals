@@ -2039,15 +2039,21 @@ async def get_data_plans_service(network: str, category: str = None) -> Optional
         logger.error(f"Error fetching data plans: {str(e)}")
         return None
 
-async def purchase_data(plan_code: str, recipient: str, ref: str = None) -> Optional[Dict]:
-    """Purchase data bundle via Payscribe"""
+async def purchase_data(network: str, plan: str, recipient: str, ref: str = None) -> Optional[Dict]:
+    """Purchase data bundle via Payscribe
+    
+    Correct endpoint: POST /data/vend
+    Required fields: recipient, network, plan, ref (optional)
+    """
     try:
         data = {
-            'plan_code': plan_code,
             'recipient': recipient,
+            'network': network.lower(),  # mtn, glo, airtel, 9mobile
+            'plan': plan,  # plan ID from lookup
             'ref': ref or str(uuid.uuid4())
         }
         
+        logger.info(f"Payscribe data vend request: {data}")
         result = await payscribe_request('data/vend', 'POST', data, use_public_key=True)
         return result
     except Exception as e:
