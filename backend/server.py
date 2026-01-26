@@ -10818,8 +10818,8 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         user_last_name = db_user.get('last_name', '').lower().strip()
         
         nin_first_name = nin_data.get('first_name', '').lower().strip()
-        nin_last_name = nin_data.get('last_name', '').lower().strip()
-        nin_dob = nin_data.get('date_of_birth', '') or nin_data.get('birthdate', '')
+        nin_last_name = (nin_data.get('last_name') or '').lower().strip()  # Can be null
+        nin_dob = nin_data.get('dob') or nin_data.get('date_of_birth', '') or nin_data.get('birthdate', '')
         
         # Check name match
         name_match = (user_first_name in nin_first_name or nin_first_name in user_first_name or 
