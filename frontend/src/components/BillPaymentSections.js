@@ -484,7 +484,7 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
 }
 
 // ============ Buy Data Sub-Section ============
-function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
+function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryColor }) {
   const [network, setNetwork] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -493,6 +493,7 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState('daily');
   const [expanded, setExpanded] = useState(true);
+  const [receipt, setReceipt] = useState(null);
 
   const networkOptions = [
     { value: 'mtn', label: 'MTN', logo: LOGOS.mtn, color: '#FFCC00' },
