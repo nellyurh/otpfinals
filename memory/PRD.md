@@ -31,7 +31,41 @@
 - **2026-01-25 (Session 2)**: Payscribe API Fixes + Page Toggles + Payout Webhook
 - **2026-01-25 (Session 1)**: KYC System Complete + Bank Transfer Feature + Admin Enhancements
 
-## Latest Updates (January 25, 2026)
+## Latest Updates (January 26, 2026)
+
+### Session 6 - Payscribe Bill Payment API Fixes
+
+**Problem Solved:**
+Multiple Payscribe bill payment APIs were using incorrect endpoint formats and missing required parameters.
+
+**Correct Payscribe Bill Payment Endpoints (all use PUBLIC key):**
+| Feature | Endpoint | Method | Required Fields |
+|---------|----------|--------|-----------------|
+| KYC Lookup | `/kyc/lookup?type=bvn&value=X` | GET | type, value |
+| Data Plans | `/data/lookup?network=mtn` | GET | network |
+| Data Vend | `/data/vend` | POST | recipient, network, plan, ref |
+| Electricity Lookup | `/electricity/lookup?disco=X&meter=Y&type=Z` | GET | disco, meter, type |
+| Electricity Vend | `/electricity/vend` | POST | meter_number, meter_type, amount, service, customer_name, ref |
+| TV/Cable Lookup | `/cable/lookup?provider=X&smartcard=Y` | GET | provider, smartcard |
+| TV Topup (DSTV/GOTV) | `/multichoice/topup` | POST | amount, customer_name, account, service, month, ref |
+| Betting Lookup | `/betting/lookup?bet_id=X&customer_id=Y` | GET | bet_id, customer_id |
+| Betting Fund | `/betting/vend` | POST | bet_id, customer_id, customer_name, amount, ref |
+| Requery | `/requery/?trans_id=X` | GET | trans_id |
+
+**KYC Verification Fixed:**
+- BVN lookup: Uses `kyc/lookup?type=bvn&value=XXXXXXX`
+- NIN lookup: Uses `kyc/lookup?type=nin&value=XXXXXXX`
+- Response parsing handles nullable fields (last_name, dob)
+
+**Selfie Capture Simplified:**
+- Removed liveness detection (blink, turn, smile steps)
+- Simple photo capture with face guide oval
+- Selfies will be manually reviewed by admin
+
+**New Endpoint:**
+- `GET /api/payscribe/requery/{trans_id}` - Check status of pending transactions
+
+## Previous Updates (January 25, 2026)
 
 ### Session 5 - Virtual Cards System
 
