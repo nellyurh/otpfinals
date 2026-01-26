@@ -1958,8 +1958,6 @@ const NewDashboard = () => {
     const [selfieImage, setSelfieImage] = useState(null);
     const [cameraError, setCameraError] = useState('');
     const [isCapturing, setIsCapturing] = useState(false);
-    const [livenessCheck, setLivenessCheck] = useState(''); // 'blink', 'turn', 'smile'
-    const [livenessVerified, setLivenessVerified] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const streamRef = useRef(null);
