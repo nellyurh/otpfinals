@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://billhub-pay.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://payhub-99.preview.emergentagent.com')
 
 # Test credentials
 TEST_USER_EMAIL = "newtest123@example.com"
