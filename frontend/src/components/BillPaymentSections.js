@@ -1044,11 +1044,11 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryCol
         setValidatedSmartcard(response.data.customer);
         toast.success(`Smartcard validated: ${response.data.customer.name}`);
       } else {
-        toast.error('Smartcard validation failed');
+        toast.error(response.data.message || 'Smartcard validation failed. Please check the IUC number.');
         setValidatedSmartcard(null);
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Validation failed');
+      toast.error(error.response?.data?.detail || 'Validation failed. Service may be temporarily unavailable.');
       setValidatedSmartcard(null);
     } finally {
       setValidating(false);
