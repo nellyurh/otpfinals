@@ -3041,7 +3041,7 @@ const NewDashboard = () => {
                   Start Express KYC (₦{KYC_FEE})
                 </button>
 
-                {/* Camera Modal */}
+                {/* Camera Modal - Simple selfie capture */}
                 {showCamera && (
                   <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden">
@@ -3052,7 +3052,7 @@ const NewDashboard = () => {
                             <X className="w-5 h-5" />
                           </button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Complete the liveness check to verify you're a real person</p>
+                        <p className="text-xs text-gray-500 mt-1">Position your face in the frame and capture</p>
                       </div>
                       
                       <div className="relative aspect-[4/3] bg-black">
@@ -3065,45 +3065,31 @@ const NewDashboard = () => {
                         />
                         <canvas ref={canvasRef} className="hidden" />
                         
-                        {/* Liveness Instructions Overlay */}
-                        <div className="absolute top-4 left-0 right-0 text-center">
-                          <div className="inline-block bg-black/60 text-white px-4 py-2 rounded-full text-sm">
-                            {livenessCheck === 'blink' && '👁️ Please blink your eyes'}
-                            {livenessCheck === 'turn' && '↔️ Slowly turn your head'}
-                            {livenessCheck === 'smile' && '😊 Now smile!'}
-                            {livenessVerified && '✅ Ready to capture!'}
-                          </div>
-                        </div>
-                        
                         {/* Face Guide */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="w-48 h-56 border-4 border-white/50 rounded-full" />
                         </div>
+                        
+                        {/* Instructions */}
+                        <div className="absolute top-4 left-0 right-0 text-center">
+                          <div className="inline-block bg-black/60 text-white px-4 py-2 rounded-full text-sm">
+                            📸 Position your face and tap Capture
+                          </div>
+                        </div>
                       </div>
                       
                       <div className="p-4 space-y-3">
-                        {!livenessVerified ? (
-                          <button
-                            onClick={performLivenessCheck}
-                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                          >
-                            {livenessCheck === 'blink' && 'I Blinked'}
-                            {livenessCheck === 'turn' && 'I Turned My Head'}
-                            {livenessCheck === 'smile' && 'I Smiled'}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={captureSelfie}
-                            disabled={isCapturing}
-                            className="w-full py-3 text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
-                            style={{ backgroundColor: primaryColor }}
-                          >
-                            {isCapturing ? 'Capturing...' : '📸 Capture Selfie'}
-                          </button>
-                        )}
+                        <button
+                          onClick={captureSelfie}
+                          disabled={isCapturing}
+                          className="w-full py-3 text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          {isCapturing ? 'Capturing...' : '📸 Capture Selfie'}
+                        </button>
                         
                         <p className="text-xs text-center text-gray-500">
-                          Position your face within the oval and follow the instructions
+                          Position your face within the oval for best results
                         </p>
                       </div>
                     </div>
