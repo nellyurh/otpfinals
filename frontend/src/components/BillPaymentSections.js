@@ -416,7 +416,7 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
   const filteredPlans = dataPlans.filter(p => p.category === activeTab);
 
   const handlePurchaseData = async () => {
-    if (!selectedPlan || !phoneNumber) {
+    if (!selectedPlan || !phoneNumber || !network) {
       toast.error('Please fill all fields');
       return;
     }
@@ -425,7 +425,11 @@ function BuyDataSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
     try {
       const response = await axios.post(
         `${API}/api/payscribe/buy-data`,
-        { plan_code: selectedPlan.plan_code, recipient: phoneNumber },
+        { 
+          network: network.value.toLowerCase(),  // mtn, glo, airtel, 9mobile
+          plan: selectedPlan.plan_code || selectedPlan.value,  // plan ID
+          recipient: phoneNumber 
+        },
         axiosConfig
       );
 
