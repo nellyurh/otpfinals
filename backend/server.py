@@ -2020,7 +2020,7 @@ async def vend_airtime(network: str, amount: float, recipient: str, ref: str = N
             'ref': ref or str(uuid.uuid4())
         }
         
-        result = await payscribe_request('airtime', 'POST', data)
+        result = await payscribe_request('airtime', 'POST', data, use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error vending airtime: {str(e)}")
@@ -2033,7 +2033,7 @@ async def get_data_plans_service(network: str, category: str = None) -> Optional
         if category:
             endpoint += f'&category={category}'
         
-        result = await payscribe_request(endpoint, 'GET')
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error fetching data plans: {str(e)}")
@@ -2048,7 +2048,7 @@ async def purchase_data(plan_code: str, recipient: str, ref: str = None) -> Opti
             'ref': ref or str(uuid.uuid4())
         }
         
-        result = await payscribe_request('data/vend', 'POST', data)
+        result = await payscribe_request('data/vend', 'POST', data, use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error purchasing data: {str(e)}")
@@ -2057,7 +2057,7 @@ async def purchase_data(plan_code: str, recipient: str, ref: str = None) -> Opti
 async def get_betting_providers() -> Optional[Dict]:
     """Get list of betting service providers"""
     try:
-        result = await payscribe_request('betting/list', 'GET')
+        result = await payscribe_request('betting/list', 'GET', use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error fetching betting providers: {str(e)}")
@@ -2066,7 +2066,7 @@ async def get_betting_providers() -> Optional[Dict]:
 async def validate_bet_account(bet_id: str, customer_id: str) -> Optional[Dict]:
     """Validate betting account before funding"""
     try:
-        result = await payscribe_request(f'betting/lookup?bet_id={bet_id}&customer_id={customer_id}', 'GET')
+        result = await payscribe_request(f'betting/lookup?bet_id={bet_id}&customer_id={customer_id}', 'GET', use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error validating bet account: {str(e)}")
@@ -2082,7 +2082,7 @@ async def fund_bet_wallet(bet_id: str, customer_id: str, amount: float, ref: str
             'ref': ref or str(uuid.uuid4())
         }
         
-        result = await payscribe_request('betting/fund', 'POST', data)
+        result = await payscribe_request('betting/fund', 'POST', data, use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error funding bet wallet: {str(e)}")
