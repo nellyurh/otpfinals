@@ -2078,17 +2078,23 @@ async def validate_bet_account(bet_id: str, customer_id: str) -> Optional[Dict]:
         logger.error(f"Error validating bet account: {str(e)}")
         return None
 
-async def fund_bet_wallet(bet_id: str, customer_id: str, amount: float, ref: str = None) -> Optional[Dict]:
-    """Fund betting wallet via Payscribe"""
+async def fund_bet_wallet(bet_id: str, customer_id: str, customer_name: str, amount: float, ref: str = None) -> Optional[Dict]:
+    """Fund betting wallet via Payscribe
+    
+    Correct endpoint: POST /betting/vend
+    Required fields: bet_id, customer_id, customer_name, amount, ref
+    """
     try:
         data = {
             'bet_id': bet_id,
             'customer_id': customer_id,
-            'amount': amount,
+            'customer_name': customer_name,
+            'amount': int(amount),  # Minimum 100, maximum 50,000
             'ref': ref or str(uuid.uuid4())
         }
         
-        result = await payscribe_request('betting/fund', 'POST', data, use_public_key=True)
+        logger.info(f"Payscribe betting fund request: {data}")
+        result = await payscribe_request('betting/vend', 'POST', data, use_public_key=True)
         return result
     except Exception as e:
         logger.error(f"Error funding bet wallet: {str(e)}")
