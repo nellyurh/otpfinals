@@ -10804,8 +10804,8 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
                 'tier': 3
             }
         
-        # Call Payscribe NIN lookup (no fee - already paid with BVN)
-        endpoint = f'lookup/nin?nin={request.nin}'
+        # Call Payscribe NIN lookup using correct KYC lookup endpoint (no fee - already paid with BVN)
+        endpoint = f'kyc/lookup?type=nin&value={request.nin}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if not result or not result.get('status'):
