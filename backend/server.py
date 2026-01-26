@@ -6846,6 +6846,8 @@ async def create_virtual_card(request: CreateCardRequest, user: dict = Depends(g
             'billing': card_data.get('billing', {}),
             'balance': request.initial_amount,
             'status': 'active',
+            'design': request.design,  # Card design theme
+            'alias': request.alias,  # Card nickname
             'created_at': datetime.now(timezone.utc).isoformat(),
             'reference': card_ref
         }
