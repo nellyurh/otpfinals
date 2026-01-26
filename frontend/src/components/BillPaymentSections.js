@@ -773,7 +773,7 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">₦</span>
                 <input
                   type="number"
-                  placeholder="Enter amount (min ₦500)"
+                  placeholder="Enter amount (min ₦1,000)"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full pl-8 pr-4 py-2.5 border-2 border-gray-200 rounded-full focus:border-yellow-500 focus:outline-none text-gray-900 text-sm"
