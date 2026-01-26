@@ -961,12 +961,15 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions, p
           </div>
         )}
       </div>
+      
+      {/* Receipt Modal */}
+      {receipt && <ReceiptModal receipt={receipt} onClose={() => setReceipt(null)} primaryColor={primaryColor} />}
     </div>
   );
 }
 
 // ============ TV Sub-Section ============
-function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
+function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryColor }) {
   const [provider, setProvider] = useState(null);
   const [smartcardNumber, setSmartcardNumber] = useState('');
   const [tvPlans, setTvPlans] = useState([]);
@@ -977,6 +980,7 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
   const [loadingPlans, setLoadingPlans] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [planCategory, setPlanCategory] = useState('all');
+  const [receipt, setReceipt] = useState(null);
 
   const providers = [
     { value: 'dstv', label: 'DSTV', logo: LOGOS.dstv },
