@@ -906,10 +906,12 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
       const response = await axios.post(
         `${API}/api/payscribe/pay-tv`,
         {
-          provider: provider.value,
+          provider: provider.value.toLowerCase(),  // dstv, gotv, startimes
           smartcard: smartcardNumber,
           plan_code: selectedPlan.code,
-          amount: selectedPlan.amount
+          amount: selectedPlan.amount,
+          customer_name: validatedSmartcard.name,  // Required from validation
+          month: 1  // Default to 1 month
         },
         axiosConfig
       );
