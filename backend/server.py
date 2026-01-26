@@ -5675,25 +5675,30 @@ async def get_stablecoin_wallets(user: dict = Depends(get_current_user)):
 
 @api_router.post("/payscribe/buy-data")
 async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_current_user)):
-    """Purchase data bundle via Payscribe"""
+    """Purchase data bundle via Payscribe
+    
+    Uses correct Payscribe endpoint: POST /data/vend
+    """
     try:
-        # Validate user has sufficient balance (we'll get amount from plan lookup)
-        result = await purchase_data(request.plan_code, request.recipient, request.ref)
+        # Purchase data with correct parameters
+        result = await purchase_data(request.network, request.plan, request.recipient, request.ref)
         
         if result and result.get('status'):
             # Deduct from user balance
-            amount = result.get('message', {}).get('details', {}).get('amount', 0)
-            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -amount}})
+            details = result.get('message', {}).get('details', {})
+            amount = details.get('amount', 0) or details.get('total_charge', 0)
+            
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -float(amount)}})
             
             # Create transaction record
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
-                amount=amount,
+                amount=float(amount),
                 currency='NGN',
                 status='completed',
-                reference=result.get('message', {}).get('details', {}).get('trans_id'),
-                metadata={'service': 'data', 'plan_code': request.plan_code}
+                reference=details.get('trans_id'),
+                metadata={'service': 'data', 'network': request.network, 'plan': request.plan, 'recipient': request.recipient}
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -5702,13 +5707,14 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
             await _create_transaction_notification(
                 user['id'],
                 'Data purchase',
-                f"Data purchase of ₦{amount:,.2f} completed.",
+                f"Data purchase of ₦{amount:,.2f} to {request.recipient} completed.",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'data'},
             )
             
             return {'success': True, 'message': 'Data purchase successful', 'details': result}
         
-        raise HTTPException(status_code=400, detail="Data purchase failed")
+        error_msg = result.get('description', 'Data purchase failed') if result else 'Data purchase failed'
+        raise HTTPException(status_code=400, detail=error_msg)
     except HTTPException:
         raise
     except Exception as e:
