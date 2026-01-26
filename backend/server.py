@@ -10700,8 +10700,8 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         if db_user.get('ngn_balance', 0) < KYC_VERIFICATION_FEE:
             raise HTTPException(status_code=400, detail=f"Insufficient balance. Express KYC costs ₦{KYC_VERIFICATION_FEE}")
         
-        # Call Payscribe BVN lookup
-        endpoint = f'lookup/bvn?bvn={request.bvn}'
+        # Call Payscribe BVN lookup using correct KYC lookup endpoint
+        endpoint = f'kyc/lookup?type=bvn&value={request.bvn}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if not result or not result.get('status'):
