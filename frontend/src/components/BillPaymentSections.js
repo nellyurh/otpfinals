@@ -421,7 +421,7 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 }
 
 // ============ Bills Payment Section (Landing Page with Service Cards) ============
-export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection }) {
+export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection, primaryColor = '#059669' }) {
   const [activeService, setActiveServiceLocal] = useState(null);
 
   const billServices = [
@@ -444,12 +444,12 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
           Back to Bills
         </button>
 
-        {activeService === 'data' && <BuyDataSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-        {activeService === 'electricity' && <ElectricitySubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-        {activeService === 'tv' && <TVSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-        {activeService === 'betting' && <BettingSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} />}
-        {activeService === 'transfer' && <WalletTransferSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} />}
-        {activeService === 'bank' && <BankTransferSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} />}
+        {activeService === 'data' && <BuyDataSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} primaryColor={primaryColor} />}
+        {activeService === 'electricity' && <ElectricitySubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} primaryColor={primaryColor} />}
+        {activeService === 'tv' && <TVSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} primaryColor={primaryColor} />}
+        {activeService === 'betting' && <BettingSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} primaryColor={primaryColor} />}
+        {activeService === 'transfer' && <WalletTransferSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} primaryColor={primaryColor} />}
+        {activeService === 'bank' && <BankTransferSubSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} primaryColor={primaryColor} />}
       </div>
     );
   }
