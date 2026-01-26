@@ -6001,19 +6001,24 @@ async def validate_smartcard(provider: str, smartcard: str, user: dict = Depends
     """Validate TV smartcard/IUC number"""
     try:
         endpoint = f'cable/lookup?provider={provider.lower()}&smartcard={smartcard}'
+        logger.info(f"Smartcard validation request: {endpoint}")
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
+        
+        logger.info(f"Smartcard validation response: {result}")
         
         if result and result.get('status'):
             customer = result.get('message', {}).get('details', {})
             return {
                 'status': True,
                 'customer': {
-                    'name': customer.get('name') or customer.get('customer_name', 'Unknown'),
-                    'currentPlan': customer.get('current_bouquet') or customer.get('currentPlan', ''),
+                    'name': customer.get('name') or customer.get('customer_name') or customer.get('Customer_Name', 'Unknown'),
+                    'currentPlan': customer.get('current_bouquet') or customer.get('currentPlan') or customer.get('Current_Bouquet', ''),
+                    'dueDate': customer.get('due_date') or customer.get('Due_Date', ''),
                     'smartcard': smartcard
                 }
             }
-        return {'status': False, 'message': 'Smartcard validation failed'}
+        error_msg = result.get('description', 'Smartcard validation failed') if result else 'Smartcard validation failed'
+        return {'status': False, 'message': error_msg}
     except Exception as e:
         logger.error(f"Smartcard validation error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
