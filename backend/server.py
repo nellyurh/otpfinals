@@ -5905,16 +5905,28 @@ async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_
 # ============ TV Subscription ============
 
 class TVPaymentRequest(BaseModel):
-    provider: str
-    smartcard: str
+    provider: str  # dstv, gotv, startimes
+    smartcard: str  # account number
     plan_code: str
     amount: float
+    customer_name: str  # Required - from validation
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    month: int = 1  # Number of months
 
 @api_router.get("/payscribe/tv-plans")
 async def get_tv_plans(provider: str, user: dict = Depends(get_current_user)):
     """Get TV subscription plans for a provider"""
     try:
-        endpoint = f'cable/list?provider={provider}'
+        # Map provider names to Payscribe format
+        provider_map = {
+            'dstv': 'dstv',
+            'gotv': 'gotv',
+            'startimes': 'startimes'
+        }
+        payscribe_provider = provider_map.get(provider.lower(), provider.lower())
+        
+        endpoint = f'cable/list?provider={payscribe_provider}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if result and result.get('status'):
@@ -5923,7 +5935,7 @@ async def get_tv_plans(provider: str, user: dict = Depends(get_current_user)):
                 'status': True,
                 'plans': [{'code': p.get('code'), 'name': p.get('name'), 'amount': p.get('amount')} for p in plans]
             }
-        return {'status': False, 'plans': []}
+        return {'status': False, 'plans': [], 'message': result.get('description', 'Failed to fetch plans') if result else 'Failed to fetch plans'}
     except Exception as e:
         logger.error(f"TV plans fetch error: {str(e)}")
         return {'status': False, 'plans': []}
@@ -5932,7 +5944,7 @@ async def get_tv_plans(provider: str, user: dict = Depends(get_current_user)):
 async def validate_smartcard(provider: str, smartcard: str, user: dict = Depends(get_current_user)):
     """Validate TV smartcard/IUC number"""
     try:
-        endpoint = f'cable/lookup?provider={provider}&smartcard={smartcard}'
+        endpoint = f'cable/lookup?provider={provider.lower()}&smartcard={smartcard}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if result and result.get('status'):
@@ -5952,21 +5964,46 @@ async def validate_smartcard(provider: str, smartcard: str, user: dict = Depends
 
 @api_router.post("/payscribe/pay-tv")
 async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(get_current_user)):
-    """Pay TV subscription via Payscribe"""
+    """Pay TV subscription via Payscribe
+    
+    Uses correct Payscribe endpoint: POST /multichoice/topup for DSTV/GOTV
+    or POST /cable/vend for others
+    """
     try:
         # Check balance
         if user.get('ngn_balance', 0) < request.amount:
             raise HTTPException(status_code=400, detail="Insufficient NGN balance")
 
-        # Pay TV subscription
-        data = {
-            'provider': request.provider,
-            'smartcard': request.smartcard,
-            'plan_code': request.plan_code,
-            'ref': str(uuid.uuid4())
-        }
+        provider = request.provider.lower()
         
-        result = await payscribe_request('cable/vend', 'POST', data, use_public_key=True)
+        # Use multichoice/topup for DSTV and GOTV
+        if provider in ['dstv', 'gotv']:
+            data = {
+                'amount': int(request.amount),
+                'customer_name': request.customer_name,
+                'account': request.smartcard,
+                'service': provider,
+                'ref': str(uuid.uuid4()),
+                'month': request.month
+            }
+            if request.phone:
+                data['phone'] = request.phone
+            if request.email:
+                data['email'] = request.email
+            
+            logger.info(f"Payscribe multichoice topup request: {data}")
+            result = await payscribe_request('multichoice/topup', 'POST', data, use_public_key=True)
+        else:
+            # For other providers like Startimes, use cable/vend
+            data = {
+                'provider': provider,
+                'smartcard': request.smartcard,
+                'plan_code': request.plan_code,
+                'ref': str(uuid.uuid4())
+            }
+            
+            logger.info(f"Payscribe cable vend request: {data}")
+            result = await payscribe_request('cable/vend', 'POST', data, use_public_key=True)
         
         if result and result.get('status'):
             # Deduct from user balance
@@ -5997,7 +6034,8 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
 
             return {'success': True, 'message': 'TV subscription successful', 'details': details}
 
-        raise HTTPException(status_code=400, detail="TV subscription failed")
+        error_msg = result.get('description', 'TV subscription failed') if result else 'TV subscription failed'
+        raise HTTPException(status_code=400, detail=error_msg)
     except HTTPException:
         raise
     except Exception as e:
