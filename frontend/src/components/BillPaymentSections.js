@@ -1125,13 +1125,19 @@ function BettingSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
       return;
     }
 
+    if (parseFloat(amount) > 50000) {
+      toast.error('Maximum amount is ₦50,000 per transaction');
+      return;
+    }
+
     setProcessing(true);
     try {
       const response = await axios.post(
         `${API}/api/payscribe/fund-betting`,
         {
-          bet_id: provider.value,
+          bet_id: provider.value.toLowerCase(),  // bet9ja, sportybet, etc.
           customer_id: customerId,
+          customer_name: validatedAccount.name || validatedAccount.customer_name,  // Required from validation
           amount: parseFloat(amount)
         },
         axiosConfig
