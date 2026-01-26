@@ -1228,12 +1228,15 @@ function TVSubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryCol
           </div>
         )}
       </div>
+      
+      {/* Receipt Modal */}
+      {receipt && <ReceiptModal receipt={receipt} onClose={() => setReceipt(null)} primaryColor={primaryColor} />}
     </div>
   );
 }
 
 // ============ Betting Sub-Section ============
-function BettingSubSection({ axiosConfig, fetchProfile, fetchTransactions }) {
+function BettingSubSection({ axiosConfig, fetchProfile, fetchTransactions, primaryColor }) {
   const [provider, setProvider] = useState(null);
   const [customerId, setCustomerId] = useState('');
   const [amount, setAmount] = useState('');
