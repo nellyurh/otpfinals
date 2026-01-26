@@ -11,6 +11,7 @@ import Select from 'react-select';
 import { AirtimeSection, BillsPaymentSection } from '../components/BillPaymentSections';
 import { VirtualNumbersSection } from '../components/VirtualNumbersSection';
 import { FundWalletSection } from '../components/FundWalletSection';
+import { VirtualCardsSection } from '../components/VirtualCardsSection';
 import AutoLogout from '../components/AutoLogout';
 
 const API = process.env.REACT_APP_BACKEND_URL;
