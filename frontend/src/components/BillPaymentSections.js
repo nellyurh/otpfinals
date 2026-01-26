@@ -633,8 +633,8 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
       return;
     }
 
-    if (parseFloat(amount) < 500) {
-      toast.error('Minimum amount is ₦500');
+    if (parseFloat(amount) < 1000) {
+      toast.error('Minimum amount is ₦1,000');
       return;
     }
 
@@ -643,10 +643,12 @@ function ElectricitySubSection({ axiosConfig, fetchProfile, fetchTransactions })
       const response = await axios.post(
         `${API}/api/payscribe/buy-electricity`,
         {
-          provider: provider.value,
+          provider: provider.value.toLowerCase(),  // ikedc, ekedc, etc.
           meter_number: meterNumber,
           meter_type: meterType,
-          amount: parseFloat(amount)
+          amount: parseFloat(amount),
+          customer_name: validatedMeter.name,  // Required from validation
+          address: validatedMeter.address || ''
         },
         axiosConfig
       );
