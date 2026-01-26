@@ -10806,7 +10806,7 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         
         # Call Payscribe NIN lookup (no fee - already paid with BVN)
         endpoint = f'lookup/nin?nin={request.nin}'
-        result = await payscribe_request(endpoint, 'GET')
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if not result or not result.get('status'):
             raise HTTPException(status_code=400, detail="NIN lookup failed. Please check your NIN and try again.")
