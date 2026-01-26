@@ -5776,7 +5776,7 @@ async def validate_meter(provider: str, meter_number: str, meter_type: str, user
     """Validate electricity meter number"""
     try:
         endpoint = f'electricity/lookup?disco={provider}&meter={meter_number}&type={meter_type}'
-        result = await payscribe_request(endpoint, 'GET')
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if result and result.get('status'):
             customer = result.get('message', {}).get('details', {})
@@ -5813,7 +5813,7 @@ async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_
             'ref': str(uuid.uuid4())
         }
         
-        result = await payscribe_request('electricity/vend', 'POST', data)
+        result = await payscribe_request('electricity/vend', 'POST', data, use_public_key=True)
         
         if result and result.get('status'):
             # Deduct from user balance
