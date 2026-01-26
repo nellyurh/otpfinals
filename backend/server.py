@@ -5877,9 +5877,10 @@ async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_
     Required: meter_number, meter_type, amount, service, customer_name
     """
     try:
-        # Check balance
-        if user.get('ngn_balance', 0) < request.amount:
-            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+        # Check balance FIRST
+        user_balance = user.get('ngn_balance', 0)
+        if user_balance < request.amount:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{request.amount:,.2f} but have ₦{user_balance:,.2f}")
 
         if request.amount < 1000:
             raise HTTPException(status_code=400, detail="Minimum amount is ₦1,000")
@@ -5918,7 +5919,7 @@ async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_
                 currency='NGN',
                 status='completed',
                 reference=details.get('trans_id'),
-                metadata={'service': 'electricity', 'provider': request.provider, 'meter': request.meter_number, 'token': token}
+                metadata={'service': 'electricity', 'provider': request.provider, 'meter': request.meter_number, 'token': token, 'customer_name': request.customer_name, 'address': request.address}
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -5931,7 +5932,23 @@ async def buy_electricity(request: ElectricityRequest, user: dict = Depends(get_
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'token': token}
             )
 
-            return {'success': True, 'message': 'Electricity purchase successful', 'token': token, 'details': details}
+            # Generate receipt data
+            receipt = {
+                'type': 'electricity',
+                'trans_id': details.get('trans_id'),
+                'provider': request.provider.upper(),
+                'meter_number': request.meter_number,
+                'meter_type': request.meter_type,
+                'customer_name': request.customer_name,
+                'address': request.address or details.get('detail', ''),
+                'amount': request.amount,
+                'token': token,
+                'unit': details.get('unit', ''),
+                'status': 'Successful',
+                'date': datetime.now(timezone.utc).isoformat()
+            }
+
+            return {'success': True, 'message': 'Electricity purchase successful', 'token': token, 'details': details, 'receipt': receipt}
 
         error_msg = result.get('description', 'Electricity purchase failed') if result else 'Electricity purchase failed'
         raise HTTPException(status_code=400, detail=error_msg)
