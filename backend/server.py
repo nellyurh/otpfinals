@@ -5840,12 +5840,18 @@ class ElectricityRequest(BaseModel):
     phone: Optional[str] = None
 
 @api_router.get("/payscribe/validate-meter")
-async def validate_meter(provider: str, meter_number: str, meter_type: str, user: dict = Depends(get_current_user)):
-    """Validate electricity meter number"""
+async def validate_meter(provider: str, meter_number: str, meter_type: str, amount: int = 1000, user: dict = Depends(get_current_user)):
+    """Validate electricity meter number
+    
+    Payscribe requires amount for validation - default 1000 (minimum)
+    """
     try:
-        # Use correct parameter names for Payscribe
-        endpoint = f'electricity/lookup?disco={provider.lower()}&meter={meter_number}&type={meter_type}'
+        # Use correct parameter names for Payscribe - include amount
+        endpoint = f'electricity/lookup?disco={provider.lower()}&meter={meter_number}&type={meter_type}&amount={amount}'
+        logger.info(f"Electricity validation request: {endpoint}")
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
+        
+        logger.info(f"Electricity validation response: {result}")
         
         if result and result.get('status'):
             customer = result.get('message', {}).get('details', {})
@@ -5853,11 +5859,12 @@ async def validate_meter(provider: str, meter_number: str, meter_type: str, user
                 'status': True,
                 'customer': {
                     'name': customer.get('name') or customer.get('customer_name', 'Unknown'),
-                    'address': customer.get('address', ''),
+                    'address': customer.get('address') or customer.get('detail', ''),
                     'meter_number': meter_number
                 }
             }
-        return {'status': False, 'message': 'Meter validation failed'}
+        error_msg = result.get('description', 'Meter validation failed') if result else 'Meter validation failed'
+        return {'status': False, 'message': error_msg}
     except Exception as e:
         logger.error(f"Meter validation error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
