@@ -5865,7 +5865,7 @@ async def get_tv_plans(provider: str, user: dict = Depends(get_current_user)):
     """Get TV subscription plans for a provider"""
     try:
         endpoint = f'cable/list?provider={provider}'
-        result = await payscribe_request(endpoint, 'GET')
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if result and result.get('status'):
             plans = result.get('message', {}).get('details', [])
@@ -5883,7 +5883,7 @@ async def validate_smartcard(provider: str, smartcard: str, user: dict = Depends
     """Validate TV smartcard/IUC number"""
     try:
         endpoint = f'cable/lookup?provider={provider}&smartcard={smartcard}'
-        result = await payscribe_request(endpoint, 'GET')
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if result and result.get('status'):
             customer = result.get('message', {}).get('details', {})
@@ -5916,7 +5916,7 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
             'ref': str(uuid.uuid4())
         }
         
-        result = await payscribe_request('cable/vend', 'POST', data)
+        result = await payscribe_request('cable/vend', 'POST', data, use_public_key=True)
         
         if result and result.get('status'):
             # Deduct from user balance
