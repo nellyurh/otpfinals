@@ -10702,7 +10702,7 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         
         # Call Payscribe BVN lookup
         endpoint = f'lookup/bvn?bvn={request.bvn}'
-        result = await payscribe_request(endpoint, 'GET')
+        result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if not result or not result.get('status'):
             raise HTTPException(status_code=400, detail="BVN lookup failed. Please check your BVN and try again.")
