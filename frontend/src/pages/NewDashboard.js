@@ -1069,7 +1069,7 @@ const NewDashboard = () => {
               />
             ) : maintenanceContent("Fund Wallet"))}
             {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Airtime"))}
-            {activeSection === 'bills-payment' && (isPageEnabled('bills-payment') ? <BillsPaymentSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} setActiveSection={setActiveSection} /> : maintenanceContent("Bills Payment"))}
+            {activeSection === 'bills-payment' && (isPageEnabled('bills-payment') ? <BillsPaymentSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} setActiveSection={setActiveSection} primaryColor={branding.primary_color_hex || '#059669'} /> : maintenanceContent("Bills Payment"))}
             {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : maintenanceContent("Transactions"))}
             {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : maintenanceContent("Dashboard"))}
             {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : maintenanceContent("SMS History"))}
