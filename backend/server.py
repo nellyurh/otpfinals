@@ -1915,27 +1915,31 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
     
     Args:
         endpoint: API endpoint path
-        method: HTTP method (GET/POST)
+        method: HTTP method (GET/POST/PATCH)
         data: Request payload
-        use_public_key: If True, use public key (required for collections API)
+        use_public_key: If True, use public key (required for payout/collections/cards API)
     """
     try:
         # Get keys from database first, fallback to env
         config = await db.pricing_config.find_one({}, {'_id': 0})
         
-        # For collections API, use public key; otherwise use secret key
+        # For payout/collections/cards API, use public key; otherwise use secret key
         if use_public_key:
-            # Try database first, then env - decrypt if encrypted
-            db_key = config.get('payscribe_public_key') if config and config.get('payscribe_public_key') not in [None, '', '********'] else None
-            payscribe_key = decrypt_secret(db_key) if db_key else PAYSCRIBE_PUBLIC_KEY
-            logger.info("Using Payscribe PUBLIC key for collections API")
+            # Use the proper get_api_key helper which handles decryption
+            payscribe_key = get_api_key(config, 'payscribe_public_key', PAYSCRIBE_PUBLIC_KEY)
+            logger.info(f"Using Payscribe PUBLIC key for {endpoint}")
         else:
-            db_key = config.get('payscribe_api_key') if config and config.get('payscribe_api_key') not in [None, '', '********'] else None
-            payscribe_key = decrypt_secret(db_key) if db_key else PAYSCRIBE_API_KEY
+            # Use the proper get_api_key helper which handles decryption
+            payscribe_key = get_api_key(config, 'payscribe_api_key', PAYSCRIBE_API_KEY)
+            logger.info(f"Using Payscribe SECRET key for {endpoint}")
         
         if not payscribe_key:
             logger.error("Payscribe not configured. Set keys in Admin → Payment Gateways")
             return {'status': False, 'message': 'Payscribe API key not configured', 'error_code': 'NOT_CONFIGURED'}
+        
+        # Log key prefix for debugging (don't log full key)
+        key_prefix = payscribe_key[:15] + '...' if len(payscribe_key) > 15 else payscribe_key
+        logger.info(f"Payscribe key being used starts with: {key_prefix}")
         
         url = f'{PAYSCRIBE_BASE_URL}/{endpoint}'
         headers = {
@@ -1972,6 +1976,11 @@ async def payscribe_request(endpoint: str, method: str = 'GET', data: Optional[D
                     logger.error(f"Payscribe JSON parse error: {json_err}")
                     logger.error(f"Payscribe raw response: {response.text[:500]}")
                     return {'status': False, 'message': 'Invalid response from Payscribe', 'error_code': 'PARSE_ERROR'}
+            
+            # Handle 401 specifically
+            if response.status_code == 401:
+                logger.error(f"Payscribe 401 Unauthorized - API key may be invalid")
+                return {'status': False, 'message': 'Payscribe API key is invalid. Please contact admin to update API keys.', 'error_code': 'INVALID_API_KEY'}
             
             logger.error(f"Payscribe error ({response.status_code}): {response.text[:500]}")
             return {'status': False, 'message': f'Payscribe API error: {response.status_code}', 'status_code': response.status_code}
