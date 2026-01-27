@@ -1,80 +1,87 @@
 <analysis>**original_problem_statement:**
-The user's initial goal was to build UltraCloud Sms, an OTP service, which has evolved into BillHub, a comprehensive bill payment and financial services application.
+The user initially aimed to build an OTP service, which evolved into BillHub, a comprehensive financial services application. The project involves a three-tiered KYC system, an admin panel, and deep integration with the Payscribe API for services like bank transfers, bill payments, and virtual cards.
 
-Recent user requests included a major UI overhaul, a three-tiered KYC system, adding full name fields, and enhancing the admin panel. The core focus has been on integrating the Payscribe API for multiple services:
-1.  **Bank Transfer & PIN System:** Implement a Transfer to Bank feature with a dynamic bank list, account name lookup, and a robust transaction PIN system. The user specified that the PIN should secure **all** bill payments.
-2.  **Virtual Cards:** Implement a full-featured virtual card system based on Payscribe's API, including creation, funding, and withdrawal functionalities, with a detailed, admin-adjustable fee structure.
-3.  **Payscribe Customer Creation:** Upon successful Tier 3 KYC verification, automatically create a corresponding customer account in Payscribe.
-4.  **Bug Fixes & API Integration:** A critical blocker was fixing persistent 401 Unauthorized errors from the Payscribe API for all bill payment and KYC verification services.
+Most recently, the user requested fixes for all Payscribe API integrations, a simplification of the KYC selfie capture process, and a complete redesign of the Virtual Cards section to emulate the multi-step, visually appealing flow of services like Airtm. Further requirements included making  an admin, enforcing balance checks on all purchases, generating receipts, and fixing validation for electricity and TV services. The user's latest and most critical request is to complete the Virtual Card creation wizard with a specific flow: display admin logo, allow design selection, show fees, collect alias/amount, and enforce a  minimum funding.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack platform (React frontend, FastAPI backend).
-- A redesigned dashboard with a Bills Payment hub.
-- A complete, three-tier KYC system is implemented. When a user passes Tier 3, a customer account is now automatically created in Payscribe.
-- A transaction PIN system is in place for profile security.
-- The Transfer to Bank feature is fully functional, fetching a dynamic list of 560+ banks, validating account numbers, and calculating fees directly from the Payscribe API. This feature is now correctly restricted to Tier 3 users only.
-- The Admin Panel allows management of users, KYC tiers, service toggles, and includes new sections for viewing Bank Payouts history and managing all Virtual Card fees.
-- A comprehensive Virtual Cards system is implemented, with backend endpoints and a full user dashboard UI for creating, funding, and managing cards.
-- **Crucially, all Payscribe API integrations (Bill Payments, KYC, Payouts, Virtual Cards) are now working correctly after being updated to use the public API key.**
+The application is a full-stack platform using React, FastAPI, and MongoDB.
+-   All Payscribe bill payment (Data, Electricity, TV, Betting) and KYC verification endpoints in the backend () have been updated to match the correct API schemas provided by the user.
+-   Robust balance checks have been implemented on the backend for all bill payment services to prevent purchases with insufficient funds.
+-   The selfie capture process in the KYC flow has been simplified to a basic photo snap, removing the liveness detection.
+-   A new, separate component () has been created for the Airtm-style virtual card experience, and the old inline code has been removed from .
+-   Receipt generation UI () and logic have been added to all bill payment flows in .
+-   The user  has been granted admin privileges and their account balance has been topped up with NGN 500,000 and USD 1,000 for testing.
+-   The backend now supports storing card  and  for the new virtual card flow.
 
 **Last working item**:
--   Last item agent was working: The agent fixed the critical 401 Unauthorized error that was blocking all bill payment and KYC verification functionalities. The root cause was identified as using an invalid secret key. The agent systematically updated every call to the Payscribe API in  to use the **public key**, which the user confirmed was correct.
--   Status: COMPLETED
--   Agent Testing Done: Y
--   Which testing method agent to use? Frontend testing agent. Now that the backend APIs are fixed, a full end-to-end test of the bill payment flows from the UI is recommended to ensure a seamless user experience.
+-   Last item agent was working: The agent was implementing the user's detailed requirements for the new Airtm-style Virtual Card creation wizard. After creating the new UI component and topping up the admin's balance, the agent was debugging why the Get a Card button failed to launch the multi-step wizard.
+-   Status: IN PROGRESS
+-   Agent Testing Done: N
+-   Which testing method agent to use? Frontend testing agent. The primary task is a complex UI flow, which is best validated with an end-to-end test of the entire virtual card creation wizard.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Payscribe TV plans API returns a 500 server error (P2, Blocked)
--   Issue 2: CI/CD workflow may be unstable (P1)
+-   Issue 1: Virtual card creation wizard is not working (P0)
+-   Issue 2: Payscribe electricity and TV validation endpoints return 500 errors (P1, Blocked)
 -   Issue 3: Reseller Portal has horizontal scroll on mobile (P1, Recurring)
 -   Issue 4: PaymentPoint virtual account generation is not working (P2)
+-   Issue 5: CI/CD workflow may be unstable (P1)
 
 **Issues Detail:**
--   **Issue 1: Payscribe TV plans API returns a 500 server error**
-    -   **Attempted fixes:** The agent confirmed other bill payment APIs (like data plans) work correctly with the same public key. The 500 error for the TV plans endpoint () comes directly from Payscribe's server.
-    -   **Next debug checklist:** Inform the user that this appears to be an issue on Payscribe's end. The frontend should handle this error gracefully.
-    -   **Why fix this issue and what will be achieved with the fix?** Restores TV bill payment functionality.
+-   **Issue 1: Virtual card creation wizard is not working**
+    -   **Attempted fixes:** The agent confirmed the new component () is correctly rendered and the old inline code is removed. The attempt to trigger the wizard via UI interaction failed, suggesting the state change or click handler is not working as expected.
+    -   **Next debug checklist:**
+        1.  In , investigate the  handler for the Get a Card button.
+        2.  Ensure the state variable controlling the wizard's visibility is being updated correctly on click.
+        3.  Implement the full wizard flow as per the user's latest request: 1) Select card design (with admin logo), 2) Show card fees, 3) Enter alias and funding amount (with  minimum).
+    -   **Why fix this issue and what will be achieved with the fix?** This is the core of the new Virtual Cards feature. Fixing it will enable users to create and fund virtual cards.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on other issue:** None
+
+-   **Issue 2: Payscribe electricity and TV validation endpoints return 500 errors**
+    -   **Attempted fixes:** The agent confirmed via  that the 500 errors originate from the Payscribe API server (). The data lookup API works, but electricity and TV validation do not.
+    -   **Next debug checklist:**
+        1.  Inform the user that the live Payscribe API is returning 500 errors for electricity/TV validation.
+        2.  Ask the user to confirm if the app should be using the  URL (from their docs) instead of the live one.
+        3.  If the live URL is correct, this is a blocker that likely needs to be escalated to Payscribe support.
+    -   **Why fix this issue and what will be achieved with the fix?** Unblocks electricity and TV bill payments for users.
     -   **Status:** BLOCKED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** Backend
 
 **In progress Task List**:
-None.
+-   **Task 1: Complete the new Virtual Card creation flow**
+    -   **Where to resume:** .
+    -   **What will be achieved with this?** A complete, Airtm-style virtual card creation wizard that allows users to select a design, see fees, and fund their new card.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on something:** Issue 1 (Virtual card creation wizard is not working).
 
 **Upcoming and Future Tasks**
 *   **Upcoming Tasks:**
-    *   **P0:** Secure **all** bill payments (Data, Airtime, TV, Betting) with the transaction PIN. This is a direct user request that is still pending.
-    *   **P1:** Refactor the monolithic  into a modular structure using FastAPI's .
-    *   **P2:** Break down the large  and  components into smaller sub-components.
+    *   **P0:** Secure **all** bill payments (Data, Airtime, TV, etc.) with the transaction PIN.
+    *   **P1:** Implement dynamic UI theming where all pages use the colors set from the admin panel.
+    *   **P1:** Refactor the monolithic  into a modular structure (e.g., using FastAPI's ).
+    *   **P2:** Break down large React components like  and  into smaller, manageable sub-components.
 *   **Future Tasks:**
     *   Add filtering by category/brand for the gift card store.
-    *   Implement liveness detection for selfie capture during KYC (deferred by user).
 
 **Completed work in this session**
--   **Payscribe API Integration Fix:**
-    -   **Resolved All 401 Unauthorized Errors:** Updated every Payscribe API call across  to use the correct **public key**, making bill payments (Data, etc.) and KYC lookups (BVN, NIN) fully functional.
-    -   **Fixed Transfer to Bank:** Successfully implemented the dynamic bank list (), resolving the main blocker from the previous session.
--   **New Feature: Virtual Cards System:**
-    -   Implemented backend endpoints and a complete frontend UI for creating, funding, withdrawing from, and managing virtual cards.
-    -   Added an admin panel section to configure all card-related fees.
--   **New Feature: Payscribe Customer Creation:**
-    -   Integrated a function to create a Payscribe customer automatically upon successful Tier 3 KYC verification.
--   **Enhancement: Bank Transfer Restriction:**
-    -   Restricted the Bank Transfer feature to Tier 3 users on both the backend and frontend.
--   **Admin Panel Enhancements:**
-    -   Added a Bank Payouts history section.
--   **Deployment Verification:**
-    -   Confirmed that , , and  were not altered.
+-   **Payscribe API Integration (Phase 2):** Fixed all bill payment (Data, Electricity, TV, Betting) and KYC verification endpoints to use the correct schemas and URL formats. Added a transaction requery endpoint.
+-   **Security & Admin:** Re-enabled admin privileges for , topped up their balance, and added backend balance checks for all purchases.
+-   **UI/UX Enhancements:** Simplified the KYC selfie capture UI, and implemented a receipt generation modal for all bill payment services.
+-   **Virtual Cards Redesign (Foundation):** Created a new  component with an Airtm-style promo page and refactored  to use it, removing over 700 lines of inline code.
 
 **Earlier issues found/mentioned but not fixed**
 -   PaymentPoint virtual account generation is not working.
 -   The Reseller Portal has a horizontal scroll issue on mobile devices.
 
 **Known issue recurrence from previous fork**
--   **Mobile UI issues:** Horizontal scroll on the Reseller Portal is a recurring problem.
+-   **Mobile UI issues:** Horizontal scroll on the Reseller Portal.
 -   **CI/CD Pipeline failures:** The pipeline has been unstable in the past.
 
 **Code Architecture**
@@ -82,74 +89,47 @@ None.
 
 **Key Technical Concepts**
 -   **Backend:** FastAPI, Pydantic, MongoDB ().
--   **Frontend:** React (Hooks), Tailwind CSS.
--   **API Integration:** Payscribe API (now fully functional using the public key for KYC, Bill Payments, Payouts, and Virtual Cards).
-
-**key DB schema**
--   **users:**
-    -   : String (stores the ID from Payscribe after successful Tier 3 KYC)
--   **virtual_cards:** (New collection)
-    -   , , , , , , , etc.
--   **pricing_config:** (New fields in this collection document)
-    -   , , , , etc.
+-   **Frontend:** React (Hooks), Tailwind CSS, Headless UI.
+-   **API Integration:** Payscribe API (Live endpoint: ).
 
 **All files of reference**
 -   
 -   
 -   
 -   
-
-**key api endpoints**
--   **KYC (Modified):**
-    -    &  (Now use public key and create Payscribe customer on success)
--   **Bill Payments (Fixed):**
-    -   All endpoints under  now correctly use the public key.
--   **Virtual Cards (New):**
-    -   , , , , etc.
--   **Admin (New/Modified):**
-    -   , , 
+-   
 
 **Critical Info for New Agent**
--   The biggest blocker (invalid Payscribe API keys) is **resolved**. All Payscribe calls now correctly use the **public key** (). Do not attempt to use the secret key.
--   The next highest priority task is to implement the transaction PIN security for **all remaining bill payment types** (Data, TV, Electricity, etc.), as this was a core user requirement that is still outstanding.
--   The user did not want a liveness test for the KYC selfie upload; a simple photo capture is sufficient for now.
-
-**documents and test reports created in this job**
--    (Continuously updated)
+-   **Payscribe API Mismatch:** The app uses the live Payscribe URL (), but the user's docs show sandbox examples (). This is the likely cause of the 500 errors on electricity/TV validation and needs clarification from the user.
+-   **Virtual Cards Wizard:** The highest priority is to fix the broken card creation wizard in  and implement the full flow as requested by the user (design choice, fee display, alias/amount input,  minimum funding).
+-   **Admin Account:** Use  for testing; it has sufficient NGN and USD balance.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Provided deployment commands and asked to verify deployment files. (Status: Addressed)
-2.  **User:** Reported that bill payments and KYC were still failing, suspecting a key decryption issue. (Status: Addressed; the issue was public vs. secret key, not decryption.)
-3.  **User:** Provided personal KYC lookup results, confirming the public key works, and deferred the liveness test feature. (Status: Acknowledged)
-4.  **User:** Requested Payscribe customer creation after successful KYC. (Status: Implemented)
-5.  **User:** Requested bank transfers be restricted to Tier 3 users and to then proceed with virtual cards. (Status: Implemented)
-6.  **User:** Provided extensive API documentation and requirements for the Virtual Cards feature. (Status: Implemented)
-7.  **User:** Confirmed the public key is correct for bank transfers. (Status: Acknowledged)
-8.  **User:** Provided complete Payscribe Payout API documentation, which unblocked the bank transfer feature. (Status: Implemented)
+1.  **User:** Provided VPS deployment commands. (Status: Addressed)
+2.  **User:** Provided more detailed  deployment commands. (Status: Addressed)
+3.  **User:** Requested a redesign of the Virtual Cards section with an Airtm-style flow. (Status: In Progress)
+4.  **User:** Provided specific requirements for the Virtual Card wizard: use admin logo, fix the flow (design -> fees -> alias/amount), enforce a  minimum funding, and top up the admin's balance. (Status: In Progress)
 
 **Project Health Check:**
 -   **Broken:**
-    -   Payscribe TV bill payment returns a 500 error (issue is on Payscribe's end).
-    -   PaymentPoint virtual account generation is not working.
+    -   Payscribe electricity and TV validation (returns 500 error from Payscribe).
+    -   Virtual card creation wizard is not functional.
+    -   PaymentPoint virtual account generation.
 -   **Mocked:** None.
 
 **3rd Party Integrations**
--   **Payscribe:** Central to the application. All integrations (KYC, Bill Pay, Payouts, Virtual Cards) are now functioning correctly using the public API key.
--   **Other Payment Gateways:** PaymentPoint, Plisio, Ercaspay.
--   **OTP Services:** DaisySMS, SMS-pool, 5sim, TigerSMS.
--   **Email:** Titan Mail (via  SMTP).
+-   **Payscribe:** Central to the app. Most services use the live API key (). Data lookup and KYC are confirmed working; Electricity and TV validation are not.
 
 **Testing status**
 -   Testing agent used after significant changes: NO
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
--   Known regressions: Reseller Portal has horizontal scroll on mobile.
+-   Known regressions: Reseller Portal horizontal scroll on mobile.
 
 **Credentials to test flow:**
--   Admin account: . The user knows the password.
--   **Payscribe API Keys (public key is the only one that works):**
-    -   Public Key: 
+-   Admin account: . User knows the password. Balance is NGN 500k, USD 1k.
+-   **Payscribe API Key (Public):** 
 
 **What agent forgot to execute**
--   The agent did not implement PIN protection for all bill payment types (Data, TV, etc.), which was a specific user requirement. This remains the highest priority upcoming task.
--   The agent did not implement liveness detection for the selfie capture, as the user deferred this requirement.</analysis>
+-   The agent has not yet implemented the PIN protection for all bill payment types, which is a pending high-priority task.
+-   The agent has not yet fully implemented the dynamic theming where all pages use colors set from the admin panel, though the groundwork has been started.</analysis>
