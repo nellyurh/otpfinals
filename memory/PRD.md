@@ -42,7 +42,44 @@
 - **2026-01-25 (Session 2)**: Payscribe API Fixes + Page Toggles + Payout Webhook
 - **2026-01-25 (Session 1)**: KYC System Complete + Bank Transfer Feature + Admin Enhancements
 
-## Latest Updates (January 26, 2026)
+## Latest Updates (January 27, 2026)
+
+### Session 7 - Admin Logo Upload + Card Min Funding + KYC Address Fields
+
+**Admin Logo Upload:**
+- Admin Panel → Branding & Banners section now includes logo file upload
+- Supported formats: PNG, JPEG, WebP, SVG (max 5MB)
+- Uploaded logos are stored at `/app/backend/uploads/branding/`
+- Served via `/api/uploads/branding/{filename}`
+- Logo URL is stored in `pricing_config.brand_logo_url`
+
+**Virtual Card Branding:**
+- Virtual Cards now display admin's uploaded logo instead of default "BillHub"
+- Card designs use `branding.brand_logo_url` and `branding.brand_name`
+- All card previews (promo page, wizard, card list) show the admin logo
+
+**Card Fee Configuration:**
+- Admin can now set minimum card funding amount via Admin Panel → Card Fees
+- `card_min_funding_amount` is configurable (default: $1, can be set to $5 or any value)
+- Frontend validates against admin-configured minimum
+
+**KYC Tier 3 Address Fields (Payscribe Customer Creation):**
+- Street Address (required) - Full street address
+- City (required) - City name
+- State (required) - Dropdown with all 36 Nigerian states + FCT
+- Postal Code (optional) - Defaults to "100001"
+- Country (preset to NG) - Nigeria ISO code
+
+**API Endpoints Updated:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/admin/upload-logo` | POST | Upload brand logo (multipart/form-data) |
+| `/api/uploads/branding/{filename}` | GET | Serve uploaded logo |
+| `/api/admin/card-fees` | PUT | Update card fees including min_funding_amount |
+| `/api/cards` | GET | Returns fees object with min_funding from admin config |
+| `/api/public/branding` | GET | Returns brand_logo_url for frontend |
+
+## Previous Updates (January 26, 2026)
 
 ### Session 6 - Payscribe Bill Payment API Fixes
 
