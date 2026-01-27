@@ -11110,8 +11110,6 @@ async def get_kyc_status(user: dict = Depends(get_current_user)):
     }
 
 
-app.include_router(api_router)
-
 # ============ Admin Logo Upload ============
 @api_router.post("/admin/upload-logo")
 async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(require_admin)):
@@ -11159,6 +11157,9 @@ async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(r
     except Exception as e:
         logger.error(f"Error uploading logo: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+app.include_router(api_router)
 
 # Serve branding assets (logos)
 @app.get("/api/uploads/branding/{filename}")
