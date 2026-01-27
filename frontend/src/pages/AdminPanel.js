@@ -690,7 +690,7 @@ const AdminPanel = ({ user, setUser }) => {
 
   // Logo upload state
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const logoInputRef = React.useRef(null);
+  const logoInputRef = useRef(null);
 
   // Logo upload handler
   const handleLogoUpload = async (event) => {
