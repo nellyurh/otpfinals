@@ -11109,6 +11109,63 @@ async def get_kyc_status(user: dict = Depends(get_current_user)):
 
 app.include_router(api_router)
 
+# ============ Admin Logo Upload ============
+@api_router.post("/admin/upload-logo")
+async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(require_admin)):
+    """Upload brand logo for the platform"""
+    try:
+        # Validate file type
+        allowed_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, WebP, SVG")
+        
+        # Create uploads directory
+        upload_dir = Path("/app/backend/uploads/branding")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename
+        ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+        logo_filename = f"logo_{uuid.uuid4().hex[:8]}.{ext}"
+        logo_path = upload_dir / logo_filename
+        
+        # Save file
+        content = await file.read()
+        with open(logo_path, "wb") as f:
+            f.write(content)
+        
+        # Get base URL
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', '')
+        logo_url = f"{base_url}/api/uploads/branding/{logo_filename}"
+        
+        # Update branding config in database
+        await db.pricing_config.update_one(
+            {},
+            {'$set': {'brand_logo_url': logo_url}},
+            upsert=True
+        )
+        
+        logger.info(f"Admin logo uploaded: {logo_filename}")
+        
+        return {
+            'success': True,
+            'logo_url': logo_url,
+            'message': 'Logo uploaded successfully'
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading logo: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Serve branding assets (logos)
+@app.get("/api/uploads/branding/{filename}")
+async def serve_branding_file(filename: str):
+    """Serve uploaded branding assets (logos)"""
+    file_path = Path("/app/backend/uploads/branding") / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
 # Serve static KYC upload files
 @app.get("/api/uploads/kyc/{filename}")
 async def serve_kyc_file(filename: str):
