@@ -6729,6 +6729,10 @@ async def get_user_cards(user: dict = Depends(get_current_user)):
                 'message': 'Complete Tier 3 verification to create virtual cards'
             }
         
+        # Get cards from our local database (synced from Payscribe)
+        cards_cursor = db.virtual_cards.find({'user_id': user['id'], 'status': {'$ne': 'terminated'}}, {'_id': 0})
+        cards = await cards_cursor.to_list(100)
+        
         return {
             'success': True,
             'cards': cards,
