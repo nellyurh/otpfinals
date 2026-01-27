@@ -6708,18 +6708,8 @@ async def get_user_cards(user: dict = Depends(get_current_user)):
         
         # Check if user has Payscribe customer_id
         customer_id = db_user.get('payscribe_customer_id')
-        if not customer_id:
-            return {
-                'success': True,
-                'cards': [],
-                'message': 'Complete Tier 3 verification to create virtual cards'
-            }
         
-        # Get cards from our local database (synced from Payscribe)
-        cards_cursor = db.virtual_cards.find({'user_id': user['id'], 'status': {'$ne': 'terminated'}}, {'_id': 0})
-        cards = await cards_cursor.to_list(100)
-        
-        # Get fee configuration
+        # Get fee configuration (always return fees)
         config = await db.pricing_config.find_one({}, {'_id': 0})
         fees = {
             'creation_fee': config.get('card_creation_fee', 2.50) if config else 2.50,
@@ -6730,6 +6720,14 @@ async def get_user_cards(user: dict = Depends(get_current_user)):
             'min_funding': config.get('card_min_funding_amount', 1.00) if config else 1.00,
             'max_funding': config.get('card_max_funding_amount', 10000.00) if config else 10000.00,
         }
+        
+        if not customer_id:
+            return {
+                'success': True,
+                'cards': [],
+                'fees': fees,
+                'message': 'Complete Tier 3 verification to create virtual cards'
+            }
         
         return {
             'success': True,
