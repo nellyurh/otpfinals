@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="14" time="3.323" timestamp="2026-01-27T18:57:28.887479+00:00" hostname="agent-env-417964d2-c44b-4556-af02-8436f43e8791"><testcase classname="backend.tests.test_billhub_features.TestHealthAndAuth" name="test_health_endpoint" time="0.082" /><testcase classname="backend.tests.test_billhub_features.TestHealthAndAuth" name="test_admin_login" time="0.272" /><testcase classname="backend.tests.test_billhub_features.TestPublicBranding" name="test_public_branding_endpoint_exists" time="0.047" /><testcase classname="backend.tests.test_billhub_features.TestPublicBranding" name="test_public_branding_returns_all_fields" time="0.043" /><testcase classname="backend.tests.test_billhub_features.TestAdminCardFees" name="test_get_card_fees_endpoint" time="0.303" /><testcase classname="backend.tests.test_billhub_features.TestAdminCardFees" name="test_update_card_min_funding_amount" time="0.449" /><testcase classname="backend.tests.test_billhub_features.TestAdminCardFees" name="test_update_card_fees_rejects_negative" time="0.303" /><testcase classname="backend.tests.test_billhub_features.TestAdminCardFees" name="test_card_fees_requires_admin" time="0.074" /><testcase classname="backend.tests.test_billhub_features.TestVirtualCardsAPI" name="test_cards_endpoint_returns_fees" time="0.303" /><testcase classname="backend.tests.test_billhub_features.TestAdminLogoUpload" name="test_logo_upload_endpoint_exists" time="0.299" /><testcase classname="backend.tests.test_billhub_features.TestAdminLogoUpload" name="test_logo_upload_rejects_invalid_type" time="0.301" /><testcase classname="backend.tests.test_billhub_features.TestAdminLogoUpload" name="test_logo_upload_requires_admin" time="0.042" /><testcase classname="backend.tests.test_billhub_features.TestAdminLogoUpload" name="test_uploaded_logo_accessible" time="0.337"><failure message="requests.exceptions.MissingSchema: Invalid URL '/api/uploads/branding/logo_f5766138.png': No scheme supplied. Perhaps you meant https:///api/uploads/branding/logo_f5766138.png?">backend/tests/test_billhub_features.py:303: in test_uploaded_logo_accessible
+    access_response = requests.get(logo_url)
+                      ^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:73: in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:575: in request
+    prep = self.prepare_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:484: in prepare_request
+    p.prepare(
+/root/.venv/lib/python3.11/site-packages/requests/models.py:367: in prepare
+    self.prepare_url(url, params)
+/root/.venv/lib/python3.11/site-packages/requests/models.py:438: in prepare_url
+    raise MissingSchema(
+E   requests.exceptions.MissingSchema: Invalid URL '/api/uploads/branding/logo_f5766138.png': No scheme supplied. Perhaps you meant https:///api/uploads/branding/logo_f5766138.png?</failure></testcase><testcase classname="backend.tests.test_billhub_features.TestBrandingIntegration" name="test_logo_upload_updates_public_branding" time="0.350" /></testsuite></testsuites>
