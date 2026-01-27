@@ -11063,7 +11063,7 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         )
         
         # Create Payscribe customer for virtual card access
-        payscribe_customer_id = await create_payscribe_customer(user, request.dob, request.address)
+        payscribe_customer_id = await _create_payscribe_customer_for_kyc(user, request.dob, request.address)
         
         await _create_transaction_notification(
             user['id'],
