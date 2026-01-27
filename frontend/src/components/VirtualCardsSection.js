@@ -120,8 +120,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const [funding, setFunding] = useState(false);
 
   const userTier = user?.tier || 1;
-  const brandLogo = branding?.logo_url || null;
-  const brandName = branding?.company_name || 'BillHub';
+  const brandLogo = branding?.brand_logo_url || null;
+  const brandName = branding?.brand_name || 'BillHub';
 
   useEffect(() => {
     fetchCards();
