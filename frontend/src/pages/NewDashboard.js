@@ -2245,8 +2245,17 @@ const NewDashboard = () => {
         toast.error('Please enter your date of birth');
         return;
       }
-      if (!address.trim()) {
-        toast.error('Please enter your address');
+      // Validate address fields for Payscribe
+      if (!kycStreet.trim()) {
+        toast.error('Please enter your street address');
+        return;
+      }
+      if (!kycCity.trim()) {
+        toast.error('Please enter your city');
+        return;
+      }
+      if (!kycState.trim()) {
+        toast.error('Please enter your state');
         return;
       }
       if (!selfieImage) {
