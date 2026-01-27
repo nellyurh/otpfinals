@@ -545,7 +545,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-bold text-gray-900 mb-2">Card Fees</h2>
-              <p className="text-gray-500">Here's what you need to know about fees</p>
+              <p className="text-gray-500">Here&apos;s what you need to know about fees</p>
             </div>
 
             {/* Selected Card Preview */}
