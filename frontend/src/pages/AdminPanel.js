@@ -688,6 +688,56 @@ const AdminPanel = ({ user, setUser }) => {
     enable_transaction_email: true
   });
 
+  // Logo upload state
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = React.useRef(null);
+
+  // Logo upload handler
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload PNG, JPEG, WebP, or SVG');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large. Maximum size is 5MB');
+      return;
+    }
+    
+    setUploadingLogo(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await axios.post(`${API}/admin/upload-logo`, formData, {
+        ...axiosConfig,
+        headers: {
+          ...axiosConfig.headers,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data.success) {
+        setBranding(prev => ({ ...prev, brand_logo_url: response.data.logo_url }));
+        toast.success('Logo uploaded successfully!');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+      // Reset input
+      if (logoInputRef.current) {
+        logoInputRef.current.value = '';
+      }
+    }
+  };
+
   const [pageToggles, setPageToggles] = useState({
     enable_dashboard: true,
     enable_transactions: true,
