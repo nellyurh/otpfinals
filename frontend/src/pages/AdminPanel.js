@@ -4295,18 +4295,43 @@ const AdminPanel = ({ user, setUser }) => {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Logo URL</Label>
-                        <Input
-                          value={branding.brand_logo_url}
-                          onChange={(e) => setBranding({ ...branding, brand_logo_url: e.target.value })}
-                          placeholder="https://..."
-                          className="h-9 text-sm bg-slate-50 border-slate-200"
-                        />
+                        <Label className="text-xs font-semibold text-slate-600">Logo</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={branding.brand_logo_url}
+                            onChange={(e) => setBranding({ ...branding, brand_logo_url: e.target.value })}
+                            placeholder="https://... or upload below"
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1"
+                          />
+                          <input
+                            type="file"
+                            ref={logoInputRef}
+                            onChange={handleLogoUpload}
+                            accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => logoInputRef.current?.click()}
+                            disabled={uploadingLogo}
+                            className="h-9 px-3"
+                          >
+                            {uploadingLogo ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Image className="w-4 h-4" />
+                            )}
+                            <span className="ml-1 text-xs">{uploadingLogo ? 'Uploading...' : 'Upload'}</span>
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-slate-400">PNG, JPG, WebP, or SVG. Max 5MB.</p>
                       </div>
                     </div>
                     {branding.brand_logo_url && (
                       <div className="mt-3 p-4 bg-slate-100 rounded-xl">
-                        <p className="text-[10px] text-slate-500 mb-2 font-semibold">Logo Preview:</p>
+                        <p className="text-[10px] text-slate-500 mb-2 font-semibold">Logo Preview (used on Virtual Cards):</p>
                         <img src={branding.brand_logo_url} alt="Logo Preview" className="h-12 object-contain" onError={(e) => e.target.style.display = 'none'} />
                       </div>
                     )}
