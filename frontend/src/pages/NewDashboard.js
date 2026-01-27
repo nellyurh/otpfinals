@@ -3144,9 +3144,9 @@ const NewDashboard = () => {
                 
                 <button
                   onClick={startTier3Verification}
-                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob || !address.trim() || !selfieImage}
+                  disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob || !kycStreet.trim() || !kycCity.trim() || !kycState.trim() || !selfieImage}
                   className="w-full py-4 text-white rounded-xl font-bold transition-all shadow-lg disabled:bg-gray-300 disabled:shadow-none"
-                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && address.trim() && selfieImage ? primaryColor : undefined }}
+                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && kycStreet.trim() && kycCity.trim() && kycState.trim() && selfieImage ? primaryColor : undefined }}
                 >
                   Start Express KYC (₦{KYC_FEE})
                 </button>
