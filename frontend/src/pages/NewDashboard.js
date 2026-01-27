@@ -1950,6 +1950,13 @@ const NewDashboard = () => {
     const [dob, setDob] = useState('');
     const [address, setAddress] = useState(user.address || '');
     
+    // Tier 3 Address fields for Payscribe customer creation
+    const [kycStreet, setKycStreet] = useState('');
+    const [kycCity, setKycCity] = useState('');
+    const [kycState, setKycState] = useState('');
+    const [kycPostalCode, setKycPostalCode] = useState('');
+    const [kycCountry, setKycCountry] = useState('NG');
+    
     // First/Last name for profile (editable only before Tier 2)
     const [firstName, setFirstName] = useState(user.first_name || '');
     const [lastName, setLastName] = useState(user.last_name || '');
