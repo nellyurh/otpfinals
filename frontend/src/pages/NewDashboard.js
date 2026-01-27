@@ -2315,7 +2315,14 @@ const NewDashboard = () => {
           bvn: bvn,
           nin: nin,
           phone: kycPhone,
-          dob: dob
+          dob: dob,
+          address: {
+            street: kycStreet,
+            city: kycCity,
+            state: kycState,
+            country: kycCountry || 'NG',
+            postal_code: kycPostalCode || '100001'
+          }
         }, axiosConfig);
         
         if (response.data.success) {
