@@ -10755,6 +10755,7 @@ class Tier3Address(BaseModel):
     street: str
     city: str
     state: str
+    country: str = "NG"  # ISO country code
     postal_code: str = "100001"  # Default Lagos postal code
 
 class Tier3KYCRequest(BaseModel):
