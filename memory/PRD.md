@@ -1,6 +1,17 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-01-27 (Session 7)**: Admin Logo Upload + Card Min Funding Config + KYC Address Fields
+  - NEW: Admin can upload brand logo from Admin Panel → Branding section
+  - NEW: Uploaded logo is displayed on Virtual Cards instead of default "BillHub"
+  - NEW: Admin can configure minimum card funding amount (previously hardcoded to $5)
+  - FIXED: KYC Tier 3 form now has proper address fields matching Payscribe API:
+    - Street address (required)
+    - City (required)
+    - State (dropdown with 36 Nigerian states + FCT)
+    - Postal code (optional, defaults to 100001)
+    - Country (defaults to NG)
+  - FIXED: Payscribe customer creation uses correct address object format
 - **2026-01-26 (Session 6)**: Payscribe Bill Payment API Fix + KYC Verification Fix + Selfie Simplification
   - FIXED: KYC Verification endpoints use correct Payscribe API format (`kyc/lookup?type=bvn&value=...`)
   - FIXED: Data purchase uses correct API format (`network`, `plan`, `recipient`)
