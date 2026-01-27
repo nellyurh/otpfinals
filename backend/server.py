@@ -10785,29 +10785,30 @@ async def create_payscribe_customer(user: dict, dob: str, address: Optional[Tier
         if selfie_filename:
             # Use the API endpoint to serve the selfie
             api_base = os.environ.get('REACT_APP_BACKEND_URL', 'https://api.payscribe.ng')
-            photo_url = f"{api_base}/api/kyc/uploads/{user['id']}/{selfie_filename}"
+            photo_url = f"{api_base}/api/uploads/kyc/{selfie_filename}"
         
         # Prepare address - use provided address or default
         addr = address or Tier3Address(
             street=db_user.get('address', 'Lagos, Nigeria'),
             city="Lagos",
             state="Lagos",
+            country="NG",
             postal_code="100001"
         )
         
-        # Build customer creation payload
+        # Build customer creation payload matching Payscribe API exactly
         payload = {
             "first_name": db_user.get('first_name', ''),
             "last_name": db_user.get('last_name', ''),
             "phone": f"+234{db_user.get('phone', '').lstrip('0')[-10:]}",  # Format: +234XXXXXXXXXX
             "email": db_user.get('email', ''),
             "dob": dob,  # YYYY-MM-DD format
-            "country": "NG",
+            "country": addr.country or "NG",  # Customer's country code
             "address": {
                 "street": addr.street,
                 "city": addr.city,
                 "state": addr.state,
-                "country": "NG",
+                "country": addr.country or "NG",  # Address country ISO
                 "postal_code": addr.postal_code
             },
             "identification_type": "BVN",
@@ -10816,12 +10817,13 @@ async def create_payscribe_customer(user: dict, dob: str, address: Optional[Tier
             "identity": {
                 "type": "NIN",
                 "number": db_user.get('nin', ''),
-                "country": "NG",
+                "country": addr.country or "NG",
                 "image": photo_url or "https://via.placeholder.com/200"  # Use selfie as fallback
             }
         }
         
         logger.info(f"Creating Payscribe customer for user {user['id']}: {db_user.get('email')}")
+        logger.info(f"Payscribe customer payload: {payload}")
         
         # Call Payscribe API - use PUBLIC key for customer creation
         result = await payscribe_request('customers/create/full', 'POST', payload, use_public_key=True)
