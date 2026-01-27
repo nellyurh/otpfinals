@@ -10766,7 +10766,7 @@ class Tier3KYCRequest(BaseModel):
     address: Optional[Tier3Address] = None  # Address for Payscribe customer creation
 
 
-async def create_payscribe_customer(user: dict, dob: str, address: Optional[Tier3Address] = None) -> Optional[str]:
+async def _create_payscribe_customer_for_kyc(user: dict, dob: str, address: Optional[Tier3Address] = None) -> Optional[str]:
     """
     Create a customer on Payscribe after successful Tier 3 verification.
     Returns the customer_id if successful, None otherwise.
