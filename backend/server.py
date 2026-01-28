@@ -8351,6 +8351,20 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     if data.hero_gradient_to is not None:
         update_fields['hero_gradient_to'] = data.hero_gradient_to
 
+    # SEO Settings
+    if data.seo_site_title is not None:
+        update_fields['seo_site_title'] = data.seo_site_title
+    if data.seo_meta_description is not None:
+        update_fields['seo_meta_description'] = data.seo_meta_description
+    if data.seo_og_image is not None:
+        update_fields['seo_og_image'] = data.seo_og_image
+    if data.seo_keywords is not None:
+        update_fields['seo_keywords'] = data.seo_keywords
+    if data.seo_author is not None:
+        update_fields['seo_author'] = data.seo_author
+    if data.seo_canonical_url is not None:
+        update_fields['seo_canonical_url'] = data.seo_canonical_url
+
     # Reseller API URL
     if data.reseller_api_base_url is not None:
         update_fields['reseller_api_base_url'] = data.reseller_api_base_url
