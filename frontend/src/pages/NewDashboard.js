@@ -1993,7 +1993,7 @@ const NewDashboard = () => {
     const primaryColor = branding.primary_color_hex || '#059669';
     const accentColor = branding.accent_color_hex || '#7c3aed';
     const userTier = user.tier || 1;
-    const KYC_FEE = 100; // Total fee for Express KYC (₦100)
+    const KYC_FEE = 200; // Total fee for Express KYC (₦200)
 
     const handleUpdateProfile = async () => {
       if (!firstName.trim() || !lastName.trim()) {
