@@ -662,7 +662,7 @@ const AdminPanel = ({ user, setUser }) => {
   });
 
   const [branding, setBranding] = useState({
-    brand_name: 'UltraCloud Sms',
+    brand_name: 'Social SMS WRLD',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
     // Logo size settings
     logo_width: 120,
@@ -688,9 +688,16 @@ const AdminPanel = ({ user, setUser }) => {
     smtp_port: 465,
     smtp_email: '',
     smtp_password: '',
-    smtp_from_name: 'UltraCloud SMS',
+    smtp_from_name: 'Social SMS WRLD',
     enable_welcome_email: true,
-    enable_transaction_email: true
+    enable_transaction_email: true,
+    // SEO Settings
+    seo_site_title: 'Social SMS WRLD | OTP Verification & Gift Cards',
+    seo_meta_description: 'Buy virtual phone numbers for OTP verification, gift cards from top brands, airtime & data top-up. Fast, secure & affordable.',
+    seo_og_image: '',
+    seo_keywords: 'virtual numbers, OTP verification, SMS verification, gift cards, airtime, data',
+    seo_author: 'Social SMS WRLD',
+    seo_canonical_url: ''
   });
 
   // Logo upload state
