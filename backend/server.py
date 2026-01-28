@@ -5421,6 +5421,21 @@ async def payscribe_webhook(request: Request):
         logger.info(f"Payscribe webhook: Payment {ref} already processed")
         return {'status': 'ok', 'message': 'Already processed'}
     
+    # Check if transaction already exists to prevent double crediting
+    existing_transaction = await db.transactions.find_one({
+        'reference': ref,
+        'type': 'deposit_ngn',
+        'status': 'completed'
+    })
+    if existing_transaction:
+        logger.info(f"Payscribe webhook: Transaction {ref} already exists, skipping credit")
+        # Update status to paid if not already
+        await db.payscribe_temp_accounts.update_one(
+            {'account_number': account_number}, 
+            {'$set': {'status': 'paid', 'updated_at': datetime.now(timezone.utc).isoformat()}}
+        )
+        return {'status': 'ok', 'message': 'Transaction already exists'}
+    
     # For accounts.payment.status event, receiving a webhook means payment was successful
     # The event_type "accounts.payment.status" indicates a payment was received
     new_status = 'paid' if event_type == 'accounts.payment.status' else 'pending'
