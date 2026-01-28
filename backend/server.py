@@ -909,6 +909,11 @@ class PricingConfig(BaseModel):
     # Branding (admin editable)
     brand_name: str = "UltraCloud Sms"
     brand_logo_url: str = "https://cloudsmsservice.org/img/social_logo.png"
+    # Logo size settings (in pixels)
+    logo_width: int = 120  # Width of logo in header/navbar
+    logo_height: int = 40  # Height of logo in header/navbar
+    card_logo_width: int = 32  # Width of logo on virtual cards
+    card_logo_height: int = 32  # Height of logo on virtual cards
     landing_hero_title: str = "Cheapest and Fastest\nOnline SMS Verification"
     landing_hero_subtitle: str = (
         "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms "
