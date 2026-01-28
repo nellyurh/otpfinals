@@ -85,7 +85,7 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
 }
 
 // Main Virtual Cards Section Component
-export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#059669', branding = {} }) {
+export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#059669', branding = {}, onNavigateToKYC }) {
   const [cards, setCards] = useState([]);
   const [fees, setFees] = useState({
     creation_fee: 2.50,
