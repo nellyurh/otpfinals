@@ -12,6 +12,34 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Cache branding in localStorage to prevent color flash
+const BRANDING_CACHE_KEY = 'app_branding_cache';
+
+// Get cached branding or defaults
+const getCachedBranding = () => {
+  try {
+    const cached = localStorage.getItem(BRANDING_CACHE_KEY);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (e) {}
+  return null;
+};
+
+// Apply theme color immediately (before React renders)
+const applyThemeColor = (color) => {
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta && color) {
+    themeColorMeta.setAttribute('content', color);
+  }
+};
+
+// Apply cached branding immediately on script load (before React)
+const cachedBranding = getCachedBranding();
+if (cachedBranding?.primary_color_hex) {
+  applyThemeColor(cachedBranding.primary_color_hex);
+}
+
 // Dynamic SEO Meta Tags Component
 function DynamicSEO() {
   useEffect(() => {
@@ -19,6 +47,14 @@ function DynamicSEO() {
       try {
         const response = await axios.get(`${API}/api/public/branding`);
         const seo = response.data;
+        
+        // Cache branding for next page load (prevents flash)
+        localStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(seo));
+        
+        // Update theme-color for mobile address bar
+        if (seo.primary_color_hex) {
+          applyThemeColor(seo.primary_color_hex);
+        }
         
         // Update document title
         if (seo.seo_site_title) {
