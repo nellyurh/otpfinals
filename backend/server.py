@@ -8146,6 +8146,11 @@ async def get_public_branding():
     return {
         "brand_name": config.get("brand_name", "UltraCloud Sms"),
         "brand_logo_url": config.get("brand_logo_url", "https://cloudsmsservice.org/img/social_logo.png"),
+        # Logo size settings
+        "logo_width": config.get("logo_width", 120),
+        "logo_height": config.get("logo_height", 40),
+        "card_logo_width": config.get("card_logo_width", 32),
+        "card_logo_height": config.get("card_logo_height", 32),
         "primary_color_hex": config.get("primary_color_hex", "#059669"),
         "secondary_color_hex": config.get("secondary_color_hex", "#10b981"),
         "accent_color_hex": config.get("accent_color_hex", "#7c3aed"),
