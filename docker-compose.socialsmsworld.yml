@@ -1,0 +1,97 @@
+version: '3.8'
+
+# =============================================
+# SocialSMS World - Docker Compose Configuration
+# Domain: socialsmsworld.com
+# Server IP: 178.18.247.113
+# =============================================
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: socialsms-mongodb
+    restart: always
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=sms_relay_db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: socialsms-backend
+    restart: always
+    ports:
+      - "127.0.0.1:8001:8001"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=sms_relay_db
+      - JWT_SECRET=${JWT_SECRET}
+      - SECRETS_MASTER_KEY=${SECRETS_MASTER_KEY}
+      - SEED_SECRET=${SEED_SECRET}
+      - CORS_ORIGINS=https://socialsmsworld.com,https://www.socialsmsworld.com
+      - REACT_APP_BACKEND_URL=https://socialsmsworld.com
+    volumes:
+      - backend_uploads:/app/uploads
+    healthcheck:
+      test: curl -f http://localhost:8001/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_URL=https://socialsmsworld.com
+    container_name: socialsms-frontend
+    restart: always
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - backend
+
+  # Nginx Reverse Proxy (handles SSL via Cloudflare)
+  nginx:
+    image: nginx:alpine
+    container_name: socialsms-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_data:/var/www/certbot:ro
+    depends_on:
+      - backend
+      - frontend
+
+  # Certbot for SSL (Let's Encrypt)
+  certbot:
+    image: certbot/certbot
+    container_name: socialsms-certbot
+    volumes:
+      - certbot_data:/var/www/certbot
+      - ./nginx/ssl:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  mongodb_data:
+  certbot_data:
+  backend_uploads:
