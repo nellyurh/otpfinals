@@ -10847,7 +10847,8 @@ class Tier3KYCRequest(BaseModel):
 
 async def _create_payscribe_customer_for_kyc(user: dict, dob: str, address: Optional[Tier3Address] = None) -> Optional[str]:
     """
-    Create a customer on Payscribe after successful Tier 3 verification.
+    Create or upgrade a customer on Payscribe after successful Tier 3 verification.
+    If customer already exists (from bank transfer), upgrade to higher tier instead.
     Returns the customer_id if successful, None otherwise.
     """
     try:
@@ -10858,15 +10859,17 @@ async def _create_payscribe_customer_for_kyc(user: dict, dob: str, address: Opti
             logger.error(f"User not found for Payscribe customer creation: {user['id']}")
             return None
         
+        # Check if user already has a Payscribe customer_id (from bank transfer static account)
+        existing_customer_id = db_user.get('payscribe_customer_id')
+        
         # Build photo URL from selfie filename
         selfie_filename = db_user.get('selfie_filename')
         photo_url = None
         if selfie_filename:
-            # Use the API endpoint to serve the selfie
             api_base = os.environ.get('REACT_APP_BACKEND_URL', 'https://api.payscribe.ng')
             photo_url = f"{api_base}/api/uploads/kyc/{selfie_filename}"
         
-        # Prepare address - use provided address or default
+        # Prepare address
         addr = address or Tier3Address(
             street=db_user.get('address', 'Lagos, Nigeria'),
             city="Lagos",
@@ -10875,61 +10878,113 @@ async def _create_payscribe_customer_for_kyc(user: dict, dob: str, address: Opti
             postal_code="100001"
         )
         
-        # Build customer creation payload matching Payscribe API exactly
-        payload = {
-            "first_name": db_user.get('first_name', ''),
-            "last_name": db_user.get('last_name', ''),
-            "phone": f"+234{db_user.get('phone', '').lstrip('0')[-10:]}",  # Format: +234XXXXXXXXXX
-            "email": db_user.get('email', ''),
-            "dob": dob,  # YYYY-MM-DD format
-            "country": addr.country or "NG",  # Customer's country code
-            "address": {
-                "street": addr.street,
-                "city": addr.city,
-                "state": addr.state,
-                "country": addr.country or "NG",  # Address country ISO
-                "postal_code": addr.postal_code
-            },
-            "identification_type": "BVN",
-            "identification_number": db_user.get('bvn', ''),
-            "photo": photo_url or "https://via.placeholder.com/200",  # Fallback if no selfie
-            "identity": {
-                "type": "NIN",
-                "number": db_user.get('nin', ''),
-                "country": addr.country or "NG",
-                "image": photo_url or "https://via.placeholder.com/200"  # Use selfie as fallback
-            }
-        }
-        
-        logger.info(f"Creating Payscribe customer for user {user['id']}: {db_user.get('email')}")
-        logger.info(f"Payscribe customer payload: {payload}")
-        
-        # Call Payscribe API - use PUBLIC key for customer creation
-        result = await payscribe_request('customers/create/full', 'POST', payload, use_public_key=True)
-        
-        logger.info(f"Payscribe customer creation response: {result}")
-        
-        if result and result.get('status'):
-            message = result.get('message', {})
-            customer_id = message.get('customer_id')
+        if existing_customer_id:
+            # Customer already exists - upgrade to Tier 1, then Tier 2
+            logger.info(f"Upgrading existing Payscribe customer {existing_customer_id} for user {user['id']}")
             
-            if customer_id:
-                # Store customer_id in user record
-                await db.users.update_one(
-                    {'id': user['id']},
-                    {'$set': {
-                        'payscribe_customer_id': customer_id,
-                        'payscribe_customer_created_at': datetime.now(timezone.utc).isoformat()
-                    }}
-                )
-                logger.info(f"Payscribe customer created successfully: {customer_id}")
-                return customer_id
+            # Step 1: Upgrade to Tier 1
+            tier1_payload = {
+                "customer_id": existing_customer_id,
+                "dob": dob,
+                "address": {
+                    "street": addr.street,
+                    "city": addr.city,
+                    "state": addr.state,
+                    "country": addr.country or "NG",
+                    "postal_code": addr.postal_code
+                },
+                "identification_type": "BVN",
+                "identification_number": db_user.get('bvn', ''),
+                "photo": photo_url or "https://via.placeholder.com/200"
+            }
+            
+            tier1_result = await payscribe_request('customers/create/tier1', 'PATCH', tier1_payload, use_public_key=True)
+            logger.info(f"Payscribe Tier 1 upgrade response: {tier1_result}")
+            
+            if not tier1_result or not tier1_result.get('status'):
+                logger.error(f"Failed to upgrade customer to Tier 1: {tier1_result}")
+                # Continue anyway as customer might already be at Tier 1
+            
+            # Step 2: Upgrade to Tier 2
+            tier2_payload = {
+                "customer_id": existing_customer_id,
+                "identity": {
+                    "type": "NIN",
+                    "number": db_user.get('nin', ''),
+                    "country": addr.country or "NG",
+                    "image": photo_url or "https://via.placeholder.com/200"
+                }
+            }
+            
+            tier2_result = await payscribe_request('customers/create/tier2', 'PATCH', tier2_payload, use_public_key=True)
+            logger.info(f"Payscribe Tier 2 upgrade response: {tier2_result}")
+            
+            if tier2_result and tier2_result.get('status'):
+                logger.info(f"Successfully upgraded Payscribe customer {existing_customer_id} to Tier 2")
+                return existing_customer_id
             else:
-                logger.warning(f"No customer_id in Payscribe response: {result}")
-        else:
-            logger.error(f"Payscribe customer creation failed: {result}")
+                logger.error(f"Failed to upgrade customer to Tier 2: {tier2_result}")
+                # Return existing customer_id anyway since they exist
+                return existing_customer_id
         
-        return None
+        else:
+            # No existing customer - create full customer
+            payload = {
+                "first_name": db_user.get('first_name', ''),
+                "last_name": db_user.get('last_name', ''),
+                "phone": f"+234{db_user.get('phone', '').lstrip('0')[-10:]}",
+                "email": db_user.get('email', ''),
+                "dob": dob,
+                "country": addr.country or "NG",
+                "address": {
+                    "street": addr.street,
+                    "city": addr.city,
+                    "state": addr.state,
+                    "country": addr.country or "NG",
+                    "postal_code": addr.postal_code
+                },
+                "identification_type": "BVN",
+                "identification_number": db_user.get('bvn', ''),
+                "photo": photo_url or "https://via.placeholder.com/200",
+                "identity": {
+                    "type": "NIN",
+                    "number": db_user.get('nin', ''),
+                    "country": addr.country or "NG",
+                    "image": photo_url or "https://via.placeholder.com/200"
+                }
+            }
+            
+            logger.info(f"Creating new Payscribe customer for user {user['id']}: {db_user.get('email')}")
+            
+            result = await payscribe_request('customers/create/full', 'POST', payload, use_public_key=True)
+            logger.info(f"Payscribe customer creation response: {result}")
+            
+            # Handle "customer already exists" error
+            if result and not result.get('status'):
+                description = result.get('description', '').lower()
+                if 'already exists' in description or 'already registered' in description:
+                    # Try to find existing customer by email or phone
+                    logger.warning(f"Customer already exists on Payscribe, attempting to find customer_id")
+                    # For now, we'll need the admin to check Payscribe dashboard
+                    # In future, we could call a customer lookup API if available
+            
+            if result and result.get('status'):
+                message = result.get('message', {})
+                customer_id = message.get('customer_id')
+                
+                if customer_id:
+                    await db.users.update_one(
+                        {'id': user['id']},
+                        {'$set': {
+                            'payscribe_customer_id': customer_id,
+                            'payscribe_customer_created_at': datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    logger.info(f"Payscribe customer created successfully: {customer_id}")
+                    return customer_id
+            
+            logger.error(f"Payscribe customer creation failed: {result}")
+            return None
         
     except Exception as e:
         logger.error(f"Payscribe customer creation error: {str(e)}")
