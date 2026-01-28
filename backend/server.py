@@ -10824,7 +10824,7 @@ async def get_exchange_rate(user: dict = Depends(get_current_user)):
 
 # ============ KYC Verification Endpoints ============
 
-KYC_VERIFICATION_FEE = 100  # ₦100 total for Express KYC (covers both BVN and NIN)
+KYC_VERIFICATION_FEE = 200  # ₦200 total for Express KYC (covers both BVN and NIN)
 
 class Tier2KYCRequest(BaseModel):
     bvn: str
