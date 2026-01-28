@@ -1172,6 +1172,14 @@ class UpdatePricingRequest(BaseModel):
     # Branding
     brand_name: Optional[str] = None
     brand_logo_url: Optional[str] = None
+    # SEO Settings
+    seo_site_title: Optional[str] = None
+    seo_meta_description: Optional[str] = None
+    seo_og_image: Optional[str] = None
+    seo_keywords: Optional[str] = None
+    seo_author: Optional[str] = None
+    seo_canonical_url: Optional[str] = None
+    
     # Logo size settings (in pixels)
     logo_width: Optional[int] = None
     logo_height: Optional[int] = None
