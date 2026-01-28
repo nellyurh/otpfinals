@@ -42,8 +42,19 @@ const serviceCards = [
 
 const Landing = ({ setUser }) => {
   const [showAuth, setShowAuth] = useState(false);
-  const [branding, setBranding] = useState({
-    brand_name: 'UltraCloud Sms',
+  // Get cached branding from localStorage to prevent color flash
+  const getCachedBranding = () => {
+    try {
+      const cached = localStorage.getItem('app_branding_cache');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  };
+
+  const cachedBranding = getCachedBranding();
+  
+  const [branding, setBranding] = useState(cachedBranding || {
+    brand_name: 'Social SMS WRLD',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
     primary_color_hex: '#059669',
     secondary_color_hex: '#10b981',
@@ -62,6 +73,8 @@ const Landing = ({ setUser }) => {
       try {
         const resp = await axios.get(`${API}/public/branding`);
         setBranding(resp.data);
+        // Cache for next page load
+        localStorage.setItem('app_branding_cache', JSON.stringify(resp.data));
       } catch (e) {
         // ignore
       }
