@@ -4613,6 +4613,91 @@ const AdminPanel = ({ user, setUser }) => {
                   </CardContent>
                 </Card>
 
+                {/* SEO Settings */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-blue-600" />
+                      SEO Settings
+                    </CardTitle>
+                    <CardDescription className="text-xs">Optimize your site for search engines (Google, Bing, etc.)</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Site Title</Label>
+                      <Input
+                        value={branding.seo_site_title}
+                        onChange={(e) => setBranding({ ...branding, seo_site_title: e.target.value })}
+                        placeholder="Your Site Name | Main Keywords"
+                        className="h-9 text-sm bg-slate-50 border-slate-200"
+                      />
+                      <p className="text-[10px] text-slate-400">Shows in browser tab and search results. Keep under 60 characters.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Meta Description</Label>
+                      <textarea
+                        value={branding.seo_meta_description}
+                        onChange={(e) => setBranding({ ...branding, seo_meta_description: e.target.value })}
+                        placeholder="Describe your site in 1-2 sentences..."
+                        rows={3}
+                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <p className="text-[10px] text-slate-400">Shows in search results. Keep under 160 characters for best results.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">OG Image URL</Label>
+                        <Input
+                          value={branding.seo_og_image}
+                          onChange={(e) => setBranding({ ...branding, seo_og_image: e.target.value })}
+                          placeholder="https://yoursite.com/og-image.png"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Image shown when shared on social media (1200x630px recommended)</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Author</Label>
+                        <Input
+                          value={branding.seo_author}
+                          onChange={(e) => setBranding({ ...branding, seo_author: e.target.value })}
+                          placeholder="Your Company Name"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Keywords</Label>
+                      <Input
+                        value={branding.seo_keywords}
+                        onChange={(e) => setBranding({ ...branding, seo_keywords: e.target.value })}
+                        placeholder="keyword1, keyword2, keyword3"
+                        className="h-9 text-sm bg-slate-50 border-slate-200"
+                      />
+                      <p className="text-[10px] text-slate-400">Comma-separated keywords related to your site</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-600">Canonical URL</Label>
+                      <Input
+                        value={branding.seo_canonical_url}
+                        onChange={(e) => setBranding({ ...branding, seo_canonical_url: e.target.value })}
+                        placeholder="https://socialsmsworld.com"
+                        className="h-9 text-sm bg-slate-50 border-slate-200"
+                      />
+                      <p className="text-[10px] text-slate-400">Your main domain URL (used to prevent duplicate content issues)</p>
+                    </div>
+                    
+                    {/* SEO Preview */}
+                    <div className="mt-4 p-4 bg-slate-100 rounded-xl">
+                      <p className="text-[10px] text-slate-500 mb-2 font-semibold">Google Search Preview:</p>
+                      <div className="bg-white p-3 rounded-lg border border-slate-200">
+                        <p className="text-blue-700 text-sm font-medium truncate">{branding.seo_site_title || 'Your Site Title'}</p>
+                        <p className="text-green-700 text-xs truncate">{branding.seo_canonical_url || 'https://yoursite.com'}</p>
+                        <p className="text-slate-600 text-xs line-clamp-2 mt-1">{branding.seo_meta_description || 'Your meta description will appear here...'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Support Channel URLs */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
