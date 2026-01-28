@@ -664,6 +664,11 @@ const AdminPanel = ({ user, setUser }) => {
   const [branding, setBranding] = useState({
     brand_name: 'UltraCloud Sms',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
+    // Logo size settings
+    logo_width: 120,
+    logo_height: 40,
+    card_logo_width: 32,
+    card_logo_height: 32,
     primary_color_hex: '#059669',
     secondary_color_hex: '#10b981',
     accent_color_hex: '#7c3aed',
