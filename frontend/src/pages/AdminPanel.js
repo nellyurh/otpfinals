@@ -4339,10 +4339,81 @@ const AdminPanel = ({ user, setUser }) => {
                         <p className="text-[10px] text-slate-400">PNG, JPG, WebP, or SVG. Max 5MB.</p>
                       </div>
                     </div>
+                    
+                    {/* Logo Size Settings */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Header Logo Width (px)</Label>
+                        <Input
+                          type="number"
+                          value={branding.logo_width}
+                          onChange={(e) => setBranding({ ...branding, logo_width: parseInt(e.target.value) || 120 })}
+                          min={40}
+                          max={300}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Header Logo Height (px)</Label>
+                        <Input
+                          type="number"
+                          value={branding.logo_height}
+                          onChange={(e) => setBranding({ ...branding, logo_height: parseInt(e.target.value) || 40 })}
+                          min={20}
+                          max={100}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Card Logo Width (px)</Label>
+                        <Input
+                          type="number"
+                          value={branding.card_logo_width}
+                          onChange={(e) => setBranding({ ...branding, card_logo_width: parseInt(e.target.value) || 32 })}
+                          min={16}
+                          max={64}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Card Logo Height (px)</Label>
+                        <Input
+                          type="number"
+                          value={branding.card_logo_height}
+                          onChange={(e) => setBranding({ ...branding, card_logo_height: parseInt(e.target.value) || 32 })}
+                          min={16}
+                          max={64}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">Header logo appears in navbar. Card logo appears on virtual cards.</p>
+
                     {branding.brand_logo_url && (
                       <div className="mt-3 p-4 bg-slate-100 rounded-xl">
-                        <p className="text-[10px] text-slate-500 mb-2 font-semibold">Logo Preview (used on Virtual Cards):</p>
-                        <img src={branding.brand_logo_url} alt="Logo Preview" className="h-12 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                        <p className="text-[10px] text-slate-500 mb-2 font-semibold">Logo Preview:</p>
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <p className="text-[9px] text-slate-400 mb-1">Header ({branding.logo_width}x{branding.logo_height}px)</p>
+                            <img 
+                              src={branding.brand_logo_url} 
+                              alt="Header Logo Preview" 
+                              style={{ width: branding.logo_width, height: branding.logo_height }} 
+                              className="object-contain border border-slate-200 rounded bg-white p-1" 
+                              onError={(e) => e.target.style.display = 'none'} 
+                            />
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-slate-400 mb-1">Card ({branding.card_logo_width}x{branding.card_logo_height}px)</p>
+                            <img 
+                              src={branding.brand_logo_url} 
+                              alt="Card Logo Preview" 
+                              style={{ width: branding.card_logo_width, height: branding.card_logo_height }} 
+                              className="object-contain border border-slate-200 rounded bg-white p-1" 
+                              onError={(e) => e.target.style.display = 'none'} 
+                            />
+                          </div>
+                        </div>
                       </div>
                     )}
                   </CardContent>
