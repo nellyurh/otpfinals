@@ -2040,11 +2040,16 @@ const NewDashboard = () => {
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
         });
         streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
         setShowCamera(true);
+        // Wait for modal to render, then attach stream
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play().catch(e => console.log('Video play error:', e));
+          }
+        }, 100);
       } catch (err) {
+        console.error('Camera error:', err);
         setCameraError('Camera access denied. Please allow camera access to take a selfie.');
       }
     };
