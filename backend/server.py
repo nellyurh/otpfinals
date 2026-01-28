@@ -8296,6 +8296,15 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['brand_name'] = data.brand_name
     if data.brand_logo_url is not None:
         update_fields['brand_logo_url'] = data.brand_logo_url
+    # Logo size settings
+    if data.logo_width is not None:
+        update_fields['logo_width'] = data.logo_width
+    if data.logo_height is not None:
+        update_fields['logo_height'] = data.logo_height
+    if data.card_logo_width is not None:
+        update_fields['card_logo_width'] = data.card_logo_width
+    if data.card_logo_height is not None:
+        update_fields['card_logo_height'] = data.card_logo_height
     if data.landing_hero_title is not None:
         update_fields['landing_hero_title'] = data.landing_hero_title
     if data.landing_hero_subtitle is not None:
