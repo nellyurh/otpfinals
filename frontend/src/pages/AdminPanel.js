@@ -1277,6 +1277,11 @@ const AdminPanel = ({ user, setUser }) => {
       setBranding({
         brand_name: response.data.brand_name || 'UltraCloud Sms',
         brand_logo_url: response.data.brand_logo_url || 'https://cloudsmsservice.org/img/social_logo.png',
+        // Logo size settings
+        logo_width: response.data.logo_width || 120,
+        logo_height: response.data.logo_height || 40,
+        card_logo_width: response.data.card_logo_width || 32,
+        card_logo_height: response.data.card_logo_height || 32,
         primary_color_hex: response.data.primary_color_hex || '#059669',
         secondary_color_hex: response.data.secondary_color_hex || '#10b981',
         accent_color_hex: response.data.accent_color_hex || '#7c3aed',
