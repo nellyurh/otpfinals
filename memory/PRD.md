@@ -1,10 +1,12 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-01-27 (Session 7)**: Admin Logo Upload + Card Min Funding Config + KYC Address Fields
+- **2026-01-27 (Session 7)**: Admin Logo Upload + Card Min Funding Config + KYC Address Fields + Logo Size Control
   - NEW: Admin can upload brand logo from Admin Panel → Branding section
   - NEW: Uploaded logo is displayed on Virtual Cards instead of default "BillHub"
   - NEW: Admin can configure minimum card funding amount (previously hardcoded to $5)
+  - NEW: Admin can configure logo sizes (header logo and card logo dimensions)
+  - NEW: Deployment guide created for socialsmsworld.com (IP: 178.18.247.113)
   - FIXED: KYC Tier 3 form now has proper address fields matching Payscribe API:
     - Street address (required)
     - City (required)
