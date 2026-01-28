@@ -8185,6 +8185,13 @@ async def get_public_branding():
         "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
         "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
         "support_email": config.get("support_email", "support@smsrelay.com"),
+        # SEO Settings
+        "seo_site_title": config.get("seo_site_title", "Social SMS WRLD | OTP Verification & Gift Cards"),
+        "seo_meta_description": config.get("seo_meta_description", "Buy virtual phone numbers for OTP verification, gift cards from top brands, airtime & data top-up. Fast, secure & affordable."),
+        "seo_og_image": config.get("seo_og_image", ""),
+        "seo_keywords": config.get("seo_keywords", "virtual numbers, OTP verification, SMS verification, gift cards, airtime, data"),
+        "seo_author": config.get("seo_author", "Social SMS WRLD"),
+        "seo_canonical_url": config.get("seo_canonical_url", ""),
     }
 
 @api_router.get("/user/page-toggles")
