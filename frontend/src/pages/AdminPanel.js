@@ -1282,7 +1282,7 @@ const AdminPanel = ({ user, setUser }) => {
       }));
 
       setBranding({
-        brand_name: response.data.brand_name || 'UltraCloud Sms',
+        brand_name: response.data.brand_name || 'Social SMS WRLD',
         brand_logo_url: response.data.brand_logo_url || 'https://cloudsmsservice.org/img/social_logo.png',
         // Logo size settings
         logo_width: response.data.logo_width || 120,
@@ -1304,6 +1304,13 @@ const AdminPanel = ({ user, setUser }) => {
         whatsapp_support_url: response.data.whatsapp_support_url || 'https://wa.me/2348000000000',
         telegram_support_url: response.data.telegram_support_url || 'https://t.me/yoursupport',
         support_email: response.data.support_email || 'support@smsrelay.com',
+        // SEO Settings
+        seo_site_title: response.data.seo_site_title || 'Social SMS WRLD | OTP Verification & Gift Cards',
+        seo_meta_description: response.data.seo_meta_description || 'Buy virtual phone numbers for OTP verification, gift cards from top brands, airtime & data top-up. Fast, secure & affordable.',
+        seo_og_image: response.data.seo_og_image || '',
+        seo_keywords: response.data.seo_keywords || 'virtual numbers, OTP verification, SMS verification, gift cards, airtime, data',
+        seo_author: response.data.seo_author || 'Social SMS WRLD',
+        seo_canonical_url: response.data.seo_canonical_url || '',
       });
 
       // Reseller API URL
