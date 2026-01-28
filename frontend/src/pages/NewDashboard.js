@@ -115,9 +115,20 @@ const NewDashboard = () => {
   const [cryptoCountdown, setCryptoCountdown] = useState(null);
   const [cryptoNetwork, setCryptoNetwork] = useState('TRON');
 
+  // Get cached branding from localStorage to prevent color flash
+  const getCachedBranding = () => {
+    try {
+      const cached = localStorage.getItem('app_branding_cache');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  };
+
+  const cachedBranding = getCachedBranding();
+
   // Public branding (used for brand text + primary green accents)
-  const [branding, setBranding] = useState({
-    brand_name: 'UltraCloud Sms',
+  const [branding, setBranding] = useState(cachedBranding || {
+    brand_name: 'Social SMS WRLD',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
     primary_color_hex: '#059669',
     secondary_color_hex: '#10b981',
@@ -136,6 +147,8 @@ const NewDashboard = () => {
     try {
       const resp = await axios.get(`${API}/api/public/branding`);
       setBranding(resp.data);
+      // Cache for next page load (prevents flash)
+      localStorage.setItem('app_branding_cache', JSON.stringify(resp.data));
       // Set support channel URLs
       if (resp.data) {
         setSupportUrls({
