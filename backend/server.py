@@ -906,8 +906,17 @@ class PricingConfig(BaseModel):
     rub_to_usd_rate: float = 0.010  # 1 RUB = ~0.01 USD
     # DaisySMS advanced options markup (configurable from admin)
     daisysms_advanced_markup: float = 20.0  # Extra markup for area code/carrier options
+    
+    # SEO Settings (admin editable)
+    seo_site_title: str = "Social SMS WRLD | OTP Verification & Gift Cards"
+    seo_meta_description: str = "Buy virtual phone numbers for OTP verification, gift cards from top brands, airtime & data top-up. Fast, secure & affordable."
+    seo_og_image: str = ""
+    seo_keywords: str = "virtual numbers, OTP verification, SMS verification, gift cards, airtime, data, WhatsApp verification, Google verification"
+    seo_author: str = "Social SMS WRLD"
+    seo_canonical_url: str = ""
+    
     # Branding (admin editable)
-    brand_name: str = "UltraCloud Sms"
+    brand_name: str = "Social SMS WRLD"
     brand_logo_url: str = "https://cloudsmsservice.org/img/social_logo.png"
     # Logo size settings (in pixels)
     logo_width: int = 120  # Width of logo in header/navbar
