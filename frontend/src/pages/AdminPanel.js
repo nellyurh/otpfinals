@@ -46,6 +46,7 @@ import {
   Building2,
   Mail,
   Send,
+  Globe,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
