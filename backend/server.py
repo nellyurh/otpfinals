@@ -11026,7 +11026,7 @@ async def submit_tier2_kyc(request: Tier2KYCRequest, user: dict = Depends(get_cu
 
 @api_router.post("/kyc/tier3/verify-bvn")
 async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(get_current_user)):
-    """Verify BVN via Payscribe lookup for Tier 3 Express KYC - deducts fee on first call"""
+    """Verify BVN via Payscribe lookup for Tier 3 Express KYC - charges ₦200 per attempt"""
     try:
         if len(request.bvn) != 11:
             raise HTTPException(status_code=400, detail="BVN must be 11 digits")
@@ -11041,16 +11041,43 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
                 'bvn_verified': True
             }
         
-        # Check if user has enough balance for the fee (only charge once for both verifications)
+        # Always check balance - fee is charged per attempt
         if db_user.get('ngn_balance', 0) < KYC_VERIFICATION_FEE:
-            raise HTTPException(status_code=400, detail=f"Insufficient balance. Express KYC costs ₦{KYC_VERIFICATION_FEE}")
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. Express KYC costs ₦{KYC_VERIFICATION_FEE} per attempt")
+        
+        # Deduct fee BEFORE making the API call (charge per attempt)
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'ngn_balance': -KYC_VERIFICATION_FEE}}
+        )
+        
+        # Create transaction for the fee
+        attempt_count = db_user.get('kyc_attempt_count', 0) + 1
+        fee_tx = Transaction(
+            user_id=user['id'],
+            type='kyc_fee',
+            amount=KYC_VERIFICATION_FEE,
+            currency='NGN',
+            status='completed',
+            reference=f"KYC-{uuid.uuid4().hex[:8].upper()}",
+            metadata={'service': 'express_kyc', 'attempt': attempt_count, 'bvn': request.bvn[:4] + '****' + request.bvn[-3:]}
+        )
+        fee_dict = fee_tx.model_dump()
+        fee_dict['created_at'] = fee_dict['created_at'].isoformat()
+        await db.transactions.insert_one(fee_dict)
+        
+        # Update attempt count
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$set': {'kyc_attempt_count': attempt_count}}
+        )
         
         # Call Payscribe BVN lookup using correct KYC lookup endpoint
         endpoint = f'kyc/lookup?type=bvn&value={request.bvn}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if not result or not result.get('status'):
-            raise HTTPException(status_code=400, detail="BVN lookup failed. Please check your BVN and try again.")
+            raise HTTPException(status_code=400, detail=f"BVN lookup failed. ₦{KYC_VERIFICATION_FEE} has been deducted. Please check your BVN and try again.")
         
         bvn_data = result.get('message', {}).get('details', {})
         
@@ -11076,41 +11103,25 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         
         errors = []
         if not name_match:
-            errors.append(f"Name mismatch: Your name '{db_user.get('first_name', '')} {db_user.get('last_name', '')}' doesn't match BVN")
+            errors.append(f"Name mismatch: Your registered name '{db_user.get('first_name', '')} {db_user.get('last_name', '')}' doesn't match BVN name '{bvn_data.get('first_name', '')} {bvn_data.get('last_name', '')}'")
         if not phone_match:
-            errors.append("Phone number doesn't match BVN records")
+            errors.append(f"Phone number '{request.phone}' doesn't match BVN phone records")
         if not dob_match:
-            errors.append("Date of birth doesn't match BVN records")
+            errors.append(f"Date of birth '{request.dob}' doesn't match BVN records")
         
         if errors:
-            raise HTTPException(status_code=400, detail=". ".join(errors))
+            error_msg = " | ".join(errors) + f". ₦{KYC_VERIFICATION_FEE} has been deducted. Please correct the details and try again."
+            raise HTTPException(status_code=400, detail=error_msg)
         
-        # Deduct fee (only once, on BVN verification)
+        # Success - mark as verified
         await db.users.update_one(
             {'id': user['id']},
-            {
-                '$inc': {'ngn_balance': -KYC_VERIFICATION_FEE},
-                '$set': {
-                    'bvn': request.bvn,
-                    'bvn_verified': True,
-                    'bvn_verified_at': datetime.now(timezone.utc).isoformat()
-                }
-            }
+            {'$set': {
+                'bvn': request.bvn,
+                'bvn_verified': True,
+                'bvn_verified_at': datetime.now(timezone.utc).isoformat()
+            }}
         )
-        
-        # Create transaction for the fee
-        fee_tx = Transaction(
-            user_id=user['id'],
-            type='kyc_fee',
-            amount=KYC_VERIFICATION_FEE,
-            currency='NGN',
-            status='completed',
-            reference=f"KYC-{uuid.uuid4().hex[:8].upper()}",
-            metadata={'service': 'express_kyc', 'bvn': request.bvn[:4] + '****' + request.bvn[-3:]}
-        )
-        fee_dict = fee_tx.model_dump()
-        fee_dict['created_at'] = fee_dict['created_at'].isoformat()
-        await db.transactions.insert_one(fee_dict)
         
         return {
             'success': True,
