@@ -5283,6 +5283,23 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     message = result.get('message', {})
     details = message.get('details', {})
     accounts = details.get('account', [])
+    customer_data = details.get('customer', {})
+    
+    # Extract customer_id from Payscribe response and store it
+    payscribe_customer_id = customer_data.get('customer_id') or customer_data.get('id')
+    if payscribe_customer_id:
+        logger.info(f"Captured Payscribe customer_id: {payscribe_customer_id} for user {user['id']}")
+        # Store the customer_id in user record for future KYC upgrades
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$set': {
+                'payscribe_customer_id': payscribe_customer_id,
+                'payscribe_customer_tier': 0,  # Tier 0 from Collections API
+                'payscribe_customer_created_at': datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    else:
+        logger.warning(f"No customer_id in Payscribe response for user {user['id']}: {customer_data}")
     
     if not accounts:
         logger.error(f"Payscribe response missing account details: {result}")
