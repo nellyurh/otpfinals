@@ -5406,6 +5406,7 @@ async def payscribe_webhook(request: Request):
     account_number = customer.get('number', '')  # This is the virtual account number
     account_id = customer.get('account_id', '')
     account_type = customer.get('account_type', '')
+    customer_id_from_webhook = customer.get('id', '')  # Customer ID from Payscribe
     
     # Get transaction details
     transaction_data = payload.get('transaction', {})
