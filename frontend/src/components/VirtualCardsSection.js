@@ -286,7 +286,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-slate-900 mb-1">Tier 3 Verification Required</h3>
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 mb-3">
                 Virtual Cards are only available for Tier 3 verified users. Complete your KYC verification to unlock this feature.
               </p>
               <div className="flex items-center gap-2 text-sm mb-4">
@@ -295,6 +295,15 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                   Tier {userTier}
                 </span>
               </div>
+              {onNavigateToKYC && (
+                <button
+                  onClick={onNavigateToKYC}
+                  className="w-full sm:w-auto px-6 py-3 text-white font-semibold rounded-xl transition-all hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Complete KYC Verification →
+                </button>
+              )}
             </div>
           </div>
         </div>
