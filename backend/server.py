@@ -1163,6 +1163,11 @@ class UpdatePricingRequest(BaseModel):
     # Branding
     brand_name: Optional[str] = None
     brand_logo_url: Optional[str] = None
+    # Logo size settings (in pixels)
+    logo_width: Optional[int] = None
+    logo_height: Optional[int] = None
+    card_logo_width: Optional[int] = None
+    card_logo_height: Optional[int] = None
     landing_hero_title: Optional[str] = None
     landing_hero_subtitle: Optional[str] = None
     primary_color_hex: Optional[str] = None
