@@ -5487,6 +5487,20 @@ async def payscribe_webhook(request: Request):
                 logger.error(f"Payscribe webhook: Failed to credit user {payment['user_id']} for payment {ref}")
             else:
                 logger.info(f"Payscribe webhook: Successfully credited ₦{credit_amount} to user {payment['user_id']}")
+                
+                # Also capture customer_id from webhook if user doesn't have one stored
+                if customer_id_from_webhook:
+                    user_record = await db.users.find_one({'id': payment['user_id']}, {'payscribe_customer_id': 1})
+                    if user_record and not user_record.get('payscribe_customer_id'):
+                        await db.users.update_one(
+                            {'id': payment['user_id']},
+                            {'$set': {
+                                'payscribe_customer_id': customer_id_from_webhook,
+                                'payscribe_customer_tier': 0,
+                                'payscribe_customer_created_at': datetime.now(timezone.utc).isoformat()
+                            }}
+                        )
+                        logger.info(f"Captured Payscribe customer_id {customer_id_from_webhook} for user {payment['user_id']} from webhook")
             
             # Create transaction record
             transaction = Transaction(
