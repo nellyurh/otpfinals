@@ -2479,7 +2479,9 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'has_transaction_pin': bool(user.get('transaction_pin_hash')),
         'referral_code': user.get('referral_code', user['email'].split('@')[0].upper()),
         'referral_count': user.get('referral_count', 0),
-        'referral_earnings': user.get('referral_earnings', 0)
+        'referral_earnings': user.get('referral_earnings', 0),
+        # Verification address (read-only for users)
+        'kyc_address': user.get('kyc_address')
     }
 
 class UpdateProfileRequest(BaseModel):
