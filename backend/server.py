@@ -618,6 +618,39 @@ PAYMENTPOINT_BASE_URL = os.environ.get('PAYMENTPOINT_BASE_URL', 'https://api.pay
 PAYSCRIBE_API_KEY = os.environ.get('PAYSCRIBE_API_KEY', 'ps_sk_live_B5sFjlLCGBiZx2GnlXu94bJpmpCmGU5i5c6')
 PAYSCRIBE_PUBLIC_KEY = os.environ.get('PAYSCRIBE_PUBLIC_KEY', 'ps_pk_live_FtQAcPMj4JfEYN98FNsEHZ31xer6IlqXmBZ')
 PAYSCRIBE_BASE_URL = os.environ.get('PAYSCRIBE_BASE_URL', 'https://api.payscribe.ng/api/v1')
+PAYSCRIBE_WEBHOOK_SECRET = os.environ.get('PAYSCRIBE_WEBHOOK_SECRET', '')
+
+def verify_payscribe_webhook_signature(payload_body: bytes, signature: str) -> bool:
+    """Verify Payscribe webhook signature using HMAC-SHA256.
+    
+    Args:
+        payload_body: Raw request body as bytes
+        signature: Signature from request header
+        
+    Returns:
+        True if signature is valid, False otherwise
+    """
+    if not PAYSCRIBE_WEBHOOK_SECRET:
+        logger.warning("PAYSCRIBE_WEBHOOK_SECRET not configured - skipping signature verification")
+        return True  # Skip verification if secret not configured
+    
+    if not signature:
+        logger.warning("No signature provided in webhook request")
+        return False
+    
+    # Compute expected signature using HMAC-SHA256
+    expected_signature = hmac.new(
+        PAYSCRIBE_WEBHOOK_SECRET.encode('utf-8'),
+        payload_body,
+        hashlib.sha256
+    ).hexdigest()
+    
+    # Use constant-time comparison to prevent timing attacks
+    try:
+        return hmac.compare_digest(expected_signature.lower(), signature.lower())
+    except Exception as e:
+        logger.error(f"Signature comparison error: {e}")
+        return False
 
 # SMS Provider Configs
 SMSPOOL_API_KEY = os.environ.get('SMSPOOL_API_KEY', 'ZNrdIWUS06ftzyb7ALO9XVWsfNhKmJT6')
