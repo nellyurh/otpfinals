@@ -11288,6 +11288,15 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
                 'tier': 3
             }
         
+        # Check if this NIN is already used by another user
+        existing_nin_user = await db.users.find_one({
+            'id': {'$ne': user['id']},
+            'nin': request.nin,
+            'nin_verified': True
+        }, {'_id': 0, 'email': 1})
+        if existing_nin_user:
+            raise HTTPException(status_code=400, detail="This NIN is already registered with another account")
+        
         # Call Payscribe NIN lookup using correct KYC lookup endpoint (no fee - already paid with BVN)
         endpoint = f'kyc/lookup?type=nin&value={request.nin}'
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
