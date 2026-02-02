@@ -2597,6 +2597,43 @@ const NewDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Verification Address - Read Only (only shown if user has verification address) */}
+              {user.kyc_address && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h4 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-600" />
+                    Verification Address
+                    <span className="text-xs text-gray-400 font-normal">(Read-only)</span>
+                  </h4>
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Street Address</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.street || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">City</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.city || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">State</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.state || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Postal Code</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.postal_code || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Country</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.country || 'Nigeria'}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">This address was provided during KYC verification and cannot be edited. Contact support if you need to update it.</p>
+                  </div>
+                </div>
+              )}
+              
               <button
                 onClick={handleUpdateProfile}
                 disabled={savingProfile}
