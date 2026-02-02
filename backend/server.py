@@ -7429,7 +7429,7 @@ async def payscribe_card_webhook(request: Request):
                     request.headers.get('Signature')
         
         # Verify webhook signature
-        if PAYSCRIBE_WEBHOOK_SECRET and not verify_payscribe_webhook_signature(raw_body, signature):
+        if not await verify_payscribe_webhook_signature(raw_body, signature):
             logger.warning(f"Invalid Payscribe card webhook signature")
             return {'status': 'error', 'message': 'Invalid signature'}
         
