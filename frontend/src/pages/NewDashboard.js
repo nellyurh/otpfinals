@@ -830,10 +830,10 @@ const NewDashboard = () => {
             <div className="flex items-center gap-2">
               {/* Logo - use image if available */}
               {branding.brand_logo_url ? (
-                <img src={branding.brand_logo_url} alt="Logo" className="h-10 sm:h-12 object-contain" />
+                <img src={branding.brand_logo_url} alt="Logo" className="h-14 sm:h-16 lg:h-20 object-contain" />
               ) : (
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow" style={{ backgroundColor: branding.primary_color_hex || '#059669' }}>
-                  <Phone className="w-4 h-4 text-white" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow" style={{ backgroundColor: branding.primary_color_hex || '#059669' }}>
+                  <Phone className="w-5 h-5 text-white" />
                 </div>
               )}
             </div>
