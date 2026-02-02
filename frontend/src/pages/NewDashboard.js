@@ -4622,23 +4622,26 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
   // ============ CONVERT CURRENCY SECTION ============
   function ConvertCurrencySection() {
-    const [exchangeRate, setExchangeRate] = useState(1650);
+    const [usdToNgnRate, setUsdToNgnRate] = useState(1650);
+    const [ngnToUsdRate, setNgnToUsdRate] = useState(1500);
     const [convertAmount, setConvertAmount] = useState('');
     const [converting, setConverting] = useState(false);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [conversionDirection, setConversionDirection] = useState('usd-to-ngn'); // or 'ngn-to-usd'
 
     useEffect(() => {
-      fetchExchangeRate();
+      fetchExchangeRates();
       fetchConversionHistory();
     }, []);
 
-    const fetchExchangeRate = async () => {
+    const fetchExchangeRates = async () => {
       try {
         const resp = await axios.get(`${API}/api/wallet/exchange-rate`, axiosConfig);
-        setExchangeRate(resp.data.usd_to_ngn_rate || 1650);
+        setUsdToNgnRate(resp.data.usd_to_ngn_rate || 1650);
+        setNgnToUsdRate(resp.data.ngn_to_usd_rate || 1500);
       } catch (err) {
-        console.error('Failed to fetch exchange rate:', err);
+        console.error('Failed to fetch exchange rates:', err);
       }
     };
 
@@ -4646,7 +4649,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
       setLoading(true);
       try {
         const resp = await axios.get(`${API}/api/transactions/list`, axiosConfig);
-        const conversions = (resp.data.transactions || []).filter(t => t.type === 'currency_conversion');
+        const conversions = (resp.data.transactions || []).filter(t => t.type === 'currency_conversion' || t.type === 'conversion');
         setTransactions(conversions.slice(0, 10));
       } catch (err) {
         console.error('Failed to fetch conversion history:', err);
@@ -4656,17 +4659,36 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
     const handleConvert = async () => {
       if (!convertAmount || parseFloat(convertAmount) <= 0) return;
-      if (parseFloat(convertAmount) > (user?.usd_balance || 0)) {
-        toast.error('Insufficient USD balance');
-        return;
+      
+      const amount = parseFloat(convertAmount);
+      
+      if (conversionDirection === 'usd-to-ngn') {
+        if (amount > (user?.usd_balance || 0)) {
+          toast.error('Insufficient USD balance');
+          return;
+        }
+      } else {
+        if (amount > (user?.ngn_balance || 0)) {
+          toast.error('Insufficient NGN balance');
+          return;
+        }
       }
+      
       setConverting(true);
       try {
-        const resp = await axios.post(`${API}/api/wallet/convert-usd-to-ngn`, 
-          { amount_usd: parseFloat(convertAmount) }, 
-          axiosConfig
-        );
-        toast.success(`Successfully converted $${convertAmount} to ₦${resp.data.amount_ngn_added.toLocaleString()}`);
+        if (conversionDirection === 'usd-to-ngn') {
+          const resp = await axios.post(`${API}/api/wallet/convert-usd-to-ngn`, 
+            { amount_usd: amount }, 
+            axiosConfig
+          );
+          toast.success(`Successfully converted $${amount.toFixed(2)} to ₦${resp.data.amount_ngn_added?.toLocaleString()}`);
+        } else {
+          const resp = await axios.post(`${API}/api/wallet/convert-ngn-to-usd`, 
+            { amount_ngn: amount }, 
+            axiosConfig
+          );
+          toast.success(`Successfully converted ₦${amount.toLocaleString()} to $${resp.data.usd_received?.toFixed(2)}`);
+        }
         setConvertAmount('');
         fetchProfile();
         fetchConversionHistory();
@@ -4676,13 +4698,22 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
       setConverting(false);
     };
 
-    const ngnPreview = convertAmount ? (parseFloat(convertAmount) * exchangeRate) : 0;
+    const previewAmount = convertAmount ? (
+      conversionDirection === 'usd-to-ngn' 
+        ? parseFloat(convertAmount) * usdToNgnRate
+        : parseFloat(convertAmount) / ngnToUsdRate
+    ) : 0;
+
+    const sourceBalance = conversionDirection === 'usd-to-ngn' ? user?.usd_balance || 0 : user?.ngn_balance || 0;
+    const sourceCurrency = conversionDirection === 'usd-to-ngn' ? 'USD' : 'NGN';
+    const targetCurrency = conversionDirection === 'usd-to-ngn' ? 'NGN' : 'USD';
+    const currentRate = conversionDirection === 'usd-to-ngn' ? usdToNgnRate : ngnToUsdRate;
 
     return (
       <div className="space-y-6">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Convert Currency</h2>
-          <p className="text-xs sm:text-sm text-gray-600">Convert your USD balance to NGN</p>
+          <p className="text-xs sm:text-sm text-gray-600">Convert between USD and NGN</p>
         </div>
 
         {/* Balance Cards */}
@@ -4703,51 +4734,131 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
           </div>
         </div>
 
+        {/* Conversion Direction Toggle */}
+        <div className="bg-white rounded-xl border p-4">
+          <p className="text-sm font-medium text-gray-700 mb-3">Select Conversion Type</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => { setConversionDirection('usd-to-ngn'); setConvertAmount(''); }}
+              className={`py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                conversionDirection === 'usd-to-ngn' 
+                  ? 'text-white shadow-lg' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              style={conversionDirection === 'usd-to-ngn' ? { backgroundColor: branding.primary_color_hex || '#059669' } : {}}
+            >
+              <span className="text-lg">$</span> → <span className="text-lg">₦</span>
+              <span className="hidden sm:inline ml-1">USD to NGN</span>
+            </button>
+            <button
+              onClick={() => { setConversionDirection('ngn-to-usd'); setConvertAmount(''); }}
+              className={`py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
+                conversionDirection === 'ngn-to-usd' 
+                  ? 'text-white shadow-lg' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              style={conversionDirection === 'ngn-to-usd' ? { backgroundColor: branding.accent_color_hex || '#7c3aed' } : {}}
+            >
+              <span className="text-lg">₦</span> → <span className="text-lg">$</span>
+              <span className="hidden sm:inline ml-1">NGN to USD</span>
+            </button>
+          </div>
+        </div>
+
         {/* Exchange Rate Info */}
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <div className="flex items-center gap-2">
             <RefreshCw className="w-5 h-5 text-amber-600" />
-            <span className="font-semibold text-amber-800">Current Exchange Rate</span>
+            <span className="font-semibold text-amber-800">Current Exchange Rates</span>
           </div>
-          <p className="text-2xl font-bold text-amber-900 mt-2">$1 = ₦{exchangeRate.toLocaleString()}</p>
-          <p className="text-xs text-amber-600 mt-1">Rate is set by admin and may change</p>
+          <div className="grid grid-cols-2 gap-4 mt-3">
+            <div>
+              <p className="text-xs text-amber-600">USD → NGN</p>
+              <p className="text-lg font-bold text-amber-900">$1 = ₦{usdToNgnRate.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-xs text-amber-600">NGN → USD</p>
+              <p className="text-lg font-bold text-amber-900">₦{ngnToUsdRate.toLocaleString()} = $1</p>
+            </div>
+          </div>
+          <p className="text-xs text-amber-600 mt-2">Rates are set by admin and may change</p>
         </div>
 
         {/* Conversion Form */}
         <div className="bg-white rounded-xl border p-6">
-          <h3 className="font-bold text-gray-900 mb-4">Convert USD to NGN</h3>
+          <h3 className="font-bold text-gray-900 mb-4">
+            Convert {sourceCurrency} to {targetCurrency}
+          </h3>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Amount ({sourceCurrency})
+              </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  {conversionDirection === 'usd-to-ngn' ? '$' : '₦'}
+                </span>
                 <input
                   type="number"
                   value={convertAmount}
                   onChange={(e) => setConvertAmount(e.target.value)}
                   placeholder="0.00"
                   className="w-full pl-8 pr-4 py-3 border rounded-lg text-lg"
-                  max={user?.usd_balance || 0}
-                  step="0.01"
+                  max={sourceBalance}
+                  step={conversionDirection === 'usd-to-ngn' ? '0.01' : '1'}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Available: ${(user?.usd_balance || 0).toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Available: {conversionDirection === 'usd-to-ngn' 
+                  ? `$${sourceBalance.toFixed(2)}` 
+                  : `₦${sourceBalance.toLocaleString()}`}
+              </p>
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {(conversionDirection === 'usd-to-ngn' 
+                ? ['5', '10', '50', '100'] 
+                : ['5000', '10000', '50000', '100000']
+              ).map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setConvertAmount(preset)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    convertAmount === preset 
+                      ? 'text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  style={convertAmount === preset ? { backgroundColor: branding.primary_color_hex || '#059669' } : {}}
+                >
+                  {conversionDirection === 'usd-to-ngn' ? `$${preset}` : `₦${parseInt(preset).toLocaleString()}`}
+                </button>
+              ))}
             </div>
 
             {/* Preview */}
             {convertAmount && parseFloat(convertAmount) > 0 && (
               <div className="bg-emerald-50 rounded-lg p-4">
                 <p className="text-sm text-gray-600">You will receive:</p>
-                <p className="text-2xl font-bold text-emerald-700">₦{ngnPreview.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-emerald-700">
+                  {conversionDirection === 'usd-to-ngn' 
+                    ? `₦${previewAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+                    : `$${previewAmount.toFixed(2)}`}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Rate: {conversionDirection === 'usd-to-ngn' 
+                    ? `$1 = ₦${currentRate.toLocaleString()}`
+                    : `₦${currentRate.toLocaleString()} = $1`}
+                </p>
               </div>
             )}
 
             <button
               onClick={handleConvert}
-              disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0 || parseFloat(convertAmount) > (user?.usd_balance || 0)}
-              className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ backgroundColor: branding.button_color_hex || '#059669' }}
+              disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0 || parseFloat(convertAmount) > sourceBalance}
+              className="w-full py-3 text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ backgroundColor: conversionDirection === 'usd-to-ngn' ? (branding.primary_color_hex || '#059669') : (branding.accent_color_hex || '#7c3aed') }}
             >
               {converting ? (
                 <>
@@ -4757,7 +4868,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               ) : (
                 <>
                   <RefreshCw className="w-5 h-5" />
-                  Convert to NGN
+                  Convert to {targetCurrency}
                 </>
               )}
             </button>
@@ -4782,8 +4893,15 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               {transactions.map((tx, idx) => (
                 <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">${Math.abs(tx.amount_usd || 0).toFixed(2)} → ₦{(tx.amount_ngn || 0).toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">Rate: ₦{tx.exchange_rate?.toLocaleString() || exchangeRate.toLocaleString()}/USD</p>
+                    <p className="font-medium text-gray-900">
+                      {tx.amount_usd !== undefined && tx.amount_usd < 0
+                        ? `$${Math.abs(tx.amount_usd || 0).toFixed(2)} → ₦${(tx.amount_ngn || tx.amount || 0).toLocaleString()}`
+                        : tx.metadata?.usd_received 
+                          ? `₦${(tx.amount || 0).toLocaleString()} → $${tx.metadata.usd_received.toFixed(2)}`
+                          : `$${Math.abs(tx.amount_usd || 0).toFixed(2)} → ₦${(tx.amount_ngn || 0).toLocaleString()}`
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500">Rate: ₦{(tx.exchange_rate || tx.metadata?.rate || usdToNgnRate)?.toLocaleString()}/USD</p>
                   </div>
                   <div className="text-right">
                     <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Completed</span>
