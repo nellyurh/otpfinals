@@ -775,7 +775,9 @@ const AdminPanel = ({ user, setUser }) => {
     enable_wallet_transfer: true,
     // Master bill disable toggle
     disable_all_bills: false,
-    // Payment gateway toggles
+    // Master bank transfer disable toggle
+    disable_bank_transfer: false,
+    // Payment gateways
     enable_paymentpoint: true,
     enable_plisio: true,
     enable_ercaspay: true,
