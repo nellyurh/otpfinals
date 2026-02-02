@@ -1225,6 +1225,9 @@ class UpdatePricingRequest(BaseModel):
     enable_profile: Optional[bool] = None
     enable_support: Optional[bool] = None
 
+    # Master bill disable toggle
+    disable_all_bills: Optional[bool] = None
+
     # Reseller settings
     reseller_api_base_url: Optional[str] = None
 
