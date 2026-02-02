@@ -773,6 +773,8 @@ const AdminPanel = ({ user, setUser }) => {
     enable_tv: true,
     enable_bank_transfer: true,
     enable_wallet_transfer: true,
+    // Master bill disable toggle
+    disable_all_bills: false,
     // Payment gateway toggles
     enable_paymentpoint: true,
     enable_plisio: true,
