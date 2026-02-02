@@ -1,0 +1,67 @@
+{
+  "summary": "Completed testing of iteration 15 features for BillHub financial services app. All 8 features tested and verified working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration15_features.py",
+    "/app/test_reports/pytest/pytest_results_iter15.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration15_features.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "admin_email": "admin@smsrelay.com",
+    "admin_password": "admin123"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All iteration 15 features verified: 1) Virtual Card shows only logo without brand name text, 2) Admin Panel has 'Disable Bank Transfer' toggle with orange card styling, 3) BVN/NIN verification endpoints validate input and check for duplicates, 4) Both USD→NGN and NGN→USD exchange rates are editable in admin panel, 5) User Profile shows read-only 'Verification Address' section when kyc_address exists, 6) Bank Transfer is correctly hidden from Bills Payment when disable_bank_transfer is true, 7) User profile API returns kyc_address field",
+  "features_tested": {
+    "virtual_card_logo_only": {
+      "status": "PASS",
+      "details": "Virtual card displays only the brand logo image without brand name text next to it"
+    },
+    "admin_disable_bank_transfer_toggle": {
+      "status": "PASS",
+      "details": "Admin Panel has orange 'Disable Bank Transfer' toggle card with proper styling and functionality"
+    },
+    "bvn_duplicate_check": {
+      "status": "PASS",
+      "details": "BVN verification endpoint validates 11-digit format and checks for duplicates"
+    },
+    "nin_duplicate_check": {
+      "status": "PASS",
+      "details": "NIN verification endpoint validates 11-digit format and checks for duplicates"
+    },
+    "both_exchange_rates_editable": {
+      "status": "PASS",
+      "details": "Admin panel has both USD→NGN (wallet_usd_to_ngn_rate, giftcard_usd_to_ngn_rate) and NGN→USD (ngn_to_usd_rate) rate inputs"
+    },
+    "verification_address_readonly": {
+      "status": "PASS",
+      "details": "Profile page conditionally shows read-only 'Verification Address' section when user has kyc_address (from Tier 3 NIN verification)"
+    },
+    "bank_transfer_hidden_when_disabled": {
+      "status": "PASS",
+      "details": "Bank Transfer option is correctly hidden from Bills Payment when disable_bank_transfer is true"
+    },
+    "profile_returns_kyc_address": {
+      "status": "PASS",
+      "details": "User profile API endpoint returns kyc_address field"
+    }
+  }
+}
