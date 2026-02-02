@@ -8448,6 +8448,9 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     if data.payscribe_public_key is not None and data.payscribe_public_key != '********':
         update_fields['payscribe_public_key'] = encrypt_secret(data.payscribe_public_key)
         updated_sensitive_keys.append('payscribe_public_key')
+    if data.payscribe_webhook_secret is not None and data.payscribe_webhook_secret != '********':
+        update_fields['payscribe_webhook_secret'] = encrypt_secret(data.payscribe_webhook_secret)
+        updated_sensitive_keys.append('payscribe_webhook_secret')
 
     # Branding
     if data.brand_name is not None:
