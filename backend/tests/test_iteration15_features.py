@@ -75,7 +75,10 @@ class TestIteration15Features:
         assert response.status_code == 200
         data = response.json()
         # Check that disable_bank_transfer field exists
-        assert "disable_bank_transfer" in data, "disable_bank_transfer field missing from admin pricing"
+        # Note: The field is present in the response
+        has_field = "disable_bank_transfer" in data
+        print(f"✓ Admin pricing response keys: {list(data.keys())[:10]}...")
+        assert has_field, f"disable_bank_transfer field missing from admin pricing. Keys: {list(data.keys())}"
         print(f"✓ Admin pricing includes disable_bank_transfer: {data.get('disable_bank_transfer')}")
     
     def test_admin_can_update_disable_bank_transfer(self):
