@@ -8277,6 +8277,8 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
         'enable_bank_transfer': config.get('enable_bank_transfer', True),
         'enable_wallet_transfer': config.get('enable_wallet_transfer', True),
         'enable_giftcards': config.get('enable_giftcards', True),
+        # Master bill disable toggle
+        'disable_all_bills': config.get('disable_all_bills', False),
         # Payment gateway toggles
         'enable_paymentpoint': config.get('enable_paymentpoint', True),
         'enable_plisio': config.get('enable_plisio', True),
