@@ -4130,9 +4130,19 @@ const AdminPanel = ({ user, setUser }) => {
                           className="h-9 text-sm bg-slate-50 border-slate-200"
                         />
                         <p className="text-[10px] text-slate-400">Rate users get when converting USD to NGN</p>
+                        <p className="text-xs text-purple-700 mt-1">Preview: $100 → ₦{((pricing.wallet_usd_to_ngn_rate || 1650) * 100).toLocaleString()}</p>
                       </div>
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <p className="text-xs text-purple-700">Preview: $100 converts to ₦{((pricing.wallet_usd_to_ngn_rate || 1650) * 100).toLocaleString()}</p>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Wallet NGN to USD Rate</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          value={pricing.ngn_to_usd_rate || 1500}
+                          onChange={(e) => setPricing({ ...pricing, ngn_to_usd_rate: parseFloat(e.target.value) || 1500 })}
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Rate users get when converting NGN to USD</p>
+                        <p className="text-xs text-emerald-700 mt-1">Preview: ₦{(pricing.ngn_to_usd_rate || 1500).toLocaleString()} → $1</p>
                       </div>
                     </div>
                   </CardContent>
