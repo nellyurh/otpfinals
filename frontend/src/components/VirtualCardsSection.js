@@ -40,15 +40,12 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
       <div className="flex items-center justify-between mb-4 relative z-10">
         <div className="flex items-center gap-2">
           {brandLogo ? (
-            <img src={brandLogo} alt={brandName} className="w-8 h-8 rounded-lg object-contain" />
+            <img src={brandLogo} alt="Card" className="h-10 w-auto max-w-[100px] rounded-lg object-contain" />
           ) : (
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cardDesign.id === 'classic' ? 'bg-blue-500' : 'bg-white/20'}`}>
               <CreditCard className={`w-4 h-4 ${cardDesign.id === 'classic' ? 'text-white' : cardDesign.textColor}`} />
             </div>
           )}
-          <span className={`font-bold ${compact ? 'text-sm' : 'text-lg'} ${cardDesign.textColor}`}>
-            {card?.alias || brandName}
-          </span>
         </div>
         {/* Visa style curve */}
         <div className="text-right">
