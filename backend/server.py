@@ -8245,7 +8245,7 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
         'ercaspay_secret_key', 'ercaspay_api_key',
         'plisio_secret_key', 'plisio_webhook_secret',
-        'payscribe_api_key', 'payscribe_public_key',
+        'payscribe_api_key', 'payscribe_public_key', 'payscribe_webhook_secret',
         'reloadly_client_id', 'reloadly_client_secret',  # Mask Reloadly credentials
         'smtp_email', 'smtp_password'  # Mask SMTP credentials
     ]:
