@@ -730,6 +730,9 @@ const NewDashboard = () => {
     fetchServicesForCountry();
   }, [selectedCountry]);
 
+  // Check if ALL bills are disabled via master toggle
+  const allBillsDisabled = pageToggles.disable_all_bills === true;
+
   const allMenuItems = [
     {
       category: 'OVERVIEW',
@@ -745,8 +748,10 @@ const NewDashboard = () => {
         { id: 'convert-currency', icon: RefreshCw, label: 'Convert Currency' },
         { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
         { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
-        { id: 'airtime', icon: Phone, label: 'Airtime', toggle: 'enable_airtime' },
-        { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', badge: 'NEW', toggle: 'enable_bills' },
+        ...(allBillsDisabled ? [] : [
+          { id: 'airtime', icon: Phone, label: 'Airtime', toggle: 'enable_airtime' },
+          { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', badge: 'NEW', toggle: 'enable_bills' },
+        ]),
         { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' }
       ]
     },
