@@ -8459,6 +8459,8 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'enable_support',
         # Master bill disable toggle
         'disable_all_bills',
+        # Master bank transfer disable toggle
+        'disable_bank_transfer',
         # Payment gateway toggles
         'enable_paymentpoint',
         'enable_plisio',
