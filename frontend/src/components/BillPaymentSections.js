@@ -421,17 +421,25 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 }
 
 // ============ Bills Payment Section (Landing Page with Service Cards) ============
-export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection, primaryColor = '#059669' }) {
+export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection, primaryColor = '#059669', pageToggles = {} }) {
   const [activeService, setActiveServiceLocal] = useState(null);
 
-  const billServices = [
+  // Check if bank transfer is disabled
+  const bankTransferDisabled = pageToggles.disable_bank_transfer === true;
+
+  const allBillServices = [
     { id: 'data', label: 'Buy Data', icon: Wifi, color: 'from-blue-500 to-cyan-500', description: 'Internet data bundles' },
     { id: 'electricity', label: 'Electricity', icon: Zap, color: 'from-yellow-500 to-orange-500', description: 'Pay electricity bills' },
     { id: 'tv', label: 'TV Subscription', icon: Tv, color: 'from-purple-500 to-pink-500', description: 'DSTV, GOtv, StarTimes' },
     { id: 'betting', label: 'Betting', icon: Gamepad2, color: 'from-red-500 to-rose-500', description: 'Fund betting wallets' },
     { id: 'transfer', label: 'Send Money', icon: Send, color: 'from-emerald-500 to-teal-500', description: 'Wallet to wallet transfer' },
-    { id: 'bank', label: 'Bank Transfer', icon: Building2, color: 'from-indigo-500 to-violet-500', description: 'Withdraw to bank account' },
+    { id: 'bank', label: 'Bank Transfer', icon: Building2, color: 'from-indigo-500 to-violet-500', description: 'Withdraw to bank account', isBankTransfer: true },
   ];
+
+  // Filter out bank transfer if disabled
+  const billServices = bankTransferDisabled 
+    ? allBillServices.filter(s => !s.isBankTransfer)
+    : allBillServices;
 
   if (activeService) {
     return (
