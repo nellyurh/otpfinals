@@ -1,6 +1,13 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-02 (Session 8 - Part 2)**: Virtual Card Cleanup + Bank Transfer Admin + BVN/NIN Duplicate Check
+  - FIXED: Virtual Card now shows only logo, removed brand name text from card display
+  - NEW: Admin toggle to disable Bank Transfer for ALL users (separate from bill payments toggle)
+  - NEW: BVN/NIN duplicate check - prevents same BVN/NIN from being used by multiple accounts
+  - NEW: Both exchange rates (USD→NGN and NGN→USD) are now editable from admin panel
+  - NEW: Verification address displayed read-only on user profile page (for Tier 3 users)
+  - FIXED: kyc_address now saved during NIN verification and returned in user profile
 - **2026-02-02 (Session 8)**: Critical Fixes + Currency Conversion + Admin Bill Toggle
   - FIXED: Bill payment service cards now navigate to bills-payment section (not blank page)
   - FIXED: Logo size in dashboard header increased (h-14 sm:h-16 lg:h-20)
@@ -53,6 +60,35 @@
 - **2026-01-25 (Session 1)**: KYC System Complete + Bank Transfer Feature + Admin Enhancements
 
 ## Latest Updates (February 2, 2026)
+
+### Session 8 Part 2 - Virtual Card + Bank Transfer Admin + KYC Security
+
+**Virtual Card Cleanup:**
+- Virtual card display now shows ONLY the logo image
+- Removed brand name text that appeared next to the logo
+- Cleaner, more professional card appearance
+
+**Admin Bank Transfer Toggle:**
+- Admin Panel → Page Toggles now has separate "Disable Bank Transfer" toggle (orange card)
+- When enabled, Bank Transfer option is hidden from Bills Payment section for ALL users
+- Separate from the "Disable ALL Bill Payments" toggle - allows granular control
+
+**BVN/NIN Duplicate Prevention:**
+- BVN verification now checks if BVN is already registered with another verified account
+- NIN verification now checks if NIN is already registered with another verified account
+- Returns clear error message: "This BVN/NIN is already registered with another account"
+
+**Exchange Rate Configuration:**
+- Admin panel now shows BOTH exchange rate inputs:
+  - USD → NGN rate (for wallet conversion)
+  - NGN → USD rate (for reverse conversion)
+- Preview amounts shown for each rate
+
+**Verification Address Display:**
+- User profile page now shows "Verification Address" section for Tier 3 verified users
+- Address is read-only (street, city, state, postal code, country)
+- Shows message explaining address cannot be edited - contact support to update
+- kyc_address is saved during NIN verification and returned via /api/user/profile
 
 ### Session 8 - Critical Fixes + Currency Conversion + Admin Bill Toggle
 
