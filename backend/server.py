@@ -7556,16 +7556,30 @@ async def payscribe_payout_webhook(request: Request):
     - payouts.failed: Payout failed
     """
     try:
-        # Verify webhook source IP (optional security check)
+        # Get raw body for signature verification
+        raw_body = await request.body()
+        
+        # Get signature from headers
+        signature = request.headers.get('X-Payscribe-Signature') or \
+                    request.headers.get('Webhook-Signature') or \
+                    request.headers.get('X-Signature') or \
+                    request.headers.get('Signature')
+        
+        # Verify webhook signature
+        if PAYSCRIBE_WEBHOOK_SECRET and not verify_payscribe_webhook_signature(raw_body, signature):
+            logger.warning(f"Invalid Payscribe payout webhook signature")
+            return {'status': 'error', 'message': 'Invalid signature'}
+        
+        # Verify webhook source IP (additional security check)
         client_ip = request.client.host
         forwarded_for = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
         source_ip = forwarded_for or client_ip
         
         # Log webhook receipt
-        logger.info(f"Payscribe payout webhook received from IP: {source_ip}")
+        logger.info(f"Payscribe payout webhook received (verified) from IP: {source_ip}")
         
         # Parse webhook payload
-        payload = await request.json()
+        payload = json.loads(raw_body)
         logger.info(f"Payscribe payout webhook payload: {payload}")
         
         # Extract key fields
