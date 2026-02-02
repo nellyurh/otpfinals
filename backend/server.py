@@ -1213,6 +1213,7 @@ class UpdatePricingRequest(BaseModel):
     plisio_webhook_secret: Optional[str] = None
     payscribe_api_key: Optional[str] = None
     payscribe_public_key: Optional[str] = None
+    payscribe_webhook_secret: Optional[str] = None
     
     # DaisySMS advanced options markup
     daisysms_advanced_markup: Optional[float] = None
