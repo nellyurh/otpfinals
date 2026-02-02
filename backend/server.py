@@ -618,9 +618,26 @@ PAYMENTPOINT_BASE_URL = os.environ.get('PAYMENTPOINT_BASE_URL', 'https://api.pay
 PAYSCRIBE_API_KEY = os.environ.get('PAYSCRIBE_API_KEY', 'ps_sk_live_B5sFjlLCGBiZx2GnlXu94bJpmpCmGU5i5c6')
 PAYSCRIBE_PUBLIC_KEY = os.environ.get('PAYSCRIBE_PUBLIC_KEY', 'ps_pk_live_FtQAcPMj4JfEYN98FNsEHZ31xer6IlqXmBZ')
 PAYSCRIBE_BASE_URL = os.environ.get('PAYSCRIBE_BASE_URL', 'https://api.payscribe.ng/api/v1')
-PAYSCRIBE_WEBHOOK_SECRET = os.environ.get('PAYSCRIBE_WEBHOOK_SECRET', '')
 
-def verify_payscribe_webhook_signature(payload_body: bytes, signature: str) -> bool:
+async def get_payscribe_webhook_secret():
+    """Get Payscribe webhook secret from database config."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        if config:
+            secret = config.get('payscribe_webhook_secret', '')
+            # Decrypt if encrypted
+            if secret and secret.startswith('gAAAAA'):
+                try:
+                    secret = decrypt_secret(secret)
+                except:
+                    pass
+            return secret
+        return ''
+    except Exception as e:
+        logger.error(f"Error getting webhook secret: {e}")
+        return ''
+
+async def verify_payscribe_webhook_signature(payload_body: bytes, signature: str) -> bool:
     """Verify Payscribe webhook signature using HMAC-SHA256.
     
     Args:
@@ -630,8 +647,10 @@ def verify_payscribe_webhook_signature(payload_body: bytes, signature: str) -> b
     Returns:
         True if signature is valid, False otherwise
     """
-    if not PAYSCRIBE_WEBHOOK_SECRET:
-        logger.warning("PAYSCRIBE_WEBHOOK_SECRET not configured - skipping signature verification")
+    webhook_secret = await get_payscribe_webhook_secret()
+    
+    if not webhook_secret:
+        logger.warning("Payscribe webhook secret not configured - skipping signature verification")
         return True  # Skip verification if secret not configured
     
     if not signature:
@@ -640,7 +659,7 @@ def verify_payscribe_webhook_signature(payload_body: bytes, signature: str) -> b
     
     # Compute expected signature using HMAC-SHA256
     expected_signature = hmac.new(
-        PAYSCRIBE_WEBHOOK_SECRET.encode('utf-8'),
+        webhook_secret.encode('utf-8'),
         payload_body,
         hashlib.sha256
     ).hexdigest()
