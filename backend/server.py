@@ -1228,6 +1228,9 @@ class UpdatePricingRequest(BaseModel):
     # Master bill disable toggle
     disable_all_bills: Optional[bool] = None
 
+    # Master bank transfer disable toggle
+    disable_bank_transfer: Optional[bool] = None
+
     # Reseller settings
     reseller_api_base_url: Optional[str] = None
 
