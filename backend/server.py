@@ -7400,13 +7400,24 @@ async def unfreeze_card(card_id: str, user: dict = Depends(get_current_user)):
 async def payscribe_card_webhook(request: Request):
     """Handle Payscribe card webhook events"""
     try:
-        # Verify IP (optional security)
-        client_ip = request.client.host if request.client else None
+        # Get raw body for signature verification
+        raw_body = await request.body()
         
-        payload = await request.json()
+        # Get signature from headers
+        signature = request.headers.get('X-Payscribe-Signature') or \
+                    request.headers.get('Webhook-Signature') or \
+                    request.headers.get('X-Signature') or \
+                    request.headers.get('Signature')
+        
+        # Verify webhook signature
+        if PAYSCRIBE_WEBHOOK_SECRET and not verify_payscribe_webhook_signature(raw_body, signature):
+            logger.warning(f"Invalid Payscribe card webhook signature")
+            return {'status': 'error', 'message': 'Invalid signature'}
+        
+        payload = json.loads(raw_body)
         event_type = payload.get('event_type', payload.get('event', ''))
         
-        logger.info(f"Payscribe card webhook received: {event_type}")
+        logger.info(f"Payscribe card webhook received (verified): {event_type}")
         logger.info(f"Webhook payload: {payload}")
         
         # Handle different event types
