@@ -2048,22 +2048,29 @@ const NewDashboard = () => {
     // Camera functions for selfie capture
     const startCamera = async () => {
       setCameraError('');
+      setShowCamera(true);
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
         });
         streamRef.current = stream;
-        setShowCamera(true);
-        // Wait for modal to render, then attach stream
-        setTimeout(() => {
+        // Attach stream immediately and retry if video not ready
+        const attachStream = () => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            videoRef.current.play().catch(e => console.log('Video play error:', e));
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current.play().catch(e => console.log('Video play error:', e));
+            };
+          } else {
+            // Retry after a short delay if ref not ready
+            setTimeout(attachStream, 50);
           }
-        }, 100);
+        };
+        attachStream();
       } catch (err) {
         console.error('Camera error:', err);
         setCameraError('Camera access denied. Please allow camera access to take a selfie.');
+        setShowCamera(false);
       }
     };
     
