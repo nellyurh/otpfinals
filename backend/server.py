@@ -10827,14 +10827,104 @@ async def get_exchange_rate(user: dict = Depends(get_current_user)):
     config = await db.pricing_config.find_one({})
     wallet_rate = config.get('wallet_usd_to_ngn_rate', 1650) if config else 1650
     giftcard_rate = config.get('giftcard_usd_to_ngn_rate', 1650) if config else 1650
+    ngn_to_usd_rate = config.get('ngn_to_usd_rate', 1500) if config else 1500
     
     return {
         "success": True,
         "usd_to_ngn_rate": wallet_rate,  # For wallet conversion
+        "ngn_to_usd_rate": ngn_to_usd_rate,  # For NGN to USD conversion
         "wallet_usd_to_ngn_rate": wallet_rate,
         "giftcard_usd_to_ngn_rate": giftcard_rate,
         "updated_at": config.get('updated_at', None) if config else None
     }
+
+
+class ConvertNgnToUsdRequest(BaseModel):
+    amount_ngn: float
+
+@api_router.post("/wallet/convert-ngn-to-usd")
+async def convert_ngn_to_usd_wallet(request: ConvertNgnToUsdRequest, user: dict = Depends(get_current_user)):
+    """Convert user's NGN balance to USD"""
+    try:
+        amount_ngn = request.amount_ngn
+        
+        if amount_ngn <= 0:
+            raise HTTPException(status_code=400, detail="Amount must be greater than 0")
+        
+        user_id = user.get('id')
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found")
+            
+        user_data = await db.users.find_one({'id': user_id})
+        
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        current_ngn = user_data.get('ngn_balance', 0)
+        if current_ngn < amount_ngn:
+            raise HTTPException(status_code=400, detail=f"Insufficient NGN balance. Available: ₦{current_ngn:,.2f}")
+        
+        # Get NGN to USD exchange rate from config
+        config = await db.pricing_config.find_one({})
+        ngn_to_usd_rate = config.get('ngn_to_usd_rate', 1500) if config else 1500
+        
+        # Calculate USD amount (NGN / rate = USD)
+        amount_usd = round(amount_ngn / ngn_to_usd_rate, 2)
+        
+        # Get balance before for transaction record
+        balance_ngn_before = current_ngn
+        balance_usd_before = user_data.get('usd_balance', 0)
+        
+        # Update balances
+        await db.users.update_one(
+            {'id': user_id},
+            {
+                '$inc': {
+                    'ngn_balance': -amount_ngn,
+                    'usd_balance': amount_usd
+                }
+            }
+        )
+        
+        # Record transaction
+        transaction = {
+            'id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'type': 'currency_conversion',
+            'amount': -amount_ngn,
+            'currency': 'NGN',
+            'amount_usd': amount_usd,
+            'amount_ngn': -amount_ngn,
+            'balance_before': balance_ngn_before,
+            'balance_after': balance_ngn_before - amount_ngn,
+            'exchange_rate': ngn_to_usd_rate,
+            'description': f"Converted ₦{amount_ngn:,.2f} NGN to ${amount_usd:.2f} USD",
+            'status': 'completed',
+            'metadata': {
+                'direction': 'ngn_to_usd',
+                'usd_received': amount_usd,
+                'rate': ngn_to_usd_rate
+            },
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(transaction)
+        
+        # Get updated balances
+        updated_user = await db.users.find_one({'id': user_id})
+        
+        return {
+            "success": True,
+            "message": f"Successfully converted ₦{amount_ngn:,.2f} to ${amount_usd:.2f}",
+            "ngn_deducted": amount_ngn,
+            "usd_received": amount_usd,
+            "exchange_rate": ngn_to_usd_rate,
+            "new_balance_ngn": updated_user.get('ngn_balance', 0),
+            "new_balance_usd": updated_user.get('usd_balance', 0)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
 
 
 # ============ KYC Verification Endpoints ============
