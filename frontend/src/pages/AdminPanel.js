@@ -3916,6 +3916,17 @@ const AdminPanel = ({ user, setUser }) => {
                             className="mt-1 h-9 text-xs"
                           />
                         </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-700">Webhook Secret (ps_live_...)</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Payscribe Webhook Secret"
+                            value={pricing.payscribe_webhook_secret || ''}
+                            onChange={(e) => setPricing({ ...pricing, payscribe_webhook_secret: e.target.value })}
+                            className="mt-1 h-9 text-xs"
+                          />
+                          <p className="text-[10px] text-purple-600 mt-1">Used to verify webhook signatures. Get this from Payscribe dashboard → Webhooks.</p>
+                        </div>
                         <p className="text-[10px] text-slate-500">
                           Get keys from your Payscribe dashboard. Remember to whitelist your server IP.
                         </p>
