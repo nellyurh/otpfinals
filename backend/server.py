@@ -11333,17 +11333,31 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
             raise HTTPException(status_code=400, detail=". ".join(errors))
         
         # Upgrade to Tier 3 (no fee deduction - already paid)
+        # Also save the KYC address for display purposes
+        kyc_address_data = None
+        if request.address:
+            kyc_address_data = {
+                'street': request.address.street,
+                'city': request.address.city,
+                'state': request.address.state,
+                'postal_code': request.address.postal_code or '100001',
+                'country': request.address.country or 'NG',
+                'verified_at': datetime.now(timezone.utc).isoformat()
+            }
+        
+        update_data = {
+            'nin': request.nin,
+            'nin_verified': True,
+            'nin_verified_at': datetime.now(timezone.utc).isoformat(),
+            'tier': 3,
+            'tier3_verified_at': datetime.now(timezone.utc).isoformat()
+        }
+        if kyc_address_data:
+            update_data['kyc_address'] = kyc_address_data
+        
         await db.users.update_one(
             {'id': user['id']},
-            {
-                '$set': {
-                    'nin': request.nin,
-                    'nin_verified': True,
-                    'nin_verified_at': datetime.now(timezone.utc).isoformat(),
-                    'tier': 3,
-                    'tier3_verified_at': datetime.now(timezone.utc).isoformat()
-                }
-            }
+            {'$set': update_data}
         )
         
         # Create Payscribe customer for virtual card access
