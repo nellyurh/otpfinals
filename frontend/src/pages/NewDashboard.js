@@ -1146,31 +1146,39 @@ const NewDashboard = () => {
         <img src="https://flagcdn.com/w40/ng.png" alt="Nigeria" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
       </div>
     );
+
+    // Check if all bills disabled from parent scope
+    const billsHidden = pageToggles.disable_all_bills === true;
     
-    const serviceCards = [
-      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: CountryFlags, bgColor: 'bg-gradient-to-br from-emerald-50 to-green-100', iconBg: 'bg-transparent', isCustomIcon: true },
-      { name: 'Internet Data', action: () => setActiveSection('bills-payment'), bgColor: 'bg-gradient-to-br from-blue-50 to-sky-100', iconBg: 'bg-blue-500', icon: () => (
+    const allServiceCards = [
+      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: CountryFlags, bgColor: 'bg-gradient-to-br from-emerald-50 to-green-100', iconBg: 'bg-transparent', isCustomIcon: true, isBill: false },
+      { name: 'Internet Data', action: () => setActiveSection('bills-payment'), bgColor: 'bg-gradient-to-br from-blue-50 to-sky-100', iconBg: 'bg-blue-500', isBill: true, icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
         </svg>
       )},
-      { name: 'TV Sub', action: () => setActiveSection('bills-payment'), bgColor: 'bg-gradient-to-br from-purple-50 to-violet-100', iconBg: 'bg-purple-500', icon: () => (
+      { name: 'TV Sub', action: () => setActiveSection('bills-payment'), bgColor: 'bg-gradient-to-br from-purple-50 to-violet-100', iconBg: 'bg-purple-500', isBill: true, icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       )},
-      { name: 'Airtime', action: () => setActiveSection('airtime'), bgColor: 'bg-gradient-to-br from-orange-50 to-amber-100', iconBg: 'bg-orange-500', icon: () => (
+      { name: 'Airtime', action: () => setActiveSection('airtime'), bgColor: 'bg-gradient-to-br from-orange-50 to-amber-100', iconBg: 'bg-orange-500', isBill: true, icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
         </svg>
       )},
-      { name: 'Electricity', action: () => setActiveSection('bills-payment'), bgColor: 'bg-gradient-to-br from-yellow-50 to-amber-100', iconBg: 'bg-yellow-500', icon: () => (
+      { name: 'Electricity', action: () => setActiveSection('bills-payment'), bgColor: 'bg-gradient-to-br from-yellow-50 to-amber-100', iconBg: 'bg-yellow-500', isBill: true, icon: () => (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       )},
-      { name: 'Virtual Cards', action: () => setActiveSection('virtual-cards'), icon: CreditCard, bgColor: 'bg-gradient-to-br from-pink-50 to-rose-100', iconBg: 'bg-pink-500' },
+      { name: 'Virtual Cards', action: () => setActiveSection('virtual-cards'), icon: CreditCard, bgColor: 'bg-gradient-to-br from-pink-50 to-rose-100', iconBg: 'bg-pink-500', isBill: false },
     ];
+
+    // Filter out bill services if disabled
+    const serviceCards = billsHidden 
+      ? allServiceCards.filter(s => !s.isBill)
+      : allServiceCards;
 
     return (
       <div className="space-y-5 sm:space-y-6">
