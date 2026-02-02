@@ -5412,12 +5412,26 @@ async def payscribe_webhook(request: Request):
         "transaction_hash": "..."
     }
     """
+    # Get raw body for signature verification
+    raw_body = await request.body()
+    
+    # Get signature from headers (try common header names)
+    signature = request.headers.get('X-Payscribe-Signature') or \
+                request.headers.get('Webhook-Signature') or \
+                request.headers.get('X-Signature') or \
+                request.headers.get('Signature')
+    
+    # Verify webhook signature
+    if PAYSCRIBE_WEBHOOK_SECRET and not verify_payscribe_webhook_signature(raw_body, signature):
+        logger.warning(f"Invalid Payscribe webhook signature. Headers: {dict(request.headers)}")
+        return {'status': 'error', 'message': 'Invalid signature'}
+    
     try:
-        payload = await request.json()
+        payload = json.loads(raw_body)
     except Exception:
         return {'status': 'error', 'message': 'Invalid JSON'}
     
-    logger.info(f"Payscribe webhook received: {payload}")
+    logger.info(f"Payscribe webhook received (verified): {payload}")
     
     # Extract payment info from Payscribe webhook
     event_type = payload.get('event_type', '')
