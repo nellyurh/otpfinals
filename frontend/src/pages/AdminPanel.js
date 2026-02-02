@@ -3558,6 +3558,32 @@ const AdminPanel = ({ user, setUser }) => {
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
                 </div>
+
+                {/* Master Bill Payment Toggle */}
+                <Card className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-white shadow-sm">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
+                          <Ban className="w-6 h-6 text-red-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-sm font-semibold text-red-900">Disable ALL Bill Payments</CardTitle>
+                          <p className="text-xs text-red-600 mt-0.5">Master toggle - completely hides Airtime, Data, Electricity, TV, Betting, Transfers from the dashboard</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={pageToggles.disable_all_bills || false}
+                        onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, disable_all_bills: val }))}
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <div className={`px-4 py-2 rounded-xl text-center font-semibold text-sm ${pageToggles.disable_all_bills ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                      {pageToggles.disable_all_bills ? '⛔ ALL BILL SERVICES HIDDEN FROM USERS' : '✅ BILL SERVICES VISIBLE TO USERS'}
+                    </div>
+                  </CardContent>
+                </Card>
                 
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
