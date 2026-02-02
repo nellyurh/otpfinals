@@ -1,6 +1,14 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-02 (Session 8)**: Critical Fixes + Currency Conversion + Admin Bill Toggle
+  - FIXED: Bill payment service cards now navigate to bills-payment section (not blank page)
+  - FIXED: Logo size in dashboard header increased (h-14 sm:h-16 lg:h-20)
+  - FIXED: Selfie camera stream attachment improved for live preview
+  - NEW: Bidirectional currency conversion (USD↔NGN)
+  - NEW: Admin can disable ALL bill payment services with master toggle
+  - NEW: Backend /api/wallet/convert-ngn-to-usd endpoint
+  - NEW: Exchange rate API returns both usd_to_ngn_rate and ngn_to_usd_rate
 - **2026-01-27 (Session 7)**: Admin Logo Upload + Card Min Funding Config + KYC Address Fields + Logo Size Control
   - NEW: Admin can upload brand logo from Admin Panel → Branding section
   - NEW: Uploaded logo is displayed on Virtual Cards instead of default "BillHub"
@@ -44,20 +52,28 @@
 - **2026-01-25 (Session 2)**: Payscribe API Fixes + Page Toggles + Payout Webhook
 - **2026-01-25 (Session 1)**: KYC System Complete + Bank Transfer Feature + Admin Enhancements
 
-## Latest Updates (January 27, 2026)
+## Latest Updates (February 2, 2026)
 
-### Session 7 - Admin Logo Upload + Card Min Funding + KYC Address Fields
+### Session 8 - Critical Fixes + Currency Conversion + Admin Bill Toggle
 
-**Admin Logo Upload:**
-- Admin Panel → Branding & Banners section now includes logo file upload
-- Supported formats: PNG, JPEG, WebP, SVG (max 5MB)
-- Uploaded logos are stored at `/app/backend/uploads/branding/`
-- Served via `/api/uploads/branding/{filename}`
-- Logo URL is stored in `pricing_config.brand_logo_url`
+**Bug Fixes:**
+- Bill payment service cards (Internet Data, TV Sub, Electricity) now correctly navigate to `bills-payment` section
+- Logo size in dashboard header increased from `h-10 sm:h-12` to `h-14 sm:h-16 lg:h-20`
+- Selfie camera stream attachment improved with retry logic and proper `onloadedmetadata` handling
 
-**Virtual Card Branding:**
-- Virtual Cards now display admin's uploaded logo instead of default "BillHub"
-- Card designs use `branding.brand_logo_url` and `branding.brand_name`
+**Bidirectional Currency Conversion:**
+- ConvertCurrencySection now has toggle between USD→NGN and NGN→USD modes
+- Shows both exchange rates ($1 = ₦1,650 and ₦1,500 = $1)
+- Quick amount presets adjusted per direction
+- Backend `/api/wallet/convert-ngn-to-usd` endpoint added
+
+**Admin Master Bill Toggle:**
+- Admin Panel → Page Toggles now has "Disable ALL Bill Payments" master toggle
+- When enabled, completely hides: Airtime, Data, Electricity, TV, Betting from dashboard
+- Affects both sidebar menu items and Quick Services cards
+- Clear status indicator: "⛔ ALL BILL SERVICES HIDDEN" or "✅ BILL SERVICES VISIBLE"
+
+## Previous Updates (January 27, 2026)
 - All card previews (promo page, wizard, card list) show the admin logo
 
 **Card Fee Configuration:**
