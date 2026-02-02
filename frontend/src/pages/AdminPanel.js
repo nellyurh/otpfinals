@@ -1345,6 +1345,8 @@ const AdminPanel = ({ user, setUser }) => {
         enable_wallet_transfer: response.data.enable_wallet_transfer !== false,
         // Master bill disable toggle
         disable_all_bills: response.data.disable_all_bills === true,
+        // Master bank transfer disable toggle
+        disable_bank_transfer: response.data.disable_bank_transfer === true,
         // Payment gateway toggles
         enable_ercaspay: response.data.enable_ercaspay !== false,
         enable_paymentpoint: response.data.enable_paymentpoint !== false,
