@@ -11160,6 +11160,15 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
                 'bvn_verified': True
             }
         
+        # Check if this BVN is already used by another user
+        existing_bvn_user = await db.users.find_one({
+            'id': {'$ne': user['id']},
+            'bvn': request.bvn,
+            'bvn_verified': True
+        }, {'_id': 0, 'email': 1})
+        if existing_bvn_user:
+            raise HTTPException(status_code=400, detail="This BVN is already registered with another account")
+        
         # Always check balance - fee is charged per attempt
         if db_user.get('ngn_balance', 0) < KYC_VERIFICATION_FEE:
             raise HTTPException(status_code=400, detail=f"Insufficient balance. Express KYC costs ₦{KYC_VERIFICATION_FEE} per attempt")
