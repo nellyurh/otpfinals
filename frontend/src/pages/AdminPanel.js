@@ -671,6 +671,8 @@ const AdminPanel = ({ user, setUser }) => {
     logo_height: 40,
     card_logo_width: 32,
     card_logo_height: 32,
+    // Homepage template selection
+    homepage_template: 'default', // 'default' or 'socialsms'
     primary_color_hex: '#059669',
     secondary_color_hex: '#10b981',
     accent_color_hex: '#7c3aed',
