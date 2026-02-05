@@ -5063,23 +5063,57 @@ const AdminPanel = ({ user, setUser }) => {
                     ) : (
                       <div className="space-y-3">
                         {branding.banner_images.map((banner, idx) => (
-                          <div key={banner.id || idx} className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <Label className="text-[10px] text-slate-500">Image URL</Label>
-                                <Input
-                                  value={banner.image_url}
-                                  onChange={(e) => {
-                                    const updated = [...branding.banner_images];
-                                    updated[idx].image_url = e.target.value;
-                                    setBranding({ ...branding, banner_images: updated });
-                                  }}
-                                  placeholder="https://..."
-                                  className="h-8 text-xs bg-white"
+                          <div key={banner.id || idx} className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
+                            {/* Banner Preview */}
+                            {banner.image_url && (
+                              <div className="w-24 h-16 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
+                                <img 
+                                  src={banner.image_url} 
+                                  alt={`Banner ${idx + 1}`} 
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => e.target.style.display = 'none'}
                                 />
                               </div>
+                            )}
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                               <div className="space-y-1">
-                                <Label className="text-[10px] text-slate-500">Link URL (optional)</Label>
+                                <Label className="text-[10px] text-slate-500">Image URL or Upload</Label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={banner.image_url}
+                                    onChange={(e) => {
+                                      const updated = [...branding.banner_images];
+                                      updated[idx].image_url = e.target.value;
+                                      setBranding({ ...branding, banner_images: updated });
+                                    }}
+                                    placeholder="https://..."
+                                    className="h-8 text-xs bg-white flex-1"
+                                  />
+                                  <input
+                                    type="file"
+                                    ref={el => bannerInputRefs.current[idx] = el}
+                                    onChange={(e) => handleBannerUpload(e, idx)}
+                                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                                    className="hidden"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => bannerInputRefs.current[idx]?.click()}
+                                    disabled={uploadingBanner === idx}
+                                    className="h-8 px-2"
+                                  >
+                                    {uploadingBanner === idx ? (
+                                      <RefreshCw className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                      <Upload className="w-3 h-3" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px] text-slate-500">Link URL (optional - click destination)</Label>
                                 <Input
                                   value={banner.link_url || ''}
                                   onChange={(e) => {
