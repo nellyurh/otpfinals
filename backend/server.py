@@ -1226,6 +1226,7 @@ class UpdatePricingRequest(BaseModel):
     # Branding
     brand_name: Optional[str] = None
     brand_logo_url: Optional[str] = None
+    favicon_url: Optional[str] = None
     homepage_template: Optional[str] = None  # 'default' or 'socialsms'
     # SEO Settings
     seo_site_title: Optional[str] = None
