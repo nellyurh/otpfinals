@@ -202,7 +202,33 @@ const Landing = ({ setUser }) => {
 
   // If using SocialSMS template, render the alternate homepage
   if (homepageTemplate === 'socialsms') {
-    return <LandingSocialSMS branding={branding} />;
+    return <LandingSocialSMS 
+      branding={branding} 
+      setShowAuth={setShowAuth}
+      setIsLogin={setIsLogin}
+      showAuth={showAuth}
+      isLogin={isLogin}
+      // Pass all auth-related props
+      email={email}
+      setEmail={setEmail}
+      password={password}
+      setPassword={setPassword}
+      fullName={fullName}
+      setFullName={setFullName}
+      phone={phone}
+      setPhone={setPhone}
+      referralCode={referralCode}
+      setReferralCode={setReferralCode}
+      isLoading={isLoading}
+      handleAuth={handleAuth}
+      handleGoogleAuth={handleGoogleAuth}
+      showForgotPassword={showForgotPassword}
+      setShowForgotPassword={setShowForgotPassword}
+      forgotPasswordData={forgotPasswordData}
+      setForgotPasswordData={setForgotPasswordData}
+      handleForgotPassword={handleForgotPassword}
+      handleResetPassword={handleResetPassword}
+    />;
   }
 
   return (
