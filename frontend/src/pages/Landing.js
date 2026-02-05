@@ -208,26 +208,22 @@ const Landing = ({ setUser }) => {
       setIsLogin={setIsLogin}
       showAuth={showAuth}
       isLogin={isLogin}
-      // Pass all auth-related props
-      email={email}
-      setEmail={setEmail}
-      password={password}
-      setPassword={setPassword}
-      fullName={fullName}
-      setFullName={setFullName}
-      phone={phone}
-      setPhone={setPhone}
-      referralCode={referralCode}
-      setReferralCode={setReferralCode}
-      isLoading={isLoading}
-      handleAuth={handleAuth}
-      handleGoogleAuth={handleGoogleAuth}
+      loading={loading}
+      loginData={loginData}
+      setLoginData={setLoginData}
+      registerData={registerData}
+      setRegisterData={setRegisterData}
+      handleLogin={handleLogin}
+      handleRegister={handleRegister}
       showForgotPassword={showForgotPassword}
       setShowForgotPassword={setShowForgotPassword}
       forgotPasswordData={forgotPasswordData}
       setForgotPasswordData={setForgotPasswordData}
+      forgotPasswordStep={forgotPasswordStep}
+      setForgotPasswordStep={setForgotPasswordStep}
       handleForgotPassword={handleForgotPassword}
-      handleResetPassword={handleResetPassword}
+      primaryColor={primaryColor}
+      buttonColor={buttonColor}
     />;
   }
 
