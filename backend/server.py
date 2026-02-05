@@ -605,18 +605,24 @@ async def seed_database(request: Request):
 
 # Security
 security = HTTPBearer()
-JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+# SECURITY: JWT_SECRET must be set via environment variable in production
+# Generate a strong secret: python -c "import secrets; print(secrets.token_hex(32))"
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    logger.warning("JWT_SECRET not set! Using random secret (will invalidate tokens on restart)")
+    JWT_SECRET = secrets.token_hex(32)
 JWT_ALGORITHM = 'HS256'
+JWT_EXPIRATION_HOURS = 24  # Token expires after 24 hours
 
-# PaymentPoint Config
-PAYMENTPOINT_API_KEY = os.environ.get('PAYMENTPOINT_API_KEY', '17a9ea11d2f19173303f47028f19ec242f7f9739')
-PAYMENTPOINT_SECRET = os.environ.get('PAYMENTPOINT_SECRET', '99cb613937f1b0b7dcd8da8cec390113d9fb39e5f3313695dc5b84f7b4a9ae4e3dbfc3a41d306df37e1ad77efe9e8ecfc93fdddc58bebd18de11e840')
-PAYMENTPOINT_BUSINESS_ID = os.environ.get('PAYMENTPOINT_BUSINESS_ID', '143218f0fc1633fb89c021690d53bc710a4f4d27')
+# PaymentPoint Config - No defaults for security
+PAYMENTPOINT_API_KEY = os.environ.get('PAYMENTPOINT_API_KEY', '')
+PAYMENTPOINT_SECRET = os.environ.get('PAYMENTPOINT_SECRET', '')
+PAYMENTPOINT_BUSINESS_ID = os.environ.get('PAYMENTPOINT_BUSINESS_ID', '')
 PAYMENTPOINT_BASE_URL = os.environ.get('PAYMENTPOINT_BASE_URL', 'https://api.paymentpoint.co/api/v1')
 
-# Payscribe Config
-PAYSCRIBE_API_KEY = os.environ.get('PAYSCRIBE_API_KEY', 'ps_sk_live_B5sFjlLCGBiZx2GnlXu94bJpmpCmGU5i5c6')
-PAYSCRIBE_PUBLIC_KEY = os.environ.get('PAYSCRIBE_PUBLIC_KEY', 'ps_pk_live_FtQAcPMj4JfEYN98FNsEHZ31xer6IlqXmBZ')
+# Payscribe Config - No defaults for security
+PAYSCRIBE_API_KEY = os.environ.get('PAYSCRIBE_API_KEY', '')
+PAYSCRIBE_PUBLIC_KEY = os.environ.get('PAYSCRIBE_PUBLIC_KEY', '')
 PAYSCRIBE_BASE_URL = os.environ.get('PAYSCRIBE_BASE_URL', 'https://api.payscribe.ng/api/v1')
 
 async def get_payscribe_webhook_secret():
