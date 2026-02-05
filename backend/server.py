@@ -11557,7 +11557,105 @@ async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(r
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/admin/upload-banner")
+async def upload_admin_banner(file: UploadFile = File(...), user: dict = Depends(require_admin)):
+    """Upload banner image for the dashboard carousel"""
+    try:
+        # Validate file type
+        allowed_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, WebP")
+        
+        # Create uploads directory
+        upload_dir = Path("/app/backend/uploads/banners")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename
+        ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+        banner_filename = f"banner_{uuid.uuid4().hex[:8]}.{ext}"
+        banner_path = upload_dir / banner_filename
+        
+        # Save file
+        content = await file.read()
+        with open(banner_path, "wb") as f:
+            f.write(content)
+        
+        # Get base URL
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', '')
+        banner_url = f"{base_url}/api/uploads/banners/{banner_filename}"
+        
+        logger.info(f"Admin banner uploaded: {banner_filename}")
+        
+        return {
+            'success': True,
+            'banner_url': banner_url,
+            'message': 'Banner uploaded successfully'
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading banner: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/admin/upload-favicon")
+async def upload_admin_favicon(file: UploadFile = File(...), user: dict = Depends(require_admin)):
+    """Upload favicon for the platform"""
+    try:
+        # Validate file type - favicons are typically ICO, PNG, or SVG
+        allowed_types = ['image/png', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml', 'image/jpeg']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, ICO, SVG, JPEG")
+        
+        # Create uploads directory
+        upload_dir = Path("/app/backend/uploads/branding")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename
+        ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+        favicon_filename = f"favicon_{uuid.uuid4().hex[:8]}.{ext}"
+        favicon_path = upload_dir / favicon_filename
+        
+        # Save file
+        content = await file.read()
+        with open(favicon_path, "wb") as f:
+            f.write(content)
+        
+        # Get base URL
+        base_url = os.environ.get('REACT_APP_BACKEND_URL', '')
+        favicon_url = f"{base_url}/api/uploads/branding/{favicon_filename}"
+        
+        # Update branding config in database
+        await db.pricing_config.update_one(
+            {},
+            {'$set': {'favicon_url': favicon_url}},
+            upsert=True
+        )
+        
+        logger.info(f"Admin favicon uploaded: {favicon_filename}")
+        
+        return {
+            'success': True,
+            'favicon_url': favicon_url,
+            'message': 'Favicon uploaded successfully'
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading favicon: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 app.include_router(api_router)
+
+# Serve banner assets
+@app.get("/api/uploads/banners/{filename}")
+async def serve_banner_file(filename: str):
+    """Serve uploaded banner images"""
+    file_path = Path("/app/backend/uploads/banners") / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
 
 # Serve branding assets (logos)
 @app.get("/api/uploads/branding/{filename}")
