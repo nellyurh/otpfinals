@@ -11664,7 +11664,19 @@ app.include_router(api_router)
 @app.get("/api/uploads/banners/{filename}")
 async def serve_banner_file(filename: str):
     """Serve uploaded banner images"""
-    file_path = Path("/app/backend/uploads/banners") / filename
+    # SECURITY: Prevent path traversal attacks
+    safe_filename = Path(filename).name  # Extract only the filename, remove any path components
+    if safe_filename != filename or '..' in filename or filename.startswith('/'):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    
+    file_path = Path("/app/backend/uploads/banners") / safe_filename
+    
+    # SECURITY: Verify the resolved path is within the allowed directory
+    try:
+        file_path.resolve().relative_to(Path("/app/backend/uploads/banners").resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)
@@ -11673,16 +11685,38 @@ async def serve_banner_file(filename: str):
 @app.get("/api/uploads/branding/{filename}")
 async def serve_branding_file(filename: str):
     """Serve uploaded branding assets (logos)"""
-    file_path = Path("/app/backend/uploads/branding") / filename
+    # SECURITY: Prevent path traversal attacks
+    safe_filename = Path(filename).name
+    if safe_filename != filename or '..' in filename or filename.startswith('/'):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    
+    file_path = Path("/app/backend/uploads/branding") / safe_filename
+    
+    try:
+        file_path.resolve().relative_to(Path("/app/backend/uploads/branding").resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)
 
-# Serve static KYC upload files
+# Serve static KYC upload files - REQUIRES ADMIN AUTH
 @app.get("/api/uploads/kyc/{filename}")
-async def serve_kyc_file(filename: str):
-    """Serve uploaded KYC documents (selfies, IDs)"""
-    file_path = Path("/app/backend/uploads/kyc") / filename
+async def serve_kyc_file(filename: str, user: dict = Depends(require_admin)):
+    """Serve uploaded KYC documents (selfies, IDs) - Admin only"""
+    # SECURITY: Prevent path traversal attacks
+    safe_filename = Path(filename).name
+    if safe_filename != filename or '..' in filename or filename.startswith('/'):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    
+    file_path = Path("/app/backend/uploads/kyc") / safe_filename
+    
+    try:
+        file_path.resolve().relative_to(Path("/app/backend/uploads/kyc").resolve())
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path)
