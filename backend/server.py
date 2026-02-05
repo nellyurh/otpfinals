@@ -11631,22 +11631,23 @@ async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(r
 async def upload_admin_banner(file: UploadFile = File(...), user: dict = Depends(require_admin)):
     """Upload banner image for the dashboard carousel"""
     try:
-        # Validate file type
+        # Validate file type using secure helper
         allowed_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
-        if file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, WebP")
+        ext = validate_upload_file(file, allowed_types, max_size_mb=5)
         
         # Create uploads directory
         upload_dir = Path("/app/backend/uploads/banners")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
-        # Generate filename
-        ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+        # Generate secure filename
         banner_filename = f"banner_{uuid.uuid4().hex[:8]}.{ext}"
         banner_path = upload_dir / banner_filename
         
-        # Save file
+        # Read and validate file size
         content = await file.read()
+        if len(content) > 5 * 1024 * 1024:  # 5MB
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+        
         with open(banner_path, "wb") as f:
             f.write(content)
         
