@@ -295,7 +295,7 @@ const LandingSocialSMS = ({ branding = {} }) => {
       {/* Testimonials Section */}
       <section style={{ background: 'white', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a', textAlign: 'center', marginBottom: '60px' }}>Why choose SocialSMSWrld?</h2>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a', textAlign: 'center', marginBottom: '60px' }}>Why choose {brandName}?</h2>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
             {[
