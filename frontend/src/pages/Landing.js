@@ -197,6 +197,14 @@ const Landing = ({ setUser }) => {
   const heroGradientTo = branding.hero_gradient_to || '#06b6d4';
   const headerBgColor = branding.header_bg_color_hex || '#ffffff';
 
+  // Check which homepage template to use
+  const homepageTemplate = branding.homepage_template || 'default';
+
+  // If using SocialSMS template, render the alternate homepage
+  if (homepageTemplate === 'socialsms') {
+    return <LandingSocialSMS branding={branding} />;
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation - Clean white with subtle shadow */}
