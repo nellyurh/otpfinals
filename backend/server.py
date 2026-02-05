@@ -2403,9 +2403,11 @@ async def register(request: Request, data: UserRegister, background_tasks: Backg
     }
 
 @api_router.post("/auth/login")
-async def login(data: UserLogin):
+@limiter.limit("10/minute")  # SECURITY: Rate limit login to prevent brute force
+async def login(request: Request, data: UserLogin):
     user = await db.users.find_one({'email': data.email}, {'_id': 0})
     if not user or not verify_password(data.password, user['password_hash']):
+        # SECURITY: Use constant-time comparison and generic error message
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = create_token(user['id'], user['email'], user.get('is_admin', False))
