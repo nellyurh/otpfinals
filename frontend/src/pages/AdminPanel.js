@@ -48,6 +48,7 @@ import {
   Send,
   Globe,
   Ban,
+  Upload,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
