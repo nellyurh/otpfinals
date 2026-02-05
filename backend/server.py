@@ -11673,22 +11673,23 @@ async def upload_admin_banner(file: UploadFile = File(...), user: dict = Depends
 async def upload_admin_favicon(file: UploadFile = File(...), user: dict = Depends(require_admin)):
     """Upload favicon for the platform"""
     try:
-        # Validate file type - favicons are typically ICO, PNG, or SVG
+        # Validate file type using secure helper
         allowed_types = ['image/png', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml', 'image/jpeg']
-        if file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, ICO, SVG, JPEG")
+        ext = validate_upload_file(file, allowed_types, max_size_mb=1)
         
         # Create uploads directory
         upload_dir = Path("/app/backend/uploads/branding")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
-        # Generate filename
-        ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+        # Generate secure filename
         favicon_filename = f"favicon_{uuid.uuid4().hex[:8]}.{ext}"
         favicon_path = upload_dir / favicon_filename
         
-        # Save file
+        # Read and validate file size (favicon should be small)
         content = await file.read()
+        if len(content) > 1 * 1024 * 1024:  # 1MB
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 1MB")
+        
         with open(favicon_path, "wb") as f:
             f.write(content)
         
