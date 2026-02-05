@@ -76,6 +76,16 @@ const Landing = ({ setUser }) => {
         setBranding(resp.data);
         // Cache for next page load
         localStorage.setItem('app_branding_cache', JSON.stringify(resp.data));
+        // Update favicon if set
+        if (resp.data.favicon_url) {
+          let link = document.querySelector("link[rel*='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+          }
+          link.href = resp.data.favicon_url;
+        }
       } catch (e) {
         // ignore
       }
