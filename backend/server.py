@@ -970,6 +970,7 @@ class PricingConfig(BaseModel):
     # Branding (admin editable)
     brand_name: str = "Social SMS WRLD"
     brand_logo_url: str = "https://cloudsmsservice.org/img/social_logo.png"
+    favicon_url: str = ""  # Favicon URL for the browser tab
     # Logo size settings (in pixels)
     logo_width: int = 120  # Width of logo in header/navbar
     logo_height: int = 40  # Height of logo in header/navbar
