@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Phone, Shield, Zap, Globe, DollarSign, Clock, ChevronRight, X, Wifi, Tv, Smartphone, Lightbulb, GraduationCap, ShieldCheck, Gift, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import LandingSocialSMS from './LandingSocialSMS';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
