@@ -5278,6 +5278,7 @@ const AdminPanel = ({ user, setUser }) => {
                                         <Button
                                           variant="outline"
                                           className="h-7 px-2 text-[11px] border-slate-200"
+                                          onClick={() => openUserEditor(u)}
                                         >
                                           Edit
                                         </Button>
