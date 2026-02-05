@@ -1,8 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 
-const LandingSocialSMS = ({ branding = {} }) => {
-  const navigate = useNavigate();
+const LandingSocialSMS = ({ 
+  branding = {},
+  setShowAuth,
+  setIsLogin,
+  showAuth,
+  isLogin,
+  email,
+  setEmail,
+  password,
+  setPassword,
+  fullName,
+  setFullName,
+  phone,
+  setPhone,
+  referralCode,
+  setReferralCode,
+  isLoading,
+  handleAuth,
+  handleGoogleAuth,
+  showForgotPassword,
+  setShowForgotPassword,
+  forgotPasswordData,
+  setForgotPasswordData,
+  handleForgotPassword,
+  handleResetPassword
+}) => {
   const [typingText, setTypingText] = useState('');
   const [textIndex, setTextIndex] = useState(0);
   
