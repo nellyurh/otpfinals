@@ -2340,7 +2340,8 @@ async def otp_polling_task(order_id: str):
 # ============ API Routes ============
 
 @api_router.post("/auth/register")
-async def register(data: UserRegister, background_tasks: BackgroundTasks):
+@limiter.limit("5/minute")  # SECURITY: Rate limit registration to prevent abuse
+async def register(request: Request, data: UserRegister, background_tasks: BackgroundTasks):
 
     # Validate phone number
     if not validate_nigerian_phone(data.phone):
