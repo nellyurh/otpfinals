@@ -404,8 +404,8 @@ const LandingSocialSMS = ({
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', marginBottom: '24px' }}>Start using our Services</h2>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <button onClick={() => navigate('/login')} style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>🔑 Login</button>
-            <button onClick={() => navigate('/register')} style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>📝 Register</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(true); }} data-testid="cta-login-btn" style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>🔑 Login</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="cta-register-btn" style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>📝 Register</button>
           </div>
         </div>
       </section>
