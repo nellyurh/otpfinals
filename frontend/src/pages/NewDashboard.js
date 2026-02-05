@@ -444,10 +444,12 @@ const NewDashboard = () => {
   };
 
   const handleLogout = () => {
+    // Clear all auth data immediately
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setUser(null);
-    window.location.href = '/';
+    localStorage.removeItem('branding');
+    // Use replace to prevent back button issues
+    window.location.replace('/');
   };
 
   // Crypto funding functions
