@@ -96,8 +96,8 @@ const LandingSocialSMS = ({
           </ul>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => navigate('/login')} style={{ background: 'transparent', border: 'none', color: '#1a1a1a', fontWeight: 500, fontSize: '15px', cursor: 'pointer' }}>Login</button>
-            <button onClick={() => navigate('/register')} style={{ background: primaryColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '15px', cursor: 'pointer' }}>Sign Up</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(true); }} style={{ background: 'transparent', border: 'none', color: '#1a1a1a', fontWeight: 500, fontSize: '15px', cursor: 'pointer' }}>Login</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: primaryColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '15px', cursor: 'pointer' }}>Sign Up</button>
           </div>
         </div>
       </nav>
