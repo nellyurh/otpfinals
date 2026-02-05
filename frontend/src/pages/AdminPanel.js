@@ -1392,6 +1392,7 @@ const AdminPanel = ({ user, setUser }) => {
       setBranding({
         brand_name: response.data.brand_name || 'Social SMS WRLD',
         brand_logo_url: response.data.brand_logo_url || 'https://cloudsmsservice.org/img/social_logo.png',
+        favicon_url: response.data.favicon_url || '',
         // Logo size settings
         logo_width: response.data.logo_width || 120,
         logo_height: response.data.logo_height || 40,
