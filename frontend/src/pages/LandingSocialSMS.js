@@ -242,7 +242,7 @@ const LandingSocialSMS = ({ branding = {} }) => {
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a' }}>
-              <span style={{ color: primaryColor }}>Features</span> of SocialSMSWrld
+              <span style={{ color: primaryColor }}>Features</span> of {brandName}
             </h2>
           </div>
           
