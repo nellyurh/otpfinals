@@ -1,6 +1,13 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-05 (Session 9)**: Favicon + Dynamic Banner Carousel Upload
+  - NEW: Favicon upload in Admin Panel (Branding & Banners section)
+  - NEW: Banner image file upload - each carousel banner can now be uploaded directly instead of just URL
+  - NEW: Banner preview thumbnail shown in admin panel
+  - ENHANCED: Dashboard carousel is fully dynamic - number of slides matches uploaded banners
+  - Backend endpoints added: `/api/admin/upload-favicon`, `/api/admin/upload-banner`
+  - Favicon automatically updates in browser tab when uploaded
 - **2026-02-05 (Session 9)**: Login/Signup Button Fix + Admin User Edit Fix
   - FIXED: Login and Sign Up buttons on `LandingSocialSMS.js` homepage now correctly open the auth modal
   - FIXED: Removed undefined variables (`email`, `setEmail`, etc.) that were causing ReferenceError
