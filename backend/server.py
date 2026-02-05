@@ -33,6 +33,11 @@ from email.mime.multipart import MIMEMultipart
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 # Setup logging first
 logging.basicConfig(level=logging.INFO)
@@ -40,6 +45,9 @@ logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# ============ Rate Limiter Setup ============
+limiter = Limiter(key_func=get_remote_address)
 
 # ============ Secrets Encryption ============
 # Master key for encrypting API keys at rest
