@@ -1,13 +1,16 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-02-05 (Session 9)**: Login/Signup Button Fix on SocialSMS Homepage
+- **2026-02-05 (Session 9)**: Login/Signup Button Fix + Admin User Edit Fix
   - FIXED: Login and Sign Up buttons on `LandingSocialSMS.js` homepage now correctly open the auth modal
   - FIXED: Removed undefined variables (`email`, `setEmail`, etc.) that were causing ReferenceError
   - FIXED: Replaced non-existent `navigate()` calls with proper `setShowAuth()` and `setIsLogin()` 
   - ADDED: Complete auth modal (login/register forms) to `LandingSocialSMS.js` component
   - ADDED: Forgot password modal to `LandingSocialSMS.js` component
-  - VERIFIED: All auth buttons (nav Login, nav Sign Up, hero Register Now, CTA Login, CTA Register) work correctly
+  - FIXED: Admin Panel user edit functionality was not working due to:
+    - `openUserEditor(u)` not being called when Edit button was clicked (editUser state not initialized)
+    - `saveUserEdits()` using async state (selectedUser) instead of direct user ID
+  - Solution: Added onClick handler to Edit button trigger, modified saveUserEdits to accept userId parameter
 - **2026-02-02 (Session 8 - Part 2)**: Virtual Card Cleanup + Bank Transfer Admin + BVN/NIN Duplicate Check
   - FIXED: Virtual Card now shows only logo, removed brand name text from card display
   - NEW: Admin toggle to disable Bank Transfer for ALL users (separate from bill payments toggle)
