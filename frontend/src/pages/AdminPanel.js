@@ -4602,6 +4602,45 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                         <p className="text-[10px] text-slate-400">PNG, JPG, WebP, or SVG. Max 5MB.</p>
                       </div>
+                      
+                      {/* Favicon Upload */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Favicon (Browser Tab Icon)</Label>
+                        <div className="flex items-center gap-2">
+                          {branding.favicon_url && (
+                            <img src={branding.favicon_url} alt="Favicon" className="w-8 h-8 object-contain border rounded p-0.5" />
+                          )}
+                          <Input
+                            value={branding.favicon_url}
+                            onChange={(e) => setBranding({ ...branding, favicon_url: e.target.value })}
+                            placeholder="https://... or upload"
+                            className="h-9 text-sm bg-slate-50 border-slate-200 flex-1"
+                          />
+                          <input
+                            type="file"
+                            ref={faviconInputRef}
+                            onChange={handleFaviconUpload}
+                            accept="image/png,image/x-icon,image/jpeg,image/svg+xml"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => faviconInputRef.current?.click()}
+                            disabled={uploadingFavicon}
+                            className="h-9 px-3"
+                          >
+                            {uploadingFavicon ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Image className="w-4 h-4" />
+                            )}
+                            <span className="ml-1 text-xs">{uploadingFavicon ? 'Uploading...' : 'Upload'}</span>
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-slate-400">PNG, ICO, SVG, or JPEG. Max 1MB. Recommended: 32x32 or 64x64 pixels.</p>
+                      </div>
                     </div>
                     
                     {/* Logo Size Settings */}
