@@ -122,7 +122,7 @@ const LandingSocialSMS = ({
             {/* Right - Mockup */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div style={{ background: 'white', borderRadius: '20px', padding: '30px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)', maxWidth: '500px', width: '100%' }}>
-                <div style={{ background: primaryColor, color: 'white', padding: '15px', borderRadius: '12px 12px 0 0', margin: '-30px -30px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ background: themeColor, color: 'white', padding: '15px', borderRadius: '12px 12px 0 0', margin: '-30px -30px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <img src={logoUrl} alt="Logo" style={{ height: '24px', filter: 'brightness(0) invert(1)' }} />
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f57' }}></div>
@@ -214,7 +214,7 @@ const LandingSocialSMS = ({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <span style={{ color: '#6b7280', fontSize: '14px' }}>{item.orders} orders</span>
                     <span style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '16px' }}>{item.price}</span>
-                    <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: primaryColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Order Now</button>
+                    <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: themeColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Order Now</button>
                   </div>
                 </div>
               ))}
@@ -231,7 +231,7 @@ const LandingSocialSMS = ({
                 { icon: '📈', title: 'No Price Fluctuation', desc: 'Our numbers start at NGN 160 each, and our prices never fluctuate, even during high demand!' },
               ].map((benefit, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: '20px' }}>
-                  <div style={{ width: '48px', height: '48px', background: primaryColor, color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>{benefit.icon}</div>
+                  <div style={{ width: '48px', height: '48px', background: themeColor, color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>{benefit.icon}</div>
                   <div>
                     <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '8px' }}>{benefit.title}</h4>
                     <p style={{ color: '#6b7280', lineHeight: 1.6, margin: 0 }}>{benefit.desc}</p>
@@ -281,7 +281,7 @@ const LandingSocialSMS = ({
                 { icon: '📶', title: '99.9% uptime', desc: 'Receive SMS verifications using our temporary phone numbers with 24/7 availability.' },
               ].map((feature, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '60px', height: '60px', background: primaryColor, color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>{feature.icon}</div>
+                  <div style={{ width: '60px', height: '60px', background: themeColor, color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>{feature.icon}</div>
                   <div>
                     <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '10px' }}>{feature.title}</h3>
                     <p style={{ color: '#6b7280', lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
@@ -300,7 +300,7 @@ const LandingSocialSMS = ({
                   </div>
                   <div style={{ background: '#374151', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
                     <div style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '10px' }}>You can find a list of all your pending SMS here...</div>
-                    <button style={{ background: primaryColor, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', width: '100%', fontWeight: 600 }}>Archive all inactive orders</button>
+                    <button style={{ background: themeColor, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', width: '100%', fontWeight: 600 }}>Archive all inactive orders</button>
                   </div>
                   <div style={{ background: '#374151', borderRadius: '12px', padding: '15px' }}>
                     <div style={{ color: 'white', fontWeight: 600, marginBottom: '8px' }}>+1234567890 (US) 📋</div>
