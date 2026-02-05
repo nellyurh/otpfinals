@@ -271,13 +271,27 @@ const NewDashboard = () => {
       navigate('/');
       return;
     }
-    fetchProfile();
-    fetchOrders();
-    fetchTransactions();
-    fetchPageToggles();
-    fetchBranding();
-    fetchNotifications();
-    fetchLoginPopups();
+    
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([
+          fetchProfile(),
+          fetchOrders(),
+          fetchTransactions(),
+          fetchPageToggles(),
+          fetchBranding(),
+          fetchNotifications(),
+          fetchLoginPopups()
+        ]);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
     
     // Load dark mode preference
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
