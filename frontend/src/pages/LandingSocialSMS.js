@@ -146,7 +146,7 @@ const LandingSocialSMS = ({
 
                 <div>
                   <h4 style={{ fontSize: '14px', color: '#6b7280', marginBottom: '15px', fontWeight: 600 }}>Incoming SMS notifications</h4>
-                  <div style={{ background: '#f0f9ff', borderLeft: `3px solid ${primaryColor}`, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+                  <div style={{ background: '#f0f9ff', borderLeft: `3px solid ${themeColor}`, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span style={{ fontSize: '20px', marginRight: '10px' }}>🔍</span>
@@ -219,7 +219,7 @@ const LandingSocialSMS = ({
                 </div>
               ))}
               <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: 'transparent', border: `2px solid ${primaryColor}`, borderRadius: '8px', padding: '10px 24px', color: themeColor, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>View All Services</button>
+                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: 'transparent', border: `2px solid ${themeColor}`, borderRadius: '8px', padding: '10px 24px', color: themeColor, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>View All Services</button>
               </div>
             </div>
 
@@ -402,7 +402,7 @@ const LandingSocialSMS = ({
       </section>
 
       {/* CTA Section */}
-      <section style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, #667eea 100%)`, padding: '80px 0' }}>
+      <section style={{ background: `linear-gradient(135deg, ${themeColor} 0%, #667eea 100%)`, padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', marginBottom: '24px' }}>Start using our Services</h2>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
@@ -442,7 +442,7 @@ const LandingSocialSMS = ({
               {branding.brand_logo_url ? (
                 <img src={branding.brand_logo_url} alt="Logo" style={{ height: '48px', objectFit: 'contain' }} />
               ) : (
-                <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${primaryColor})`, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${themeColor})`, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)' }}>
                   <Phone style={{ width: '28px', height: '28px', color: 'white' }} />
                 </div>
               )}
@@ -596,7 +596,7 @@ const LandingSocialSMS = ({
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
             {/* Header */}
-            <div style={{ padding: '24px', color: 'white', textAlign: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${primaryColor})` }}>
+            <div style={{ padding: '24px', color: 'white', textAlign: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${themeColor})` }}>
               <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>Reset Password</h2>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', marginTop: '4px' }}>
                 {forgotPasswordStep === 1 && "Enter your email to receive a reset code"}
