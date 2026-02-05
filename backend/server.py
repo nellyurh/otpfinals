@@ -8572,6 +8572,8 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'smtp_from_name',
         'enable_welcome_email',
         'enable_transaction_email',
+        # Homepage template selection
+        'homepage_template',
     ]:
         val = getattr(data, key, None)
         if val is not None:
