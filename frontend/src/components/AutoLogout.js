@@ -25,13 +25,14 @@ const AutoLogout = ({ timeoutMinutes = 15, warningMinutes = 2, children }) => {
     
     // Clear storage
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('branding');
     sessionStorage.clear();
     
-    // Show message and redirect
+    // Show message and redirect without using React navigation
     toast.info('You have been logged out due to inactivity');
-    navigate('/');
-    window.location.reload();
-  }, [navigate]);
+    window.location.replace('/');
+  }, []);
 
   const resetTimer = useCallback(() => {
     // Clear existing timeouts
