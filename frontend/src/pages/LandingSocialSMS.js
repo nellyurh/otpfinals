@@ -393,7 +393,7 @@ const LandingSocialSMS = ({ branding = {} }) => {
       <footer style={{ background: '#1a1a1a', padding: '30px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-            <p style={{ color: '#9ca3af', margin: 0 }}>© Copyright {new Date().getFullYear()}. SocialSMSWrld, All Rights Reserved.</p>
+            <p style={{ color: '#9ca3af', margin: 0 }}>© Copyright {new Date().getFullYear()}. {brandName}, All Rights Reserved.</p>
             <div style={{ display: 'flex', gap: '16px' }}>
               <a href="#" style={{ color: '#9ca3af', textDecoration: 'none' }}>Privacy</a>
               <span style={{ color: '#9ca3af' }}>·</span>
