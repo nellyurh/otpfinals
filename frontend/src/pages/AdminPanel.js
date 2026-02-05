@@ -666,6 +666,7 @@ const AdminPanel = ({ user, setUser }) => {
   const [branding, setBranding] = useState({
     brand_name: 'Social SMS WRLD',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
+    favicon_url: '',
     // Logo size settings
     logo_width: 120,
     logo_height: 40,
@@ -707,6 +708,105 @@ const AdminPanel = ({ user, setUser }) => {
   // Logo upload state
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef(null);
+  
+  // Favicon upload state
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const faviconInputRef = useRef(null);
+  
+  // Banner upload state
+  const [uploadingBanner, setUploadingBanner] = useState(null); // stores banner index being uploaded
+  const bannerInputRefs = useRef({});
+
+  // Favicon upload handler
+  const handleFaviconUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const allowedTypes = ['image/png', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload PNG, ICO, SVG, or JPEG');
+      return;
+    }
+    
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error('File too large. Maximum size is 1MB');
+      return;
+    }
+    
+    setUploadingFavicon(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await axios.post(`${API}/admin/upload-favicon`, formData, {
+        ...axiosConfig,
+        headers: { ...axiosConfig.headers, 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.success) {
+        setBranding(prev => ({ ...prev, favicon_url: response.data.favicon_url }));
+        toast.success('Favicon uploaded successfully!');
+        // Update the document favicon immediately
+        updateFavicon(response.data.favicon_url);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload favicon');
+    } finally {
+      setUploadingFavicon(false);
+      if (faviconInputRef.current) faviconInputRef.current.value = '';
+    }
+  };
+
+  // Banner upload handler
+  const handleBannerUpload = async (event, bannerIndex) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload PNG, JPEG, or WebP');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large. Maximum size is 5MB');
+      return;
+    }
+    
+    setUploadingBanner(bannerIndex);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await axios.post(`${API}/admin/upload-banner`, formData, {
+        ...axiosConfig,
+        headers: { ...axiosConfig.headers, 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (response.data.success) {
+        const updated = [...branding.banner_images];
+        updated[bannerIndex].image_url = response.data.banner_url;
+        setBranding({ ...branding, banner_images: updated });
+        toast.success('Banner image uploaded!');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload banner');
+    } finally {
+      setUploadingBanner(null);
+      if (bannerInputRefs.current[bannerIndex]) bannerInputRefs.current[bannerIndex].value = '';
+    }
+  };
+
+  // Helper to update favicon in the document
+  const updateFavicon = (url) => {
+    let link = document.querySelector("link[rel*='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = url;
+  };
 
   // Logo upload handler
   const handleLogoUpload = async (event) => {
