@@ -463,6 +463,29 @@ except Exception as e:
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Add rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ============ Security Headers Middleware ============
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses"""
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # Prevent clickjacking
+        response.headers["X-Frame-Options"] = "DENY"
+        # Prevent MIME sniffing
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        # XSS protection
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        # Referrer policy
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        # Permissions policy
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(self)"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Root-level health check for Kubernetes (required - checks /health not /api/health)
 @app.get("/health")
 async def root_health_check():
