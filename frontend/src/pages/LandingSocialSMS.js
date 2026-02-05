@@ -424,6 +424,278 @@ const LandingSocialSMS = ({
         </div>
       </footer>
 
+      {/* Auth Modal */}
+      {showAuth && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setShowAuth(false)}>
+          <div style={{ width: '100%', maxWidth: '420px', background: 'white', borderRadius: '24px', padding: '24px 32px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }} onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowAuth(false)}
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}
+              data-testid="auth-modal-close"
+            >
+              <X style={{ width: '24px', height: '24px' }} />
+            </button>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+              {branding.brand_logo_url ? (
+                <img src={branding.brand_logo_url} alt="Logo" style={{ height: '48px', objectFit: 'contain' }} />
+              ) : (
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${primaryColor})`, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)' }}>
+                  <Phone style={{ width: '28px', height: '28px', color: 'white' }} />
+                </div>
+              )}
+            </div>
+
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', padding: '4px', borderRadius: '12px', background: '#f3f4f6' }}>
+              <button
+                onClick={() => setIsLogin(true)}
+                data-testid="auth-login-tab"
+                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: isLogin ? 'white' : 'transparent', color: isLogin ? (buttonColor || primaryColor) : '#4b5563', boxShadow: isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setIsLogin(false)}
+                data-testid="auth-register-tab"
+                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: !isLogin ? 'white' : 'transparent', color: !isLogin ? (buttonColor || primaryColor) : '#4b5563', boxShadow: !isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+              >
+                Register
+              </button>
+            </div>
+
+            {/* Login Form */}
+            {isLogin ? (
+              <form onSubmit={handleLogin} data-testid="socialsms-login-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={loginData.email}
+                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    required
+                    data-testid="socialsms-login-email"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                    required
+                    data-testid="socialsms-login-password"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgotPassword(true); setShowAuth(false); }}
+                    style={{ background: 'none', border: 'none', fontSize: '14px', fontWeight: 500, color: buttonColor || primaryColor, cursor: 'pointer' }}
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  data-testid="socialsms-login-submit"
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (buttonColor || primaryColor), boxShadow: `0 10px 25px -5px ${buttonColor || primaryColor}40` }}
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleRegister} data-testid="socialsms-register-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>First Name</label>
+                    <input
+                      type="text"
+                      placeholder="John"
+                      value={registerData.first_name}
+                      onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
+                      required
+                      data-testid="socialsms-register-firstname"
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Last Name</label>
+                    <input
+                      type="text"
+                      placeholder="Doe"
+                      value={registerData.last_name}
+                      onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
+                      required
+                      data-testid="socialsms-register-lastname"
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={registerData.email}
+                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                    required
+                    data-testid="socialsms-register-email"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Phone Number <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input
+                    type="tel"
+                    placeholder="08168617185"
+                    pattern="^0[789][01]\d{8}$"
+                    value={registerData.phone}
+                    onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                    required
+                    data-testid="socialsms-register-phone"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                  />
+                  <p style={{ fontSize: '12px', marginTop: '4px', color: '#6b7280' }}>Format: 08168617185</p>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={registerData.password}
+                    onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                    required
+                    data-testid="socialsms-register-password"
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  data-testid="socialsms-register-submit"
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (buttonColor || primaryColor), boxShadow: `0 10px 25px -5px ${buttonColor || primaryColor}40` }}
+                >
+                  {loading ? 'Creating account...' : 'Create Account'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
+            {/* Header */}
+            <div style={{ padding: '24px', color: 'white', textAlign: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${primaryColor})` }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>Reset Password</h2>
+              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', marginTop: '4px' }}>
+                {forgotPasswordStep === 1 && "Enter your email to receive a reset code"}
+                {forgotPasswordStep === 2 && "Enter the 6-digit code sent to your email"}
+                {forgotPasswordStep === 3 && "Create your new password"}
+              </p>
+            </div>
+            
+            {/* Content */}
+            <div style={{ padding: '24px' }}>
+              <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {forgotPasswordStep === 1 && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={forgotPasswordData.email}
+                      onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, email: e.target.value })}
+                      required
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                )}
+                
+                {forgotPasswordStep === 2 && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Reset Code</label>
+                    <input
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={forgotPasswordData.code}
+                      onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, code: e.target.value })}
+                      required
+                      maxLength={6}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '24px', color: '#1f2937', textAlign: 'center', letterSpacing: '0.5em', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                    />
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>
+                      Didn't receive it? <button type="button" onClick={() => setForgotPasswordStep(1)} style={{ background: 'none', border: 'none', fontWeight: 500, color: buttonColor || primaryColor, cursor: 'pointer' }}>Resend</button>
+                    </p>
+                  </div>
+                )}
+                
+                {forgotPasswordStep === 3 && (
+                  <>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>New Password</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={forgotPasswordData.new_password}
+                        onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, new_password: e.target.value })}
+                        required
+                        minLength={6}
+                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Confirm Password</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={forgotPasswordData.confirm_password}
+                        onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, confirm_password: e.target.value })}
+                        required
+                        minLength={6}
+                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </>
+                )}
+                
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (buttonColor || primaryColor), boxShadow: `0 10px 25px -5px ${buttonColor || primaryColor}40` }}
+                >
+                  {loading ? 'Please wait...' : (
+                    forgotPasswordStep === 1 ? 'Send Reset Code' :
+                    forgotPasswordStep === 2 ? 'Verify Code' :
+                    'Reset Password'
+                  )}
+                </button>
+              </form>
+              
+              <button
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setForgotPasswordStep(1);
+                  setForgotPasswordData({ email: '', code: '', new_password: '', confirm_password: '' });
+                  setShowAuth(true);
+                }}
+                style={{ width: '100%', marginTop: '16px', padding: '8px', background: 'none', border: 'none', fontSize: '14px', color: '#6b7280', cursor: 'pointer' }}
+              >
+                Back to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes blink {
           0%, 50% { opacity: 1; }
