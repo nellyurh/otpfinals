@@ -442,7 +442,7 @@ const LandingSocialSMS = ({
               {branding.brand_logo_url ? (
                 <img src={branding.brand_logo_url} alt="Logo" style={{ height: '48px', objectFit: 'contain' }} />
               ) : (
-                <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${themeColor})`, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${btnColor}, ${themeColor})`, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)' }}>
                   <Phone style={{ width: '28px', height: '28px', color: 'white' }} />
                 </div>
               )}
@@ -453,14 +453,14 @@ const LandingSocialSMS = ({
               <button
                 onClick={() => setIsLogin(true)}
                 data-testid="auth-login-tab"
-                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: isLogin ? 'white' : 'transparent', color: isLogin ? (buttonColor || primaryColor) : '#4b5563', boxShadow: isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: isLogin ? 'white' : 'transparent', color: isLogin ? (btnColor) : '#4b5563', boxShadow: isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
               >
                 Login
               </button>
               <button
                 onClick={() => setIsLogin(false)}
                 data-testid="auth-register-tab"
-                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: !isLogin ? 'white' : 'transparent', color: !isLogin ? (buttonColor || primaryColor) : '#4b5563', boxShadow: !isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: !isLogin ? 'white' : 'transparent', color: !isLogin ? (btnColor) : '#4b5563', boxShadow: !isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
               >
                 Register
               </button>
@@ -497,7 +497,7 @@ const LandingSocialSMS = ({
                   <button
                     type="button"
                     onClick={() => { setShowForgotPassword(true); setShowAuth(false); }}
-                    style={{ background: 'none', border: 'none', fontSize: '14px', fontWeight: 500, color: buttonColor || primaryColor, cursor: 'pointer' }}
+                    style={{ background: 'none', border: 'none', fontSize: '14px', fontWeight: 500, color: btnColor, cursor: 'pointer' }}
                   >
                     Forgot Password?
                   </button>
@@ -506,7 +506,7 @@ const LandingSocialSMS = ({
                   type="submit"
                   disabled={loading}
                   data-testid="socialsms-login-submit"
-                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (buttonColor || primaryColor), boxShadow: `0 10px 25px -5px ${buttonColor || primaryColor}40` }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (btnColor), boxShadow: `0 10px 25px -5px ${btnColor}40` }}
                 >
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
@@ -581,7 +581,7 @@ const LandingSocialSMS = ({
                   type="submit"
                   disabled={loading}
                   data-testid="socialsms-register-submit"
-                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (buttonColor || primaryColor), boxShadow: `0 10px 25px -5px ${buttonColor || primaryColor}40` }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (btnColor), boxShadow: `0 10px 25px -5px ${btnColor}40` }}
                 >
                   {loading ? 'Creating account...' : 'Create Account'}
                 </button>
@@ -596,7 +596,7 @@ const LandingSocialSMS = ({
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
             {/* Header */}
-            <div style={{ padding: '24px', color: 'white', textAlign: 'center', background: `linear-gradient(135deg, ${buttonColor || primaryColor}, ${themeColor})` }}>
+            <div style={{ padding: '24px', color: 'white', textAlign: 'center', background: `linear-gradient(135deg, ${btnColor}, ${themeColor})` }}>
               <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>Reset Password</h2>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', marginTop: '4px' }}>
                 {forgotPasswordStep === 1 && "Enter your email to receive a reset code"}
@@ -635,7 +635,7 @@ const LandingSocialSMS = ({
                       style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '24px', color: '#1f2937', textAlign: 'center', letterSpacing: '0.5em', fontFamily: 'monospace', boxSizing: 'border-box' }}
                     />
                     <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>
-                      Didn't receive it? <button type="button" onClick={() => setForgotPasswordStep(1)} style={{ background: 'none', border: 'none', fontWeight: 500, color: buttonColor || primaryColor, cursor: 'pointer' }}>Resend</button>
+                      Didn't receive it? <button type="button" onClick={() => setForgotPasswordStep(1)} style={{ background: 'none', border: 'none', fontWeight: 500, color: btnColor, cursor: 'pointer' }}>Resend</button>
                     </p>
                   </div>
                 )}
@@ -672,7 +672,7 @@ const LandingSocialSMS = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (buttonColor || primaryColor), boxShadow: `0 10px 25px -5px ${buttonColor || primaryColor}40` }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: 'white', background: loading ? '#d1d5db' : (btnColor), boxShadow: `0 10px 25px -5px ${btnColor}40` }}
                 >
                   {loading ? 'Please wait...' : (
                     forgotPasswordStep === 1 ? 'Send Reset Code' :
