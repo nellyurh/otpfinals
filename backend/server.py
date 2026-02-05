@@ -8296,6 +8296,7 @@ async def get_public_branding():
     return {
         "brand_name": config.get("brand_name", "UltraCloud Sms"),
         "brand_logo_url": config.get("brand_logo_url", "https://cloudsmsservice.org/img/social_logo.png"),
+        "favicon_url": config.get("favicon_url", ""),
         # Logo size settings
         "logo_width": config.get("logo_width", 120),
         "logo_height": config.get("logo_height", 40),
