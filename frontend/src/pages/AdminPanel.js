@@ -1418,11 +1418,15 @@ const AdminPanel = ({ user, setUser }) => {
     });
   };
 
-  const saveUserEdits = async () => {
+  const saveUserEdits = async (userId) => {
     try {
-      if (!selectedUser) return;
+      const userIdToUpdate = userId || selectedUser?.id;
+      if (!userIdToUpdate || !editUser) {
+        toast.error('No user selected for update');
+        return;
+      }
       await axios.put(
-        `${API}/admin/users/${selectedUser.id}`,
+        `${API}/admin/users/${userIdToUpdate}`,
         {
           first_name: editUser.first_name,
           last_name: editUser.last_name,
