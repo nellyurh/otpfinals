@@ -56,7 +56,8 @@ const NewDashboard = () => {
   const [activeSection, setActiveSection] = useState('dashboard'); // Default to Dashboard
   const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [user, setUser] = useState({ email: '', full_name: '', ngn_balance: 0, usd_balance: 0, is_admin: false });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [pageToggles, setPageToggles] = useState({
     enable_dashboard: true,
     enable_transactions: true,
