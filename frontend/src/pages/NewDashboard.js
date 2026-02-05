@@ -445,6 +445,8 @@ const NewDashboard = () => {
   };
 
   const handleLogout = () => {
+    // Set logging out state to prevent errors during unmount
+    setIsLoggingOut(true);
     // Clear all auth data immediately
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -452,6 +454,15 @@ const NewDashboard = () => {
     // Use replace to prevent back button issues
     window.location.replace('/');
   };
+
+  // If logging out, show nothing to prevent errors
+  if (isLoggingOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   // Crypto funding functions
   const copyToClipboard = async (text) => {
