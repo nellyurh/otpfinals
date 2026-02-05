@@ -359,8 +359,8 @@ const Dashboard = ({ user, setUser }) => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setUser(null);
-    navigate('/');
+    localStorage.removeItem('branding');
+    window.location.replace('/');
   };
 
   const getStatusBadge = (status) => {
