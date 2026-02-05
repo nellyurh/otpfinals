@@ -134,7 +134,7 @@ const LandingSocialSMS = ({
                 <div style={{ marginBottom: '20px' }}>
                   <h4 style={{ fontSize: '14px', color: '#6b7280', marginBottom: '15px', fontWeight: 600 }}>Select your service</h4>
                   {[
-                    { name: 'Discord', icon: '💬', color: primaryColor },
+                    { name: 'Discord', icon: '💬', color: themeColor },
                     { name: 'Twitch', icon: '🎮', color: '#9146FF' }
                   ].map((service, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '12px', borderRadius: '10px', marginBottom: '10px', background: '#f8f9fb' }}>
@@ -152,7 +152,7 @@ const LandingSocialSMS = ({
                         <span style={{ fontSize: '20px', marginRight: '10px' }}>🔍</span>
                         <div>
                           <div style={{ fontSize: '12px', color: '#6b7280' }}>Google</div>
-                          <div style={{ fontWeight: 600, fontSize: '14px' }}>Code: <span style={{ color: primaryColor }}>849204</span></div>
+                          <div style={{ fontWeight: 600, fontSize: '14px' }}>Code: <span style={{ color: themeColor }}>849204</span></div>
                         </div>
                       </div>
                       <span style={{ background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>NEW</span>
@@ -189,7 +189,7 @@ const LandingSocialSMS = ({
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a' }}>
-              <span style={{ color: primaryColor }}>Verify</span> with a Text, <span style={{ color: primaryColor }}>Protect</span> with Confidence.
+              <span style={{ color: themeColor }}>Verify</span> with a Text, <span style={{ color: themeColor }}>Protect</span> with Confidence.
             </h2>
           </div>
           
@@ -219,7 +219,7 @@ const LandingSocialSMS = ({
                 </div>
               ))}
               <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: 'transparent', border: `2px solid ${primaryColor}`, borderRadius: '8px', padding: '10px 24px', color: primaryColor, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>View All Services</button>
+                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: 'transparent', border: `2px solid ${primaryColor}`, borderRadius: '8px', padding: '10px 24px', color: themeColor, fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>View All Services</button>
               </div>
             </div>
 
@@ -253,8 +253,8 @@ const LandingSocialSMS = ({
               ))}
             </div>
             <div>
-              <h3 style={{ fontSize: '2.5rem', fontWeight: 700, color: primaryColor, marginBottom: '5px' }}>150+ countries</h3>
-              <p style={{ fontSize: '1.8rem', fontWeight: 700, color: primaryColor, margin: 0 }}>1200+ services</p>
+              <h3 style={{ fontSize: '2.5rem', fontWeight: 700, color: themeColor, marginBottom: '5px' }}>150+ countries</h3>
+              <p style={{ fontSize: '1.8rem', fontWeight: 700, color: themeColor, margin: 0 }}>1200+ services</p>
             </div>
           </div>
         </div>
@@ -265,7 +265,7 @@ const LandingSocialSMS = ({
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a' }}>
-              <span style={{ color: primaryColor }}>Features</span> of {brandName}
+              <span style={{ color: themeColor }}>Features</span> of {brandName}
             </h2>
           </div>
           
@@ -333,7 +333,7 @@ const LandingSocialSMS = ({
                 <div style={{ color: '#fbbf24', fontSize: '20px', marginBottom: '15px' }}>★★★★★</div>
                 <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>{testimonial.title}</h4>
                 <p style={{ color: '#6b7280', lineHeight: 1.7, marginBottom: '15px' }}>{testimonial.text}</p>
-                <div style={{ fontWeight: 600, color: primaryColor, fontSize: '14px' }}>{testimonial.author}</div>
+                <div style={{ fontWeight: 600, color: themeColor, fontSize: '14px' }}>{testimonial.author}</div>
               </div>
             ))}
           </div>
@@ -346,7 +346,7 @@ const LandingSocialSMS = ({
           <div style={{ display: 'grid', gridTemplateColumns: '5fr 2fr 5fr', gap: '40px', alignItems: 'center' }}>
             <div>
               <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>
-                <span style={{ color: primaryColor, fontWeight: 600 }}>"{brandName}"</span> gives you the opportunity to buy a virtual number for registration in popular services at the best price on the net.
+                <span style={{ color: themeColor, fontWeight: 600 }}>"{brandName}"</span> gives you the opportunity to buy a virtual number for registration in popular services at the best price on the net.
               </p>
               <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>First of all, it costs money to get a new SIM card. Secondly, it is a whole event - to come to the office, fill out a form with passport data...</p>
               <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>On this site you can buy a virtual phone number for Telegram, Whatsapp, Viber, Instagram, Facebook, and any other popular platform from just NGN 2000.</p>
@@ -392,7 +392,7 @@ const LandingSocialSMS = ({
               { icon: '💰', title: 'Easy to Recharge', desc: 'We provide easy payment methods for swift recharges and purchases!' },
             ].map((step, idx) => (
               <div key={idx} style={{ background: 'white', border: '2px solid #e5e7eb', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
-                <div style={{ fontSize: '3rem', color: primaryColor, marginBottom: '20px' }}>{step.icon}</div>
+                <div style={{ fontSize: '3rem', color: themeColor, marginBottom: '20px' }}>{step.icon}</div>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '12px', color: '#1a1a1a' }}>{step.title}</h3>
                 <p style={{ color: '#5a5a5a', lineHeight: 1.6 }}>{step.desc}</p>
               </div>
