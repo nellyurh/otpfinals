@@ -11556,26 +11556,49 @@ async def get_kyc_status(user: dict = Depends(get_current_user)):
 
 
 # ============ Admin Logo Upload ============
+# SECURITY: File upload validation helper
+def validate_upload_file(file: UploadFile, allowed_types: list, max_size_mb: int = 5) -> str:
+    """Validate uploaded file and return safe extension"""
+    # Check content type
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}")
+    
+    # Get extension from content type (more secure than filename)
+    content_type_map = {
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/webp': 'webp',
+        'image/svg+xml': 'svg',
+        'image/x-icon': 'ico',
+        'image/vnd.microsoft.icon': 'ico',
+    }
+    
+    ext = content_type_map.get(file.content_type, 'png')
+    return ext
+
+
 @api_router.post("/admin/upload-logo")
 async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(require_admin)):
     """Upload brand logo for the platform"""
     try:
         # Validate file type
         allowed_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml']
-        if file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail="Invalid file type. Allowed: PNG, JPEG, WebP, SVG")
+        ext = validate_upload_file(file, allowed_types, max_size_mb=5)
         
         # Create uploads directory
         upload_dir = Path("/app/backend/uploads/branding")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
-        # Generate filename
-        ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+        # Generate secure filename (never use user-provided filename)
         logo_filename = f"logo_{uuid.uuid4().hex[:8]}.{ext}"
         logo_path = upload_dir / logo_filename
         
-        # Save file
+        # Read and validate file size
         content = await file.read()
+        if len(content) > 5 * 1024 * 1024:  # 5MB
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+        
         with open(logo_path, "wb") as f:
             f.write(content)
         
