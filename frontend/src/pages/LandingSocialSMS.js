@@ -65,7 +65,9 @@ const LandingSocialSMS = ({
     }
   };
 
-  const primaryColor = branding.primary_color_hex || '#4169E1';
+  // Use prop values with fallbacks
+  const themeColor = primaryColor || branding.primary_color_hex || '#4169E1';
+  const btnColor = buttonColor || branding.button_color_hex || themeColor;
   const logoUrl = branding.brand_logo_url || '/img/social_logo.png';
 
   return (
