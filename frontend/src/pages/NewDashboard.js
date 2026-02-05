@@ -157,10 +157,25 @@ const NewDashboard = () => {
           telegram_support_url: resp.data.telegram_support_url || 'https://t.me/yoursupport',
           support_email: resp.data.support_email || 'support@smsrelay.com'
         });
+        // Update favicon if set
+        if (resp.data.favicon_url) {
+          updateFavicon(resp.data.favicon_url);
+        }
       }
     } catch (e) {
       // ignore
     }
+  };
+
+  // Helper to update favicon in the document
+  const updateFavicon = (url) => {
+    let link = document.querySelector("link[rel*='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = url;
   };
 
   // Orders
