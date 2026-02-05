@@ -4383,6 +4383,64 @@ const AdminPanel = ({ user, setUser }) => {
                   </Button>
                 </div>
 
+                {/* Homepage Template Selection */}
+                <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-indigo-600" />
+                      Homepage Template
+                    </CardTitle>
+                    <CardDescription className="text-xs">Choose which homepage design to display to visitors</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div 
+                        onClick={() => setBranding({ ...branding, homepage_template: 'default' })}
+                        className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                          (branding.homepage_template || 'default') === 'default' 
+                            ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' 
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            (branding.homepage_template || 'default') === 'default' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm">Default (BillHub)</h4>
+                            <p className="text-xs text-slate-500">Modern fintech style</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-600">Clean design with service cards, bill payments focus, gradient hero section.</p>
+                      </div>
+                      <div 
+                        onClick={() => setBranding({ ...branding, homepage_template: 'socialsms' })}
+                        className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                          branding.homepage_template === 'socialsms' 
+                            ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' 
+                            : 'border-slate-200 bg-white hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            branding.homepage_template === 'socialsms' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            <MessageSquare className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm">SocialSMS Style</h4>
+                            <p className="text-xs text-slate-500">SMS verification focus</p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-600">Light background, typing animation, service mockups, testimonials grid.</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-indigo-600 mt-3">Currently using: <strong>{(branding.homepage_template || 'default') === 'default' ? 'Default (BillHub)' : 'SocialSMS Style'}</strong></p>
+                  </CardContent>
+                </Card>
+
                 {/* Brand Identity */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
