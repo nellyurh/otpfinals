@@ -1297,6 +1297,8 @@ const AdminPanel = ({ user, setUser }) => {
         logo_height: response.data.logo_height || 40,
         card_logo_width: response.data.card_logo_width || 32,
         card_logo_height: response.data.card_logo_height || 32,
+        // Homepage template selection
+        homepage_template: response.data.homepage_template || 'default',
         primary_color_hex: response.data.primary_color_hex || '#059669',
         secondary_color_hex: response.data.secondary_color_hex || '#10b981',
         accent_color_hex: response.data.accent_color_hex || '#7c3aed',
