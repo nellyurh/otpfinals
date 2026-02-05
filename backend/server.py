@@ -6384,9 +6384,11 @@ async def transfer_to_wallet(request: WalletTransferRequest, user: dict = Depend
         if user.get('ngn_balance', 0) < request.amount:
             raise HTTPException(status_code=400, detail="Insufficient balance")
         
+        # SECURITY: Escape regex special characters to prevent NoSQL injection
+        safe_email = re.escape(request.recipient_email)
         # Find recipient
         recipient = await db.users.find_one(
-            {'email': {'$regex': f'^{request.recipient_email}$', '$options': 'i'}},
+            {'email': {'$regex': f'^{safe_email}$', '$options': 'i'}},
             {'_id': 0}
         )
         
