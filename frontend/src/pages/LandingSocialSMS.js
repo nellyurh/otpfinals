@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Phone } from 'lucide-react';
 
 const LandingSocialSMS = ({ 
   branding = {},
@@ -7,25 +7,22 @@ const LandingSocialSMS = ({
   setIsLogin,
   showAuth,
   isLogin,
-  email,
-  setEmail,
-  password,
-  setPassword,
-  fullName,
-  setFullName,
-  phone,
-  setPhone,
-  referralCode,
-  setReferralCode,
-  isLoading,
-  handleAuth,
-  handleGoogleAuth,
+  loading,
+  loginData,
+  setLoginData,
+  registerData,
+  setRegisterData,
+  handleLogin,
+  handleRegister,
   showForgotPassword,
   setShowForgotPassword,
   forgotPasswordData,
   setForgotPasswordData,
+  forgotPasswordStep,
+  setForgotPasswordStep,
   handleForgotPassword,
-  handleResetPassword
+  primaryColor,
+  buttonColor
 }) => {
   const [typingText, setTypingText] = useState('');
   const [textIndex, setTextIndex] = useState(0);
