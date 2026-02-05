@@ -212,7 +212,7 @@ const LandingSocialSMS = ({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <span style={{ color: '#6b7280', fontSize: '14px' }}>{item.orders} orders</span>
                     <span style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '16px' }}>{item.price}</span>
-                    <button onClick={() => navigate('/register')} style={{ background: primaryColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Order Now</button>
+                    <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: primaryColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Order Now</button>
                   </div>
                 </div>
               ))}
