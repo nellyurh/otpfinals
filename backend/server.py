@@ -8463,6 +8463,8 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['brand_name'] = data.brand_name
     if data.brand_logo_url is not None:
         update_fields['brand_logo_url'] = data.brand_logo_url
+    if data.favicon_url is not None:
+        update_fields['favicon_url'] = data.favicon_url
     # Logo size settings
     if data.logo_width is not None:
         update_fields['logo_width'] = data.logo_width
