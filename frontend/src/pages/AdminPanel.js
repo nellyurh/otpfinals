@@ -5421,7 +5421,7 @@ const AdminPanel = ({ user, setUser }) => {
                                         <AlertDialogFooter>
                                           <AlertDialogCancel onClick={() => { setSelectedUser(null); setEditUser(null); }}>Cancel</AlertDialogCancel>
                                           <AlertDialogAction
-                                            onClick={() => { setSelectedUser(u); saveUserEdits(); }}
+                                            onClick={() => saveUserEdits(u.id)}
                                             className="bg-emerald-600 hover:bg-emerald-700"
                                           >
                                             Save
