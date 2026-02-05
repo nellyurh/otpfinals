@@ -7,7 +7,7 @@ import requests
 import os
 import json
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://finance-center-11.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://billhub-finance.preview.emergentagent.com')
 
 # Test credentials
 ADMIN_EMAIL = "admin@smsrelay.com"
