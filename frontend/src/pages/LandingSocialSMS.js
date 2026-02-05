@@ -6,6 +6,9 @@ const LandingSocialSMS = ({ branding = {} }) => {
   const [typingText, setTypingText] = useState('');
   const [textIndex, setTextIndex] = useState(0);
   
+  // Get brand name from branding or default
+  const brandName = branding.brand_name || 'SocialSMSWrld';
+  
   const texts = [
     "Cheapest and Fastest Online SMS verification",
     "Secure Online SMS for Safe Registrations"
