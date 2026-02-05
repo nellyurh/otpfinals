@@ -6348,8 +6348,10 @@ async def validate_transfer_recipient(email: str, user: dict = Depends(get_curre
         if email.lower() == user.get('email', '').lower():
             raise HTTPException(status_code=400, detail="Cannot transfer to yourself")
         
+        # SECURITY: Escape regex special characters to prevent NoSQL injection
+        safe_email = re.escape(email)
         recipient = await db.users.find_one(
-            {'email': {'$regex': f'^{email}$', '$options': 'i'}},
+            {'email': {'$regex': f'^{safe_email}$', '$options': 'i'}},
             {'_id': 0, 'id': 1, 'email': 1, 'full_name': 1}
         )
         
