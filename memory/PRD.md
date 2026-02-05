@@ -1,6 +1,23 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-05 (Session 9)**: Security Hardening
+  - **Rate Limiting:** Added slowapi rate limiting on auth endpoints:
+    - Registration: 5/minute
+    - Login: 10/minute  
+    - Forgot password: 3/minute
+    - Reset code verification: 5/minute
+  - **Security Headers:** Added middleware for X-Frame-Options (DENY), X-Content-Type-Options (nosniff), X-XSS-Protection, Referrer-Policy, Permissions-Policy
+  - **Path Traversal Protection:** File serving endpoints now validate filenames and prevent directory traversal attacks
+  - **KYC Files Protected:** KYC documents now require admin authentication to access
+  - **Secure File Uploads:** 
+    - Extension derived from content-type (not filename)
+    - File size validation
+    - UUID-based filenames (never use user input)
+  - **NoSQL Injection Prevention:** All $regex queries now use re.escape() on user input
+  - **JWT Secret:** Removed hardcoded fallback - now generates random secret if not set (with warning)
+  - **API Keys:** Removed all hardcoded default API keys from code
+  - **Secure Random:** Password reset codes now use secrets.randbelow() instead of random.randint()
 - **2026-02-05 (Session 9)**: Favicon + Dynamic Banner Carousel Upload
   - NEW: Favicon upload in Admin Panel (Branding & Banners section)
   - NEW: Banner image file upload - each carousel banner can now be uploaded directly instead of just URL
