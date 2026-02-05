@@ -323,7 +323,7 @@ const LandingSocialSMS = ({ branding = {} }) => {
           <div style={{ display: 'grid', gridTemplateColumns: '5fr 2fr 5fr', gap: '40px', alignItems: 'center' }}>
             <div>
               <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>
-                <span style={{ color: primaryColor, fontWeight: 600 }}>"SocialSMSWrld"</span> gives you the opportunity to buy a virtual number for registration in popular services at the best price on the net.
+                <span style={{ color: primaryColor, fontWeight: 600 }}>"{brandName}"</span> gives you the opportunity to buy a virtual number for registration in popular services at the best price on the net.
               </p>
               <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>First of all, it costs money to get a new SIM card. Secondly, it is a whole event - to come to the office, fill out a form with passport data...</p>
               <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>On this site you can buy a virtual phone number for Telegram, Whatsapp, Viber, Instagram, Facebook, and any other popular platform from just NGN 2000.</p>
