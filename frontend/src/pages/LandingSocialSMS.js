@@ -114,7 +114,7 @@ const LandingSocialSMS = ({
                 Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers.
               </p>
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="hero-register-btn" style={{ background: primaryColor, border: 'none', borderRadius: '10px', padding: '14px 32px', color: 'white', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>Register Now</button>
+                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="hero-register-btn" style={{ background: themeColor, border: 'none', borderRadius: '10px', padding: '14px 32px', color: 'white', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>Register Now</button>
                 <button onClick={() => scrollToSection('about-us')} style={{ background: 'transparent', border: '2px solid #1a1a1a', borderRadius: '10px', padding: '14px 32px', color: '#1a1a1a', fontWeight: 600, fontSize: '16px', cursor: 'pointer' }}>More Info</button>
               </div>
             </div>
