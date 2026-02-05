@@ -2435,16 +2435,16 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 @api_router.post("/auth/forgot-password")
-async def forgot_password(data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
+@limiter.limit("3/minute")  # SECURITY: Rate limit password reset to prevent email flooding
+async def forgot_password(request: Request, data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
     """Send password reset code to user's email"""
     user = await db.users.find_one({'email': data.email}, {'_id': 0})
     if not user:
         # Don't reveal if email exists
         return {'success': True, 'message': 'If your email is registered, you will receive a reset code.'}
     
-    # Generate 6-digit code
-    import random
-    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    # Generate 6-digit code using secure random
+    code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
     
     # Store code with 15 min expiry
     await db.password_resets.delete_many({'email': data.email})  # Remove old codes
@@ -2469,7 +2469,8 @@ async def forgot_password(data: ForgotPasswordRequest, background_tasks: Backgro
     return {'success': True, 'message': 'If your email is registered, you will receive a reset code.'}
 
 @api_router.post("/auth/verify-reset-code")
-async def verify_reset_code(data: dict):
+@limiter.limit("5/minute")  # SECURITY: Rate limit code verification
+async def verify_reset_code(request: Request, data: dict):
     """Verify the reset code is valid"""
     email = data.get('email')
     code = data.get('code')
