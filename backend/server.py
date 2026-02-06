@@ -3011,7 +3011,7 @@ async def upload_kyc_documents(
     """Upload KYC documents"""
     try:
         # Create uploads directory
-        upload_dir = Path("/app/backend/uploads/kyc")
+        upload_dir = Path("/app/uploads/kyc")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Save ID document
@@ -3048,7 +3048,7 @@ async def upload_selfie(data: SelfieUploadRequest, user: dict = Depends(get_curr
     """Upload selfie captured from camera (base64 encoded)"""
     try:
         # Create uploads directory
-        upload_dir = Path("/app/backend/uploads/kyc")
+        upload_dir = Path("/app/uploads/kyc")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Remove data URL prefix if present
