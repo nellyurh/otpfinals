@@ -6212,6 +6212,13 @@ const AdminPanel = ({ user, setUser }) => {
                                     >
                                       {u.is_blocked ? 'Unblock' : 'Block'}
                                     </button>
+                                    <button
+                                      type="button"
+                                      className={`text-[11px] ${u.is_admin ? 'text-purple-700' : 'text-green-700'} hover:underline`}
+                                      onClick={() => quickToggleUser(u, 'is_admin')}
+                                    >
+                                      {u.is_admin ? 'Remove Admin' : 'Make Admin'}
+                                    </button>
                                     {u.tier >= 3 && !u.payscribe_customer_id && (
                                       <button
                                         type="button"
