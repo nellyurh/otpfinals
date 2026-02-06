@@ -8691,6 +8691,19 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'enable_transaction_email',
         # Homepage template selection
         'homepage_template',
+        # Homepage 2 (SocialSMS) Specific Settings
+        'hp2_bg_color',
+        'hp2_accent_color',
+        'hp2_accent_gradient_end',
+        'hp2_enable_glassmorphism',
+        'hp2_enable_animated_bg',
+        'hp2_badge_text',
+        'hp2_badge_enabled',
+        'hp2_nav_style',
+        'hp2_hero_title_1',
+        'hp2_hero_title_2',
+        'hp2_hero_title_3',
+        'hp2_hero_subtitle',
     ]:
         val = getattr(data, key, None)
         if val is not None:
