@@ -11620,7 +11620,7 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
             errors.append(f"Date of birth '{request.dob}' doesn't match BVN records")
         
         if errors:
-            error_msg = " | ".join(errors) + f". ₦{KYC_VERIFICATION_FEE} has been deducted. Please correct the details and try again."
+            error_msg = " | ".join(errors) + f". ₦{kyc_fee:,.0f} has been deducted. Please correct the details and try again."
             raise HTTPException(status_code=400, detail=error_msg)
         
         # Success - mark as verified
