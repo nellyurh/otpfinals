@@ -6079,6 +6079,47 @@ const AdminPanel = ({ user, setUser }) => {
                                             </div>
                                           )}
 
+                                          {/* Manual Payscribe ID Entry (for Tier 3 users without ID) */}
+                                          {u.tier >= 3 && !u.payscribe_customer_id && (
+                                            <div className="bg-amber-50 rounded-lg p-3">
+                                              <Label className="text-xs font-semibold text-amber-700">Set Payscribe Customer ID</Label>
+                                              <p className="text-[10px] text-amber-600 mb-2">User verified but ID not saved. Enter ID from Payscribe dashboard.</p>
+                                              <div className="flex gap-2">
+                                                <Input
+                                                  placeholder="Enter Payscribe Customer ID"
+                                                  className="text-xs h-8 flex-1"
+                                                  id={`pcid-input-${u.id}`}
+                                                />
+                                                <button
+                                                  type="button"
+                                                  onClick={async () => {
+                                                    const input = document.getElementById(`pcid-input-${u.id}`);
+                                                    const pcid = input?.value?.trim();
+                                                    if (!pcid) {
+                                                      toast.error('Please enter a Payscribe Customer ID');
+                                                      return;
+                                                    }
+                                                    try {
+                                                      const resp = await axios.post(`${API}/admin/users/${u.id}/set-payscribe-id`, 
+                                                        { payscribe_customer_id: pcid }, 
+                                                        axiosConfig
+                                                      );
+                                                      if (resp.data.success) {
+                                                        toast.success('Payscribe ID set successfully!');
+                                                        fetchUsers();
+                                                      }
+                                                    } catch (e) {
+                                                      toast.error(e.response?.data?.detail || 'Failed to set Payscribe ID');
+                                                    }
+                                                  }}
+                                                  className="px-3 py-1 text-xs bg-amber-600 text-white rounded hover:bg-amber-700"
+                                                >
+                                                  Set ID
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )}
+
                                           <div className="flex items-center gap-6">
                                             <div className="flex items-center gap-2">
                                               <Checkbox 
