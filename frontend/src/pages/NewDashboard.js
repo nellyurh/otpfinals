@@ -3032,9 +3032,9 @@ const NewDashboard = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Tier Status</h3>
               <div className="flex items-center gap-4 mb-4">
                 {[
-                  { tier: 1, limit: '₦10,000', desc: 'Basic' },
-                  { tier: 2, limit: '₦100,000', desc: 'BVN' },
-                  { tier: 3, limit: '₦2,000,000', desc: 'Express KYC' }
+                  { tier: 1, limit: `₦${(branding.kyc_tier1_max_balance || 50000).toLocaleString()}`, desc: 'Basic' },
+                  { tier: 2, limit: `₦${(branding.kyc_tier2_max_balance || 500000).toLocaleString()}`, desc: 'BVN' },
+                  { tier: 3, limit: `₦${(branding.kyc_tier3_max_balance || 2000000).toLocaleString()}`, desc: 'Express KYC' }
                 ].map((t) => (
                   <div key={t.tier} className={`flex-1 text-center p-3 rounded-xl transition-all ${
                     userTier >= t.tier 
