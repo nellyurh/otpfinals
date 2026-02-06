@@ -2293,6 +2293,57 @@ async def fund_bet_wallet(bet_id: str, customer_id: str, customer_name: str, amo
         logger.error(f"Error funding bet wallet: {str(e)}")
         return None
 
+async def check_kyc_balance_limit(user_id: str) -> dict:
+    """Check if user's balance exceeds their KYC tier limit and suspend if necessary.
+    
+    Returns:
+        dict with 'suspended' boolean and 'reason' if suspended
+    """
+    try:
+        user = await db.users.find_one({'id': user_id}, {'_id': 0})
+        if not user:
+            return {'suspended': False}
+        
+        # Get KYC tier limits from config
+        config = await db.pricing_config.find_one({'_id': 'config'}, {'_id': 0}) or {}
+        
+        tier = user.get('tier', 1)
+        ngn_balance = user.get('ngn_balance', 0)
+        
+        # Get max balance for user's tier
+        tier_limits = {
+            1: config.get('kyc_tier1_max_balance', 50000),
+            2: config.get('kyc_tier2_max_balance', 500000),
+            3: config.get('kyc_tier3_max_balance', 2000000)
+        }
+        
+        max_balance = tier_limits.get(tier, 50000)
+        
+        # Check if balance exceeds limit
+        if ngn_balance > max_balance:
+            # Suspend the user
+            await db.users.update_one(
+                {'id': user_id},
+                {'$set': {
+                    'is_suspended': True,
+                    'suspension_reason': f'Balance exceeded Tier {tier} limit of ₦{max_balance:,.0f}. Please upgrade your KYC to continue.',
+                    'suspended_at': datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            logger.warning(f"User {user_id} suspended: balance ₦{ngn_balance:,.0f} exceeds tier {tier} limit of ₦{max_balance:,.0f}")
+            return {
+                'suspended': True,
+                'reason': f'Your balance (₦{ngn_balance:,.0f}) exceeds your Tier {tier} limit of ₦{max_balance:,.0f}. Please upgrade your KYC to unlock your account.',
+                'tier': tier,
+                'balance': ngn_balance,
+                'limit': max_balance
+            }
+        
+        return {'suspended': False}
+    except Exception as e:
+        logger.error(f"Error checking KYC balance limit: {str(e)}")
+        return {'suspended': False}
+
 # ============ Background Tasks ============
 
 async def otp_polling_task(order_id: str):
