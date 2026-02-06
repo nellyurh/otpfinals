@@ -13,6 +13,39 @@ This guide provides clear, step-by-step instructions for deploying and managing 
 
 ---
 
+## IMPORTANT: File Upload Persistence
+
+Uploaded files (logos, banners, KYC documents) are stored in Docker volumes to persist across deployments.
+
+**Volume Mapping:**
+- `uploads_data` (GetUCloudy) → `/app/uploads` inside container
+- `backend_uploads` (SocialSMSWorld) → `/app/uploads` inside container
+
+**Upload Directories:**
+- `/app/uploads/branding/` - Logo and favicon files
+- `/app/uploads/banners/` - Dashboard banner images
+- `/app/uploads/kyc/` - User KYC documents (ID, selfie)
+
+### One-Time Migration (if you have existing files)
+
+If you previously had files in `/app/backend/uploads/`, migrate them to the volume:
+
+```bash
+# For SocialSMSWorld
+docker exec -it socialsms-backend bash -c "mkdir -p /app/uploads/{branding,banners,kyc}"
+docker cp /path/to/old/branding/. socialsms-backend:/app/uploads/branding/
+docker cp /path/to/old/banners/. socialsms-backend:/app/uploads/banners/
+docker cp /path/to/old/kyc/. socialsms-backend:/app/uploads/kyc/
+
+# For GetUCloudy
+docker exec -it ultracloud-backend bash -c "mkdir -p /app/uploads/{branding,banners,kyc}"
+docker cp /path/to/old/branding/. ultracloud-backend:/app/uploads/branding/
+```
+
+**After this update, all new uploads will automatically persist across deployments!**
+
+---
+
 ## Site 1: GetUCloudy.com
 
 ### Server: vmi3037781
@@ -47,6 +80,7 @@ docker compose up -d
 docker compose ps
 docker logs ultracloud-backend --tail 100
 ```
+
 
 ### Environment Variables:
 - Set in `/opt/otp/.env` file
