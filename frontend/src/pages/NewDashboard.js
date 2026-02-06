@@ -873,9 +873,9 @@ const NewDashboard = () => {
         fixed lg:sticky top-0 left-0 h-screen z-50
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         w-56 lg:w-60 bg-white border-r border-gray-100 transition-transform duration-300 ease-in-out
-        overflow-y-auto shadow-sm
+        shadow-sm flex flex-col
       `}>
-        <div className="p-4">
+        <div className="p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {/* Logo - use image if available */}
@@ -897,7 +897,7 @@ const NewDashboard = () => {
           </div>
         </div>
 
-        <nav className="px-2 space-y-4 pb-28">
+        <nav className="px-2 space-y-4 pb-28 flex-1 overflow-y-auto">
           {menuItems.map((section, idx) => (
             <div key={idx}>
               <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-1.5">{section.category}</p>
