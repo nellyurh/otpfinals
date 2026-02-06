@@ -114,38 +114,53 @@ const LandingSocialSMS = ({
           </ul>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => { setShowAuth(true); setIsLogin(true); }} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '8px 20px', color: '#e2e8f0', fontWeight: 500, fontSize: '14px', cursor: 'pointer' }}>Login</button>
-            <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: accentGradient, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)' }}>Sign Up</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(true); }} style={{ 
+              background: hp2NavStyle === 'solid' ? accentGradient : 'transparent', 
+              border: hp2NavStyle === 'solid' ? 'none' : '1px solid rgba(255,255,255,0.2)', 
+              borderRadius: '8px', 
+              padding: '8px 20px', 
+              color: hp2NavStyle === 'solid' ? 'white' : '#e2e8f0', 
+              fontWeight: 500, 
+              fontSize: '14px', 
+              cursor: 'pointer' 
+            }}>Login</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: accentGradient, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: `0 4px 15px ${hp2AccentColor}66` }}>Sign Up</button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section - Dark gradient background */}
-      <section id="masthead" style={{ background: `linear-gradient(180deg, ${darkBgColor} 0%, #1e293b 100%)`, padding: '140px 0 100px', minHeight: '90vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
-        {/* Animated background elements */}
-        <div style={{ position: 'absolute', top: '20%', left: '10%', width: '300px', height: '300px', background: `radial-gradient(circle, ${themeColor}20 0%, transparent 70%)`, borderRadius: '50%', filter: 'blur(60px)' }}></div>
-        <div style={{ position: 'absolute', bottom: '20%', right: '10%', width: '400px', height: '400px', background: 'radial-gradient(circle, #8b5cf620 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(80px)' }}></div>
+      <section id="masthead" style={{ background: `linear-gradient(180deg, ${hp2BgColor} 0%, ${hp2BgColor}dd 100%)`, padding: '140px 0 100px', minHeight: '90vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+        {/* Animated background elements - conditional */}
+        {hp2EnableAnimatedBg && (
+          <>
+            <div style={{ position: 'absolute', top: '20%', left: '10%', width: '300px', height: '300px', background: `radial-gradient(circle, ${hp2AccentColor}20 0%, transparent 70%)`, borderRadius: '50%', filter: 'blur(60px)' }}></div>
+            <div style={{ position: 'absolute', bottom: '20%', right: '10%', width: '400px', height: '400px', background: `radial-gradient(circle, ${hp2AccentGradientEnd}20 0%, transparent 70%)`, borderRadius: '50%', filter: 'blur(80px)' }}></div>
+          </>
+        )}
         
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }}>
             {/* Left Content */}
             <div>
-              <span style={{ display: 'inline-block', background: 'rgba(139, 92, 246, 0.2)', color: '#a78bfa', padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 600, marginBottom: '20px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>🚀 Trusted by 50,000+ Users</span>
+              {hp2BadgeEnabled && (
+                <span style={{ display: 'inline-block', background: `${hp2AccentColor}33`, color: hp2AccentColor, padding: '6px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 600, marginBottom: '20px', border: `1px solid ${hp2AccentColor}50` }}>{hp2BadgeText}</span>
+              )}
               <h1 style={{ fontSize: '3.2rem', fontWeight: 800, color: '#f8fafc', lineHeight: 1.15, marginBottom: '1.5rem', letterSpacing: '-0.02em', minHeight: '160px' }}>
-                {typingText}<span style={{ borderRight: '3px solid #8b5cf6', animation: 'blink 1s infinite' }}>|</span>
+                {typingText}<span style={{ borderRight: `3px solid ${hp2AccentColor}`, animation: 'blink 1s infinite' }}>|</span>
               </h1>
               <p style={{ fontSize: '1.1rem', color: '#94a3b8', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-                Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers.
+                {hp2HeroSubtitle}
               </p>
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="hero-register-btn" style={{ background: accentGradient, border: 'none', borderRadius: '12px', padding: '16px 36px', color: 'white', fontWeight: 600, fontSize: '16px', cursor: 'pointer', boxShadow: '0 8px 30px rgba(139, 92, 246, 0.4)', transition: 'transform 0.2s, box-shadow 0.2s' }}>Get Started Free</button>
-                <button onClick={() => scrollToSection('about-us')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '16px 36px', color: '#e2e8f0', fontWeight: 600, fontSize: '16px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>Learn More</button>
+                <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="hero-register-btn" style={{ background: accentGradient, border: 'none', borderRadius: '12px', padding: '16px 36px', color: 'white', fontWeight: 600, fontSize: '16px', cursor: 'pointer', boxShadow: `0 8px 30px ${hp2AccentColor}66`, transition: 'transform 0.2s, box-shadow 0.2s' }}>Get Started Free</button>
+                <button onClick={() => scrollToSection('about-us')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '16px 36px', color: '#e2e8f0', fontWeight: 600, fontSize: '16px', cursor: 'pointer', backdropFilter: hp2EnableGlassmorphism ? 'blur(10px)' : 'none' }}>Learn More</button>
               </div>
             </div>
 
             {/* Right - Mockup with glassmorphism */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ background: 'rgba(30, 41, 59, 0.8)', backdropFilter: 'blur(20px)', borderRadius: '24px', padding: '30px', boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5)', maxWidth: '500px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ background: hp2EnableGlassmorphism ? 'rgba(30, 41, 59, 0.8)' : 'rgba(30, 41, 59, 1)', backdropFilter: hp2EnableGlassmorphism ? 'blur(20px)' : 'none', borderRadius: '24px', padding: '30px', boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5)', maxWidth: '500px', width: '100%', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ background: accentGradient, color: 'white', padding: '15px', borderRadius: '16px 16px 0 0', margin: '-30px -30px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <img src={logoUrl} alt="Logo" style={{ height: '24px', filter: 'brightness(0) invert(1)' }} />
                   <div style={{ display: 'flex', gap: '6px' }}>
