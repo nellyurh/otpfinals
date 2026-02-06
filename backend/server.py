@@ -11776,17 +11776,26 @@ async def get_kyc_status(user: dict = Depends(get_current_user)):
     """Get user's KYC verification status"""
     db_user = await db.users.find_one({'id': user['id']}, {'_id': 0})
     
+    # Get KYC limits from config
+    config = await db.pricing_config.find_one({}, {'_id': 0}) or {}
+    tier1_limit = config.get('kyc_tier1_max_balance', 50000)
+    tier2_limit = config.get('kyc_tier2_max_balance', 500000)
+    tier3_limit = config.get('kyc_tier3_max_balance', 2000000)
+    kyc_fee = config.get('kyc_tier3_fee', 200)
+    
+    user_tier = db_user.get('tier', 1)
+    
     return {
-        'tier': db_user.get('tier', 1),
+        'tier': user_tier,
         'bvn_verified': db_user.get('bvn_verified', False),
         'nin_verified': db_user.get('nin_verified', False),
         'limits': {
-            1: 10000,
-            2: 100000,
-            3: 2000000
+            1: tier1_limit,
+            2: tier2_limit,
+            3: tier3_limit
         },
-        'current_limit': 10000 if db_user.get('tier', 1) == 1 else (100000 if db_user.get('tier', 1) == 2 else 2000000),
-        'verification_fee': KYC_VERIFICATION_FEE
+        'current_limit': tier1_limit if user_tier == 1 else (tier2_limit if user_tier == 2 else tier3_limit),
+        'verification_fee': kyc_fee
     }
 
 
