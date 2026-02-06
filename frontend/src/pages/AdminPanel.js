@@ -1761,7 +1761,7 @@ const AdminPanel = ({ user, setUser }) => {
           ${adminSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           w-56 lg:w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300
         `}>
-          <div className="flex items-center justify-between h-14 px-4 border-b border-slate-200">
+          <div className="flex items-center justify-between h-14 px-4 border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center">
               {branding.brand_logo_url ? (
                 <img src={branding.brand_logo_url} alt="Logo" className="h-7 object-contain" />
@@ -1782,7 +1782,7 @@ const AdminPanel = ({ user, setUser }) => {
             </button>
           </div>
 
-          <nav className="flex-1 px-2 py-3 space-y-1 text-xs overflow-y-auto">
+          <nav className="flex-1 px-2 py-3 space-y-1 text-xs overflow-y-auto pb-20">
             <SidebarItem
               icon={LayoutDashboard}
               label="Dashboard"
