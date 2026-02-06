@@ -5723,6 +5723,129 @@ const AdminPanel = ({ user, setUser }) => {
               <EmailSettingsSection API={API} axiosConfig={axiosConfig} config={branding} setConfig={setBranding} />
             )}
 
+            {/* KYC Settings Section */}
+            {activeSection === 'kyc-settings' && (
+              <section className="grid grid-cols-1 gap-6 mt-4">
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      KYC Tier Settings
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Configure verification fees and maximum wallet balance limits for each KYC tier.
+                      Users exceeding their tier's balance limit will be auto-suspended until they upgrade.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Tier 1 */}
+                    <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                      <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
+                        <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-semibold">Tier 1</span>
+                        Basic Verification
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs">Verification Fee (NGN)</Label>
+                          <Input
+                            type="number"
+                            value={kycSettings.kyc_tier1_fee}
+                            onChange={(e) => setKycSettings({ ...kycSettings, kyc_tier1_fee: e.target.value })}
+                            placeholder="0"
+                            className="mt-1"
+                          />
+                          <p className="text-xs text-slate-500 mt-1">Set to 0 for free verification</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Maximum Wallet Balance (NGN)</Label>
+                          <Input
+                            type="number"
+                            value={kycSettings.kyc_tier1_max_balance}
+                            onChange={(e) => setKycSettings({ ...kycSettings, kyc_tier1_max_balance: e.target.value })}
+                            placeholder="50000"
+                            className="mt-1"
+                          />
+                          <p className="text-xs text-slate-500 mt-1">Users exceeding this will be suspended</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tier 2 */}
+                    <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                      <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
+                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">Tier 2</span>
+                        Standard Verification
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs">Verification Fee (NGN)</Label>
+                          <Input
+                            type="number"
+                            value={kycSettings.kyc_tier2_fee}
+                            onChange={(e) => setKycSettings({ ...kycSettings, kyc_tier2_fee: e.target.value })}
+                            placeholder="500"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Maximum Wallet Balance (NGN)</Label>
+                          <Input
+                            type="number"
+                            value={kycSettings.kyc_tier2_max_balance}
+                            onChange={(e) => setKycSettings({ ...kycSettings, kyc_tier2_max_balance: e.target.value })}
+                            placeholder="500000"
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tier 3 */}
+                    <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                      <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
+                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-semibold">Tier 3</span>
+                        Premium Verification
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs">Verification Fee (NGN)</Label>
+                          <Input
+                            type="number"
+                            value={kycSettings.kyc_tier3_fee}
+                            onChange={(e) => setKycSettings({ ...kycSettings, kyc_tier3_fee: e.target.value })}
+                            placeholder="1000"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Maximum Wallet Balance (NGN)</Label>
+                          <Input
+                            type="number"
+                            value={kycSettings.kyc_tier3_max_balance}
+                            onChange={(e) => setKycSettings({ ...kycSettings, kyc_tier3_max_balance: e.target.value })}
+                            placeholder="2000000"
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={handleSaveKycSettings} 
+                      disabled={savingKycSettings}
+                      className="w-full md:w-auto"
+                    >
+                      {savingKycSettings ? (
+                        <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Saving...</>
+                      ) : (
+                        <><Save className="h-4 w-4 mr-2" /> Save KYC Settings</>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {activeSection === 'users' && (
               <section className="grid grid-cols-1 gap-6 mt-4">
                 <Card className="border border-slate-200 shadow-sm bg-white">
