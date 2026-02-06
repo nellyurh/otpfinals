@@ -30,6 +30,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
     environment:
       - MONGO_URL=mongodb://mongodb:27017
       - DB_NAME=sms_relay_db
