@@ -3597,7 +3597,7 @@ const NewDashboard = () => {
                 <h3 className="font-bold">Tier 1: Basic</h3>
               </div>
               <p className="text-sm text-gray-600 mb-2">Email verification</p>
-              <p className="text-lg font-bold text-[#005E3A]">₦10,000 limit</p>
+              <p className="text-lg font-bold text-[#005E3A]">₦{(branding.kyc_tier1_max_balance || 50000).toLocaleString()} limit</p>
               {userTier >= 1 && <p className="text-xs text-green-600 mt-2">✓ Approved</p>}
             </div>
 
@@ -3608,7 +3608,7 @@ const NewDashboard = () => {
                 <h3 className="font-bold">Tier 2: Standard</h3>
               </div>
               <p className="text-sm text-gray-600 mb-2">BVN verification</p>
-              <p className="text-lg font-bold text-[#005E3A]">₦100,000 limit</p>
+              <p className="text-lg font-bold text-[#005E3A]">₦{(branding.kyc_tier2_max_balance || 500000).toLocaleString()} limit</p>
               {userTier >= 2 && <p className="text-xs text-green-600 mt-2">✓ Approved</p>}
             </div>
 
@@ -3619,7 +3619,7 @@ const NewDashboard = () => {
                 <h3 className="font-bold">Tier 3: Premium</h3>
               </div>
               <p className="text-sm text-gray-600 mb-2">Full KYC verification</p>
-              <p className="text-lg font-bold text-[#005E3A]">₦1,000,000 limit</p>
+              <p className="text-lg font-bold text-[#005E3A]">₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit</p>
               {userTier < 3 && <p className="text-xs text-yellow-600 mt-2">⚠ Upgrade Required</p>}
             </div>
           </div>
