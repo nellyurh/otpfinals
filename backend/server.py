@@ -8447,6 +8447,11 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
         'disable_all_bills': config.get('disable_all_bills', False),
         # Master bank transfer disable toggle
         'disable_bank_transfer': config.get('disable_bank_transfer', False),
+        # Individual bill payment toggles
+        'disable_data': config.get('disable_data', False),
+        'disable_tv': config.get('disable_tv', False),
+        'disable_electricity': config.get('disable_electricity', False),
+        'disable_airtime_bills': config.get('disable_airtime_bills', False),
         # Payment gateway toggles
         'enable_paymentpoint': config.get('enable_paymentpoint', True),
         'enable_plisio': config.get('enable_plisio', True),
