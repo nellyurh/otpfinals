@@ -8366,6 +8366,76 @@ async def admin_update_user(user_id: str, data: AdminUserUpdate, admin: dict = D
     return {"success": True, "user": updated_user}
 
 
+@api_router.post("/admin/users/{user_id}/link-card-services")
+async def admin_link_card_services(user_id: str, admin: dict = Depends(require_admin)):
+    """
+    Manually create a Payscribe customer for a user to enable card services.
+    This is useful for users who were upgraded to Tier 3 without going through
+    the standard KYC verification flow.
+    """
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if already has payscribe_customer_id
+    if user.get('payscribe_customer_id'):
+        return {
+            "success": True,
+            "message": "User already has card services linked",
+            "payscribe_customer_id": user.get('payscribe_customer_id')
+        }
+    
+    # Create Payscribe customer
+    try:
+        # Build customer data
+        first_name = user.get('first_name', user.get('full_name', 'User').split()[0])
+        last_name = user.get('last_name', user.get('full_name', 'User').split()[-1] if len(user.get('full_name', 'User').split()) > 1 else 'User')
+        
+        payload = {
+            'email': user.get('email'),
+            'first_name': first_name,
+            'last_name': last_name,
+            'phone': user.get('phone', ''),
+        }
+        
+        logger.info(f"Admin creating Payscribe customer for user {user_id}: {payload}")
+        
+        result = await payscribe_request('customers/create', 'POST', payload, use_public_key=True)
+        
+        if not result or not result.get('status'):
+            error_msg = result.get('description', 'Failed to create Payscribe customer') if result else 'Payscribe API error'
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        customer_id = result.get('message', {}).get('details', {}).get('customer_id')
+        
+        if not customer_id:
+            raise HTTPException(status_code=500, detail="No customer ID returned from Payscribe")
+        
+        # Update user with customer ID
+        await db.users.update_one(
+            {'id': user_id},
+            {'$set': {
+                'payscribe_customer_id': customer_id,
+                'card_services_linked_at': datetime.now(timezone.utc).isoformat(),
+                'card_services_linked_by': admin['id']
+            }}
+        )
+        
+        logger.info(f"Admin linked card services for user {user_id}: customer_id={customer_id}")
+        
+        return {
+            "success": True,
+            "message": "Card services linked successfully",
+            "payscribe_customer_id": customer_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error linking card services for user {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.get("/admin/top-services")
 async def admin_top_services(
     admin: dict = Depends(require_admin),
