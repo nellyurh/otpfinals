@@ -2561,7 +2561,7 @@ const NewDashboard = () => {
             {ninVerified && (
               <div className="mt-4 p-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white">
                 <h4 className="font-bold text-lg">🎉 Congratulations!</h4>
-                <p className="text-sm opacity-90">Your account is now Tier 3 with ₦2,000,000 limit</p>
+                <p className="text-sm opacity-90">Your account is now Tier 3 with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit</p>
               </div>
             )}
           </div>
