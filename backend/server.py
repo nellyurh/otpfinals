@@ -11482,7 +11482,9 @@ async def submit_tier2_kyc(request: Tier2KYCRequest, user: dict = Depends(get_cu
                 'bvn': request.bvn,
                 'tier': 2,
                 'kyc_phone': request.phone,
-                'tier2_upgraded_at': datetime.now(timezone.utc).isoformat()
+                'tier2_upgraded_at': datetime.now(timezone.utc).isoformat(),
+                'is_suspended': False,  # Unsuspend user on KYC upgrade
+                'suspension_reason': None
             }}
         )
         
