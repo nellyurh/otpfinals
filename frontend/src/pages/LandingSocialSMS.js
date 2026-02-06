@@ -56,7 +56,7 @@ const LandingSocialSMS = ({
     }, 50);
 
     return () => clearInterval(typeInterval);
-  }, [textIndex]);
+  }, [textIndex, branding]);
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -65,21 +65,31 @@ const LandingSocialSMS = ({
     }
   };
 
-  // Use prop values with fallbacks
+  // Use prop values with fallbacks - these are general branding
   const themeColor = primaryColor || branding.primary_color_hex || '#4169E1';
   const btnColor = buttonColor || branding.button_color_hex || themeColor;
   const logoUrl = branding.brand_logo_url || '/img/social_logo.png';
 
-  // SocialSMS uses a dark-themed gradient style
-  const darkBgColor = '#0f172a';  // Slate-900
-  const accentGradient = `linear-gradient(135deg, ${themeColor}, #8b5cf6)`;  // Purple gradient accent
+  // Homepage 2 specific settings from admin
+  const hp2BgColor = branding.hp2_bg_color || '#0f172a';
+  const hp2AccentColor = branding.hp2_accent_color || '#8b5cf6';
+  const hp2AccentGradientEnd = branding.hp2_accent_gradient_end || hp2AccentColor;
+  const hp2EnableGlassmorphism = branding.hp2_enable_glassmorphism !== false;
+  const hp2EnableAnimatedBg = branding.hp2_enable_animated_bg !== false;
+  const hp2BadgeText = branding.hp2_badge_text || '🚀 Trusted by 50,000+ Users';
+  const hp2BadgeEnabled = branding.hp2_badge_enabled !== false;
+  const hp2NavStyle = branding.hp2_nav_style || 'bordered';
+  const hp2HeroSubtitle = branding.hp2_hero_subtitle || "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers.";
+  
+  // Accent gradient using admin colors
+  const accentGradient = `linear-gradient(135deg, ${hp2AccentColor}, ${hp2AccentGradientEnd})`;
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: darkBgColor }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: hp2BgColor }}>
       {/* Navigation - Dark themed */}
       <nav style={{
-        background: 'rgba(15, 23, 42, 0.95)',
-        backdropFilter: 'blur(10px)',
+        background: `${hp2BgColor}f2`,
+        backdropFilter: hp2EnableGlassmorphism ? 'blur(10px)' : 'none',
         padding: '1rem 0',
         position: 'fixed',
         top: 0,
