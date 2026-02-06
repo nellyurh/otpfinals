@@ -12004,7 +12004,7 @@ async def upload_admin_banner(file: UploadFile = File(...), user: dict = Depends
         ext = validate_upload_file(file, allowed_types, max_size_mb=5)
         
         # Create uploads directory
-        upload_dir = Path("/app/backend/uploads/banners")
+        upload_dir = Path("/app/uploads/banners")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate secure filename
