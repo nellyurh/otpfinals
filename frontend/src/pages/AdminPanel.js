@@ -973,6 +973,7 @@ const AdminPanel = ({ user, setUser }) => {
   const [periodRange, setPeriodRange] = useState(null); // { start, end } from backend
   const [adsSpend, setAdsSpend] = useState('0');
   const [users, setUsers] = useState(null);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
   const [topServices, setTopServices] = useState(null);
 
   const [adminDeposits, setAdminDeposits] = useState([]);
