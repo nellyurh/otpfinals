@@ -8485,6 +8485,14 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
         config_sanitized['reloadly_client_id'] = os.environ.get('RELOADLY_CLIENT_ID', '')[:20] + '...'  # Truncated for display
         config_sanitized['reloadly_from_env'] = True
 
+    # Add KYC tier settings with defaults
+    config_sanitized['kyc_tier1_max_balance'] = config.get('kyc_tier1_max_balance', 50000.0)
+    config_sanitized['kyc_tier1_fee'] = config.get('kyc_tier1_fee', 0.0)
+    config_sanitized['kyc_tier2_max_balance'] = config.get('kyc_tier2_max_balance', 500000.0)
+    config_sanitized['kyc_tier2_fee'] = config.get('kyc_tier2_fee', 500.0)
+    config_sanitized['kyc_tier3_max_balance'] = config.get('kyc_tier3_max_balance', 2000000.0)
+    config_sanitized['kyc_tier3_fee'] = config.get('kyc_tier3_fee', 1000.0)
+
     return config_sanitized
 
 
