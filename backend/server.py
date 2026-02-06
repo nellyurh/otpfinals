@@ -11537,7 +11537,8 @@ async def _create_payscribe_customer_for_kyc(user: dict, dob: str, address: Opti
             
             if result and result.get('status'):
                 message = result.get('message', {})
-                customer_id = message.get('customer_id')
+                # Try multiple paths for customer_id as Payscribe API may vary
+                customer_id = message.get('customer_id') or message.get('details', {}).get('customer_id')
                 
                 if customer_id:
                     await db.users.update_one(
@@ -11549,6 +11550,8 @@ async def _create_payscribe_customer_for_kyc(user: dict, dob: str, address: Opti
                     )
                     logger.info(f"Payscribe customer created successfully: {customer_id}")
                     return customer_id
+                else:
+                    logger.error(f"Payscribe response missing customer_id. Full response: {result}")
             
             logger.error(f"Payscribe customer creation failed: {result}")
             return None
