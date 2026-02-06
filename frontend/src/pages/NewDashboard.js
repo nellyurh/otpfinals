@@ -3374,7 +3374,7 @@ const NewDashboard = () => {
                   <Check className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Fully Verified!</h3>
-                <p className="text-gray-500 mb-4">Your account is at maximum tier with ₦2,000,000 limit.</p>
+                <p className="text-gray-500 mb-4">Your account is at maximum tier with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit.</p>
                 <div className="flex justify-center gap-4">
                   <div className="bg-green-50 px-4 py-2 rounded-lg">
                     <span className="text-green-700 font-medium">BVN ✓</span>
