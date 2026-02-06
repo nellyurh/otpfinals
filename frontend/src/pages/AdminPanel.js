@@ -1700,6 +1700,26 @@ const AdminPanel = ({ user, setUser }) => {
     }
   };
 
+  const handleSaveKycSettings = async () => {
+    try {
+      setSavingKycSettings(true);
+      await axios.put(`${API}/admin/pricing`, {
+        kyc_tier1_max_balance: parseFloat(kycSettings.kyc_tier1_max_balance) || 50000,
+        kyc_tier1_fee: parseFloat(kycSettings.kyc_tier1_fee) || 0,
+        kyc_tier2_max_balance: parseFloat(kycSettings.kyc_tier2_max_balance) || 500000,
+        kyc_tier2_fee: parseFloat(kycSettings.kyc_tier2_fee) || 500,
+        kyc_tier3_max_balance: parseFloat(kycSettings.kyc_tier3_max_balance) || 2000000,
+        kyc_tier3_fee: parseFloat(kycSettings.kyc_tier3_fee) || 1000
+      }, axiosConfig);
+      toast.success('KYC tier settings saved!');
+      fetchPricing();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to save KYC settings');
+    } finally {
+      setSavingKycSettings(false);
+    }
+  };
+
   const getServiceName = (service) => {
     if (!service) return 'Unknown';
     const s = String(service).toLowerCase();
