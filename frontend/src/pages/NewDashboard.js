@@ -1108,6 +1108,39 @@ const NewDashboard = () => {
 
         {/* Content Area */}
         <main className="px-4 lg:px-6 py-4 lg:py-6">
+          {/* Account Suspension Banner */}
+          {user.is_suspended && (
+            <div className="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl shadow-sm">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-red-100 rounded-full">
+                    <Shield className="w-8 h-8 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-red-800">Account Suspended</h3>
+                    <p className="text-sm text-red-600 mt-1">
+                      {user.suspension_reason || 'Your account has been suspended. Please upgrade your KYC tier to continue using BillHub.'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveSection('profile')}
+                  className="lg:ml-auto px-6 py-2.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-medium hover:from-red-700 hover:to-orange-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                  data-testid="upgrade-kyc-btn"
+                >
+                  <Shield className="w-4 h-4" />
+                  Upgrade KYC Now
+                </button>
+              </div>
+              <div className="mt-4 p-3 bg-white/50 rounded-lg border border-red-100">
+                <p className="text-xs text-red-700">
+                  <strong>Why was my account suspended?</strong> Your wallet balance has exceeded the maximum limit for your current KYC tier. 
+                  To unlock your account and increase your limits, please verify your identity by upgrading to a higher KYC tier.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="w-full">
             {activeSection === 'virtual-numbers' && (
               isPageEnabled('virtual-numbers') ? (
