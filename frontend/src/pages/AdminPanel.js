@@ -5853,21 +5853,63 @@ const AdminPanel = ({ user, setUser }) => {
                                             <div className="flex items-center gap-2">
                                               <Checkbox 
                                                 checked={editUser?.is_admin ?? !!u.is_admin} 
-                                                onCheckedChange={(v) => setEditUser({ ...editUser, is_admin: !!v })} 
+                                                onCheckedChange={(v) => setEditUser(prev => ({ 
+                                                  ...(prev || {
+                                                    first_name: u.first_name || '',
+                                                    last_name: u.last_name || '',
+                                                    email: u.email || '',
+                                                    phone: u.phone || '',
+                                                    ngn_balance: u.ngn_balance || 0,
+                                                    usd_balance: u.usd_balance || 0,
+                                                    tier: u.tier || 1,
+                                                    is_admin: !!u.is_admin,
+                                                    is_suspended: !!u.is_suspended,
+                                                    is_blocked: !!u.is_blocked,
+                                                  }), 
+                                                  is_admin: !!v 
+                                                }))} 
                                               />
                                               <span className="text-xs">Admin</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                               <Checkbox 
                                                 checked={editUser?.is_suspended ?? !!u.is_suspended} 
-                                                onCheckedChange={(v) => setEditUser({ ...editUser, is_suspended: !!v })} 
+                                                onCheckedChange={(v) => setEditUser(prev => ({ 
+                                                  ...(prev || {
+                                                    first_name: u.first_name || '',
+                                                    last_name: u.last_name || '',
+                                                    email: u.email || '',
+                                                    phone: u.phone || '',
+                                                    ngn_balance: u.ngn_balance || 0,
+                                                    usd_balance: u.usd_balance || 0,
+                                                    tier: u.tier || 1,
+                                                    is_admin: !!u.is_admin,
+                                                    is_suspended: !!u.is_suspended,
+                                                    is_blocked: !!u.is_blocked,
+                                                  }), 
+                                                  is_suspended: !!v 
+                                                }))} 
                                               />
                                               <span className="text-xs">Suspended</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                               <Checkbox 
                                                 checked={editUser?.is_blocked ?? !!u.is_blocked} 
-                                                onCheckedChange={(v) => setEditUser({ ...editUser, is_blocked: !!v })} 
+                                                onCheckedChange={(v) => setEditUser(prev => ({ 
+                                                  ...(prev || {
+                                                    first_name: u.first_name || '',
+                                                    last_name: u.last_name || '',
+                                                    email: u.email || '',
+                                                    phone: u.phone || '',
+                                                    ngn_balance: u.ngn_balance || 0,
+                                                    usd_balance: u.usd_balance || 0,
+                                                    tier: u.tier || 1,
+                                                    is_admin: !!u.is_admin,
+                                                    is_suspended: !!u.is_suspended,
+                                                    is_blocked: !!u.is_blocked,
+                                                  }), 
+                                                  is_blocked: !!v 
+                                                }))} 
                                               />
                                               <span className="text-xs">Blocked</span>
                                             </div>
