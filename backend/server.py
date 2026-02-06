@@ -7014,7 +7014,7 @@ async def transfer_to_bank(request: BankTransferRequest, user: dict = Depends(ge
 # ============ Virtual Cards (Payscribe) ============
 
 class CreateCardRequest(BaseModel):
-    brand: str = "VISA"  # VISA or MASTERCARD
+    brand: str = "MASTERCARD"  # MASTERCARD or VISA
     initial_amount: float = 1.0  # Initial funding amount (min $1)
     design: str = "classic"  # Card design theme
     alias: str = "My Card"  # Card name/alias
