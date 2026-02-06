@@ -8417,6 +8417,19 @@ async def get_public_branding():
         "seo_keywords": config.get("seo_keywords", "virtual numbers, OTP verification, SMS verification, gift cards, airtime, data"),
         "seo_author": config.get("seo_author", "Social SMS WRLD"),
         "seo_canonical_url": config.get("seo_canonical_url", ""),
+        # Homepage 2 (SocialSMS) Specific Settings
+        "hp2_bg_color": config.get("hp2_bg_color", "#0f172a"),
+        "hp2_accent_color": config.get("hp2_accent_color", "#8b5cf6"),
+        "hp2_accent_gradient_end": config.get("hp2_accent_gradient_end", "#8b5cf6"),
+        "hp2_enable_glassmorphism": config.get("hp2_enable_glassmorphism", True),
+        "hp2_enable_animated_bg": config.get("hp2_enable_animated_bg", True),
+        "hp2_badge_text": config.get("hp2_badge_text", "🚀 Trusted by 50,000+ Users"),
+        "hp2_badge_enabled": config.get("hp2_badge_enabled", True),
+        "hp2_nav_style": config.get("hp2_nav_style", "bordered"),
+        "hp2_hero_title_1": config.get("hp2_hero_title_1", "Buy Numbers for"),
+        "hp2_hero_title_2": config.get("hp2_hero_title_2", "SMS Verifications"),
+        "hp2_hero_title_3": config.get("hp2_hero_title_3", "Buy Data, Airtime"),
+        "hp2_hero_subtitle": config.get("hp2_hero_subtitle", "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers."),
     }
 
 @api_router.get("/user/page-toggles")
