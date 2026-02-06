@@ -1460,6 +1460,11 @@ const AdminPanel = ({ user, setUser }) => {
         disable_all_bills: response.data.disable_all_bills === true,
         // Master bank transfer disable toggle
         disable_bank_transfer: response.data.disable_bank_transfer === true,
+        // Individual bill payment toggles
+        disable_data: response.data.disable_data === true,
+        disable_tv: response.data.disable_tv === true,
+        disable_electricity: response.data.disable_electricity === true,
+        disable_airtime_bills: response.data.disable_airtime_bills === true,
         // Payment gateway toggles
         enable_ercaspay: response.data.enable_ercaspay !== false,
         enable_paymentpoint: response.data.enable_paymentpoint !== false,
