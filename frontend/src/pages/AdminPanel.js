@@ -1520,6 +1520,16 @@ const AdminPanel = ({ user, setUser }) => {
         reloadly_from_env: response.data.reloadly_from_env || false,
         reloadly_configured: response.data.reloadly_configured || false
       });
+
+      // Load KYC Settings
+      setKycSettings({
+        kyc_tier1_max_balance: response.data.kyc_tier1_max_balance || 50000,
+        kyc_tier1_fee: response.data.kyc_tier1_fee || 0,
+        kyc_tier2_max_balance: response.data.kyc_tier2_max_balance || 500000,
+        kyc_tier2_fee: response.data.kyc_tier2_fee || 500,
+        kyc_tier3_max_balance: response.data.kyc_tier3_max_balance || 2000000,
+        kyc_tier3_fee: response.data.kyc_tier3_fee || 1000
+      });
     } catch (error) {
       console.error('Failed to fetch pricing');
     }
