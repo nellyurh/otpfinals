@@ -3505,9 +3505,9 @@ const NewDashboard = () => {
     const walletBalance = user.ngn_balance + (user.usd_balance * 1500);
 
     const getTierLimit = (tier) => {
-      if (tier === 1) return 10000;
-      if (tier === 2) return 100000;
-      return 1000000;
+      if (tier === 1) return branding.kyc_tier1_max_balance || 50000;
+      if (tier === 2) return branding.kyc_tier2_max_balance || 500000;
+      return branding.kyc_tier3_max_balance || 2000000;
     };
 
     const handleSubmitKYC = async () => {
