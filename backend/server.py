@@ -2688,6 +2688,8 @@ async def get_profile(user: dict = Depends(get_current_user)):
         'ngn_balance': user.get('ngn_balance', 0),
         'usd_balance': user.get('usd_balance', 0),
         'is_admin': user.get('is_admin', False),
+        'is_suspended': user.get('is_suspended', False),
+        'suspension_reason': user.get('suspension_reason'),
         'virtual_account_number': user.get('virtual_account_number'),
         'virtual_account_name': user.get('virtual_account_name'),
         'virtual_bank_name': user.get('virtual_bank_name'),
