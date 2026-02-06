@@ -90,3 +90,4 @@ services:
 volumes:
   mongodb_data:
   certbot_data:
+  uploads_data:
