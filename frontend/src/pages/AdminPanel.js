@@ -651,6 +651,16 @@ const AdminPanel = ({ user, setUser }) => {
     reloadly_configured: false
   });
 
+  const [kycSettings, setKycSettings] = useState({
+    kyc_tier1_max_balance: 50000,
+    kyc_tier1_fee: 0,
+    kyc_tier2_max_balance: 500000,
+    kyc_tier2_fee: 500,
+    kyc_tier3_max_balance: 2000000,
+    kyc_tier3_fee: 1000
+  });
+  const [savingKycSettings, setSavingKycSettings] = useState(false);
+
   const [reloadlyBalance, setReloadlyBalance] = useState({
     balance: null,
     currency_code: 'USD',
