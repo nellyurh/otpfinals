@@ -30,14 +30,17 @@ const LandingSocialSMS = ({
   // Get brand name from branding or default
   const brandName = branding.brand_name || 'SocialSMSWrld';
   
+  // Typing texts from admin settings
   const texts = [
-    "Cheapest and Fastest Online SMS verification",
-    "Secure Online SMS for Safe Registrations"
-  ];
+    branding.hp2_hero_title_1 || "Buy Numbers for",
+    branding.hp2_hero_title_2 || "SMS Verifications",
+    branding.hp2_hero_title_3 || "Buy Data, Airtime"
+  ].filter(t => t && t.trim());
 
   // Typing effect
   useEffect(() => {
-    const currentText = texts[textIndex];
+    if (texts.length === 0) return;
+    const currentText = texts[textIndex % texts.length];
     let charIndex = 0;
     let currentTyped = '';
     
