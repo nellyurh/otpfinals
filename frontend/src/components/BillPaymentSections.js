@@ -424,6 +424,13 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection, primaryColor = '#059669', pageToggles = {}, defaultTab = null }) {
   const [activeService, setActiveServiceLocal] = useState(defaultTab);
 
+  // Update activeService when defaultTab changes (e.g., when clicking service cards from dashboard)
+  useEffect(() => {
+    if (defaultTab) {
+      setActiveServiceLocal(defaultTab);
+    }
+  }, [defaultTab]);
+
   // Check if bank transfer is disabled
   const bankTransferDisabled = pageToggles.disable_bank_transfer === true;
 
