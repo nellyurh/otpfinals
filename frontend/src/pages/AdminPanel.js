@@ -1793,6 +1793,12 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'email-settings'}
               onClick={() => { setActiveSection('email-settings'); setAdminSidebarOpen(false); }}
             />
+            <SidebarItem
+              icon={Shield}
+              label="KYC Settings"
+              active={activeSection === 'kyc-settings'}
+              onClick={() => { setActiveSection('kyc-settings'); setAdminSidebarOpen(false); }}
+            />
             
             <div className="mt-3 text-[9px] font-semibold text-slate-500 uppercase tracking-wide px-2">
               Management
