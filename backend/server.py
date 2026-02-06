@@ -8451,6 +8451,13 @@ async def get_public_branding():
         "hp2_hero_title_2": config.get("hp2_hero_title_2", "SMS Verifications"),
         "hp2_hero_title_3": config.get("hp2_hero_title_3", "Buy Data, Airtime"),
         "hp2_hero_subtitle": config.get("hp2_hero_subtitle", "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers."),
+        # KYC Tier Settings
+        "kyc_tier1_max_balance": config.get("kyc_tier1_max_balance", 50000.0),
+        "kyc_tier1_fee": config.get("kyc_tier1_fee", 0.0),
+        "kyc_tier2_max_balance": config.get("kyc_tier2_max_balance", 500000.0),
+        "kyc_tier2_fee": config.get("kyc_tier2_fee", 500.0),
+        "kyc_tier3_max_balance": config.get("kyc_tier3_max_balance", 2000000.0),
+        "kyc_tier3_fee": config.get("kyc_tier3_fee", 1000.0),
     }
 
 @api_router.get("/user/page-toggles")
