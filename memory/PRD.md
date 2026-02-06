@@ -1,6 +1,18 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-06 (Session 11)**: Deployment Documentation + Admin UI Improvements
+  - NEW: **DEPLOYMENT.md** - Comprehensive deployment guide with clear instructions for both sites:
+    - Separate commands for GetUCloudy (`docker compose up`) and SocialSMSWorld (`docker compose -f docker-compose.socialsmsworld.yml up`)
+    - Container name conventions explained (ultracloud-* vs socialsms-*)
+    - Troubleshooting section for common deployment issues
+    - Quick reference commands for each site
+  - IMPROVED: **Make Admin Button** - Better feedback with success/error toast notifications
+    - Shows "Made user an admin" / "Removed admin status" on success
+    - Shows specific error message on failure
+    - Console logging for debugging
+  - VERIFIED: Backend API for admin toggles (is_admin, is_suspended, is_blocked) working correctly
+  
 - **2026-02-06 (Session 10)**: KYC Tier Logic + Admin Fixes + Virtual Card Fix
   - NEW: **KYC Settings Admin UI** - Admin Panel now has "KYC Settings" section under Configuration:
     - Configure verification fees for each KYC tier (Tier 1, 2, 3)
