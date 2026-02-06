@@ -184,7 +184,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     setCreating(true);
     try {
       const response = await axios.post(`${API}/api/cards/create`, {
-        brand: 'VISA',
+        brand: 'MASTERCARD',
         initial_amount: amount,
         design: selectedDesign,
         alias: cardAlias.trim()
