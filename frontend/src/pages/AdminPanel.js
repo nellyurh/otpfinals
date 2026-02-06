@@ -1613,11 +1613,22 @@ const AdminPanel = ({ user, setUser }) => {
   };
 
   const quickToggleUser = async (u, key) => {
+    const actionLabels = {
+      is_admin: u[key] ? 'Removed admin status' : 'Made user an admin',
+      is_suspended: u[key] ? 'Unsuspended user' : 'Suspended user',
+      is_blocked: u[key] ? 'Unblocked user' : 'Blocked user',
+    };
     try {
-      await axios.put(`${API}/admin/users/${u.id}`, { [key]: !u[key] }, axiosConfig);
-      fetchUsers();
+      const resp = await axios.put(`${API}/admin/users/${u.id}`, { [key]: !u[key] }, axiosConfig);
+      if (resp.data.success) {
+        toast.success(actionLabels[key] || 'User updated');
+        fetchUsers();
+      } else {
+        toast.error(resp.data.detail || 'Failed to update user');
+      }
     } catch (e) {
-      toast.error('Failed to update user');
+      console.error('quickToggleUser error:', e);
+      toast.error(e.response?.data?.detail || 'Failed to update user');
     }
   };
 
