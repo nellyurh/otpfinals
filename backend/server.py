@@ -11955,7 +11955,7 @@ async def upload_admin_logo(file: UploadFile = File(...), user: dict = Depends(r
         ext = validate_upload_file(file, allowed_types, max_size_mb=5)
         
         # Create uploads directory
-        upload_dir = Path("/app/backend/uploads/branding")
+        upload_dir = Path("/app/uploads/branding")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate secure filename (never use user-provided filename)
@@ -12046,7 +12046,7 @@ async def upload_admin_favicon(file: UploadFile = File(...), user: dict = Depend
         ext = validate_upload_file(file, allowed_types, max_size_mb=1)
         
         # Create uploads directory
-        upload_dir = Path("/app/backend/uploads/branding")
+        upload_dir = Path("/app/uploads/branding")
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Generate secure filename
