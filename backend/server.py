@@ -11548,14 +11548,17 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         if existing_bvn_user:
             raise HTTPException(status_code=400, detail="This BVN is already registered with another account")
         
+        # Get KYC fee from config
+        kyc_fee = await get_kyc_verification_fee()
+        
         # Always check balance - fee is charged per attempt
-        if db_user.get('ngn_balance', 0) < KYC_VERIFICATION_FEE:
-            raise HTTPException(status_code=400, detail=f"Insufficient balance. Express KYC costs ₦{KYC_VERIFICATION_FEE} per attempt")
+        if db_user.get('ngn_balance', 0) < kyc_fee:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. Express KYC costs ₦{kyc_fee:,.0f} per attempt")
         
         # Deduct fee BEFORE making the API call (charge per attempt)
         await db.users.update_one(
             {'id': user['id']},
-            {'$inc': {'ngn_balance': -KYC_VERIFICATION_FEE}}
+            {'$inc': {'ngn_balance': -kyc_fee}}
         )
         
         # Create transaction for the fee
@@ -11563,7 +11566,7 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         fee_tx = Transaction(
             user_id=user['id'],
             type='kyc_fee',
-            amount=KYC_VERIFICATION_FEE,
+            amount=kyc_fee,
             currency='NGN',
             status='completed',
             reference=f"KYC-{uuid.uuid4().hex[:8].upper()}",
@@ -11584,7 +11587,7 @@ async def verify_bvn_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
         result = await payscribe_request(endpoint, 'GET', use_public_key=True)
         
         if not result or not result.get('status'):
-            raise HTTPException(status_code=400, detail=f"BVN lookup failed. ₦{KYC_VERIFICATION_FEE} has been deducted. Please check your BVN and try again.")
+            raise HTTPException(status_code=400, detail=f"BVN lookup failed. ₦{kyc_fee:,.0f} has been deducted. Please check your BVN and try again.")
         
         bvn_data = result.get('message', {}).get('details', {})
         
