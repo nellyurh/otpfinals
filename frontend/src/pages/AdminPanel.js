@@ -6156,7 +6156,10 @@ const AdminPanel = ({ user, setUser }) => {
                           </tbody>
                         </table>
                       </div>
-                    )}
+                          )}
+                        </>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </section>
