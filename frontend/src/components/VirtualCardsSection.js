@@ -49,7 +49,7 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
         </div>
         {/* Visa style curve */}
         <div className="text-right">
-          <span className={`text-xs font-bold ${cardDesign.textColor} opacity-70`}>VISA</span>
+          <span className={`text-xs font-bold ${cardDesign.textColor} opacity-70`}>MASTERCARD</span>
         </div>
       </div>
 
