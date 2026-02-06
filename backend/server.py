@@ -8836,6 +8836,13 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'hp2_hero_title_2',
         'hp2_hero_title_3',
         'hp2_hero_subtitle',
+        # KYC Tier Settings
+        'kyc_tier1_max_balance',
+        'kyc_tier1_fee',
+        'kyc_tier2_max_balance',
+        'kyc_tier2_fee',
+        'kyc_tier3_max_balance',
+        'kyc_tier3_fee',
     ]:
         val = getattr(data, key, None)
         if val is not None:
