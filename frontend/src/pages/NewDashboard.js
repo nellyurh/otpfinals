@@ -2338,7 +2338,7 @@ const NewDashboard = () => {
         }, axiosConfig);
         
         if (response.data.success) {
-          toast.success('Tier 2 verified! Your limit is now ₦100,000');
+          toast.success(`Tier 2 verified! Your limit is now ₦${(branding.kyc_tier2_max_balance || 500000).toLocaleString()}`);
           setUser({ ...user, tier: 2, bvn: bvn });
           fetchProfile();
         } else {
