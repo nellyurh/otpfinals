@@ -2680,6 +2680,25 @@ const NewDashboard = () => {
                     <span className="text-gray-500 text-sm ml-2">(Limit: {getTierLimit(userTier)})</span>
                   </div>
                 </div>
+                {user.payscribe_customer_id && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">PCID</label>
+                    <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
+                      <span className="text-gray-600 font-mono text-sm">{user.payscribe_customer_id}</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(user.payscribe_customer_id);
+                          toast.success('PCID copied!');
+                        }}
+                        className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+                        title="Copy PCID"
+                      >
+                        <Copy className="w-4 h-4 text-gray-500" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">Payment Card ID for virtual card services</p>
+                  </div>
+                )}
               </div>
 
               {/* Verification Address - Read Only (only shown if user has verification address) */}
