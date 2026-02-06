@@ -1,6 +1,17 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-06 (Session 9)**: Homepage 2 Admin Customization
+  - NEW: Admin Panel controls for Homepage 2 (SocialSMS) only:
+    - **Colors:** Background color, Accent color (start/end gradient)
+    - **Effects:** Glassmorphism toggle, Animated background toggle
+    - **Hero Badge:** Enable/disable, customizable text
+    - **Navigation:** Login button style (bordered/solid)
+    - **Content:** 3 hero typing phrases, hero subtitle
+    - **Live Preview:** Shows badge and button with selected colors
+  - These settings ONLY affect Homepage 2, not the default homepage
+  - Backend: Added hp2_* fields to PricingConfig and BrandingUpdate
+  - Frontend: LandingSocialSMS now reads all styling from branding config
 - **2026-02-06 (Session 9)**: UI Fixes + Individual Bill Toggles
   - NEW: Dark theme for SocialSMS landing page with purple gradient accents, glassmorphism effects, and animated backgrounds
   - NEW: Individual bill payment toggles in Admin Panel (Data, TV, Electricity, Airtime)
