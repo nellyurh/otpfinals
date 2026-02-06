@@ -2506,18 +2506,25 @@ class ResetPasswordRequest(BaseModel):
 @limiter.limit("3/minute")  # SECURITY: Rate limit password reset to prevent email flooding
 async def forgot_password(request: Request, data: ForgotPasswordRequest, background_tasks: BackgroundTasks):
     """Send password reset code to user's email"""
-    user = await db.users.find_one({'email': data.email}, {'_id': 0})
+    # Case-insensitive email lookup
+    user = await db.users.find_one(
+        {'email': {'$regex': f'^{re.escape(data.email)}$', '$options': 'i'}},
+        {'_id': 0}
+    )
     if not user:
         # Don't reveal if email exists
         return {'success': True, 'message': 'If your email is registered, you will receive a reset code.'}
     
+    # Use the user's actual email from database (preserves case)
+    user_email = user.get('email', data.email)
+    
     # Generate 6-digit code using secure random
     code = ''.join([str(secrets.randbelow(10)) for _ in range(6)])
     
-    # Store code with 15 min expiry
-    await db.password_resets.delete_many({'email': data.email})  # Remove old codes
+    # Store code with 15 min expiry (use normalized lowercase for storage)
+    await db.password_resets.delete_many({'email': {'$regex': f'^{re.escape(data.email)}$', '$options': 'i'}})  # Remove old codes
     await db.password_resets.insert_one({
-        'email': data.email,
+        'email': user_email,
         'code': code,
         'created_at': datetime.now(timezone.utc).isoformat(),
         'expires_at': (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
