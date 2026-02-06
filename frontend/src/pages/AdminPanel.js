@@ -6149,6 +6149,25 @@ const AdminPanel = ({ user, setUser }) => {
                                     >
                                       {u.is_blocked ? 'Unblock' : 'Block'}
                                     </button>
+                                    {u.tier >= 3 && !u.payscribe_customer_id && (
+                                      <button
+                                        type="button"
+                                        className="text-[11px] text-blue-700 hover:underline"
+                                        onClick={async () => {
+                                          try {
+                                            const resp = await axios.post(`${API}/admin/users/${u.id}/link-card-services`, {}, axiosConfig);
+                                            if (resp.data.success) {
+                                              toast.success('Card services linked!');
+                                              fetchUsers();
+                                            }
+                                          } catch (e) {
+                                            toast.error(e.response?.data?.detail || 'Failed to link card services');
+                                          }
+                                        }}
+                                      >
+                                        Link Cards
+                                      </button>
+                                    )}
                                   </div>
                                 </td>
                               </tr>
