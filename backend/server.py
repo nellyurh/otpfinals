@@ -1312,6 +1312,20 @@ class UpdatePricingRequest(BaseModel):
     hero_gradient_from: Optional[str] = None
     hero_gradient_to: Optional[str] = None
     
+    # Homepage 2 (SocialSMS) Specific Settings
+    hp2_bg_color: Optional[str] = None
+    hp2_accent_color: Optional[str] = None
+    hp2_accent_gradient_end: Optional[str] = None
+    hp2_enable_glassmorphism: Optional[bool] = None
+    hp2_enable_animated_bg: Optional[bool] = None
+    hp2_badge_text: Optional[str] = None
+    hp2_badge_enabled: Optional[bool] = None
+    hp2_nav_style: Optional[str] = None
+    hp2_hero_title_1: Optional[str] = None
+    hp2_hero_title_2: Optional[str] = None
+    hp2_hero_title_3: Optional[str] = None
+    hp2_hero_subtitle: Optional[str] = None
+    
     # Banner images
     banner_images: Optional[list] = None
 
