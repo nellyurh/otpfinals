@@ -8631,6 +8631,11 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'disable_all_bills',
         # Master bank transfer disable toggle
         'disable_bank_transfer',
+        # Individual bill payment toggles
+        'disable_data',
+        'disable_tv',
+        'disable_electricity',
+        'disable_airtime_bills',
         # Payment gateway toggles
         'enable_paymentpoint',
         'enable_plisio',
