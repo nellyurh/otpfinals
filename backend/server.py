@@ -1381,6 +1381,14 @@ class UpdatePricingRequest(BaseModel):
     disable_electricity: Optional[bool] = None
     disable_airtime_bills: Optional[bool] = None
 
+    # KYC Tier Settings
+    kyc_tier1_max_balance: Optional[float] = None
+    kyc_tier1_fee: Optional[float] = None
+    kyc_tier2_max_balance: Optional[float] = None
+    kyc_tier2_fee: Optional[float] = None
+    kyc_tier3_max_balance: Optional[float] = None
+    kyc_tier3_fee: Optional[float] = None
+
     # Reseller settings
     reseller_api_base_url: Optional[str] = None
 
