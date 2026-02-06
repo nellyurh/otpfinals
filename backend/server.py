@@ -1094,6 +1094,19 @@ class PricingConfig(BaseModel):
     card_min_funding_amount: float = 1.00  # Minimum funding amount
     card_max_funding_amount: float = 10000.00  # Maximum funding amount
 
+    # ============ KYC Tier Settings (Admin Editable) ============
+    # Tier 1 - Basic (No verification)
+    kyc_tier1_max_balance: float = 50000.0  # Max balance in NGN
+    kyc_tier1_fee: float = 0.0  # Free
+    
+    # Tier 2 - Phone verified
+    kyc_tier2_max_balance: float = 500000.0  # Max balance in NGN
+    kyc_tier2_fee: float = 500.0  # Fee to upgrade to Tier 2
+    
+    # Tier 3 - Fully verified (BVN + NIN)
+    kyc_tier3_max_balance: float = 2000000.0  # Max balance in NGN
+    kyc_tier3_fee: float = 1000.0  # Fee to upgrade to Tier 3
+
     # Reseller API Settings - reads from environment, can be overridden in admin
     reseller_api_base_url: str = Field(default_factory=lambda: os.environ.get('RESELLER_API_BASE_URL', ''))
 
