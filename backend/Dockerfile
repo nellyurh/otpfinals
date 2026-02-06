@@ -14,7 +14,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create non-root user for security
+# Create uploads directories for persistent storage
+RUN mkdir -p /app/uploads/branding /app/uploads/banners /app/uploads/kyc
+
+# Create non-root user for security and set ownership
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
