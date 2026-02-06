@@ -3056,7 +3056,7 @@ const NewDashboard = () => {
             {userTier === 1 && (
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Upgrade to Tier 2</h3>
-                <p className="text-sm text-gray-500 mb-4">Increase your limit to ₦100,000 by providing your BVN.</p>
+                <p className="text-sm text-gray-500 mb-4">Increase your limit to ₦{(branding.kyc_tier2_max_balance || 500000).toLocaleString()} by providing your BVN.</p>
                 
                 <div className="space-y-4">
                   <div>
