@@ -12097,11 +12097,11 @@ async def serve_banner_file(filename: str):
     if safe_filename != filename or '..' in filename or filename.startswith('/'):
         raise HTTPException(status_code=400, detail="Invalid filename")
     
-    file_path = Path("/app/backend/uploads/banners") / safe_filename
+    file_path = Path("/app/uploads/banners") / safe_filename
     
     # SECURITY: Verify the resolved path is within the allowed directory
     try:
-        file_path.resolve().relative_to(Path("/app/backend/uploads/banners").resolve())
+        file_path.resolve().relative_to(Path("/app/uploads/banners").resolve())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid file path")
     
@@ -12118,10 +12118,10 @@ async def serve_branding_file(filename: str):
     if safe_filename != filename or '..' in filename or filename.startswith('/'):
         raise HTTPException(status_code=400, detail="Invalid filename")
     
-    file_path = Path("/app/backend/uploads/branding") / safe_filename
+    file_path = Path("/app/uploads/branding") / safe_filename
     
     try:
-        file_path.resolve().relative_to(Path("/app/backend/uploads/branding").resolve())
+        file_path.resolve().relative_to(Path("/app/uploads/branding").resolve())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid file path")
     
@@ -12138,10 +12138,10 @@ async def serve_kyc_file(filename: str, user: dict = Depends(require_admin)):
     if safe_filename != filename or '..' in filename or filename.startswith('/'):
         raise HTTPException(status_code=400, detail="Invalid filename")
     
-    file_path = Path("/app/backend/uploads/kyc") / safe_filename
+    file_path = Path("/app/uploads/kyc") / safe_filename
     
     try:
-        file_path.resolve().relative_to(Path("/app/backend/uploads/kyc").resolve())
+        file_path.resolve().relative_to(Path("/app/uploads/kyc").resolve())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid file path")
     
