@@ -8,14 +8,16 @@
     - Auto-suspension logic: Users exceeding their tier's balance limit are auto-suspended
     - Suspension banner on dashboard prompting KYC upgrade
     - Unsuspend automatically when user upgrades KYC tier
-  - FIXED: **Case-insensitive email login** - Login now uses MongoDB regex with `$options: 'i'` for case-insensitive matching
-  - FIXED: **Admin user toggle not working** - User edit modal checkboxes (Admin/Suspended/Blocked) now properly initialize `editUser` state
-  - FIXED: **Service card navigation** - Dashboard quick service cards (Internet Data, TV Sub, Electricity) now open Bills Payment with correct tab active using `defaultTab` prop and useEffect sync
-  - Backend: Added `check_kyc_balance_limit()` helper function called after wallet credits
-  - Backend: Added KYC tier settings to `/api/admin/pricing` GET/PUT endpoints
-  - Frontend: Added `kycSettings` state and `handleSaveKycSettings` function in AdminPanel.js
-  - Frontend: Added suspension banner UI in NewDashboard.js
-  - Frontend: Fixed `BillPaymentSections.js` to sync `defaultTab` prop with local state
+  - NEW: **Dynamic KYC Tier Limits** - All tier limits and fees now read from admin config:
+    - Account Tier Status in Profile shows admin-configured limits (not hardcoded)
+    - Express KYC fee now reads from config (kyc_tier3_fee)
+    - All frontend tier displays use branding.kyc_tier{1,2,3}_max_balance
+    - Backend KYC status endpoint returns dynamic limits from config
+  - NEW: **User Search in Admin Panel** - Search users by email, name, or phone
+  - NEW: **KYC Document Viewing** - View Selfie and ID document links in user edit modal
+  - FIXED: **Case-insensitive email login** - Login now uses MongoDB regex with `$options: 'i'`
+  - FIXED: **Admin user toggle not working** - User edit modal checkboxes properly initialize state
+  - FIXED: **Service card navigation** - Dashboard cards open Bills Payment with correct tab active
 - **2026-02-06 (Session 9)**: Homepage 2 Admin Customization
   - NEW: Admin Panel controls for Homepage 2 (SocialSMS) only:
     - **Colors:** Background color, Accent color (start/end gradient)
