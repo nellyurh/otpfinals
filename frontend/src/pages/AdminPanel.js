@@ -5851,13 +5851,50 @@ const AdminPanel = ({ user, setUser }) => {
               <section className="grid grid-cols-1 gap-6 mt-4">
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-semibold">Users</CardTitle>
-                    <CardDescription className="text-xs">Latest registered users (limited to 100).</CardDescription>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <CardTitle className="text-sm font-semibold">Users</CardTitle>
+                        <CardDescription className="text-xs">Latest registered users (limited to 100).</CardDescription>
+                      </div>
+                      <div className="relative w-full sm:w-64">
+                        <input
+                          type="text"
+                          placeholder="Search by email, name, phone..."
+                          value={userSearchQuery}
+                          onChange={(e) => setUserSearchQuery(e.target.value)}
+                          className="w-full px-3 py-2 pl-9 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <svg className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent className="text-xs text-slate-600">
                     {!users && <p>Loading users…</p>}
                     {users && users.length === 0 && <p>No users yet.</p>}
-                    {users && users.length > 0 && (
+                    {users && users.length > 0 && (() => {
+                      const filteredUsers = users.filter(u => {
+                        if (!userSearchQuery.trim()) return true;
+                        const query = userSearchQuery.toLowerCase();
+                        return (
+                          (u.email || '').toLowerCase().includes(query) ||
+                          (u.first_name || '').toLowerCase().includes(query) ||
+                          (u.last_name || '').toLowerCase().includes(query) ||
+                          (u.phone || '').toLowerCase().includes(query) ||
+                          (u.full_name || '').toLowerCase().includes(query)
+                        );
+                      });
+                      return (
+                        <>
+                          {userSearchQuery && (
+                            <p className="mb-2 text-xs text-slate-500">
+                              Showing {filteredUsers.length} of {users.length} users
+                            </p>
+                          )}
+                          {filteredUsers.length === 0 ? (
+                            <p className="py-4 text-center text-slate-500">No users match your search.</p>
+                          ) : (
                       <div className="overflow-x-auto">
                         <table className="min-w-full text-left text-[11px]">
                           <thead className="border-b border-slate-200 bg-slate-50">
