@@ -8326,6 +8326,8 @@ async def admin_update_user(user_id: str, data: AdminUserUpdate, admin: dict = D
         update_fields['usd_balance'] = data.usd_balance
     if data.is_suspended is not None:
         update_fields['is_suspended'] = data.is_suspended
+        if not data.is_suspended:
+            update_fields['suspension_reason'] = None  # Clear suspension reason when unsuspending
     if data.is_blocked is not None:
         update_fields['is_blocked'] = data.is_blocked
     if data.is_admin is not None:
