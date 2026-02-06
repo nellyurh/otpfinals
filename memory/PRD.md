@@ -1,6 +1,12 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-06 (Session 9)**: UI Fixes + Individual Bill Toggles
+  - NEW: Dark theme for SocialSMS landing page with purple gradient accents, glassmorphism effects, and animated backgrounds
+  - NEW: Individual bill payment toggles in Admin Panel (Data, TV, Electricity, Airtime)
+  - FIXED: KYC navigation - now correctly goes to Profile > KYC tab instead of non-existent 'settings' section
+  - FIXED: Service cards navigate to their respective pages instead of always going to bills-payment
+  - Backend: Added disable_data, disable_tv, disable_electricity, disable_airtime_bills to PricingConfig
 - **2026-02-05 (Session 9)**: Security Hardening
   - **Rate Limiting:** Added slowapi rate limiting on auth endpoints:
     - Registration: 5/minute
