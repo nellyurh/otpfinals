@@ -6057,6 +6057,28 @@ const AdminPanel = ({ user, setUser }) => {
                                             </div>
                                           )}
 
+                                          {/* Payscribe Customer ID */}
+                                          {u.payscribe_customer_id && (
+                                            <div className="bg-blue-50 rounded-lg p-3">
+                                              <Label className="text-xs font-semibold text-blue-700">Payscribe Customer ID</Label>
+                                              <div className="flex items-center gap-2 mt-1">
+                                                <code className="text-xs font-mono bg-white px-2 py-1 rounded border border-blue-200 flex-1">{u.payscribe_customer_id}</code>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    navigator.clipboard.writeText(u.payscribe_customer_id);
+                                                    toast.success('Customer ID copied!');
+                                                  }}
+                                                  className="p-1.5 hover:bg-blue-100 rounded transition-colors"
+                                                  title="Copy ID"
+                                                >
+                                                  <Copy className="w-3 h-3 text-blue-600" />
+                                                </button>
+                                              </div>
+                                              <p className="text-[10px] text-blue-500 mt-1">Used for virtual card services</p>
+                                            </div>
+                                          )}
+
                                           <div className="flex items-center gap-6">
                                             <div className="flex items-center gap-2">
                                               <Checkbox 
