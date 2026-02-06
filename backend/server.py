@@ -8278,6 +8278,7 @@ async def admin_list_users(admin: dict = Depends(require_admin)):
         "is_suspended": 1,
         "is_blocked": 1,
         "created_at": 1,
+        "payscribe_customer_id": 1,
     }).sort("created_at", -1).limit(100)
     users = await users_cursor.to_list(100)
     return {"success": True, "users": users}
