@@ -880,6 +880,11 @@ const AdminPanel = ({ user, setUser }) => {
     disable_all_bills: false,
     // Master bank transfer disable toggle
     disable_bank_transfer: false,
+    // Individual bill payment toggles
+    disable_data: false,
+    disable_tv: false,
+    disable_electricity: false,
+    disable_airtime_bills: false,
     // Payment gateways
     enable_paymentpoint: true,
     enable_plisio: true,
