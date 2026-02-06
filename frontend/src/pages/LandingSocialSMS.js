@@ -185,8 +185,8 @@ const LandingSocialSMS = ({
 
           {/* Service Logos */}
           <div style={{ marginTop: '60px', textAlign: 'center' }}>
-            <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '30px' }}>Over a thousand services available for SMS verification through our system</p>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', flexWrap: 'wrap', opacity: 0.5 }}>
+            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '30px' }}>Over a thousand services available for SMS verification through our system</p>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', flexWrap: 'wrap', opacity: 0.6 }}>
               {['🎮', '📱', '🔍', '📘', '💬', '💼'].map((icon, idx) => (
                 <span key={idx} style={{ fontSize: '32px' }}>{icon}</span>
               ))}
@@ -195,12 +195,12 @@ const LandingSocialSMS = ({
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" style={{ background: 'white', padding: '80px 0' }}>
+      {/* Services Section - Dark theme */}
+      <section id="services" style={{ background: '#1e293b', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a' }}>
-              <span style={{ color: themeColor }}>Verify</span> with a Text, <span style={{ color: themeColor }}>Protect</span> with Confidence.
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#f8fafc' }}>
+              <span style={{ color: '#8b5cf6' }}>Verify</span> with a Text, <span style={{ color: '#8b5cf6' }}>Protect</span> with Confidence.
             </h2>
           </div>
           
@@ -214,18 +214,18 @@ const LandingSocialSMS = ({
                 { country: '🇺🇸', name: 'United States', service: 'Google', orders: '7179', price: '₦350' },
                 { country: '🇺🇸', name: 'United States', service: 'WhatsApp', orders: '4776', price: '₦600' },
               ].map((item, idx) => (
-                <div key={idx} style={{ background: '#f9fafb', borderRadius: '12px', padding: '20px', marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', borderRadius: '12px', padding: '20px', marginBottom: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>{item.country}</div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>{item.country}</div>
                     <div>
-                      <div style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '16px' }}>{item.name}</div>
-                      <div style={{ fontSize: '14px', color: '#6b7280' }}>{item.service}</div>
+                      <div style={{ fontWeight: 600, color: '#f8fafc', fontSize: '16px' }}>{item.name}</div>
+                      <div style={{ fontSize: '14px', color: '#94a3b8' }}>{item.service}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <span style={{ color: '#6b7280', fontSize: '14px' }}>{item.orders} orders</span>
-                    <span style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '16px' }}>{item.price}</span>
-                    <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: themeColor, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>Order Now</button>
+                    <span style={{ color: '#94a3b8', fontSize: '14px' }}>{item.orders} orders</span>
+                    <span style={{ fontWeight: 700, color: '#f8fafc', fontSize: '16px' }}>{item.price}</span>
+                    <button onClick={() => { setShowAuth(true); setIsLogin(false); }} style={{ background: accentGradient, border: 'none', borderRadius: '8px', padding: '10px 24px', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(139, 92, 246, 0.3)' }}>Order Now</button>
                   </div>
                 </div>
               ))}
