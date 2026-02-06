@@ -49,6 +49,7 @@ import {
   Globe,
   Ban,
   Upload,
+  Shield,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
