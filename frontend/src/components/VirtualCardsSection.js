@@ -308,6 +308,43 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
+  // Check if user has Payscribe customer ID (required for card services)
+  if (!user?.payscribe_customer_id) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Lock className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-slate-900 mb-1">Card Services Not Linked</h3>
+              <p className="text-sm text-slate-600 mb-3">
+                Your account is not yet linked to card services. Please complete the Express KYC verification process (BVN + NIN) to enable virtual cards.
+              </p>
+              <div className="flex items-center gap-2 text-sm mb-4">
+                <span className="text-slate-500">Current status:</span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Tier {userTier} - Pending Card Link
+                </span>
+              </div>
+              {onNavigateToKYC && (
+                <button
+                  onClick={onNavigateToKYC}
+                  className="w-full sm:w-auto px-6 py-3 text-white font-semibold rounded-xl transition-all hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Complete Express KYC →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
