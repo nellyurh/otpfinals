@@ -5782,6 +5782,16 @@ async def payscribe_webhook(request: Request):
                 metadata={'reference': ref, 'type': 'deposit_ngn', 'provider': 'payscribe'},
             )
             
+            # Check KYC balance limit and suspend if exceeded
+            kyc_check = await check_kyc_balance_limit(payment['user_id'])
+            if kyc_check.get('suspended'):
+                await _create_transaction_notification(
+                    payment['user_id'],
+                    'Account Suspended',
+                    kyc_check.get('reason', 'Balance exceeded KYC tier limit. Please upgrade.'),
+                    metadata={'type': 'kyc_suspension'}
+                )
+            
             logger.info(f"Payscribe payment successful: {ref}, credited ₦{credit_amount} to user {payment['user_id']}")
         else:
             logger.error(f"Payscribe webhook: User {payment['user_id']} not found for payment {ref}")
