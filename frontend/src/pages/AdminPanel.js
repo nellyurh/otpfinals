@@ -5912,7 +5912,7 @@ const AdminPanel = ({ user, setUser }) => {
                             </tr>
                           </thead>
                           <tbody>
-                            {users.map((u) => (
+                            {filteredUsers.map((u) => (
                               <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 whitespace-nowrap">{u.email}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">{u.first_name || '-'}</td>
