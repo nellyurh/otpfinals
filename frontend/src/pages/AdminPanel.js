@@ -686,6 +686,20 @@ const AdminPanel = ({ user, setUser }) => {
     landing_hero_subtitle:
       'Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters',
     banner_images: [],
+    // Homepage 2 (SocialSMS) Specific Settings
+    hp2_bg_color: '#0f172a',
+    hp2_accent_color: '#8b5cf6',
+    hp2_accent_gradient_end: '#8b5cf6',
+    hp2_enable_glassmorphism: true,
+    hp2_enable_animated_bg: true,
+    hp2_badge_text: '🚀 Trusted by 50,000+ Users',
+    hp2_badge_enabled: true,
+    hp2_nav_style: 'bordered',
+    hp2_hero_title_1: 'Buy Numbers for',
+    hp2_hero_title_2: 'SMS Verifications',
+    hp2_hero_title_3: 'Buy Data, Airtime',
+    hp2_hero_subtitle: "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers.",
+    // Support URLs
     whatsapp_support_url: 'https://wa.me/2348000000000',
     telegram_support_url: 'https://t.me/yoursupport',
     support_email: 'support@smsrelay.com',
