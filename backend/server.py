@@ -1027,6 +1027,21 @@ class PricingConfig(BaseModel):
     hero_gradient_from: str = "#10b981"  # Hero section gradient start
     hero_gradient_to: str = "#06b6d4"  # Hero section gradient end
 
+    # ============ Homepage 2 (SocialSMS) Specific Settings ============
+    # These settings only affect the SocialSMS style homepage
+    hp2_bg_color: str = "#0f172a"  # Dark slate background
+    hp2_accent_color: str = "#8b5cf6"  # Purple accent gradient
+    hp2_accent_gradient_end: str = "#8b5cf6"  # Gradient end color
+    hp2_enable_glassmorphism: bool = True  # Glassmorphism effects on cards
+    hp2_enable_animated_bg: bool = True  # Animated gradient background blurs
+    hp2_badge_text: str = "🚀 Trusted by 50,000+ Users"  # Hero badge text
+    hp2_badge_enabled: bool = True  # Show/hide the badge
+    hp2_nav_style: str = "bordered"  # 'bordered' or 'solid' for login button
+    hp2_hero_title_1: str = "Buy Numbers for"  # First typing text
+    hp2_hero_title_2: str = "SMS Verifications"  # Second typing text
+    hp2_hero_title_3: str = "Buy Data, Airtime"  # Third typing text
+    hp2_hero_subtitle: str = "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers."
+
     # Banner images (admin editable)
     banner_images: list = Field(default_factory=lambda: [
         {"id": "1", "image_url": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=300&fit=crop", "link": "", "active": True},
