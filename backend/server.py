@@ -1060,6 +1060,14 @@ class PricingConfig(BaseModel):
     enable_referral: bool = True
     enable_profile: bool = True
     enable_support: bool = True
+    
+    # Individual bill payment toggles (admin controlled)
+    disable_all_bills: bool = False
+    disable_bank_transfer: bool = False
+    disable_data: bool = False  # Internet Data
+    disable_tv: bool = False  # TV Subscription
+    disable_electricity: bool = False  # Electricity bills
+    disable_airtime_bills: bool = False  # Airtime purchases
 
     # Virtual Card Fees (USD)
     card_creation_fee: float = 2.50  # One-time fee to create a card
