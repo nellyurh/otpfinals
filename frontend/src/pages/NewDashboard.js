@@ -3096,7 +3096,7 @@ const NewDashboard = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Express KYC Verification</h3>
-                    <p className="text-sm text-gray-500">Upgrade to Tier 3 with ₦2,000,000 limit</p>
+                    <p className="text-sm text-gray-500">Upgrade to Tier 3 with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit</p>
                   </div>
                   <div className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
                     ₦{KYC_FEE} total fee
