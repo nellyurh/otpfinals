@@ -3739,6 +3739,51 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Individual Bill Payment Toggles */}
+                <Card className="border border-blue-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2 text-blue-900">
+                      <Receipt className="w-4 h-4 text-blue-600" />
+                      Individual Bill Payment Controls
+                    </CardTitle>
+                    <CardDescription className="text-xs text-blue-600">
+                      Disable specific bill payment services while keeping others active
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        ['disable_data', 'Internet Data', 'Data bundle purchases', '📶'],
+                        ['disable_tv', 'TV Subscription', 'DSTV, GOtv, StarTimes', '📺'],
+                        ['disable_electricity', 'Electricity', 'Electricity bill payments', '⚡'],
+                        ['disable_airtime_bills', 'Airtime', 'Airtime purchases', '📱'],
+                      ].map(([key, label, desc, icon]) => (
+                        <div key={key} className="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{icon}</span>
+                            <div>
+                              <p className="font-medium text-sm text-slate-800">{label}</p>
+                              <p className="text-[10px] text-slate-500">{desc}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-semibold ${pageToggles[key] ? 'text-red-600' : 'text-green-600'}`}>
+                              {pageToggles[key] ? 'OFF' : 'ON'}
+                            </span>
+                            <Switch
+                              checked={pageToggles[key] || false}
+                              onCheckedChange={(val) => setPageToggles((prev) => ({ ...prev, [key]: val }))}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-blue-500 mt-3 text-center">
+                      💡 When a service is OFF, it will be hidden from the dashboard and bill payment pages
+                    </p>
+                  </CardContent>
+                </Card>
                 
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
