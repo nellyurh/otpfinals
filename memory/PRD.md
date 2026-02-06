@@ -1,6 +1,21 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-06 (Session 10)**: KYC Tier Logic + Admin Fixes + Email Case-Insensitivity
+  - NEW: **KYC Settings Admin UI** - Admin Panel now has "KYC Settings" section under Configuration:
+    - Configure verification fees for each KYC tier (Tier 1, 2, 3)
+    - Configure maximum wallet balance limits for each tier
+    - Auto-suspension logic: Users exceeding their tier's balance limit are auto-suspended
+    - Suspension banner on dashboard prompting KYC upgrade
+    - Unsuspend automatically when user upgrades KYC tier
+  - FIXED: **Case-insensitive email login** - Login now uses MongoDB regex with `$options: 'i'` for case-insensitive matching
+  - FIXED: **Admin user toggle not working** - User edit modal checkboxes (Admin/Suspended/Blocked) now properly initialize `editUser` state
+  - FIXED: **Service card navigation** - Dashboard quick service cards (Internet Data, TV Sub, Electricity) now open Bills Payment with correct tab active using `defaultTab` prop and useEffect sync
+  - Backend: Added `check_kyc_balance_limit()` helper function called after wallet credits
+  - Backend: Added KYC tier settings to `/api/admin/pricing` GET/PUT endpoints
+  - Frontend: Added `kycSettings` state and `handleSaveKycSettings` function in AdminPanel.js
+  - Frontend: Added suspension banner UI in NewDashboard.js
+  - Frontend: Fixed `BillPaymentSections.js` to sync `defaultTab` prop with local state
 - **2026-02-06 (Session 9)**: Homepage 2 Admin Customization
   - NEW: Admin Panel controls for Homepage 2 (SocialSMS) only:
     - **Colors:** Background color, Accent color (start/end gradient)
