@@ -1332,6 +1332,12 @@ class UpdatePricingRequest(BaseModel):
 
     # Master bank transfer disable toggle
     disable_bank_transfer: Optional[bool] = None
+    
+    # Individual bill payment toggles
+    disable_data: Optional[bool] = None
+    disable_tv: Optional[bool] = None
+    disable_electricity: Optional[bool] = None
+    disable_airtime_bills: Optional[bool] = None
 
     # Reseller settings
     reseller_api_base_url: Optional[str] = None
