@@ -421,8 +421,8 @@ export function AirtimeSection({ axiosConfig, fetchProfile, fetchTransactions })
 }
 
 // ============ Bills Payment Section (Landing Page with Service Cards) ============
-export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection, primaryColor = '#059669', pageToggles = {} }) {
-  const [activeService, setActiveServiceLocal] = useState(null);
+export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactions, user, setActiveSection, primaryColor = '#059669', pageToggles = {}, defaultTab = null }) {
+  const [activeService, setActiveServiceLocal] = useState(defaultTab);
 
   // Check if bank transfer is disabled
   const bankTransferDisabled = pageToggles.disable_bank_transfer === true;
