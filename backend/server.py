@@ -5434,6 +5434,16 @@ async def ercaspay_webhook_internal(payment: dict, verify_result: dict):
             metadata={'reference': payment.get('payment_reference'), 'type': 'deposit_ngn', 'provider': 'ercaspay'},
         )
         
+        # Check KYC balance limit and suspend if exceeded
+        kyc_check = await check_kyc_balance_limit(payment['user_id'])
+        if kyc_check.get('suspended'):
+            await _create_transaction_notification(
+                payment['user_id'],
+                'Account Suspended',
+                kyc_check.get('reason', 'Balance exceeded KYC tier limit. Please upgrade.'),
+                metadata={'type': 'kyc_suspension'}
+            )
+        
         # Update payment status
         await db.ercaspay_payments.update_one(
             {'id': payment['id']},
