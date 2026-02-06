@@ -1,7 +1,7 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-02-06 (Session 10)**: KYC Tier Logic + Admin Fixes + Email Case-Insensitivity
+- **2026-02-06 (Session 10)**: KYC Tier Logic + Admin Fixes + Virtual Card Fix
   - NEW: **KYC Settings Admin UI** - Admin Panel now has "KYC Settings" section under Configuration:
     - Configure verification fees for each KYC tier (Tier 1, 2, 3)
     - Configure maximum wallet balance limits for each tier
@@ -15,6 +15,10 @@
     - Backend KYC status endpoint returns dynamic limits from config
   - NEW: **User Search in Admin Panel** - Search users by email, name, or phone
   - NEW: **KYC Document Viewing** - View Selfie and ID document links in user edit modal
+  - NEW: **Admin Link Card Services** - Admin can manually link Payscribe card services for Tier 3 users
+    - New endpoint: POST `/api/admin/users/{user_id}/link-card-services`
+    - "Link Cards" button appears in admin Users list for eligible users
+  - FIXED: **Virtual Cards Error Handling** - Now shows helpful message when user is Tier 3 but doesn't have card services linked
   - FIXED: **Case-insensitive email login** - Login now uses MongoDB regex with `$options: 'i'`
   - FIXED: **Admin user toggle not working** - User edit modal checkboxes properly initialize state
   - FIXED: **Service card navigation** - Dashboard cards open Bills Payment with correct tab active
