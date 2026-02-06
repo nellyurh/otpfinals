@@ -54,6 +54,7 @@ const selectStyles = {
 const NewDashboard = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard'); // Default to Dashboard
+  const [defaultBillTab, setDefaultBillTab] = useState(null); // For pre-selecting bill payment tab
   const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [user, setUser] = useState({ email: '', full_name: '', ngn_balance: 0, usd_balance: 0, is_admin: false });
   const [loading, setLoading] = useState(true); // Start with loading true
