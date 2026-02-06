@@ -7154,14 +7154,31 @@ async def create_virtual_card(request: CreateCardRequest, user: dict = Depends(g
         logger.info(f"Payscribe card creation response: {result}")
         
         if not result or not result.get('status'):
-            error_msg = result.get('description', 'Card creation failed') if result else 'Card creation failed'
-            raise HTTPException(status_code=400, detail=error_msg)
+            # Extract error message from various possible locations in response
+            error_msg = 'Card creation failed'
+            if result:
+                # Try different error paths
+                if result.get('message'):
+                    if isinstance(result.get('message'), str):
+                        error_msg = result.get('message')
+                    elif isinstance(result.get('message'), dict):
+                        error_msg = result.get('message', {}).get('description', error_msg)
+                elif result.get('description'):
+                    error_msg = result.get('description')
+                elif result.get('error'):
+                    error_msg = result.get('error')
+                
+                # Log full response for debugging
+                logger.error(f"Payscribe card creation failed. Full response: {result}")
+            
+            raise HTTPException(status_code=400, detail=f"Payscribe Error: {error_msg}")
         
-        # Extract card details
+        # Extract card details from message.details.card
         card_data = result.get('message', {}).get('details', {}).get('card', {})
         
         if not card_data.get('id'):
-            raise HTTPException(status_code=500, detail="Card created but no card ID returned")
+            logger.error(f"Card created but no card ID in response: {result}")
+            raise HTTPException(status_code=500, detail="Card created but no card ID returned. Please contact support.")
         
         # Deduct from user's USD balance
         await db.users.update_one(
