@@ -11704,7 +11704,9 @@ async def verify_nin_for_tier3(request: Tier3KYCRequest, user: dict = Depends(ge
             'nin_verified': True,
             'nin_verified_at': datetime.now(timezone.utc).isoformat(),
             'tier': 3,
-            'tier3_verified_at': datetime.now(timezone.utc).isoformat()
+            'tier3_verified_at': datetime.now(timezone.utc).isoformat(),
+            'is_suspended': False,  # Unsuspend user on KYC upgrade
+            'suspension_reason': None
         }
         if kyc_address_data:
             update_data['kyc_address'] = kyc_address_data
