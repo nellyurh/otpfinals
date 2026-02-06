@@ -11314,7 +11314,13 @@ async def convert_ngn_to_usd_wallet(request: ConvertNgnToUsdRequest, user: dict 
 
 # ============ KYC Verification Endpoints ============
 
-KYC_VERIFICATION_FEE = 200  # ₦200 total for Express KYC (covers both BVN and NIN)
+# Default KYC fee (can be overridden in admin config)
+DEFAULT_KYC_VERIFICATION_FEE = 200  # ₦200 total for Express KYC (covers both BVN and NIN)
+
+async def get_kyc_verification_fee():
+    """Get KYC verification fee from config or use default"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    return config.get('kyc_tier3_fee', DEFAULT_KYC_VERIFICATION_FEE) if config else DEFAULT_KYC_VERIFICATION_FEE
 
 class Tier2KYCRequest(BaseModel):
     bvn: str
