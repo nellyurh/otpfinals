@@ -4606,6 +4606,204 @@ const AdminPanel = ({ user, setUser }) => {
                   </CardContent>
                 </Card>
 
+                {/* Homepage 2 (SocialSMS) Settings - Only visible when SocialSMS is selected */}
+                {branding.homepage_template === 'socialsms' && (
+                  <Card className="border border-purple-200 shadow-sm bg-gradient-to-br from-purple-50 to-slate-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-semibold flex items-center gap-2 text-purple-900">
+                        <Palette className="w-4 h-4 text-purple-600" />
+                        Homepage 2 (SocialSMS) Customization
+                      </CardTitle>
+                      <CardDescription className="text-xs text-purple-600">
+                        These settings only affect the SocialSMS style homepage
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Colors */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Background Color</Label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={branding.hp2_bg_color || '#0f172a'}
+                              onChange={(e) => setBranding({ ...branding, hp2_bg_color: e.target.value })}
+                              className="w-10 h-9 rounded border border-slate-200 cursor-pointer"
+                            />
+                            <Input
+                              value={branding.hp2_bg_color || '#0f172a'}
+                              onChange={(e) => setBranding({ ...branding, hp2_bg_color: e.target.value })}
+                              className="h-9 text-xs bg-white flex-1 font-mono"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Accent Color (Start)</Label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={branding.hp2_accent_color || '#8b5cf6'}
+                              onChange={(e) => setBranding({ ...branding, hp2_accent_color: e.target.value })}
+                              className="w-10 h-9 rounded border border-slate-200 cursor-pointer"
+                            />
+                            <Input
+                              value={branding.hp2_accent_color || '#8b5cf6'}
+                              onChange={(e) => setBranding({ ...branding, hp2_accent_color: e.target.value })}
+                              className="h-9 text-xs bg-white flex-1 font-mono"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Accent Color (End)</Label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              value={branding.hp2_accent_gradient_end || '#8b5cf6'}
+                              onChange={(e) => setBranding({ ...branding, hp2_accent_gradient_end: e.target.value })}
+                              className="w-10 h-9 rounded border border-slate-200 cursor-pointer"
+                            />
+                            <Input
+                              value={branding.hp2_accent_gradient_end || '#8b5cf6'}
+                              onChange={(e) => setBranding({ ...branding, hp2_accent_gradient_end: e.target.value })}
+                              className="h-9 text-xs bg-white flex-1 font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Effects Toggles */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-purple-100">
+                          <div>
+                            <p className="font-medium text-sm text-slate-800">Glassmorphism Effects</p>
+                            <p className="text-[10px] text-slate-500">Frosted glass effect on cards</p>
+                          </div>
+                          <Switch
+                            checked={branding.hp2_enable_glassmorphism !== false}
+                            onCheckedChange={(val) => setBranding({ ...branding, hp2_enable_glassmorphism: val })}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-purple-100">
+                          <div>
+                            <p className="font-medium text-sm text-slate-800">Animated Background</p>
+                            <p className="text-[10px] text-slate-500">Gradient blur animations</p>
+                          </div>
+                          <Switch
+                            checked={branding.hp2_enable_animated_bg !== false}
+                            onCheckedChange={(val) => setBranding({ ...branding, hp2_enable_animated_bg: val })}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Badge Settings */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-purple-100">
+                          <div>
+                            <p className="font-medium text-sm text-slate-800">Show Hero Badge</p>
+                            <p className="text-[10px] text-slate-500">Display trust badge above title</p>
+                          </div>
+                          <Switch
+                            checked={branding.hp2_badge_enabled !== false}
+                            onCheckedChange={(val) => setBranding({ ...branding, hp2_badge_enabled: val })}
+                          />
+                        </div>
+                        {branding.hp2_badge_enabled !== false && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Badge Text</Label>
+                            <Input
+                              value={branding.hp2_badge_text || '🚀 Trusted by 50,000+ Users'}
+                              onChange={(e) => setBranding({ ...branding, hp2_badge_text: e.target.value })}
+                              placeholder="🚀 Trusted by 50,000+ Users"
+                              className="h-9 text-sm bg-white"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Navigation Style */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Login Button Style</Label>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setBranding({ ...branding, hp2_nav_style: 'bordered' })}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                              (branding.hp2_nav_style || 'bordered') === 'bordered'
+                                ? 'bg-purple-500 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            Bordered (Outline)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBranding({ ...branding, hp2_nav_style: 'solid' })}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                              branding.hp2_nav_style === 'solid'
+                                ? 'bg-purple-500 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            Solid (Filled)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Hero Content */}
+                      <div className="space-y-3">
+                        <Label className="text-xs font-semibold text-slate-600">Hero Typing Animation Text (3 phrases)</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <Input
+                            value={branding.hp2_hero_title_1 || 'Buy Numbers for'}
+                            onChange={(e) => setBranding({ ...branding, hp2_hero_title_1: e.target.value })}
+                            placeholder="Phrase 1"
+                            className="h-9 text-sm bg-white"
+                          />
+                          <Input
+                            value={branding.hp2_hero_title_2 || 'SMS Verifications'}
+                            onChange={(e) => setBranding({ ...branding, hp2_hero_title_2: e.target.value })}
+                            placeholder="Phrase 2"
+                            className="h-9 text-sm bg-white"
+                          />
+                          <Input
+                            value={branding.hp2_hero_title_3 || 'Buy Data, Airtime'}
+                            onChange={(e) => setBranding({ ...branding, hp2_hero_title_3: e.target.value })}
+                            placeholder="Phrase 3"
+                            className="h-9 text-sm bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Hero Subtitle</Label>
+                          <textarea
+                            value={branding.hp2_hero_subtitle || "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers."}
+                            onChange={(e) => setBranding({ ...branding, hp2_hero_subtitle: e.target.value })}
+                            className="w-full h-20 p-3 text-sm bg-white rounded-lg border border-slate-200 resize-none"
+                            placeholder="Hero subtitle text..."
+                          />
+                        </div>
+                      </div>
+
+                      {/* Preview */}
+                      <div className="p-4 rounded-xl" style={{ background: branding.hp2_bg_color || '#0f172a' }}>
+                        <div className="text-center">
+                          {branding.hp2_badge_enabled !== false && (
+                            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3" style={{ background: `${branding.hp2_accent_color || '#8b5cf6'}33`, color: branding.hp2_accent_color || '#8b5cf6', border: `1px solid ${branding.hp2_accent_color || '#8b5cf6'}50` }}>
+                              {branding.hp2_badge_text || '🚀 Trusted by 50,000+ Users'}
+                            </span>
+                          )}
+                          <h3 className="text-white font-bold text-lg mb-2">Preview</h3>
+                          <button
+                            className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                            style={{ background: `linear-gradient(135deg, ${branding.hp2_accent_color || '#8b5cf6'}, ${branding.hp2_accent_gradient_end || '#8b5cf6'})` }}
+                          >
+                            Get Started
+                          </button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Brand Identity */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
