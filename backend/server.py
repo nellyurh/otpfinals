@@ -8437,6 +8437,39 @@ async def admin_link_card_services(user_id: str, admin: dict = Depends(require_a
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class SetPayscribeIdRequest(BaseModel):
+    payscribe_customer_id: str
+
+@api_router.post("/admin/users/{user_id}/set-payscribe-id")
+async def admin_set_payscribe_id(user_id: str, request: SetPayscribeIdRequest, admin: dict = Depends(require_admin)):
+    """
+    Manually set a user's Payscribe Customer ID.
+    Use this when a user completed KYC verification but the ID wasn't saved properly.
+    """
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update the user with the provided payscribe_customer_id
+    await db.users.update_one(
+        {'id': user_id},
+        {'$set': {
+            'payscribe_customer_id': request.payscribe_customer_id,
+            'payscribe_customer_set_manually': True,
+            'payscribe_customer_set_by': admin['id'],
+            'payscribe_customer_set_at': datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    logger.info(f"Admin {admin['email']} manually set payscribe_customer_id for user {user_id}: {request.payscribe_customer_id}")
+    
+    return {
+        "success": True,
+        "message": f"Payscribe Customer ID set successfully for {user.get('email')}",
+        "payscribe_customer_id": request.payscribe_customer_id
+    }
+
+
 @api_router.get("/admin/top-services")
 async def admin_top_services(
     admin: dict = Depends(require_admin),
