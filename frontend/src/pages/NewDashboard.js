@@ -2475,9 +2475,9 @@ const NewDashboard = () => {
     };
 
     const getTierLimit = (tier) => {
-      if (tier === 1) return '₦10,000';
-      if (tier === 2) return '₦100,000';
-      return '₦2,000,000';
+      if (tier === 1) return `₦${(branding.kyc_tier1_max_balance || 50000).toLocaleString()}`;
+      if (tier === 2) return `₦${(branding.kyc_tier2_max_balance || 500000).toLocaleString()}`;
+      return `₦${(branding.kyc_tier3_max_balance || 2000000).toLocaleString()}`;
     };
 
     // Verification Popup Component
