@@ -156,7 +156,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     setServicesLoading(true);
     try {
       const serverMap = {
-        us_server: 'daisysms',
+        us_server: 'us_server',
         server1: 'server1',
         server2: 'server2'
       };
