@@ -110,20 +110,21 @@ const Dashboard = ({ user, setUser }) => {
 
     setServicesLoading(true);
     try {
-      const serverMap = {
-        'us_server': 'daisysms',
-        'server1': 'smspool',
-        'server2': 'tigersms'
+      // Use aliased server names (no provider names exposed)
+      const serverEndpoints = {
+        'us_server': 'us_server',
+        'server1': 'server1',
+        'server2': 'server3'  // TigerSMS
       };
       
-      const provider = serverMap[server];
-      const response = await axios.get(`${API}/services/${provider}`, axiosConfig);
+      const endpoint = serverEndpoints[server];
+      const response = await axios.get(`${API}/services/${endpoint}`, axiosConfig);
       
       if (response.data.success) {
         const data = response.data.data;
-        setServicesData({ provider, data });
+        setServicesData({ server, data });
         
-        if (provider === 'smspool') {
+        if (server === 'server1') {
           const services = Object.keys(data).map(countryCode => {
             const countryData = data[countryCode];
             return Object.keys(countryData).map(serviceName => ({
@@ -146,8 +147,8 @@ const Dashboard = ({ user, setUser }) => {
           
           setAvailableServices(uniqueServices);
           setAvailableCountries(uniqueCountries);
-        } else if (provider === 'daisysms') {
-          // For US Server (DaisySMS), only show United States
+        } else if (server === 'us_server') {
+          // For US Server, only show United States
           const services = [];
           
           for (const serviceCode in data) {
@@ -160,7 +161,7 @@ const Dashboard = ({ user, setUser }) => {
           
           setAvailableServices(services);
           setAvailableCountries([{ value: '187', label: 'United States' }]);
-        } else if (provider === 'tigersms') {
+        } else if (server === 'server2') {
           const services = [];
           const countries = [];
           
