@@ -3657,22 +3657,19 @@ async def get_unified_services(user: dict = Depends(get_current_user)):
             'success': True,
             'servers': {
                 'us_server': {
-                    'name': 'US Server (DaisySMS)',
-                    'provider': 'daisysms',
+                    'name': 'US Server',
                     'markup': config.get('daisysms_markup', 20.0),
                     'services': [],
                     'countries': ['us']
                 },
                 'server1': {
-                    'name': 'Server 1 (SMS-pool)',
-                    'provider': 'smspool',
+                    'name': 'Server 1',
                     'markup': config.get('smspool_markup', 20.0),
                     'services': [],
                     'countries': []
                 },
                 'server2': {
-                    'name': 'Global Server (5sim)',
-                    'provider': '5sim',
+                    'name': 'Global Server',
                     'markup': config.get('fivesim_markup', 50.0),
                     'services': [],
                     'countries': []
@@ -3684,6 +3681,28 @@ async def get_unified_services(user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Unified services fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
+
+# ============ Server Aliased Routes (Hide Provider Names) ============
+
+@api_router.get("/services/server1")
+async def get_server1_services(user: dict = Depends(get_current_user), country: str = None):
+    """Server 1 - International SMS services"""
+    return await get_smspool_services(user, country)
+
+@api_router.get("/services/server2")
+async def get_server2_services(user: dict = Depends(get_current_user), refresh: bool = False):
+    """Server 2 - Global SMS services"""
+    return await get_5sim_services(user, refresh)
+
+@api_router.get("/services/us_server")
+async def get_us_server_services(user: dict = Depends(get_current_user), country: str = None):
+    """US Server - US-only SMS services"""
+    return await get_daisysms_services(user, country)
+
+@api_router.get("/services/server3")
+async def get_server3_services(user: dict = Depends(get_current_user), refresh: bool = False):
+    """Server 3 - Additional SMS services"""
+    return await get_tigersms_services(user, refresh)
 
 # ============ Price Calculation Route ============
 
