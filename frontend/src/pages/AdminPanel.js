@@ -1507,6 +1507,8 @@ const AdminPanel = ({ user, setUser }) => {
         disable_tv: response.data.disable_tv === true,
         disable_electricity: response.data.disable_electricity === true,
         disable_airtime_bills: response.data.disable_airtime_bills === true,
+        disable_betting: response.data.disable_betting === true,
+        disable_wallet_transfer: response.data.disable_wallet_transfer === true,
         // Payment gateway toggles
         enable_ercaspay: response.data.enable_ercaspay !== false,
         enable_paymentpoint: response.data.enable_paymentpoint !== false,
