@@ -910,6 +910,8 @@ const AdminPanel = ({ user, setUser }) => {
     disable_tv: false,
     disable_electricity: false,
     disable_airtime_bills: false,
+    disable_betting: false,
+    disable_wallet_transfer: false,
     // Payment gateways
     enable_paymentpoint: true,
     enable_plisio: true,
