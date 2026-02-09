@@ -1,6 +1,26 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-09 (Session 12)**: Security + KYC Retry + Webhook Fee Handling
+  - SECURITY: **Hidden SMS Provider Names** - Provider names (daisysms, smspool, 5sim, tigersms) no longer visible to users
+    - Created aliased API endpoints: `/api/services/server1`, `/api/services/server2`, `/api/services/us_server`, `/api/services/server3`
+    - Frontend updated to use generic server names
+    - Unified services endpoint no longer exposes provider names
+  - NEW: **KYC Verification Retry with Editable Fields** - Users can now fix incorrect details and retry verification
+    - When BVN/NIN verification fails due to name/phone/DOB mismatch, editable fields appear
+    - Users can update First Name, Last Name, Phone, Date of Birth
+    - Retry charges the KYC fee again (from admin config)
+    - Profile is updated with corrected details before retry
+  - NEW: **Payscribe Webhook Fee Handling** - Bank transfer deposit fees now tracked separately
+    - Gross amount credited first, then fee deducted as separate transaction
+    - Creates two transactions: `deposit_ngn` (credit) and `deposit_fee` (debit)
+    - Notification shows gross amount, fee, and net credit
+    - Fee visible in transaction history for transparency
+  - FIX: **File Upload Persistence** - Changed upload paths from `/app/backend/uploads/` to `/app/uploads/`
+    - Files now stored in Docker volume and persist across deployments
+    - Updated: branding, banners, and KYC document uploads
+    - Updated Dockerfile to create upload directories
+
 - **2026-02-06 (Session 11)**: Deployment Documentation + Admin UI Improvements
   - NEW: **DEPLOYMENT.md** - Comprehensive deployment guide with clear instructions for both sites:
     - Separate commands for GetUCloudy (`docker compose up`) and SocialSMSWorld (`docker compose -f docker-compose.socialsmsworld.yml up`)
