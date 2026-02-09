@@ -2439,7 +2439,13 @@ const NewDashboard = () => {
         }
       } catch (error) {
         setVerificationError(error.response?.data?.detail || 'BVN verification failed');
+        // Initialize edit fields with current values for retry
+        setEditFirstName(user.first_name || firstName);
+        setEditLastName(user.last_name || lastName);
+        setEditPhone(kycPhone);
+        setEditDob(dob);
         setVerifying(false);
+        fetchProfile(); // Refresh balance after fee deduction
       }
     };
 
