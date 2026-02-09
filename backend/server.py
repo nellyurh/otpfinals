@@ -5832,13 +5832,21 @@ async def payscribe_webhook(request: Request):
                 logger.info(f"Payscribe webhook: Deducted ₦{fee} fee from user {payment['user_id']} for payment {ref}")
                 net_amount = gross_amount - fee
             
-            # Create notification
-            await _create_transaction_notification(
-                payment['user_id'],
-                'Deposit successful',
-                f"₦{credit_amount:,.2f} has been credited to your wallet via Payscribe Bank Transfer from {sender_name}.",
-                metadata={'reference': ref, 'type': 'deposit_ngn', 'provider': 'payscribe'},
-            )
+            # Create notification with net amount info
+            if fee > 0:
+                await _create_transaction_notification(
+                    payment['user_id'],
+                    'Deposit successful',
+                    f"₦{gross_amount:,.2f} received via Bank Transfer from {sender_name}. Fee: ₦{fee:,.2f}. Net credit: ₦{net_amount:,.2f}",
+                    metadata={'reference': ref, 'type': 'deposit_ngn', 'provider': 'payscribe', 'fee': fee, 'net_amount': net_amount},
+                )
+            else:
+                await _create_transaction_notification(
+                    payment['user_id'],
+                    'Deposit successful',
+                    f"₦{gross_amount:,.2f} has been credited to your wallet via Bank Transfer from {sender_name}.",
+                    metadata={'reference': ref, 'type': 'deposit_ngn', 'provider': 'payscribe'},
+                )
             
             # Check KYC balance limit and suspend if exceeded
             kyc_check = await check_kyc_balance_limit(payment['user_id'])
@@ -5850,7 +5858,7 @@ async def payscribe_webhook(request: Request):
                     metadata={'type': 'kyc_suspension'}
                 )
             
-            logger.info(f"Payscribe payment successful: {ref}, credited ₦{credit_amount} to user {payment['user_id']}")
+            logger.info(f"Payscribe payment successful: {ref}, gross: ₦{gross_amount}, fee: ₦{fee}, net: ₦{net_amount} to user {payment['user_id']}")
         else:
             logger.error(f"Payscribe webhook: User {payment['user_id']} not found for payment {ref}")
     
