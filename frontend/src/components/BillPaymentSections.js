@@ -431,22 +431,25 @@ export function BillsPaymentSection({ axiosConfig, fetchProfile, fetchTransactio
     }
   }, [defaultTab]);
 
-  // Check if bank transfer is disabled
+  // Check individual bill toggles
   const bankTransferDisabled = pageToggles.disable_bank_transfer === true;
+  const dataDisabled = pageToggles.disable_data === true;
+  const tvDisabled = pageToggles.disable_tv === true;
+  const electricityDisabled = pageToggles.disable_electricity === true;
+  const bettingDisabled = pageToggles.disable_betting === true;
+  const walletTransferDisabled = pageToggles.disable_wallet_transfer === true;
 
   const allBillServices = [
-    { id: 'data', label: 'Buy Data', icon: Wifi, color: 'from-blue-500 to-cyan-500', description: 'Internet data bundles' },
-    { id: 'electricity', label: 'Electricity', icon: Zap, color: 'from-yellow-500 to-orange-500', description: 'Pay electricity bills' },
-    { id: 'tv', label: 'TV Subscription', icon: Tv, color: 'from-purple-500 to-pink-500', description: 'DSTV, GOtv, StarTimes' },
-    { id: 'betting', label: 'Betting', icon: Gamepad2, color: 'from-red-500 to-rose-500', description: 'Fund betting wallets' },
-    { id: 'transfer', label: 'Send Money', icon: Send, color: 'from-emerald-500 to-teal-500', description: 'Wallet to wallet transfer' },
-    { id: 'bank', label: 'Bank Transfer', icon: Building2, color: 'from-indigo-500 to-violet-500', description: 'Withdraw to bank account', isBankTransfer: true },
+    { id: 'data', label: 'Buy Data', icon: Wifi, color: 'from-blue-500 to-cyan-500', description: 'Internet data bundles', disabled: dataDisabled },
+    { id: 'electricity', label: 'Electricity', icon: Zap, color: 'from-yellow-500 to-orange-500', description: 'Pay electricity bills', disabled: electricityDisabled },
+    { id: 'tv', label: 'TV Subscription', icon: Tv, color: 'from-purple-500 to-pink-500', description: 'DSTV, GOtv, StarTimes', disabled: tvDisabled },
+    { id: 'betting', label: 'Betting', icon: Gamepad2, color: 'from-red-500 to-rose-500', description: 'Fund betting wallets', disabled: bettingDisabled },
+    { id: 'transfer', label: 'Send Money', icon: Send, color: 'from-emerald-500 to-teal-500', description: 'Wallet to wallet transfer', disabled: walletTransferDisabled },
+    { id: 'bank', label: 'Bank Transfer', icon: Building2, color: 'from-indigo-500 to-violet-500', description: 'Withdraw to bank account', isBankTransfer: true, disabled: bankTransferDisabled },
   ];
 
-  // Filter out bank transfer if disabled
-  const billServices = bankTransferDisabled 
-    ? allBillServices.filter(s => !s.isBankTransfer)
-    : allBillServices;
+  // Filter out disabled services
+  const billServices = allBillServices.filter(s => !s.disabled);
 
   if (activeService) {
     return (
