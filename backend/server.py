@@ -5742,22 +5742,25 @@ async def payscribe_webhook(request: Request):
         user = await db.users.find_one({'id': payment['user_id']}, {'_id': 0})
         if user:
             # Use the amount from webhook (actual payment) or fallback to stored amount
-            credit_amount = amount if amount > 0 else float(payment.get('amount', 0))
+            gross_amount = amount if amount > 0 else float(payment.get('amount', 0))
             
-            if credit_amount <= 0:
-                logger.error(f"Payscribe webhook: Invalid credit amount {credit_amount} for payment {ref}")
+            if gross_amount <= 0:
+                logger.error(f"Payscribe webhook: Invalid credit amount {gross_amount} for payment {ref}")
                 return {'status': 'error', 'message': 'Invalid amount'}
             
-            # Credit NGN balance
+            # Net amount after Payscribe fee deduction
+            net_amount = gross_amount
+            
+            # Credit NGN balance with GROSS amount first (what the sender sent)
             result = await db.users.update_one(
                 {'id': payment['user_id']},
-                {'$inc': {'ngn_balance': credit_amount}}
+                {'$inc': {'ngn_balance': gross_amount}}
             )
             
             if result.modified_count == 0:
                 logger.error(f"Payscribe webhook: Failed to credit user {payment['user_id']} for payment {ref}")
             else:
-                logger.info(f"Payscribe webhook: Successfully credited ₦{credit_amount} to user {payment['user_id']}")
+                logger.info(f"Payscribe webhook: Successfully credited ₦{gross_amount} to user {payment['user_id']}")
                 
                 # Also capture customer_id from webhook if user doesn't have one stored
                 if customer_id_from_webhook:
@@ -5773,11 +5776,11 @@ async def payscribe_webhook(request: Request):
                         )
                         logger.info(f"Captured Payscribe customer_id {customer_id_from_webhook} for user {payment['user_id']} from webhook")
             
-            # Create transaction record
+            # Create CREDIT transaction record (gross amount received)
             transaction = Transaction(
                 user_id=payment['user_id'],
                 type='deposit_ngn',
-                amount=credit_amount,
+                amount=gross_amount,
                 currency='NGN',
                 status='completed',
                 reference=ref,
@@ -5789,12 +5792,45 @@ async def payscribe_webhook(request: Request):
                     'sender_name': sender_name,
                     'sender_account': sender_account,
                     'narration': narration,
-                    'trans_id': trans_id
+                    'trans_id': trans_id,
+                    'gross_amount': gross_amount,
+                    'fee': fee
                 }
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
             await db.transactions.insert_one(trans_dict)
+            
+            # If there's a fee, create a separate DEBIT transaction and deduct from balance
+            if fee > 0:
+                # Deduct fee from balance
+                await db.users.update_one(
+                    {'id': payment['user_id']},
+                    {'$inc': {'ngn_balance': -fee}}
+                )
+                
+                # Create fee debit transaction
+                fee_transaction = Transaction(
+                    user_id=payment['user_id'],
+                    type='deposit_fee',
+                    amount=fee,
+                    currency='NGN',
+                    status='completed',
+                    reference=f"FEE-{ref}",
+                    metadata={
+                        'provider': 'payscribe',
+                        'payment_method': 'bank-transfer',
+                        'description': 'Bank transfer deposit fee',
+                        'related_deposit': ref,
+                        'trans_id': trans_id
+                    }
+                )
+                fee_trans_dict = fee_transaction.model_dump()
+                fee_trans_dict['created_at'] = fee_trans_dict['created_at'].isoformat()
+                await db.transactions.insert_one(fee_trans_dict)
+                
+                logger.info(f"Payscribe webhook: Deducted ₦{fee} fee from user {payment['user_id']} for payment {ref}")
+                net_amount = gross_amount - fee
             
             # Create notification
             await _create_transaction_notification(
