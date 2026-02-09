@@ -1,11 +1,15 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-02-09 (Session 12)**: Security + KYC Retry + Webhook Fee Handling
+- **2026-02-09 (Session 12)**: Security + KYC Retry + Webhook Fee Handling + Bill Controls
   - SECURITY: **Hidden SMS Provider Names** - Provider names (daisysms, smspool, 5sim, tigersms) no longer visible to users
     - Created aliased API endpoints: `/api/services/server1`, `/api/services/server2`, `/api/services/us_server`, `/api/services/server3`
-    - Frontend updated to use generic server names
-    - Unified services endpoint no longer exposes provider names
+    - Updated ALL frontend files (NewDashboard.js, Dashboard.js, VirtualNumbersSection.js) to use generic server names
+    - No more provider names visible in browser network tab
+  - NEW: **Individual Bill Payment Controls** - Admin can now hide/show each bill service individually:
+    - Internet Data, TV Subscription, Electricity, Airtime, Betting, Send Money (Wallet Transfer)
+    - Added `disable_betting` and `disable_wallet_transfer` toggles
+    - Services respect toggles on both Dashboard and Bills Payment pages
   - NEW: **KYC Verification Retry with Editable Fields** - Users can now fix incorrect details and retry verification
     - When BVN/NIN verification fails due to name/phone/DOB mismatch, editable fields appear
     - Users can update First Name, Last Name, Phone, Date of Birth
