@@ -687,17 +687,18 @@ const NewDashboard = () => {
 
     setServicesLoading(true);
     try {
-      const serverMap = {
-        'us_server': 'daisysms',
-        'server1': 'smspool',
-        'server2': 'tigersms'
+      // Use aliased server endpoints (no provider names exposed)
+      const serverEndpoints = {
+        'us_server': 'us_server',
+        'server1': 'server1',
+        'server2': 'server3'  // TigerSMS
       };
       
-      const provider = serverMap[serverValue];
+      const endpoint = serverEndpoints[serverValue];
       
-      if (provider === 'daisysms') {
-        // DaisySMS - US only, fetch services directly
-        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+      if (serverValue === 'us_server') {
+        // US Server - US only, fetch services directly
+        const response = await axios.get(`${API}/api/services/${endpoint}`, axiosConfig);
         if (response.data.success) {
           const services = (response.data.services || []).map(service => ({
             value: service.value,
@@ -710,16 +711,16 @@ const NewDashboard = () => {
           setAvailableServices(services);
           setAvailableCountries([{ value: '187', label: 'United States' }]);
         }
-      } else if (provider === 'smspool') {
-        // SMS-pool - fetch countries first
-        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+      } else if (serverValue === 'server1') {
+        // Server 1 - fetch countries first
+        const response = await axios.get(`${API}/api/services/${endpoint}`, axiosConfig);
         if (response.data.success && response.data.countries) {
           setAvailableCountries(response.data.countries);
           setAvailableServices([]); // Services loaded after country selection
         }
       } else {
-        // TigerSMS - old format
-        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+        // Server 2/3 - old format
+        const response = await axios.get(`${API}/api/services/${endpoint}`, axiosConfig);
         if (response.data.success) {
           const data = response.data.data;
           const services = [];
