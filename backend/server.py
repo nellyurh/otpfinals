@@ -3695,9 +3695,9 @@ async def get_server2_services(user: dict = Depends(get_current_user), refresh: 
     return await get_5sim_services(user, refresh)
 
 @api_router.get("/services/us_server")
-async def get_us_server_services(user: dict = Depends(get_current_user), country: str = None):
+async def get_us_server_services(user: dict = Depends(get_current_user)):
     """US Server - US-only SMS services"""
-    return await get_daisysms_services(user, country)
+    return await get_daisysms_services(user)
 
 @api_router.get("/services/server3")
 async def get_server3_services(user: dict = Depends(get_current_user), refresh: bool = False):
