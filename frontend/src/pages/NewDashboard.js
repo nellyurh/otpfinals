@@ -2522,7 +2522,7 @@ const NewDashboard = () => {
             </div>
             
             {/* Status Message */}
-            <div className="min-h-[60px] flex items-center justify-center">
+            <div className="min-h-[60px]">
               {verifying && !verificationError && !verificationSuccess && (
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-blue-600">
@@ -2546,14 +2546,75 @@ const NewDashboard = () => {
               )}
               
               {verificationError && (
-                <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl">
-                  <p className="font-medium">{verificationError}</p>
-                  <button 
-                    onClick={() => setShowVerificationPopup(false)}
-                    className="mt-2 text-sm underline"
-                  >
-                    Close and try again
-                  </button>
+                <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-left">
+                  <p className="font-medium text-sm mb-3">{verificationError}</p>
+                  
+                  {/* Editable Fields for Retry */}
+                  <div className="space-y-3 mt-4 p-3 bg-white rounded-lg border border-red-200">
+                    <p className="text-xs text-gray-600 font-medium">Update your details and retry (₦{KYC_FEE} per attempt):</p>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-500">First Name</label>
+                        <input
+                          type="text"
+                          value={editFirstName}
+                          onChange={(e) => setEditFirstName(e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
+                          placeholder="First name"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500">Last Name</label>
+                        <input
+                          type="text"
+                          value={editLastName}
+                          onChange={(e) => setEditLastName(e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
+                          placeholder="Last name"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-500">Phone Number</label>
+                        <input
+                          type="tel"
+                          value={editPhone}
+                          onChange={(e) => setEditPhone(e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
+                          placeholder="08012345678"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500">Date of Birth</label>
+                        <input
+                          type="date"
+                          value={editDob}
+                          onChange={(e) => setEditDob(e.target.value)}
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-3">
+                      <button 
+                        onClick={handleRetryVerification}
+                        disabled={verifying}
+                        className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {verifying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                        Retry (₦{KYC_FEE})
+                      </button>
+                      <button 
+                        onClick={() => setShowVerificationPopup(false)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
