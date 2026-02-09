@@ -201,17 +201,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     }
   };
 
-  // Fetch services when country changes (for SMS-pool)
+  // Fetch services when country changes
   useEffect(() => {
     const fetchServicesForCountry = async () => {
-      // For SMS-pool (International server), services should reload ONLY
-      // when the selected country actually changes.
-      // SMS-pool (server1): load services for selected country
+      // Server 1: load services for selected country
       if (selectedServer?.value === 'server1' && selectedCountry) {
         setServicesLoading(true);
         try {
           const response = await axios.get(
-            `${API}/api/services/smspool?country=${selectedCountry.value}`,
+            `${API}/api/services/server1?country=${selectedCountry.value}`,
             axiosConfig
           );
 
@@ -226,20 +224,20 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         }
       }
 
-      // 5sim (server2): load services/operators for selected country
+      // Server 2: load services/operators for selected country
       if (selectedServer?.value === 'server2' && selectedCountry) {
         setServicesLoading(true);
         try {
           const response = await axios.get(
-            `${API}/api/services/5sim?country=${selectedCountry.value}`,
+            `${API}/api/services/server2?country=${selectedCountry.value}`,
             axiosConfig
           );
           if (response.data.success && response.data.services) {
             setAvailableServices(response.data.services);
           }
         } catch (error) {
-          console.error('Failed to fetch 5sim services for country:', error);
-          toast.error('Failed to load 5sim services');
+          console.error('Failed to fetch services for country:', error);
+          toast.error('Failed to load services');
         } finally {
           setServicesLoading(false);
         }
