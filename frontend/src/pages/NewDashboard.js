@@ -2090,6 +2090,12 @@ const NewDashboard = () => {
     const [verificationError, setVerificationError] = useState('');
     const [verificationSuccess, setVerificationSuccess] = useState('');
     
+    // Edit fields for retry (initialized when error occurs)
+    const [editFirstName, setEditFirstName] = useState(user.first_name || '');
+    const [editLastName, setEditLastName] = useState(user.last_name || '');
+    const [editPhone, setEditPhone] = useState(user.phone || '');
+    const [editDob, setEditDob] = useState('');
+    
     // Transaction PIN states
     const [hasPin, setHasPin] = useState(user.has_transaction_pin || false);
     const [pinAction, setPinAction] = useState(''); // 'set', 'change', 'reset'
