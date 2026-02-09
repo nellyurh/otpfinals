@@ -5670,6 +5670,7 @@ async def payscribe_webhook(request: Request):
     event_id = payload.get('event_id', '')
     trans_id = payload.get('trans_id', '')
     amount = float(payload.get('amount', 0))
+    fee = float(payload.get('fee', 0))  # Fee charged by Payscribe
     
     # Get customer/account info
     customer = payload.get('customer', {})
