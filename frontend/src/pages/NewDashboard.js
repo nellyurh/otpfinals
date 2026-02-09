@@ -2476,7 +2476,105 @@ const NewDashboard = () => {
         }
       } catch (error) {
         setVerificationError(error.response?.data?.detail || 'NIN verification failed');
+        // Initialize edit fields with current values for retry
+        setEditFirstName(user.first_name || firstName);
+        setEditLastName(user.last_name || lastName);
+        setEditPhone(kycPhone);
+        setEditDob(dob);
       } finally {
+        setVerifying(false);
+      }
+    };
+
+    // Handle retry verification with updated details
+    const handleRetryVerification = async () => {
+      // Validate balance for retry fee
+      if ((user.ngn_balance || 0) < KYC_FEE) {
+        toast.error(`Insufficient balance. You need ₦${KYC_FEE} for retry.`);
+        return;
+      }
+      
+      // Update user profile with edited values first
+      try {
+        await axios.put(`${API}/api/user/profile`, {
+          first_name: editFirstName,
+          last_name: editLastName,
+          phone: editPhone
+        }, axiosConfig);
+        
+        // Update local state
+        setFirstName(editFirstName);
+        setLastName(editLastName);
+        setKycPhone(editPhone);
+        setDob(editDob);
+        
+        // Clear error and retry
+        setVerificationError('');
+        setVerifying(true);
+        
+        if (verificationStep === 'bvn' || !bvnVerified) {
+          // Retry BVN verification with updated details
+          try {
+            const response = await axios.post(`${API}/api/kyc/tier3/verify-bvn`, {
+              bvn: bvn,
+              nin: nin,
+              phone: editPhone,
+              dob: editDob
+            }, axiosConfig);
+            
+            if (response.data.success) {
+              setBvnVerified(true);
+              setVerificationSuccess('BVN verified! Proceeding to NIN verification...');
+              fetchProfile(); // Refresh balance
+              
+              setTimeout(() => {
+                setVerificationStep('nin');
+                setVerificationSuccess('');
+                verifyNIN();
+              }, 2000);
+            }
+          } catch (error) {
+            setVerificationError(error.response?.data?.detail || 'BVN verification failed');
+            fetchProfile(); // Refresh balance after fee deduction
+          } finally {
+            setVerifying(false);
+          }
+        } else {
+          // Retry NIN verification
+          try {
+            const response = await axios.post(`${API}/api/kyc/tier3/verify-nin`, {
+              bvn: bvn,
+              nin: nin,
+              phone: editPhone,
+              dob: editDob,
+              address: {
+                street: kycStreet,
+                city: kycCity,
+                state: kycState,
+                country: kycCountry || 'NG',
+                postal_code: kycPostalCode || '100001'
+              }
+            }, axiosConfig);
+            
+            if (response.data.success) {
+              setNinVerified(true);
+              setVerificationSuccess('NIN verified! Your account is now Tier 3!');
+              setUser({ ...user, tier: 3, bvn_verified: true, nin_verified: true });
+              fetchProfile();
+              
+              setTimeout(() => {
+                setShowVerificationPopup(false);
+              }, 3000);
+            }
+          } catch (error) {
+            setVerificationError(error.response?.data?.detail || 'NIN verification failed');
+            fetchProfile(); // Refresh balance after fee deduction
+          } finally {
+            setVerifying(false);
+          }
+        }
+      } catch (error) {
+        toast.error('Failed to update profile. Please try again.');
         setVerifying(false);
       }
     };
