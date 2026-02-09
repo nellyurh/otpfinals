@@ -757,7 +757,7 @@ const NewDashboard = () => {
         setServicesLoading(true);
         try {
           const response = await axios.get(
-            `${API}/api/services/smspool?country=${selectedCountry.value}`,
+            `${API}/api/services/server1?country=${selectedCountry.value}`,
             axiosConfig
           );
           
