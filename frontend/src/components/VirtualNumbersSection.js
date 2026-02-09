@@ -157,15 +157,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     try {
       const serverMap = {
         us_server: 'daisysms',
-        server1: 'smspool',
-        server2: '5sim'
+        server1: 'server1',
+        server2: 'server2'
       };
 
-      const provider = serverMap[serverValue];
+      const endpoint = serverMap[serverValue];
 
-      if (provider === 'daisysms') {
-        // DaisySMS - US only, fetch services directly
-        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+      if (serverValue === 'us_server') {
+        // US Server - US only, fetch services directly
+        const response = await axios.get(`${API}/api/services/us_server`, axiosConfig);
         if (response.data.success) {
           const services = (response.data.services || []).map((service) => ({
             value: service.value,
@@ -178,16 +178,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           setAvailableServices(services);
           setAvailableCountries([{ value: '187', label: 'United States' }]);
         }
-      } else if (provider === 'smspool') {
-        // SMS-pool - fetch countries first
-        const response = await axios.get(`${API}/api/services/${provider}`, axiosConfig);
+      } else if (serverValue === 'server1') {
+        // Server 1 - fetch countries first
+        const response = await axios.get(`${API}/api/services/server1`, axiosConfig);
         if (response.data.success && response.data.countries) {
           setAvailableCountries(response.data.countries);
           setAvailableServices([]); // Services loaded after country selection
         }
       } else {
-        // 5sim Global server - first load countries via /services/5sim
-        const response = await axios.get(`${API}/api/services/5sim`, axiosConfig);
+        // Server 2 - Global server - first load countries
+        const response = await axios.get(`${API}/api/services/server2`, axiosConfig);
         if (response.data.success && response.data.countries) {
           setAvailableCountries(response.data.countries);
           setAvailableServices([]);
