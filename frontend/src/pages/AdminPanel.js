@@ -3843,12 +3843,14 @@ const AdminPanel = ({ user, setUser }) => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {[
                         ['disable_data', 'Internet Data', 'Data bundle purchases', '📶'],
                         ['disable_tv', 'TV Subscription', 'DSTV, GOtv, StarTimes', '📺'],
                         ['disable_electricity', 'Electricity', 'Electricity bill payments', '⚡'],
                         ['disable_airtime_bills', 'Airtime', 'Airtime purchases', '📱'],
+                        ['disable_betting', 'Betting', 'Fund betting wallets', '🎮'],
+                        ['disable_wallet_transfer', 'Send Money', 'Wallet-to-wallet transfer', '💸'],
                       ].map(([key, label, desc, icon]) => (
                         <div key={key} className="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-100">
                           <div className="flex items-center gap-2">
@@ -3860,7 +3862,7 @@ const AdminPanel = ({ user, setUser }) => {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`text-[10px] font-semibold ${pageToggles[key] ? 'text-red-600' : 'text-green-600'}`}>
-                              {pageToggles[key] ? 'OFF' : 'ON'}
+                              {pageToggles[key] ? 'HIDDEN' : 'VISIBLE'}
                             </span>
                             <Switch
                               checked={pageToggles[key] || false}
@@ -3871,7 +3873,7 @@ const AdminPanel = ({ user, setUser }) => {
                       ))}
                     </div>
                     <p className="text-[10px] text-blue-500 mt-3 text-center">
-                      💡 When a service is OFF, it will be hidden from the dashboard and bill payment pages
+                      💡 When a service is HIDDEN, it will be removed from the dashboard and bill payment pages completely
                     </p>
                   </CardContent>
                 </Card>
