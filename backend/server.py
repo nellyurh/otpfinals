@@ -7708,6 +7708,66 @@ async def get_card_details(card_id: str, user: dict = Depends(get_current_user))
         raise HTTPException(status_code=500, detail="Failed to fetch card details")
 
 
+@api_router.get("/cards/{card_id}/balance")
+async def get_card_balance(card_id: str, user: dict = Depends(get_current_user)):
+    """Get live card balance from Payscribe API"""
+    try:
+        card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
+        
+        if not card:
+            raise HTTPException(status_code=404, detail="Card not found")
+        
+        provider_card_id = card.get('provider_card_id')
+        if not provider_card_id:
+            # Return stored balance if no provider ID
+            return {
+                'success': True,
+                'balance': card.get('balance', 0),
+                'currency': 'USD',
+                'source': 'local'
+            }
+        
+        # Fetch live balance from Payscribe
+        result = await payscribe_request(f'card/{provider_card_id}/balance', 'GET', use_public_key=True)
+        
+        if result and result.get('status'):
+            details = result.get('message', {}).get('details', {})
+            live_balance = float(details.get('balance', 0) or details.get('available_balance', 0) or 0)
+            
+            # Update local balance to stay in sync
+            await db.virtual_cards.update_one(
+                {'id': card_id},
+                {'$set': {'balance': live_balance, 'balance_updated_at': datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            return {
+                'success': True,
+                'balance': live_balance,
+                'currency': details.get('currency', 'USD'),
+                'source': 'payscribe'
+            }
+        
+        # Fallback to stored balance
+        return {
+            'success': True,
+            'balance': card.get('balance', 0),
+            'currency': 'USD',
+            'source': 'local'
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get card balance error: {str(e)}")
+        # Return stored balance on error
+        return {
+            'success': False,
+            'balance': card.get('balance', 0) if card else 0,
+            'currency': 'USD',
+            'source': 'local',
+            'error': str(e)
+        }
+
+
 @api_router.get("/cards/{card_id}/transactions")
 async def get_card_transactions(card_id: str, limit: int = 50, user: dict = Depends(get_current_user)):
     """Get transactions for a specific card"""
