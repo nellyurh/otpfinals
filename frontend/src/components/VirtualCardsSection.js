@@ -16,13 +16,15 @@ const CARD_DESIGNS = [
   { id: 'raenest', name: 'Raenest Purple', gradient: 'bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700', textColor: 'text-white', accentColor: '#fff' },
 ];
 
-// Virtual Card Component Display
+// Virtual Card Component Display - uses user's selected design
 function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false, compact = false, brandLogo, brandName = 'BillHub', showStatusBadge = false }) {
   const cardDesign = CARD_DESIGNS.find(d => d.id === (design || 'classic')) || CARD_DESIGNS[0];
   
   const formatCardNumber = (num) => {
-    if (!num) return '**** **** **** ****';
-    return num.replace(/(.{4})/g, '$1 ').trim();
+    if (!num) return '•••• •••• •••• ••••';
+    // Format 16 digit number as 4-4-4-4
+    const cleanNum = num.replace(/\s/g, '');
+    return cleanNum.replace(/(.{4})/g, '$1 ').trim();
   };
 
   return (
@@ -72,16 +74,19 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
         </div>
       </div>
 
-      {/* Card Number */}
+      {/* Card Number - shows masked by default, full number when showNumber is true */}
       <div className={`font-mono ${compact ? 'text-lg' : 'text-xl'} tracking-wider mb-6 relative z-10 ${cardDesign.textColor}`}>
-        {showNumber ? formatCardNumber(card?.card_number || card?.pan) : `•••• •••• •••• ${card?.last_four || '****'}`}
+        {showNumber && card?.card_number 
+          ? formatCardNumber(card.card_number)
+          : `•••• •••• •••• ${card?.last_four || '••••'}`
+        }
       </div>
 
       {/* Card Holder Name */}
       <div className="relative z-10 flex justify-between items-end">
         <div>
           <p className={`text-sm font-medium ${cardDesign.textColor} uppercase tracking-wide`}>
-            {card?.name || 'YOUR NAME'}
+            {card?.name || 'CARD HOLDER'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -99,6 +104,10 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
 
 // Copy to clipboard helper
 const copyToClipboard = (text, label) => {
+  if (!text) {
+    toast.error(`No ${label} to copy`);
+    return;
+  }
   navigator.clipboard.writeText(text).then(() => {
     toast.success(`${label} copied to clipboard`);
   }).catch(() => {
@@ -132,19 +141,19 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const [creating, setCreating] = useState(false);
   const [createdCard, setCreatedCard] = useState(null);
   
-  // Card view state (new design)
+  // Card view state (new design) - selectedCard holds FULL card details from API
   const [selectedCard, setSelectedCard] = useState(null);
   const [showCardDetails, setShowCardDetails] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [addressTab, setAddressTab] = useState('us'); // 'us' or 'nigeria'
+  const [addressTab, setAddressTab] = useState('nigeria'); // 'us' or 'nigeria'
   
   // Fund card modal
   const [showFundModal, setShowFundModal] = useState(false);
   const [fundAmount, setFundAmount] = useState('');
   const [funding, setFunding] = useState(false);
 
-  // Refresh balance
-  const [refreshingBalance, setRefreshingBalance] = useState(false);
+  // Loading states
+  const [loadingCardDetails, setLoadingCardDetails] = useState(false);
 
   const userTier = user?.tier || 1;
   const brandLogo = branding?.brand_logo_url || null;
@@ -154,12 +163,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     fetchCards();
   }, []);
 
-  // Set first card as selected when cards load
+  // When cards load, fetch full details for the first card
   useEffect(() => {
     if (cards.length > 0 && !selectedCard) {
-      setSelectedCard(cards[0]);
-      fetchCardTransactions(cards[0].id);
-      fetchCardBalance(cards[0].id);
+      fetchCardFullDetails(cards[0].id);
     }
   }, [cards]);
 
@@ -184,26 +191,43 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     }
   };
 
-  const fetchCardBalance = async (cardId) => {
-    setRefreshingBalance(true);
+  // Fetch FULL card details from Payscribe API via backend
+  const fetchCardFullDetails = async (cardId) => {
+    setLoadingCardDetails(true);
     try {
+      // Use the balance endpoint which returns full card details
       const response = await axios.get(`${API}/api/cards/${cardId}/balance`, axiosConfig);
       if (response.data.success) {
+        const cardDetails = response.data.card_details;
         const balanceData = response.data.balance;
+        
+        // Update selected card with full details from API
+        setSelectedCard(cardDetails);
+        
+        // Update stats
         setCardStats({
-          balance: balanceData?.balance || 0,
+          balance: balanceData?.balance || cardDetails?.balance || 0,
           cashback: balanceData?.cashback || 0,
           spent_this_month: balanceData?.spent_this_month || 0
         });
-        // Update selected card with new balance
-        if (selectedCard && selectedCard.id === cardId) {
-          setSelectedCard(prev => ({ ...prev, balance: balanceData?.balance || prev?.balance }));
-        }
+        
+        // Also fetch transactions
+        fetchCardTransactions(cardId);
       }
     } catch (error) {
-      console.error('Failed to fetch card balance:', error);
+      console.error('Failed to fetch card details:', error);
+      // Fallback: use local card data
+      const localCard = cards.find(c => c.id === cardId);
+      if (localCard) {
+        setSelectedCard(localCard);
+        setCardStats({
+          balance: localCard.balance || 0,
+          cashback: 0,
+          spent_this_month: 0
+        });
+      }
     } finally {
-      setRefreshingBalance(false);
+      setLoadingCardDetails(false);
     }
   };
 
@@ -297,7 +321,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         setFundAmount('');
         fetchCards();
         fetchProfile();
-        fetchCardBalance(selectedCard.id);
+        // Refresh card details to get updated balance
+        fetchCardFullDetails(selectedCard.id);
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to fund card');
@@ -332,10 +357,9 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   };
 
   const selectCard = (card) => {
-    setSelectedCard(card);
+    // Fetch full details when selecting a different card
+    fetchCardFullDetails(card.id);
     setShowCardDetails(false);
-    fetchCardTransactions(card.id);
-    fetchCardBalance(card.id);
   };
 
   // Tier 3 requirement check
@@ -745,10 +769,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // ============ Main Card View (New Design) ============
+  // ============ Main Card View (New Design) - Uses REAL data from API ============
   return (
     <div className="space-y-6">
-      {/* Stats Section */}
+      {/* Stats Section - Real data from API */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
           <p className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -770,25 +794,33 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         </div>
       </div>
 
-      {/* Card Display */}
+      {/* Card Display - Uses user's selected design */}
       {selectedCard && (
         <div className="relative">
-          <VirtualCardDisplay 
-            card={selectedCard} 
-            design={selectedCard.design || 'raenest'} 
-            brandLogo={brandLogo}
-            brandName={selectedCard.alias || brandName}
-            showStatusBadge={true}
-          />
-          
-          {/* View Details Button */}
-          <button
-            onClick={() => setShowCardDetails(true)}
-            className="absolute top-4 right-4 px-4 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-full transition-colors"
-            data-testid="view-details-btn"
-          >
-            View details
-          </button>
+          {loadingCardDetails ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
+            </div>
+          ) : (
+            <>
+              <VirtualCardDisplay 
+                card={selectedCard} 
+                design={selectedCard.design || 'raenest'} 
+                brandLogo={brandLogo}
+                brandName={selectedCard.alias || brandName}
+                showStatusBadge={true}
+              />
+              
+              {/* View Details Button */}
+              <button
+                onClick={() => setShowCardDetails(true)}
+                className="absolute top-4 right-4 px-4 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-full transition-colors"
+                data-testid="view-details-btn"
+              >
+                View details
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -870,7 +902,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         </div>
       </div>
 
-      {/* Billing Address Section */}
+      {/* Billing Address Section - Real data from API */}
       {selectedCard?.billing_address && (
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
@@ -885,14 +917,14 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             </button>
           </div>
           <p className="text-gray-600 text-sm">
-            {selectedCard.billing_address?.street || '234 Sapele-Warri Rd'},<br />
-            {selectedCard.billing_address?.city || 'Amukpe'}, {selectedCard.billing_address?.state || 'Delta'},<br />
-            {selectedCard.billing_address?.postal_code || '331107'}, {selectedCard.billing_address?.country || 'Nigeria'}
+            {selectedCard.billing_address.street || 'N/A'},<br />
+            {selectedCard.billing_address.city || 'N/A'}, {selectedCard.billing_address.state || 'N/A'},<br />
+            {selectedCard.billing_address.postal_code || 'N/A'}, {selectedCard.billing_address.country || 'N/A'}
           </p>
         </div>
       )}
 
-      {/* Transactions Section */}
+      {/* Transactions Section - Real data from API */}
       <div className="bg-white border border-gray-200 rounded-xl p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">Transactions</h3>
@@ -965,7 +997,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         </div>
       )}
 
-      {/* View Card Details Modal */}
+      {/* View Card Details Modal - Shows REAL data from API */}
       {showCardDetails && selectedCard && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center">
           <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
@@ -981,16 +1013,16 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             </div>
             
             <div className="p-4 space-y-4">
-              {/* Card Number */}
+              {/* Card Number - Real from Payscribe */}
               <div className="flex items-center justify-between py-3 border-b border-gray-100">
                 <div>
                   <p className="text-sm text-gray-500">Card Number</p>
                   <p className="font-mono text-gray-900">
-                    {selectedCard.card_number || selectedCard.pan || `${selectedCard.first_six || '526000'}******${selectedCard.last_four || '0000'}`}
+                    {selectedCard.card_number || selectedCard.pan || 'Loading...'}
                   </p>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(selectedCard.card_number || selectedCard.pan || '', 'Card number')}
+                  onClick={() => copyToClipboard(selectedCard.card_number || selectedCard.pan, 'Card number')}
                   className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
@@ -998,14 +1030,14 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 </button>
               </div>
               
-              {/* CVV */}
+              {/* CVV - Real from Payscribe */}
               <div className="flex items-center justify-between py-3 border-b border-gray-100">
                 <div>
                   <p className="text-sm text-gray-500">CVV (Security Code)</p>
-                  <p className="font-mono text-gray-900">{selectedCard.cvv || '***'}</p>
+                  <p className="font-mono text-gray-900">{selectedCard.cvv || 'Loading...'}</p>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(selectedCard.cvv || '', 'CVV')}
+                  onClick={() => copyToClipboard(selectedCard.cvv, 'CVV')}
                   className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
@@ -1013,14 +1045,14 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 </button>
               </div>
               
-              {/* Expiry Date */}
+              {/* Expiry Date - Real from Payscribe */}
               <div className="flex items-center justify-between py-3 border-b border-gray-100">
                 <div>
                   <p className="text-sm text-gray-500">Expiry Date</p>
-                  <p className="font-mono text-gray-900">{selectedCard.expiry || '12/28'}</p>
+                  <p className="font-mono text-gray-900">{selectedCard.expiry || 'Loading...'}</p>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(selectedCard.expiry || '', 'Expiry date')}
+                  onClick={() => copyToClipboard(selectedCard.expiry, 'Expiry date')}
                   className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
@@ -1028,7 +1060,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 </button>
               </div>
               
-              {/* Billing Address */}
+              {/* Billing Address - Real from Payscribe */}
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-gray-500">Billing Address</p>
@@ -1066,7 +1098,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                   </button>
                 </div>
                 
-                {/* Address Content */}
+                {/* Address Content - US is static (for international purchases), Nigeria is from API */}
                 {addressTab === 'us' ? (
                   <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
@@ -1136,14 +1168,15 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                   </div>
                 ) : (
+                  // Nigeria Address - Real data from Payscribe API
                   <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500">Street Address</p>
-                        <p className="text-gray-900">{selectedCard.billing_address?.street || '234 Sapele-Warri Rd'}</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.street || 'N/A'}</p>
                       </div>
                       <button
-                        onClick={() => copyToClipboard(selectedCard.billing_address?.street || '234 Sapele-Warri Rd', 'Street address')}
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.street, 'Street address')}
                         className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
@@ -1153,10 +1186,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500">City</p>
-                        <p className="text-gray-900">{selectedCard.billing_address?.city || 'Amukpe, Sapele'}</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.city || 'N/A'}</p>
                       </div>
                       <button
-                        onClick={() => copyToClipboard(selectedCard.billing_address?.city || 'Amukpe, Sapele', 'City')}
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.city, 'City')}
                         className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
@@ -1166,10 +1199,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500">State</p>
-                        <p className="text-gray-900">{selectedCard.billing_address?.state || 'Delta'}</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.state || 'N/A'}</p>
                       </div>
                       <button
-                        onClick={() => copyToClipboard(selectedCard.billing_address?.state || 'Delta', 'State')}
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.state, 'State')}
                         className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
@@ -1179,10 +1212,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500">Country</p>
-                        <p className="text-gray-900">{selectedCard.billing_address?.country || 'Nigeria'}</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.country || 'N/A'}</p>
                       </div>
                       <button
-                        onClick={() => copyToClipboard(selectedCard.billing_address?.country || 'Nigeria', 'Country')}
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.country, 'Country')}
                         className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
@@ -1192,10 +1225,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500">Postal Code</p>
-                        <p className="text-gray-900">{selectedCard.billing_address?.postal_code || '331107'}</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.postal_code || 'N/A'}</p>
                       </div>
                       <button
-                        onClick={() => copyToClipboard(selectedCard.billing_address?.postal_code || '331107', 'Postal code')}
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.postal_code, 'Postal code')}
                         className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
