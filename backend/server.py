@@ -6027,28 +6027,44 @@ async def admin_list_transactions(admin: dict = Depends(require_admin)):
 
 @api_router.post("/payscribe/buy-airtime")
 async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_current_user)):
-    """Purchase airtime via Payscribe"""
+    """Purchase airtime via Payscribe with markup"""
     try:
-        # Check balance
-        if user.get('ngn_balance', 0) < request.amount:
-            raise HTTPException(status_code=400, detail="Insufficient NGN balance")
+        # Get markup from config
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        markup_percent = config.get('airtime_markup_percent', 2.0) if config else 2.0
         
-        # Call Payscribe airtime vending
-        result = await vend_airtime(request.provider, request.amount, request.recipient, request.metadata.get('ref') if request.metadata else None)
+        # Calculate marked up amount (what user pays)
+        base_amount = request.amount
+        markup_amount = base_amount * (markup_percent / 100)
+        total_amount = base_amount + markup_amount
+        
+        # Check balance against total amount
+        if user.get('ngn_balance', 0) < total_amount:
+            raise HTTPException(status_code=400, detail=f"Insufficient NGN balance. You need ₦{total_amount:,.2f}")
+        
+        # Call Payscribe airtime vending with BASE amount (provider gets base)
+        result = await vend_airtime(request.provider, base_amount, request.recipient, request.metadata.get('ref') if request.metadata else None)
         
         if result and result.get('status'):
-            # Deduct from user balance
-            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+            # Deduct TOTAL amount from user (base + markup)
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -total_amount}})
             
-            # Create transaction record
+            # Create transaction record showing total amount paid
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
-                amount=request.amount,
+                amount=total_amount,
                 currency='NGN',
                 status='completed',
                 reference=result.get('message', {}).get('details', {}).get('trans_id'),
-                metadata={'service': 'airtime', 'provider': request.provider, 'recipient': request.recipient}
+                metadata={
+                    'service': 'airtime', 
+                    'provider': request.provider, 
+                    'recipient': request.recipient,
+                    'base_amount': base_amount,
+                    'markup_amount': markup_amount,
+                    'markup_percent': markup_percent
+                }
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -6057,7 +6073,7 @@ async def buy_airtime(request: BillPaymentRequest, user: dict = Depends(get_curr
             await _create_transaction_notification(
                 user['id'],
                 'Airtime purchase',
-                f"Airtime purchase of ₦{request.amount:,.2f} completed.",
+                f"₦{base_amount:,.0f} airtime purchase completed for {request.recipient}.",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'airtime'},
             )
             
