@@ -7712,7 +7712,7 @@ async def get_card_details(card_id: str, user: dict = Depends(get_current_user))
 
 @api_router.get("/cards/{card_id}/balance")
 async def get_card_balance(card_id: str, user: dict = Depends(get_current_user)):
-    """Get live card balance from Payscribe API"""
+    """Get live card balance and details from Payscribe API"""
     try:
         card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
         
@@ -7729,23 +7729,38 @@ async def get_card_balance(card_id: str, user: dict = Depends(get_current_user))
                 'source': 'local'
             }
         
-        # Fetch live balance from Payscribe
-        result = await payscribe_request(f'card/{provider_card_id}/balance', 'GET', use_public_key=True)
+        # Fetch card details from Payscribe (includes balance)
+        result = await payscribe_request(f'cards/{provider_card_id}', 'GET', use_public_key=True)
         
         if result and result.get('status'):
             details = result.get('message', {}).get('details', {})
-            live_balance = float(details.get('balance', 0) or details.get('available_balance', 0) or 0)
+            live_balance = float(details.get('balance', 0))
             
-            # Update local balance to stay in sync
-            await db.virtual_cards.update_one(
-                {'id': card_id},
-                {'$set': {'balance': live_balance, 'balance_updated_at': datetime.now(timezone.utc).isoformat()}}
-            )
+            # Update local card with latest info from Payscribe
+            update_data = {
+                'balance': live_balance,
+                'balance_updated_at': datetime.now(timezone.utc).isoformat(),
+                'status': details.get('status', card.get('status', 'active')),
+            }
+            
+            # Also update card number if returned and we don't have it
+            if details.get('card_number') and not card.get('card_number'):
+                update_data['card_number'] = details.get('card_number')
+                update_data['pan'] = details.get('card_number')
+            
+            if details.get('expiry'):
+                update_data['expiry'] = details.get('expiry')
+            
+            if details.get('ccv'):
+                update_data['cvv'] = details.get('ccv')
+            
+            await db.virtual_cards.update_one({'id': card_id}, {'$set': update_data})
             
             return {
                 'success': True,
                 'balance': live_balance,
-                'currency': details.get('currency', 'USD'),
+                'currency': details.get('currency', 'USD').upper(),
+                'status': details.get('status', 'active'),
                 'source': 'payscribe'
             }
         
