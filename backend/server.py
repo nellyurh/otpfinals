@@ -6133,51 +6133,66 @@ async def get_stablecoin_wallets(user: dict = Depends(get_current_user)):
 
 @api_router.post("/payscribe/buy-data")
 async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_current_user)):
-    """Purchase data bundle via Payscribe
+    """Purchase data bundle via Payscribe with markup
     
     Uses correct Payscribe endpoint: POST /data/vend
     """
     try:
+        # Get markup from config
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        markup_percent = config.get('data_markup_percent', 2.0) if config else 2.0
+        
         # First lookup the plan to get the amount
         plans_result = await get_data_plans_service(request.network)
         if not plans_result or not plans_result.get('status'):
             raise HTTPException(status_code=400, detail="Failed to fetch data plans")
         
         # Find the plan amount
-        plan_amount = 0
+        base_amount = 0
         plans_list = plans_result.get('message', {}).get('details', [{}])[0].get('plans', [])
         for plan in plans_list:
             if plan.get('plan_code') == request.plan:
-                plan_amount = float(plan.get('amount', 0))
+                base_amount = float(plan.get('amount', 0))
                 break
         
-        if plan_amount <= 0:
+        if base_amount <= 0:
             raise HTTPException(status_code=400, detail="Invalid plan selected")
+        
+        # Calculate marked up amount (what user pays)
+        markup_amount = base_amount * (markup_percent / 100)
+        total_amount = base_amount + markup_amount
         
         # Check user balance BEFORE purchase
         user_balance = user.get('ngn_balance', 0)
-        if user_balance < plan_amount:
-            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{plan_amount:,.2f} but have ₦{user_balance:,.2f}")
+        if user_balance < total_amount:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{total_amount:,.2f} but have ₦{user_balance:,.2f}")
         
-        # Purchase data with correct parameters
+        # Purchase data with correct parameters (provider gets base amount)
         result = await purchase_data(request.network, request.plan, request.recipient, request.ref)
         
         if result and result.get('status'):
-            # Deduct from user balance
+            # Deduct TOTAL amount from user (base + markup)
             details = result.get('message', {}).get('details', {})
-            amount = float(details.get('amount', 0) or details.get('total_charge', 0) or plan_amount)
             
-            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -amount}})
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -total_amount}})
             
-            # Create transaction record
+            # Create transaction record showing total amount paid
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
-                amount=amount,
+                amount=total_amount,
                 currency='NGN',
                 status='completed',
                 reference=details.get('trans_id'),
-                metadata={'service': 'data', 'network': request.network, 'plan': request.plan, 'recipient': request.recipient}
+                metadata={
+                    'service': 'data', 
+                    'network': request.network, 
+                    'plan': request.plan, 
+                    'recipient': request.recipient,
+                    'base_amount': base_amount,
+                    'markup_amount': markup_amount,
+                    'markup_percent': markup_percent
+                }
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -6186,7 +6201,7 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
             await _create_transaction_notification(
                 user['id'],
                 'Data purchase',
-                f"Data purchase of ₦{amount:,.2f} to {request.recipient} completed.",
+                f"Data purchase of ₦{base_amount:,.0f} to {request.recipient} completed.",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment', 'service': 'data'},
             )
             
@@ -6196,7 +6211,7 @@ async def buy_data(request: DataPurchaseRequest, user: dict = Depends(get_curren
                 'trans_id': details.get('trans_id'),
                 'network': request.network.upper(),
                 'recipient': request.recipient,
-                'amount': amount,
+                'amount': total_amount,
                 'status': 'Successful',
                 'date': datetime.now(timezone.utc).isoformat()
             }
