@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CreditCard, Plus, Eye, EyeOff, X, Check, RefreshCw, Shield, Lock, ChevronRight, ArrowLeft, Wallet, Building2, MoreHorizontal, History, Snowflake, Flame } from 'lucide-react';
+import { CreditCard, Plus, Eye, EyeOff, X, Check, RefreshCw, Shield, Lock, ChevronRight, ArrowLeft, Wallet, Building2, MoreVertical, History, Snowflake, Flame, Copy, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -13,10 +13,11 @@ const CARD_DESIGNS = [
   { id: 'neon', name: 'Neon Waves', gradient: 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900', textColor: 'text-white', accentColor: '#10B981', hasWaves: true },
   { id: 'coral', name: 'Coral Gradient', gradient: 'bg-gradient-to-br from-orange-400 via-pink-500 to-pink-600', textColor: 'text-white', accentColor: '#fff' },
   { id: 'aurora', name: 'Aurora', gradient: 'bg-gradient-to-br from-blue-600 via-purple-500 to-pink-400', textColor: 'text-white', accentColor: '#fff' },
+  { id: 'raenest', name: 'Raenest Purple', gradient: 'bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700', textColor: 'text-white', accentColor: '#fff' },
 ];
 
 // Virtual Card Component Display
-function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false, compact = false, brandLogo, brandName = 'BillHub' }) {
+function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false, compact = false, brandLogo, brandName = 'BillHub', showStatusBadge = false }) {
   const cardDesign = CARD_DESIGNS.find(d => d.id === (design || 'classic')) || CARD_DESIGNS[0];
   
   const formatCardNumber = (num) => {
@@ -35,51 +36,75 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
           <path d="M0,210 Q100,160 200,210 T400,210" fill="none" stroke="#06B6D4" strokeWidth="2" />
         </svg>
       )}
+
+      {/* Decorative arc for raenest style */}
+      {(cardDesign.id === 'raenest' || cardDesign.id === 'aurora' || cardDesign.id === 'ocean') && (
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-20">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            <circle cx="150" cy="50" r="100" fill="none" stroke="white" strokeWidth="1" />
+            <circle cx="150" cy="50" r="80" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+        </div>
+      )}
       
-      {/* Brand Logo */}
+      {/* Status Badge & Brand Logo */}
       <div className="flex items-center justify-between mb-4 relative z-10">
         <div className="flex items-center gap-2">
-          {brandLogo ? (
-            <img src={brandLogo} alt="Card" className="h-10 w-auto max-w-[100px] rounded-lg object-contain" />
-          ) : (
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cardDesign.id === 'classic' ? 'bg-blue-500' : 'bg-white/20'}`}>
-              <CreditCard className={`w-4 h-4 ${cardDesign.id === 'classic' ? 'text-white' : cardDesign.textColor}`} />
+          {showStatusBadge && card?.status && (
+            <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+              card.status === 'active' ? 'bg-white text-green-600' : 
+              card.status === 'frozen' ? 'bg-white text-blue-600' : 'bg-white text-gray-600'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${
+                card.status === 'active' ? 'bg-green-500' : 
+                card.status === 'frozen' ? 'bg-blue-500' : 'bg-gray-500'
+              }`}></span>
+              {card.status === 'active' ? 'Active' : card.status === 'frozen' ? 'Frozen' : card.status}
             </div>
           )}
         </div>
-        {/* Visa style curve */}
-        <div className="text-right">
-          <span className={`text-xs font-bold ${cardDesign.textColor} opacity-70`}>MASTERCARD</span>
+        <div className="flex items-center gap-2">
+          {brandLogo ? (
+            <img src={brandLogo} alt="Card" className="h-8 w-auto max-w-[80px] rounded object-contain" />
+          ) : (
+            <span className={`text-lg font-bold ${cardDesign.textColor}`}>{brandName}</span>
+          )}
         </div>
       </div>
 
       {/* Card Number */}
-      <div className={`font-mono ${compact ? 'text-lg' : 'text-xl'} tracking-wider mb-4 relative z-10 ${cardDesign.textColor}`}>
-        {showNumber ? formatCardNumber(card?.card_number || card?.pan) : `**** **** **** ${card?.last_four || '****'}`}
+      <div className={`font-mono ${compact ? 'text-lg' : 'text-xl'} tracking-wider mb-6 relative z-10 ${cardDesign.textColor}`}>
+        {showNumber ? formatCardNumber(card?.card_number || card?.pan) : `•••• •••• •••• ${card?.last_four || '****'}`}
       </div>
 
-      {/* Card Details */}
-      <div className="flex justify-between items-end relative z-10">
+      {/* Card Holder Name */}
+      <div className="relative z-10 flex justify-between items-end">
         <div>
-          <p className={`text-[10px] opacity-60 ${cardDesign.textColor}`}>CARD HOLDER</p>
-          <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${cardDesign.textColor}`}>{card?.name || 'YOUR NAME'}</p>
+          <p className={`text-sm font-medium ${cardDesign.textColor} uppercase tracking-wide`}>
+            {card?.name || 'YOUR NAME'}
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className={`text-[10px] opacity-60 ${cardDesign.textColor}`}>VALID THRU</p>
-            <p className={`${compact ? 'text-sm' : 'text-base'} font-medium ${cardDesign.textColor}`}>{card?.expiry || 'MM/YY'}</p>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs ${cardDesign.textColor} opacity-70`}>debit</span>
+          {/* Mastercard Logo */}
+          <div className="flex">
+            <div className="w-6 h-6 rounded-full bg-red-500 opacity-90"></div>
+            <div className="w-6 h-6 rounded-full bg-yellow-400 opacity-90 -ml-3"></div>
           </div>
-          {!compact && (
-            <div className="text-right">
-              <p className={`text-[10px] opacity-60 ${cardDesign.textColor}`}>CVV</p>
-              <p className={`${compact ? 'text-sm' : 'text-base'} font-medium ${cardDesign.textColor}`}>{showCVV ? (card?.cvv || '***') : '***'}</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 }
+
+// Copy to clipboard helper
+const copyToClipboard = (text, label) => {
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success(`${label} copied to clipboard`);
+  }).catch(() => {
+    toast.error('Failed to copy');
+  });
+};
 
 // Main Virtual Cards Section Component
 export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#059669', branding = {}, onNavigateToKYC }) {
@@ -96,26 +121,30 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const [loading, setLoading] = useState(true);
   const [cardTransactions, setCardTransactions] = useState([]);
   const [loadingTxns, setLoadingTxns] = useState(false);
+  const [cardStats, setCardStats] = useState({ balance: 0, cashback: 0, spent_this_month: 0 });
   
   // Create card wizard state
   const [showCreateWizard, setShowCreateWizard] = useState(false);
-  const [createStep, setCreateStep] = useState(0); // 0: design, 1: fees, 2: alias & amount, 3: success
-  const [selectedDesign, setSelectedDesign] = useState('classic');
+  const [createStep, setCreateStep] = useState(0);
+  const [selectedDesign, setSelectedDesign] = useState('raenest');
   const [cardAlias, setCardAlias] = useState('');
   const [initialAmount, setInitialAmount] = useState('5');
   const [creating, setCreating] = useState(false);
   const [createdCard, setCreatedCard] = useState(null);
   
-  // Card detail view state
-  const [showCardDetail, setShowCardDetail] = useState(false);
-  const [detailCard, setDetailCard] = useState(null);
-  const [showCardNumber, setShowCardNumber] = useState(false);
-  const [showCVV, setShowCVV] = useState(false);
+  // Card view state (new design)
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [showCardDetails, setShowCardDetails] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [addressTab, setAddressTab] = useState('us'); // 'us' or 'nigeria'
   
   // Fund card modal
   const [showFundModal, setShowFundModal] = useState(false);
   const [fundAmount, setFundAmount] = useState('');
   const [funding, setFunding] = useState(false);
+
+  // Refresh balance
+  const [refreshingBalance, setRefreshingBalance] = useState(false);
 
   const userTier = user?.tier || 1;
   const brandLogo = branding?.brand_logo_url || null;
@@ -124,6 +153,15 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   useEffect(() => {
     fetchCards();
   }, []);
+
+  // Set first card as selected when cards load
+  useEffect(() => {
+    if (cards.length > 0 && !selectedCard) {
+      setSelectedCard(cards[0]);
+      fetchCardTransactions(cards[0].id);
+      fetchCardBalance(cards[0].id);
+    }
+  }, [cards]);
 
   const fetchCards = async () => {
     setLoading(true);
@@ -138,12 +176,34 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       }
     } catch (error) {
       console.error('Failed to fetch cards:', error);
-      // If 403, user might not have access yet - that's ok
       if (error.response?.status !== 403) {
         // toast.error('Failed to load cards');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCardBalance = async (cardId) => {
+    setRefreshingBalance(true);
+    try {
+      const response = await axios.get(`${API}/api/cards/${cardId}/balance`, axiosConfig);
+      if (response.data.success) {
+        const balanceData = response.data.balance;
+        setCardStats({
+          balance: balanceData?.balance || 0,
+          cashback: balanceData?.cashback || 0,
+          spent_this_month: balanceData?.spent_this_month || 0
+        });
+        // Update selected card with new balance
+        if (selectedCard && selectedCard.id === cardId) {
+          setSelectedCard(prev => ({ ...prev, balance: balanceData?.balance || prev?.balance }));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch card balance:', error);
+    } finally {
+      setRefreshingBalance(false);
     }
   };
 
@@ -162,7 +222,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     }
   };
 
-  // Calculate card creation fee (first card vs additional)
   const getCardCreationFee = () => {
     return cards.length === 0 
       ? (fees.creation_fee || 2.50) 
@@ -201,7 +260,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
 
       if (response.data.success) {
         setCreatedCard(response.data.card);
-        setCreateStep(3); // Success step
+        setCreateStep(3);
         fetchCards();
         fetchProfile();
       }
@@ -228,7 +287,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     setFunding(true);
     try {
       const response = await axios.post(`${API}/api/cards/fund`, {
-        card_id: detailCard.id,
+        card_id: selectedCard.id,
         amount: amount
       }, axiosConfig);
 
@@ -238,7 +297,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         setFundAmount('');
         fetchCards();
         fetchProfile();
-        setDetailCard(prev => ({ ...prev, balance: (prev.balance || 0) + amount }));
+        fetchCardBalance(selectedCard.id);
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to fund card');
@@ -247,16 +306,16 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     }
   };
 
-  const handleBlockCard = async (card) => {
-    const action = card.status === 'frozen' ? 'unfreeze' : 'freeze';
+  const handleFreezeUnfreeze = async () => {
+    if (!selectedCard) return;
+    const action = selectedCard.status === 'frozen' ? 'unfreeze' : 'freeze';
     try {
-      const response = await axios.post(`${API}/api/cards/${card.id}/${action}`, {}, axiosConfig);
+      const response = await axios.post(`${API}/api/cards/${selectedCard.id}/${action}`, {}, axiosConfig);
       if (response.data.success) {
-        toast.success(response.data.message);
+        toast.success(response.data.message || `Card ${action}d successfully`);
+        const newStatus = action === 'freeze' ? 'frozen' : 'active';
+        setSelectedCard(prev => ({ ...prev, status: newStatus }));
         fetchCards();
-        if (detailCard?.id === card.id) {
-          setDetailCard(prev => ({ ...prev, status: action === 'freeze' ? 'frozen' : 'active' }));
-        }
       }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Operation failed');
@@ -266,18 +325,17 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const resetCreateWizard = () => {
     setShowCreateWizard(false);
     setCreateStep(0);
-    setSelectedDesign('classic');
+    setSelectedDesign('raenest');
     setCardAlias('');
     setInitialAmount('5');
     setCreatedCard(null);
   };
 
-  const openCardDetail = (card) => {
-    setDetailCard(card);
-    setShowCardDetail(true);
-    setShowCardNumber(false);
-    setShowCVV(false);
+  const selectCard = (card) => {
+    setSelectedCard(card);
+    setShowCardDetails(false);
     fetchCardTransactions(card.id);
+    fetchCardBalance(card.id);
   };
 
   // Tier 3 requirement check
@@ -317,7 +375,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // Check if user has Payscribe customer ID (required for card services)
+  // Check if user has Payscribe customer ID
   if (!user?.payscribe_customer_id) {
     return (
       <div className="space-y-6">
@@ -365,178 +423,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // ============ Card Detail View ============
-  if (showCardDetail && detailCard) {
-    return (
-      <div className="space-y-6 max-w-lg mx-auto">
-        {/* Header */}
-        <button 
-          onClick={() => setShowCardDetail(false)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Cards</span>
-        </button>
-
-        {/* Card Display */}
-        <VirtualCardDisplay 
-          card={detailCard} 
-          design={detailCard.design} 
-          showNumber={showCardNumber}
-          showCVV={showCVV}
-          brandLogo={brandLogo}
-          brandName={brandName}
-        />
-
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowCardNumber(!showCardNumber)}
-            className="flex-1 py-3 border-2 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-          >
-            {showCardNumber ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showCardNumber ? 'Hide Number' : 'View Number'}
-          </button>
-          <button
-            onClick={() => setShowCVV(!showCVV)}
-            className="flex-1 py-3 border-2 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-          >
-            {showCVV ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showCVV ? 'Hide CVV' : 'View CVV'}
-          </button>
-        </div>
-
-        {/* Balance */}
-        <div className="text-center py-4">
-          <p className="text-2xl font-bold text-gray-900">Balance: ${(detailCard.balance || 0).toLocaleString()} USD</p>
-        </div>
-
-        {/* Card Info */}
-        <div className="bg-white rounded-xl border p-4 space-y-3">
-          <div className="flex justify-between py-2 border-b">
-            <span className="text-gray-500">Name</span>
-            <span className="font-medium text-gray-900">{detailCard.name}</span>
-          </div>
-          <div className="flex justify-between py-2 border-b">
-            <span className="text-gray-500">Card Status</span>
-            <span className={`font-medium ${detailCard.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
-              {detailCard.status === 'active' ? 'Active' : detailCard.status === 'frozen' ? 'Frozen' : detailCard.status}
-            </span>
-          </div>
-          <div className="flex justify-between py-2">
-            <span className="text-gray-500">Purchase Limit</span>
-            <span className="font-medium text-gray-900">${(detailCard.limit || 10000).toLocaleString()} USD</span>
-          </div>
-        </div>
-
-        {/* Fund Button */}
-        <button
-          onClick={() => setShowFundModal(true)}
-          className="w-full py-4 text-white rounded-xl font-semibold text-lg transition-colors"
-          style={{ backgroundColor: primaryColor }}
-        >
-          Add Money
-        </button>
-
-        {/* Block Card */}
-        <button
-          onClick={() => handleBlockCard(detailCard)}
-          className="w-full text-center text-red-600 font-medium hover:text-red-700 flex items-center justify-center gap-2"
-        >
-          {detailCard.status === 'frozen' ? <Flame className="w-4 h-4" /> : <Snowflake className="w-4 h-4" />}
-          {detailCard.status === 'frozen' ? 'Unblock Card' : 'Block Card'}
-        </button>
-
-        {/* Transactions */}
-        <div className="pt-4">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <History className="w-5 h-5" />
-            Card Transactions
-          </h3>
-          
-          {loadingTxns ? (
-            <div className="flex justify-center py-8">
-              <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
-            </div>
-          ) : cardTransactions.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <History className="w-12 h-12 mx-auto text-gray-300 mb-2" />
-              <p>No transactions yet</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {cardTransactions.map((txn, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="font-medium text-gray-900">{txn.description || txn.type}</p>
-                    <p className="text-xs text-gray-500">{new Date(txn.date || txn.created_at).toLocaleString()}</p>
-                  </div>
-                  <span className={`font-semibold ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {txn.amount > 0 ? '+' : ''}${Math.abs(txn.amount).toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Fund Modal */}
-        {showFundModal && (
-          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Add Money to Card</h3>
-                <button onClick={() => setShowFundModal(false)} className="text-gray-500 hover:text-gray-700">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <p className="text-sm text-gray-500 mb-4">Available: ${usdBalance.toFixed(2)} USD</p>
-              
-              <input
-                type="number"
-                value={fundAmount}
-                onChange={(e) => setFundAmount(e.target.value)}
-                placeholder="Enter amount"
-                className="w-full px-4 py-3 border-2 rounded-xl mb-4 focus:outline-none"
-                style={{ borderColor: fundAmount ? primaryColor : '#e5e7eb' }}
-                min={fees.min_funding || 1}
-              />
-              
-              <div className="flex gap-2 mb-4">
-                {[10, 50, 100, 200].map(amt => (
-                  <button
-                    key={amt}
-                    onClick={() => setFundAmount(String(amt))}
-                    className="flex-1 py-2 border rounded-lg hover:bg-gray-50 text-sm"
-                  >
-                    ${amt}
-                  </button>
-                ))}
-              </div>
-              
-              <button
-                onClick={handleFundCard}
-                disabled={funding}
-                className="w-full py-3 text-white rounded-xl font-semibold disabled:opacity-50"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {funding ? 'Processing...' : `Fund $${fundAmount || '0'}`}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   // ============ Create Card Wizard ============
   if (showCreateWizard) {
     return (
       <div className="max-w-lg mx-auto">
-        {/* Close Button */}
         <button 
           onClick={resetCreateWizard}
           className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
@@ -553,7 +443,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               <p className="text-gray-500">Select a design that matches your style</p>
             </div>
 
-            {/* Card Designs Grid */}
             <div className="grid grid-cols-2 gap-4">
               {CARD_DESIGNS.map((design) => (
                 <button
@@ -581,7 +470,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               ))}
             </div>
 
-            {/* Next Button */}
             <button
               onClick={() => setCreateStep(1)}
               className="w-full py-3 text-white rounded-xl font-semibold"
@@ -600,7 +488,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               <p className="text-gray-500">Here&apos;s what you need to know about fees</p>
             </div>
 
-            {/* Selected Card Preview */}
             <div className="max-w-xs mx-auto">
               <VirtualCardDisplay 
                 card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: brandName }} 
@@ -611,7 +498,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               />
             </div>
 
-            {/* Fees List */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <div>
@@ -643,14 +529,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
             </div>
 
-            {/* Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-700">
                 <strong>Minimum funding:</strong> ${fees.min_funding || 5} USD
               </p>
             </div>
 
-            {/* Navigation */}
             <div className="flex gap-3">
               <button
                 onClick={() => setCreateStep(0)}
@@ -677,7 +561,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               <p className="text-gray-500">Name your card and add initial funds</p>
             </div>
 
-            {/* Selected Card Preview with custom name */}
             <div className="max-w-xs mx-auto">
               <VirtualCardDisplay 
                 card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: cardAlias || brandName }} 
@@ -688,7 +571,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               />
             </div>
 
-            {/* Card Alias */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Card Name</label>
               <input
@@ -702,7 +584,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               />
             </div>
 
-            {/* Initial Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Initial Funding (Available: ${usdBalance.toFixed(2)})
@@ -735,7 +616,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
             </div>
 
-            {/* Cost Summary */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Initial Amount</span>
@@ -757,7 +637,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
             </div>
 
-            {/* Navigation */}
             <div className="flex gap-3">
               <button
                 onClick={() => setCreateStep(1)}
@@ -790,7 +669,6 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               Your virtual card is ready to use. You can start making online purchases right away.
             </p>
 
-            {/* Created Card Preview */}
             {createdCard && (
               <div className="max-w-sm mx-auto">
                 <VirtualCardDisplay 
@@ -815,35 +693,16 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     );
   }
 
-  // ============ Main Cards List / Promo View ============
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
-          <p className="text-sm text-gray-500">USD Balance: <span className="font-semibold" style={{ color: primaryColor }}>${usdBalance.toFixed(2)}</span></p>
-        </div>
-        {cards.length > 0 && (
-          <button
-            onClick={() => setShowCreateWizard(true)}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <Plus className="w-4 h-4" />
-            Get a Card
-          </button>
-        )}
-      </div>
-
-      {/* No Cards - Promo View */}
-      {cards.length === 0 ? (
+  // ============ No Cards - Promo View ============
+  if (cards.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
         <div className="bg-gray-50 rounded-2xl p-8 text-center">
-          {/* Demo Card with Brand Logo */}
           <div className="max-w-sm mx-auto mb-6">
             <VirtualCardDisplay 
               card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: brandName }} 
-              design="classic"
+              design="raenest"
               brandLogo={brandLogo}
               brandName={brandName}
             />
@@ -882,55 +741,521 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
           
           <p className="mt-4 text-sm text-gray-500">Starting from ${(fees.creation_fee || 2.50) + (fees.min_funding || 5)} (includes ${fees.min_funding || 5} initial funding)</p>
         </div>
-      ) : (
-        /* Cards Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {cards.map((card) => (
-            <button
-              key={card.id}
-              onClick={() => openCardDetail(card)}
-              className="text-left transition-transform hover:scale-[1.02]"
-            >
-              <VirtualCardDisplay 
-                card={card} 
-                design={card.design || 'classic'}
-                brandLogo={brandLogo}
-                brandName={card.alias || brandName}
-              />
-              <div className="mt-2 flex items-center justify-between px-2">
-                <span className="text-sm font-medium text-gray-700">{card.alias || 'Virtual Card'}</span>
-                <span className={`text-sm flex items-center gap-1 ${card.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>
-                  {card.status === 'frozen' && <Snowflake className="w-3 h-3" />}
-                  {card.status}
-                </span>
-              </div>
-            </button>
-          ))}
+      </div>
+    );
+  }
+
+  // ============ Main Card View (New Design) ============
+  return (
+    <div className="space-y-6">
+      {/* Stats Section */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-gray-900">
+            $ {cardStats.balance.toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-500">Balance</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-green-600">
+            +$ {cardStats.cashback.toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-500">Cashback</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-red-600">
+            -$ {cardStats.spent_this_month.toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-500">Spent This Month</p>
+        </div>
+      </div>
+
+      {/* Card Display */}
+      {selectedCard && (
+        <div className="relative">
+          <VirtualCardDisplay 
+            card={selectedCard} 
+            design={selectedCard.design || 'raenest'} 
+            brandLogo={brandLogo}
+            brandName={selectedCard.alias || brandName}
+            showStatusBadge={true}
+          />
           
-          {/* Add Another Card Button - only show if user already has cards */}
-          {cards.length > 0 && userTier >= 3 && user?.payscribe_customer_id && (
-            <button
-              onClick={() => setShowCreateWizard(true)}
-              className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 p-6 hover:border-gray-400 hover:bg-gray-50 transition-colors min-h-[180px]"
-            >
-              <Plus className="w-8 h-8 text-gray-400 mb-2" />
-              <span className="text-sm font-medium text-gray-600">Add Another Card</span>
-              <span className="text-xs text-gray-400 mt-1">${(fees.additional_card_fee || 5.00).toFixed(2)} fee</span>
-            </button>
-          )}
+          {/* View Details Button */}
+          <button
+            onClick={() => setShowCardDetails(true)}
+            className="absolute top-4 right-4 px-4 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-full transition-colors"
+            data-testid="view-details-btn"
+          >
+            View details
+          </button>
         </div>
       )}
 
-      {/* Fee Info */}
-      <div className="rounded-xl p-4" style={{ backgroundColor: `${primaryColor}10`, borderColor: `${primaryColor}30`, borderWidth: 1 }}>
-        <p className="text-xs" style={{ color: primaryColor }}>
-          <strong>Fees:</strong> First Card ${fees.creation_fee?.toFixed(2) || '2.50'} • 
-          Additional Card ${fees.additional_card_fee?.toFixed(2) || '5.00'} • 
-          Funding ${fees.funding_fee?.toFixed(2) || '0.30'} • 
-          Transaction ${fees.transaction_fee?.toFixed(2) || '0.15'} • 
-          Monthly ${fees.monthly_fee?.toFixed(2) || '0.50'}
-        </p>
+      {/* Action Buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => setShowFundModal(true)}
+          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 rounded-xl font-medium transition-colors hover:bg-gray-50"
+          style={{ borderColor: primaryColor, color: primaryColor }}
+          data-testid="fund-card-btn"
+        >
+          <Plus className="w-4 h-4" />
+          Fund Card
+        </button>
+        <button
+          onClick={handleFreezeUnfreeze}
+          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          data-testid="freeze-card-btn"
+        >
+          {selectedCard?.status === 'frozen' ? (
+            <>
+              <Flame className="w-4 h-4" />
+              Unfreeze Card
+            </>
+          ) : (
+            <>
+              <Snowflake className="w-4 h-4" />
+              Freeze Card
+            </>
+          )}
+        </button>
+        
+        {/* More Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMoreMenu(!showMoreMenu)}
+            className="flex items-center gap-2 py-3 px-4 border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            data-testid="more-menu-btn"
+          >
+            More
+            <MoreVertical className="w-4 h-4" />
+          </button>
+          
+          {showMoreMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)}></div>
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                <button
+                  onClick={() => { setShowMoreMenu(false); toast.info('Change Alias feature coming soon'); }}
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  data-testid="change-alias-btn"
+                >
+                  Change Alias
+                </button>
+                <button
+                  onClick={() => { setShowMoreMenu(false); toast.info(`Card Limit: $${(selectedCard?.limit || 10000).toLocaleString()}`); }}
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  data-testid="view-limit-btn"
+                >
+                  View Card Limit
+                </button>
+                <button
+                  onClick={() => { setShowMoreMenu(false); toast.info('Withdraw Funds feature coming soon'); }}
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  data-testid="withdraw-btn"
+                >
+                  Withdraw Funds
+                </button>
+                <button
+                  onClick={() => { setShowMoreMenu(false); toast.info('Download Statement feature coming soon'); }}
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  data-testid="download-statement-btn"
+                >
+                  Download statement
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Billing Address Section */}
+      {selectedCard?.billing_address && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-900">Billing Address</h3>
+            <button
+              onClick={() => setShowCardDetails(true)}
+              className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+              style={{ color: primaryColor }}
+            >
+              View billing address
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          <p className="text-gray-600 text-sm">
+            {selectedCard.billing_address?.street || '234 Sapele-Warri Rd'},<br />
+            {selectedCard.billing_address?.city || 'Amukpe'}, {selectedCard.billing_address?.state || 'Delta'},<br />
+            {selectedCard.billing_address?.postal_code || '331107'}, {selectedCard.billing_address?.country || 'Nigeria'}
+          </p>
+        </div>
+      )}
+
+      {/* Transactions Section */}
+      <div className="bg-white border border-gray-200 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-900">Transactions</h3>
+          <button
+            onClick={() => fetchCardTransactions(selectedCard?.id)}
+            className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+            style={{ color: primaryColor }}
+          >
+            View all transactions
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+        
+        {loadingTxns ? (
+          <div className="flex justify-center py-8">
+            <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+          </div>
+        ) : cardTransactions.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <History className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+            <p>No transactions yet</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {cardTransactions.slice(0, 5).map((txn, idx) => (
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-gray-500">
+                    {new Date(txn.date || txn.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{txn.description || txn.type || 'Transaction'}</p>
+                  </div>
+                </div>
+                <span className={`font-semibold ${txn.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                  {txn.amount > 0 ? '+' : '-'}${Math.abs(txn.amount).toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Multiple Cards Selector */}
+      {cards.length > 1 && (
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {cards.map((card) => (
+            <button
+              key={card.id}
+              onClick={() => selectCard(card)}
+              className={`flex-shrink-0 px-4 py-2 rounded-xl border-2 transition-all ${
+                selectedCard?.id === card.id
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <span className="text-sm font-medium text-gray-700">{card.alias || 'Card'}</span>
+              <span className="text-xs text-gray-500 ml-2">•••• {card.last_four}</span>
+            </button>
+          ))}
+          
+          {/* Add Another Card */}
+          <button
+            onClick={() => setShowCreateWizard(true)}
+            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 transition-colors"
+          >
+            <Plus className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-500">Add Card</span>
+          </button>
+        </div>
+      )}
+
+      {/* View Card Details Modal */}
+      {showCardDetails && selectedCard && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center">
+          <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-lg font-semibold text-gray-900">Card Details</h3>
+              <button 
+                onClick={() => setShowCardDetails(false)} 
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              {/* Card Number */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div>
+                  <p className="text-sm text-gray-500">Card Number</p>
+                  <p className="font-mono text-gray-900">
+                    {selectedCard.card_number || selectedCard.pan || `${selectedCard.first_six || '526000'}******${selectedCard.last_four || '0000'}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(selectedCard.card_number || selectedCard.pan || '', 'Card number')}
+                  className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </button>
+              </div>
+              
+              {/* CVV */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div>
+                  <p className="text-sm text-gray-500">CVV (Security Code)</p>
+                  <p className="font-mono text-gray-900">{selectedCard.cvv || '***'}</p>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(selectedCard.cvv || '', 'CVV')}
+                  className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </button>
+              </div>
+              
+              {/* Expiry Date */}
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div>
+                  <p className="text-sm text-gray-500">Expiry Date</p>
+                  <p className="font-mono text-gray-900">{selectedCard.expiry || '12/28'}</p>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(selectedCard.expiry || '', 'Expiry date')}
+                  className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </button>
+              </div>
+              
+              {/* Billing Address */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-gray-500">Billing Address</p>
+                  <button
+                    onClick={() => setShowCardDetails(false)}
+                    className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
+                    style={{ color: primaryColor }}
+                  >
+                    Close all
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {/* Address Tabs */}
+                <div className="bg-gray-100 rounded-xl p-1 flex mb-4">
+                  <button
+                    onClick={() => setAddressTab('us')}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      addressTab === 'us' 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    US Address
+                  </button>
+                  <button
+                    onClick={() => setAddressTab('nigeria')}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      addressTab === 'nigeria' 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Nigeria Address
+                  </button>
+                </div>
+                
+                {/* Address Content */}
+                {addressTab === 'us' ? (
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Street Address</p>
+                        <p className="text-gray-900">580 California Street</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard('580 California Street', 'Street address')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">City</p>
+                        <p className="text-gray-900">San Francisco</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard('San Francisco', 'City')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">State</p>
+                        <p className="text-gray-900">CA</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard('CA', 'State')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Country</p>
+                        <p className="text-gray-900">United States</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard('United States', 'Country')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Zip Code</p>
+                        <p className="text-gray-900">94104</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard('94104', 'Zip code')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Street Address</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.street || '234 Sapele-Warri Rd'}</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.street || '234 Sapele-Warri Rd', 'Street address')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">City</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.city || 'Amukpe, Sapele'}</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.city || 'Amukpe, Sapele', 'City')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">State</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.state || 'Delta'}</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.state || 'Delta', 'State')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Country</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.country || 'Nigeria'}</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.country || 'Nigeria', 'Country')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Postal Code</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.postal_code || '331107'}</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(selectedCard.billing_address?.postal_code || '331107', 'Postal code')}
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
+                      >
+                        <Copy className="w-3 h-3" />
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fund Card Modal */}
+      {showFundModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Add Money to Card</h3>
+              <button onClick={() => setShowFundModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <p className="text-sm text-gray-500 mb-4">Available: ${usdBalance.toFixed(2)} USD</p>
+            
+            <input
+              type="number"
+              value={fundAmount}
+              onChange={(e) => setFundAmount(e.target.value)}
+              placeholder="Enter amount"
+              className="w-full px-4 py-3 border-2 rounded-xl mb-4 focus:outline-none"
+              style={{ borderColor: fundAmount ? primaryColor : '#e5e7eb' }}
+              min={fees.min_funding || 1}
+            />
+            
+            <div className="flex gap-2 mb-4">
+              {[10, 50, 100, 200].map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setFundAmount(String(amt))}
+                  className="flex-1 py-2 border rounded-lg hover:bg-gray-50 text-sm"
+                >
+                  ${amt}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={handleFundCard}
+              disabled={funding}
+              className="w-full py-3 text-white rounded-xl font-semibold disabled:opacity-50"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {funding ? 'Processing...' : `Fund $${fundAmount || '0'}`}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
