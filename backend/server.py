@@ -1793,7 +1793,11 @@ async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optio
     a specific pool for the given service/country.
     """
     try:
-        params = {'key': SMSPOOL_API_KEY, 'service': service, 'country': country}
+        # Get API key from config first, then env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'smspool_api_key', SMSPOOL_API_KEY)
+        
+        params = {'key': api_key, 'service': service, 'country': country}
         pool = kwargs.get('pool')
         if pool:
             params['pool'] = pool
