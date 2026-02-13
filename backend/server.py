@@ -2069,25 +2069,30 @@ async def poll_otp_tigersms(activation_id: str) -> Optional[str]:
         return None
 
 async def cancel_number_provider(provider: str, activation_id: str) -> bool:
+    """Cancel a number order with the provider."""
     try:
+        # Get config for API keys
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
         if provider == 'smspool':
+            api_key = get_api_key(config, 'smspool_api_key', SMSPOOL_API_KEY)
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     'https://api.smspool.net/request/cancel',
-                    params={'key': SMSPOOL_API_KEY, 'orderid': activation_id},
+                    params={'key': api_key, 'orderid': activation_id},
                     timeout=10.0
                 )
                 return response.status_code == 200
         elif provider == 'daisysms':
+            api_key = get_api_key(config, 'daisysms_api_key', DAISYSMS_API_KEY)
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     'https://daisysms.com/stubs/handler_api.php',
-                    params={'api_key': DAISYSMS_API_KEY, 'action': 'setStatus', 'id': activation_id, 'status': 8},
+                    params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 8},
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
         elif provider == '5sim':
-            config = await db.pricing_config.find_one({}, {'_id': 0})
             fivesim_key = get_api_key(config, 'fivesim_api_key', FIVESIM_API_KEY)
             if not fivesim_key:
                 logger.error("FIVESIM_API_KEY not configured for cancel")
@@ -2104,10 +2109,11 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                 return resp.status_code == 200
 
         elif provider == 'tigersms':
+            api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     'https://api.tiger-sms.com/stubs/handler_api.php',
-                    params={'api_key': TIGERSMS_API_KEY, 'action': 'setStatus', 'id': activation_id, 'status': 8},
+                    params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 8},
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
