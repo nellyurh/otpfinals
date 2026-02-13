@@ -111,6 +111,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showCVV, setShowCVV] = useState(false);
   
+  // Live balance state
+  const [liveBalance, setLiveBalance] = useState(null);
+  const [loadingBalance, setLoadingBalance] = useState(false);
+  
   // Fund card modal
   const [showFundModal, setShowFundModal] = useState(false);
   const [fundAmount, setFundAmount] = useState('');
@@ -123,6 +127,31 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   useEffect(() => {
     fetchCards();
   }, []);
+  
+  // Fetch live balance when card detail is opened
+  useEffect(() => {
+    if (detailCard?.id && showCardDetail) {
+      fetchLiveBalance(detailCard.id);
+    }
+  }, [detailCard?.id, showCardDetail]);
+
+  const fetchLiveBalance = async (cardId) => {
+    setLoadingBalance(true);
+    try {
+      const response = await axios.get(`${API}/api/cards/${cardId}/balance`, axiosConfig);
+      if (response.data.success) {
+        setLiveBalance(response.data.balance);
+        // Update the detail card's balance locally
+        setDetailCard(prev => prev ? { ...prev, balance: response.data.balance } : prev);
+      }
+    } catch (error) {
+      console.error('Failed to fetch live balance:', error);
+      // Fall back to stored balance
+      setLiveBalance(detailCard?.balance || 0);
+    } finally {
+      setLoadingBalance(false);
+    }
+  };
 
   const fetchCards = async () => {
     setLoading(true);
