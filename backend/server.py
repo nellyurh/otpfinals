@@ -6498,23 +6498,32 @@ async def validate_smartcard(provider: str, smartcard: str, user: dict = Depends
 
 @api_router.post("/payscribe/pay-tv")
 async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(get_current_user)):
-    """Pay TV subscription via Payscribe
+    """Pay TV subscription via Payscribe with markup
     
     Uses correct Payscribe endpoint: POST /multichoice/topup for DSTV/GOTV
     or POST /cable/vend for others
     """
     try:
+        # Get markup from config
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        markup_percent = config.get('tv_markup_percent', 2.0) if config else 2.0
+        
+        # Calculate marked up amount (what user pays)
+        base_amount = request.amount
+        markup_amount = base_amount * (markup_percent / 100)
+        total_amount = base_amount + markup_amount
+        
         # Check balance FIRST
         user_balance = user.get('ngn_balance', 0)
-        if user_balance < request.amount:
-            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{request.amount:,.2f} but have ₦{user_balance:,.2f}")
+        if user_balance < total_amount:
+            raise HTTPException(status_code=400, detail=f"Insufficient balance. You need ₦{total_amount:,.2f} but have ₦{user_balance:,.2f}")
 
         provider = request.provider.lower()
         
-        # Use multichoice/topup for DSTV and GOTV
+        # Use multichoice/topup for DSTV and GOTV (send base amount to provider)
         if provider in ['dstv', 'gotv']:
             data = {
-                'amount': int(request.amount),
+                'amount': int(base_amount),
                 'customer_name': request.customer_name,
                 'account': request.smartcard,
                 'service': provider,
@@ -6541,20 +6550,29 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
             result = await payscribe_request('cable/vend', 'POST', data, use_public_key=True)
         
         if result and result.get('status'):
-            # Deduct from user balance
-            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -request.amount}})
+            # Deduct TOTAL amount from user (base + markup)
+            await db.users.update_one({'id': user['id']}, {'$inc': {'ngn_balance': -total_amount}})
 
             details = result.get('message', {}).get('details', {})
             
-            # Create transaction record
+            # Create transaction record showing total amount paid
             transaction = Transaction(
                 user_id=user['id'],
                 type='bill_payment',
-                amount=request.amount,
+                amount=total_amount,
                 currency='NGN',
                 status='completed',
                 reference=details.get('trans_id'),
-                metadata={'service': 'tv', 'provider': request.provider, 'smartcard': request.smartcard, 'plan': request.plan_code, 'customer_name': request.customer_name}
+                metadata={
+                    'service': 'tv', 
+                    'provider': request.provider, 
+                    'smartcard': request.smartcard, 
+                    'plan': request.plan_code, 
+                    'customer_name': request.customer_name,
+                    'base_amount': base_amount,
+                    'markup_amount': markup_amount,
+                    'markup_percent': markup_percent
+                }
             )
             trans_dict = transaction.model_dump()
             trans_dict['created_at'] = trans_dict['created_at'].isoformat()
@@ -6563,7 +6581,7 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
             await _create_transaction_notification(
                 user['id'],
                 'TV Subscription',
-                f"₦{request.amount:,.2f} TV subscription for {request.smartcard}",
+                f"₦{base_amount:,.0f} TV subscription for {request.smartcard}",
                 metadata={'reference': trans_dict.get('id'), 'type': 'bill_payment'}
             )
 
@@ -6575,7 +6593,7 @@ async def pay_tv_subscription(request: TVPaymentRequest, user: dict = Depends(ge
                 'smartcard': request.smartcard,
                 'customer_name': request.customer_name,
                 'plan': request.plan_code,
-                'amount': request.amount,
+                'amount': total_amount,
                 'status': 'Successful',
                 'date': datetime.now(timezone.utc).isoformat()
             }
