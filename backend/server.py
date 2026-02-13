@@ -1094,7 +1094,8 @@ class PricingConfig(BaseModel):
     betting_markup_percent: float = 2.0  # 2% markup on betting funding
 
     # Virtual Card Fees (USD)
-    card_creation_fee: float = 2.50  # One-time fee to create a card
+    card_creation_fee: float = 2.50  # One-time fee to create first card
+    card_additional_card_fee: float = 5.00  # Fee for second+ card
     card_funding_fee: float = 0.30  # Fee per funding operation
     card_transaction_fee: float = 0.15  # Fee per successful transaction
     card_declined_fee: float = 0.50  # Fee when transaction is declined (Payscribe charges this)
