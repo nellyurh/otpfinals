@@ -1083,6 +1083,15 @@ class PricingConfig(BaseModel):
     disable_tv: bool = False  # TV Subscription
     disable_electricity: bool = False  # Electricity bills
     disable_airtime_bills: bool = False  # Airtime purchases
+    disable_betting: bool = False  # Betting funding
+    disable_wallet_transfer: bool = False  # Wallet-to-wallet transfer
+    
+    # Bill Payment Markups (percentage added to base price - hidden from users)
+    airtime_markup_percent: float = 2.0  # 2% markup on airtime
+    data_markup_percent: float = 2.0  # 2% markup on data bundles
+    tv_markup_percent: float = 2.0  # 2% markup on TV subscriptions
+    electricity_markup_percent: float = 1.0  # 1% markup on electricity
+    betting_markup_percent: float = 2.0  # 2% markup on betting funding
 
     # Virtual Card Fees (USD)
     card_creation_fee: float = 2.50  # One-time fee to create a card
