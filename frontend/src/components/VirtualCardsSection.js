@@ -906,13 +906,26 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
             </button>
           ))}
+          
+          {/* Add Another Card Button - only show if user already has cards */}
+          {cards.length > 0 && userTier >= 3 && user?.payscribe_customer_id && (
+            <button
+              onClick={() => setShowCreateWizard(true)}
+              className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 p-6 hover:border-gray-400 hover:bg-gray-50 transition-colors min-h-[180px]"
+            >
+              <Plus className="w-8 h-8 text-gray-400 mb-2" />
+              <span className="text-sm font-medium text-gray-600">Add Another Card</span>
+              <span className="text-xs text-gray-400 mt-1">${(fees.additional_card_fee || 5.00).toFixed(2)} fee</span>
+            </button>
+          )}
         </div>
       )}
 
       {/* Fee Info */}
       <div className="rounded-xl p-4" style={{ backgroundColor: `${primaryColor}10`, borderColor: `${primaryColor}30`, borderWidth: 1 }}>
         <p className="text-xs" style={{ color: primaryColor }}>
-          <strong>Fees:</strong> Creation ${fees.creation_fee?.toFixed(2) || '2.50'} • 
+          <strong>Fees:</strong> First Card ${fees.creation_fee?.toFixed(2) || '2.50'} • 
+          Additional Card ${fees.additional_card_fee?.toFixed(2) || '5.00'} • 
           Funding ${fees.funding_fee?.toFixed(2) || '0.30'} • 
           Transaction ${fees.transaction_fee?.toFixed(2) || '0.15'} • 
           Monthly ${fees.monthly_fee?.toFixed(2) || '0.50'}
