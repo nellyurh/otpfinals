@@ -428,9 +428,30 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
           </button>
         </div>
 
-        {/* Balance */}
-        <div className="text-center py-4">
-          <p className="text-2xl font-bold text-gray-900">Balance: ${(detailCard.balance || 0).toLocaleString()} USD</p>
+        {/* Balance - Live from API */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-medium text-emerald-600">Available Balance</p>
+            <button
+              onClick={() => fetchLiveBalance(detailCard.id)}
+              disabled={loadingBalance}
+              className="p-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+              title="Refresh balance"
+            >
+              <RefreshCw className={`w-4 h-4 text-emerald-600 ${loadingBalance ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-bold text-gray-900">
+              {loadingBalance ? (
+                <span className="text-2xl text-gray-400">Loading...</span>
+              ) : (
+                `$${(liveBalance ?? detailCard.balance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              )}
+            </span>
+            <span className="text-lg text-gray-500">USD</span>
+          </div>
+          <p className="text-xs text-emerald-600 mt-2">Real-time balance synced with card provider</p>
         </div>
 
         {/* Card Info */}
