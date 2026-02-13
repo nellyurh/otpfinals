@@ -7687,21 +7687,78 @@ async def withdraw_from_card(request: WithdrawCardRequest, user: dict = Depends(
 
 @api_router.get("/cards/{card_id}")
 async def get_card_details(card_id: str, user: dict = Depends(get_current_user)):
-    """Get details of a specific card"""
+    """Get FULL details of a specific card from Payscribe API"""
     try:
         card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
         
         if not card:
             raise HTTPException(status_code=404, detail="Card not found")
         
-        # Don't expose full card number after creation
-        card_safe = {**card}
-        if 'number' in card_safe:
-            card_safe['number'] = f"**** **** **** {card.get('last_four', '****')}"
+        provider_card_id = card.get('provider_card_id')
+        if not provider_card_id:
+            # Return local data if no provider ID
+            return {
+                'success': True,
+                'card': card
+            }
         
+        # Fetch FULL card details from Payscribe API (includes card_number, ccv, billing, etc.)
+        result = await payscribe_request(f'cards/{provider_card_id}', 'GET', use_public_key=True)
+        
+        if result and result.get('status'):
+            details = result.get('message', {}).get('details', {})
+            
+            # Build card response with REAL data from Payscribe
+            card_full = {
+                **card,  # Include local fields (design, alias, user_id, etc.)
+                'id': card.get('id'),
+                'card_number': details.get('card_number'),
+                'pan': details.get('card_number'),
+                'masked': details.get('masked'),
+                'first_six': details.get('first_six'),
+                'last_four': details.get('last_four'),
+                'expiry': details.get('expiry'),
+                'cvv': details.get('ccv'),  # Payscribe uses 'ccv', we use 'cvv'
+                'balance': float(details.get('balance', 0)),
+                'status': details.get('status', card.get('status', 'active')),
+                'currency': details.get('currency', 'USD').upper(),
+                'card_type': details.get('card_type', 'virtual'),
+                'brand': details.get('brand', card.get('brand', 'MASTERCARD')),
+                'name': details.get('customer', {}).get('name') or card.get('name'),
+                'billing_address': {
+                    'street': details.get('billing', {}).get('address', ''),
+                    'city': details.get('billing', {}).get('city', ''),
+                    'state': details.get('billing', {}).get('state', ''),
+                    'country': details.get('billing', {}).get('country', ''),
+                    'postal_code': details.get('billing', {}).get('postal_code', ''),
+                },
+                'created_at': details.get('created_at') or card.get('created_at'),
+                'updated_at': details.get('updated_at'),
+            }
+            
+            # Update local DB with latest Payscribe data
+            await db.virtual_cards.update_one({'id': card_id}, {'$set': {
+                'balance': card_full['balance'],
+                'status': card_full['status'],
+                'card_number': card_full['card_number'],
+                'pan': card_full['pan'],
+                'cvv': card_full['cvv'],
+                'expiry': card_full['expiry'],
+                'billing_address': card_full['billing_address'],
+                'balance_updated_at': datetime.now(timezone.utc).isoformat(),
+            }})
+            
+            return {
+                'success': True,
+                'card': card_full,
+                'source': 'payscribe'
+            }
+        
+        # Fallback to local data if Payscribe fails
         return {
             'success': True,
-            'card': card_safe
+            'card': card,
+            'source': 'local'
         }
     except HTTPException:
         raise
