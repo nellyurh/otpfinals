@@ -1076,25 +1076,15 @@ const NewDashboard = () => {
                 )}
               </div>
               
-              {/* Balance display - Modern pill design with dynamic color */}
-              <div 
-                className="flex items-center gap-1.5 lg:gap-2 text-white px-3 lg:px-4 py-2 rounded-xl text-xs lg:text-sm shadow-lg"
-                style={{ backgroundColor: branding.primary_color_hex || '#059669' }}
+              {/* Refresh Balance Button */}
+              <button
+                onClick={fetchProfile}
+                className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
+                title="Refresh balance"
+                data-testid="header-refresh-btn"
               >
-                <Wallet className="w-4 h-4 hidden sm:block" />
-                <span className="font-bold">₦{(user.ngn_balance || 0).toLocaleString()}</span>
-                <div className="w-px h-4 bg-white/30"></div>
-                <span className="font-bold">${(user.usd_balance || 0).toFixed(2)}</span>
-                {/* Convert USD button */}
-                <button
-                  onClick={() => setActiveSection('convert-currency')}
-                  className="ml-1 p-1 hover:bg-white/20 rounded-lg transition-colors"
-                  title="Convert USD to NGN"
-                  data-testid="header-convert-usd-btn"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                <RefreshCw className="w-5 h-5 text-gray-600" />
+              </button>
               
               {/* User avatar - Modern design with dynamic color */}
               <div 
