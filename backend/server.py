@@ -3553,10 +3553,14 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
                 return {'success': True, 'data': data, 'cached': True}
         
         # Fetch from API
+        # Get API key from config first, then env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://api.tiger-sms.com/stubs/handler_api.php',
-                params={'api_key': TIGERSMS_API_KEY, 'action': 'getPrices'},
+                params={'api_key': api_key, 'action': 'getPrices'},
                 timeout=30.0
             )
             
