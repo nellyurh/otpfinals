@@ -1,29 +1,25 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-02-09 (Session 12)**: Security + KYC Retry + Webhook Fee Handling + Bill Controls
+- **2026-02-13 (Session 12 continued)**: SMS Polling Fix + Bill Markups + Virtual Card UI
+  - FIX: **SMS OTP Polling** - Fixed API key usage in polling functions to use config from database instead of hardcoded env variables. This should fix the issue where socialsmsworld doesn't receive codes.
+    - Updated: `poll_otp_smspool`, `poll_otp_daisysms_simple`, `poll_otp_tigersms`, `cancel_number_provider`, `purchase_number_smspool`, `purchase_number_tigersms`
+    - All now use `get_api_key()` to fetch from `pricing_config` collection first, then fall back to env vars
+  - NEW: **Bill Payment Markups (Hidden from Users)** - Admin can set profit margins on bill payments
+    - Added markup fields: `airtime_markup_percent`, `data_markup_percent`, `tv_markup_percent`, `electricity_markup_percent`, `betting_markup_percent`
+    - Updated airtime, data, and TV endpoints to apply markup
+    - Users see final price only (base + markup) without knowing the markup exists
+    - Admin UI shows editable percentage fields for each service type
+  - IMPROVED: **Virtual Card UI** - Better balance display with live API sync
+    - Added `/api/cards/{card_id}/balance` endpoint to fetch live balance from Payscribe
+    - Card detail view now shows real-time balance with refresh button
+    - Gradient card design with "Available Balance" section
+    - Auto-sync balance when card detail is opened
   - SECURITY: **Hidden SMS Provider Names** - Provider names (daisysms, smspool, 5sim, tigersms) no longer visible to users
-    - Created aliased API endpoints: `/api/services/server1`, `/api/services/server2`, `/api/services/us_server`, `/api/services/server3`
     - Updated ALL frontend files (NewDashboard.js, Dashboard.js, VirtualNumbersSection.js) to use generic server names
     - No more provider names visible in browser network tab
-  - NEW: **Individual Bill Payment Controls** - Admin can now hide/show each bill service individually:
-    - Internet Data, TV Subscription, Electricity, Airtime, Betting, Send Money (Wallet Transfer)
+  - NEW: **Individual Bill Payment Controls** - Admin can now hide/show each bill service individually
     - Added `disable_betting` and `disable_wallet_transfer` toggles
-    - Services respect toggles on both Dashboard and Bills Payment pages
-  - NEW: **KYC Verification Retry with Editable Fields** - Users can now fix incorrect details and retry verification
-    - When BVN/NIN verification fails due to name/phone/DOB mismatch, editable fields appear
-    - Users can update First Name, Last Name, Phone, Date of Birth
-    - Retry charges the KYC fee again (from admin config)
-    - Profile is updated with corrected details before retry
-  - NEW: **Payscribe Webhook Fee Handling** - Bank transfer deposit fees now tracked separately
-    - Gross amount credited first, then fee deducted as separate transaction
-    - Creates two transactions: `deposit_ngn` (credit) and `deposit_fee` (debit)
-    - Notification shows gross amount, fee, and net credit
-    - Fee visible in transaction history for transparency
-  - FIX: **File Upload Persistence** - Changed upload paths from `/app/backend/uploads/` to `/app/uploads/`
-    - Files now stored in Docker volume and persist across deployments
-    - Updated: branding, banners, and KYC document uploads
-    - Updated Dockerfile to create upload directories
 
 - **2026-02-06 (Session 11)**: Deployment Documentation + Admin UI Improvements
   - NEW: **DEPLOYMENT.md** - Comprehensive deployment guide with clear instructions for both sites:
