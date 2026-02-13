@@ -1,143 +1,149 @@
 <analysis>**original_problem_statement:**
-The user is building BillHub, a comprehensive financial services application with a React frontend, FastAPI backend, and MongoDB. The core features include a three-tiered KYC system, an admin panel, and deep integration with the Payscribe API for services like bank transfers, bill payments, and virtual cards.
+The user is building BillHub, a comprehensive financial services application deployed as two separate sites:  and . The project involves fixing bugs, adding new features, improving security, and resolving deployment issues across both sites.
 
-The user's most recent requests are to:
-1.  **Fix Critical Bugs:**
-    *   Resolve a double-crediting issue on bank transfer payments.
-    *   Fix blank pages that appear when clicking on some bill payment service cards on the dashboard.
-2.  **Improve KYC Flow:**
-    *   Simplify the selfie capture process to be a direct photo snap, removing liveness detection.
-    *   Ensure the selfie camera shows a live preview instead of a black screen.
-    *   Set the KYC verification fee to 200 NGN and ensure users are charged for retries if the first attempt fails.
-    *   Refactor the KYC process to use Payscribe's Upgrade Customer endpoints (Tier 1, 2) instead of the Create Full Customer endpoint, as users might already exist as Tier 0 customers after generating a static bank account.
-3.  **Enhance UI/UX:**
-    *   Increase the size of the brand logo in the dashboard header as it appears too small.
-    *   Add a button to the KYC upgrade required message that navigates the user directly to the verification page.
-    *   Make the mobile browser's address bar color match the custom theme set by the admin.
-    *   Eliminate the flash of default colors that appears for a split second before the admin's custom theme is loaded.
-4.  **Admin & SEO:**
-    *   Implement an SEO Settings section in the Admin Panel to dynamically control the site's Title, Meta Description, Keywords, and other SEO tags without requiring a code deployment.
-5.  **Deployment:**
-    *   Deploy the application to a second server () for a new domain () without affecting the original live server ().
-    *   Make  an administrator.
+**Recent and In-Flight Requests:**
+1.  **Make Admin Bug:** The Make Admin button in the admin panel is not working correctly on the live server.
+2.  **Deployment Issues:** The user runs two separate sites from the same codebase and is experiencing container conflicts and login failures on the  site.
+3.  **File Persistence:** Uploaded files (logos, banners, KYC documents) are disappearing after server restarts.
+4.  **Security/Anonymity:** The user wants to hide the names of third-party SMS providers (e.g., daisysms, smspool) from being visible to end-users in the frontend.
+5.  **KYC Flow:** Implement a retry mechanism for failed Tier 3 KYC verification, allowing users to edit their details and be charged the verification fee again.
+6.  **Transaction Fees:** When a user funds their account via Payscribe bank transfer, the fee returned in the webhook should be recorded as a separate debit transaction.
+7.  **Admin Controls & Pricing:**
+    *   Add individual toggles in the admin panel to enable/disable each bill payment service (Data, TV, Electricity, Airtime, Betting, Send Money).
+    *   Add editable percentage-based markups for Airtime, Data, and TV bills.
+8.  **UI/UX Redesign:**
+    *   Redesign the Virtual Cards page to match a user-provided reference image. This includes hiding card details behind a button, showing stats (Balance, Spent, etc.), adding a More actions menu, and improving the transaction list.
+    *   Add a separate, configurable fee for creating a second virtual card.
+    *   Remove the main balance display from the dashboard header and replace it with notification/refresh icons.
+    *   Adjust the layout of the Add Money button.
+9.  **Virtual Card API:** The API endpoints for virtual cards (get details, transactions, freeze/unfreeze) need to be updated to match the latest Payscribe documentation.
+10. **SMS Reception Bug:** SMS OTP codes are not being received on the  server, while they work on the  server.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack platform (React, FastAPI, MongoDB) deployed on two separate servers:  (original) and  (new).
+The application is a full-stack project with a React frontend, a FastAPI backend, and a MongoDB database.
 
--   **Admin Panel:** Features have been added for logo upload, logo size configuration, and dynamic SEO settings (Site Title, Meta Description, Keywords).
--   **Backend:**
-    -   The bank transfer webhook () now includes transaction reference de-duplication to prevent double-crediting.
-    -   The KYC logic has been refactored. It now attempts to upgrade existing customers using Payscribe's PATCH endpoints and captures the  from the payment webhook to facilitate this.
-    -   The KYC verification fee is set to 200 NGN, with logic to charge on retry.
-    -   An API endpoint () now serves the dynamic SEO and branding configurations.
--   **Frontend:**
-    -   The main  component dynamically fetches and applies SEO meta tags and the browser  from the backend, preventing the need for redeployment for SEO changes.
-    -   Branding settings are cached in  to prevent the color flash on page load.
-    -   The brand logo size in the dashboard header has been increased.
-    -   The selfie camera component now includes  and  to ensure a live preview is shown.
-    -   The KYC upgrade required message includes a button that navigates the user to the verification section.
+Recent work focused on resolving critical operational issues and implementing user-requested features:
+-   **File Persistence:** A major fix was implemented to correct the Docker volume mount paths in , , and , ensuring that uploaded files like logos, banners, and KYC documents are now persistent across container restarts.
+-   **Provider Anonymity:** Third-party SMS provider names have been hidden from the frontend. This was achieved by creating generic, aliased API endpoints (e.g., ) on the backend and updating all frontend components (, , ) to use these new routes.
+-   **Admin Controls:** The admin panel has been significantly enhanced. It now includes individual toggles for all bill payment services and a new section to manage percentage-based markups for Airtime, Data, TV, Electricity, and Betting.
+-   **Virtual Card Fees:** A new fee for creating an additional virtual card has been added. The backend, admin panel, and  were updated to handle and display this new fee structure.
+-   **KYC & Webhook Logic:** The backend was updated to support a KYC retry flow and to process Payscribe webhook fees as separate transactions. These changes are implemented but not yet tested.
+-   **API Key Fix:** A critical bug was fixed where OTP polling functions used hardcoded API keys from environment variables instead of the dynamic keys from the database config. This likely resolves the SMS reception issue on the  server.
+-   **UI/UX Tweaks:** The dashboard header was updated to remove the balance and add a refresh icon. The Add Money button layout was corrected.
+-   **Deployment Guidance:** A  file was created and updated with clear instructions for the two-site setup and for migrating existing uploaded files to the new persistent volume path.
 
 **Last working item**:
--   Last item agent was working: The agent was in the middle of fixing a batch of user-reported issues. It had just implemented fixes for the small logo, the missing KYC upgrade button, and the non-functional selfie camera preview. The next immediate task was to debug why some of the bill payment cards on the user dashboard lead to blank pages.
+-   Last item agent was working: Redesigning the  component to match a detailed UI/UX provided by the user in screenshots. The previous attempt was reverted because it incorrectly modified the initial card creation flow. The agent was in the process of re-implementing the new design for the *card view* page (for users who already have a card), leaving the creation flow untouched. This includes hiding card details, adding stats, a More actions menu, and an improved transaction list. The backend APIs for card management have been updated based on new documentation provided by the user.
 -   Status: IN PROGRESS
 -   Agent Testing Done: N
--   Which testing method agent to use? Both. A frontend testing agent should be used to verify all the recent UI fixes (logo size, camera preview, navigation button, and the fix for blank pages). The backend testing agent can verify the KYC and bank transfer logic.
+-   Which testing method agent to use? Frontend testing agent
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Bill payment service cards on the dashboard lead to blank pages (P0)
--   Issue 2: The multi-step virtual card creation wizard is not functional (P0, from previous fork)
--   Issue 3: Payscribe electricity and TV validation endpoints return 500 errors (P1, Blocked)
--   Issue 4: The Reseller Portal has a horizontal scroll issue on mobile (P1, Recurring)
--   Issue 5: PaymentPoint virtual account generation is not working (P2)
+-   Issue 1: Redesign the virtual card view page (P0).
+-   Issue 2: Make Admin button not working on live server (P0).
+-   Issue 3: SMS OTP codes not being received on  server (P0, fix implemented but needs verification).
+-   Issue 4: End-to-end user flow for virtual card creation is not fully tested (P1).
+-   Issue 5: Implemented KYC verification retry flow is untested (P1).
+-   Issue 6: Implemented Payscribe webhook fee handling is untested (P1).
+-   Issue 7: Two-site deployment process may still cause user confusion (P1).
+-   Issue 8: PaymentPoint virtual account generation is not working (P2).
+-   Issue 9: Reseller Portal UI has a horizontal scroll issue on mobile (P2).
 
 **Issues Detail:**
--   **Issue 1: Bill payment service cards on the dashboard lead to blank pages**
-    -   **Attempted fixes:** The agent had begun investigating the  and  components but did not complete the diagnosis.
+-   **Issue 1: Redesign the virtual card view page**
+    -   **Attempted fixes:** A full rewrite of  was done but reverted by user request as it altered the initial card creation flow. The file has been restored. The backend API endpoints for getting card details, transactions, and performing actions (freeze/unfreeze) have been updated to match the latest Payscribe documentation.
     -   **Next debug checklist:**
-        1.  In , examine how  and  are rendered when their respective sections are active.
-        2.  Verify that all required props (e.g., , , , ) are being passed correctly to these components.
-        3.  Check for any JavaScript errors in the browser console when clicking the problematic cards.
-        4.  Inside , check for any early returns or conditional rendering logic that might result in a blank component if certain props are missing or invalid.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking core bill payment functionality. Fixing it is essential for user retention.
+        1.  In , conditionally render the new UI design *only* when .
+        2.  Keep the existing card creation wizard () as is for  or when the Add Another Card button is clicked.
+        3.  Implement the new card view with hidden details (requiring a button click to reveal), stats (Balance, Spent), and a More actions dropdown.
+        4.  Create endpoints and UI for the More actions (Change Alias, View Limits, Withdraw, Download Statement).
+        5.  Integrate the new  backend endpoint to display a transaction list.
+    -   **Why fix this issue and what will be achieved with the fix?** To provide a more professional and secure user experience for managing virtual cards, as per the user's explicit design requirements.
     -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Frontend
-    -   **Blocked on other issue:** None
-
--   **Issue 2: The multi-step virtual card creation wizard is not functional**
-    -   **Attempted fixes:** This was the top priority from the previous session. While the upgrade required message was improved, the core functionality of the Get a Card button launching the wizard remains broken.
-    -   **Next debug checklist:**
-        1.  In , inspect the  handler for the Get a Card button.
-        2.  Debug the  state variable to ensure it is being set to  on click.
-        3.  Implement the full multi-step UI for the wizard (design selection, fee display, alias/amount input) as per the user's Airtm-style request.
-    -   **Why fix this issue and what will be achieved with the fix?** This will complete the virtual card feature, a major product offering.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
+    -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Both
     -   **Blocked on other issue:** None
 
--   **Issue 3: Payscribe electricity and TV validation endpoints return 500 errors**
-    -   **Attempted fixes:** Confirmed via  that the errors originate from the live Payscribe API server ().
+-   **Issue 2: Make Admin button not working on live server**
+    -   **Attempted fixes:** The backend API () was confirmed to work correctly in the preview environment. The frontend was improved with toast notifications. The user reported a data mismatch between the UI and a database query for different emails.
     -   **Next debug checklist:**
-        1.  Inform the user that the live Payscribe API itself is failing for these specific services.
-        2.  Ask the user to confirm if the app should be using the  URL for testing these services or if they need to contact Payscribe support.
-    -   **Why fix this issue and what will be achieved with the fix?** Unblocks two major bill payment categories for users.
-    -   **Status:** BLOCKED
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Backend
+        1.  Ask the user to use the browser's developer tools on the live site to inspect the network request when the Make Admin button is clicked. Check the request payload and the server's response.
+        2.  Guide the user to check the live backend logs () for errors related to that API call.
+        3.  Investigate the email mismatch. Ask the user to query the database for the exact email shown in the UI () to confirm its  status.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a core administrative function that is currently broken in the user's production environment.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on other issue:** Potentially related to deployment issues.
+
+-   **Issue 3: SMS OTP codes not being received on  server**
+    -   **Attempted fixes:** The agent identified and fixed a critical bug in  where OTP polling functions (, , etc.) and number cancellation functions were using hardcoded API keys from environment variables instead of fetching the correct keys from the database configuration for the specific site.
+    -   **Next debug checklist:**
+        1.  Inform the user that a potential fix has been deployed.
+        2.  Ask the user to test purchasing a number and receiving an SMS on the  server again.
+        3.  If it still fails, guide the user to check the backend logs () on that server immediately after a failed attempt to look for polling errors.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a core, revenue-generating feature that is completely broken on one of the two live sites.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Backend fix is done, requires user verification on live environment.
+    -   **Blocked on other issue:** None.
 
 **In progress Task List**:
--   **Task 1: Complete batch of critical fixes**
-    -   **Where to resume:** Resume by debugging the blank bill payment pages in .
-    -   **What will be achieved with this?** A stable and usable dashboard where users can access all bill payment services without encountering blank screens or broken UI elements.
+-   **Task 1: Complete the Virtual Card View Redesign**
+    -   **Where to resume:** . The file has been restored to the user's preferred version.
+    -   **What will be achieved with this?** A professional, responsive, and secure UI for users to manage their existing virtual cards, matching the user's specific design.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on something:** None
+    -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   **P0:** Secure **all** bill payments (Data, Airtime, TV, etc.) with a transaction PIN.
-    *   **P1:** Refactor the monolithic  into a modular structure using FastAPI's  to improve maintainability.
-    *   **P2:** Break down large React components like  and  into smaller, manageable sub-components.
-*   **Future Tasks:**
-    *   Add filtering by category/brand for the gift card store.
-    *   Implement a GitHub Actions CI/CD workflow to automate deployments to both servers upon a push to the  or  branch.
+-   **Upcoming Tasks:**
+    -   **P0:** Secure **all** bill payments (Data, Airtime, TV, etc.) with a transaction PIN.
+    -   **P1:** Refactor the monolithic  into a modular structure using FastAPI's .
+    -   **P2:** Break down large React components like  and  into smaller, manageable sub-components.
+-   **Future Tasks:**
+    -   Add filtering by category/brand for the gift card store.
+    -   Implement a GitHub Actions CI/CD workflow.
+    -   Implement account lockout after a set number of failed login attempts.
 
 **Completed work in this session**
--   **Deployment & Ops:**
-    -   Successfully guided the user through a complete manual deployment of the application to a new server (), including cloning the repo, configuring the environment, updating domain-specific files (, ), and setting up SSL.
-    -   Made  an admin via a database command.
--   **Critical Bug Fixes:**
-    -   **Bank Transfer Double-Credit:** Resolved by adding a transaction reference check in the backend webhook to prevent duplicate processing.
-    -   **Payscribe Customer ID:** Fixed the core architectural issue where  was not being saved. The webhook now captures and stores this ID, enabling the KYC upgrade flow.
--   **Admin & SEO Features:**
-    -   Created and integrated a full SEO Settings section in the Admin Panel, allowing dynamic client-side updates to all major SEO meta tags.
--   **UI/UX Fixes:**
-    -   **Color Flash:** Eliminated the flash of default colors on page load by caching branding settings.
-    -   **Mobile Theme Color:** The mobile browser address bar now correctly uses the admin-defined theme color.
-    -   **Selfie Camera:** Fixed the selfie capture to show a live camera preview instead of a black screen.
-    -   **Logo Size:** Increased the brand logo size in the dashboard header.
-    -   **KYC Navigation:** Added a Go to Verification button to the upgrade required message.
+-   **File Persistence Fix:** Corrected Docker volume paths to prevent uploaded logos, banners, and KYC documents from being deleted on container restart.
+-   **SMS Provider Anonymization:** Hid third-party SMS provider names from the frontend by creating and using aliased API endpoints.
+-   **Individual Bill Toggles:** Added toggles to the admin panel to show/hide each bill payment service individually.
+-   **Bill Payment Markups:** Implemented an admin feature to add editable, percentage-based markups to Airtime, Data, TV, Electricity, and Betting services.
+-   **Virtual Card Fee for 2nd Card:** Added a configurable fee for creating subsequent virtual cards, and updated the UI to reflect this.
+-   **Dashboard UI Refresh:** Removed the top balance from the main dashboard header and corrected the layout of the Add Money button.
+-   **API Key Bug Fix:** Corrected all OTP polling and number purchase functions to use API keys from the database config instead of hardcoded environment variables.
+-   **Virtual Card API Update:** Updated the backend endpoints for freezing, unfreezing, and getting card balances to match the latest Payscribe API documentation.
+-   **Deployment Documentation:** Created and updated  with instructions for the two-site setup and file migration.
+-   **KYC & Webhook Logic (Untested):** Implemented backend logic for KYC verification retry and for handling Payscribe webhook fees as a separate transaction.
 
 **Earlier issues found/mentioned but not fixed**
 -   **PaymentPoint Integration:** The virtual account generation for PaymentPoint is not working.
 -   **Reseller Portal UI:** The portal still has a horizontal scroll issue on mobile devices.
 
 **Known issue recurrence from previous fork**
--   **Mobile UI issues:** Horizontal scroll on the Reseller Portal.
--   **CI/CD Pipeline failures:** The pipeline has been unstable in the past (though not used in this session, as deployments were manual).
+-   **Virtual Card Creation:** The end-to-end flow for new users remains a critical area that needs full testing.
+-   **Deployment/Configuration:** The user has repeatedly had issues deploying and managing their two sites.  is a step towards resolving this.
+-   **Reseller Portal UI:** Horizontal scroll on mobile devices persists.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Dual Deployment:** The application runs on two independent servers with different domains, branding, and configurations. Manual  and  are required on both.
--   **Dynamic SEO:** SEO meta tags are no longer static. They are fetched from a backend API () and dynamically injected into the document head by the root React  component.
--   **Client-Side Caching:**  is used to cache branding settings, preventing a flash of unstyled content (FOUC) and ensuring the admin-defined theme loads instantly.
--   **Stateful KYC Flow:** The system now handles both new customer creation and existing customer upgrades by checking for a  before calling the appropriate Payscribe endpoint.
+-   **API Endpoint Aliasing:** Creating generic backend routes () that map to specific provider logic internally. This prevents exposing third-party provider names to the client.
+-   **Dynamic Pricing with Markups:** Applying percentage-based markups fetched from a central configuration () to the final price of services shown to the user.
+-   **Docker Volume Persistence:** Correctly mapping a host directory to a container directory () to ensure file uploads survive container restarts and rebuilds.
+-   **Conditional Rendering (React):** Used to display different UI elements based on application state (e.g., showing a card creation wizard vs. a card view page based on ).
+
+**key DB schema**
+-   **pricing_config (collection):**
+    -   , , , , : (float)
+    -   : (float)
+    -   , , , , , : (boolean)
 
 **All files of reference**
 -   
@@ -146,187 +152,53 @@ The application is a full-stack platform (React, FastAPI, MongoDB) deployed on t
 -   
 -   
 -   
+-   
+-   
 
 **Critical Info for New Agent**
--   **Two Separate Live Environments:** Be aware that there are two distinct production servers:
-    1.  **getucloudy.com:** (IP: 95.111.227.210) runs in  and uses container names like .
-    2.  **socialsmsworld.com:** (IP: 178.18.247.113) runs in  and uses container names like .
-    -   Any deployment requires manual action on **both** servers. The configurations (, ) in the repo are for , and were manually edited on the second server during setup.
--   **Blank Pages Bug:** The highest priority is to fix the bug where bill payment sections on the dashboard appear as blank pages. Start by investigating  and its props.
--   **KYC Logic is Critical:** The logic for upgrading vs. creating a customer is central to the user experience. The  is the key. It's now primarily captured via the bank transfer webhook.
+-   **Virtual Card UI is Priority #1:** The user has very specific design requirements for the page that displays existing virtual cards. The previous attempt to implement this was reverted. You MUST modify  to show the new design *only* for users who already have a card, leaving the initial creation flow untouched. Refer to the user's latest screenshots and API documentation.
+-   **Verify The SMS Fix:** A critical fix for hardcoded API keys in OTP polling functions was implemented. This is the likely cause of SMS failures on the  server. The next step is to have the user verify this on their live environment.
+-   **Untested Logic:** Be aware that several new backend features (KYC retry flow, webhook fee separation, bill markups) have been implemented but have **not been tested**. They will require a full end-to-end test to verify functionality.
+-   **Deployment Confusion Persists:** While  was created, the user is still struggling with managing the two sites. Issues like the Make Admin button failing on live are likely symptoms of deployment or caching problems, not code bugs. Be prepared to guide the user through debugging their live environment.
 
 **documents and test reports created in this job**
--   
--   ==========================================
-SocialSMS World - VPS Setup Script
-Domain: socialsmsworld.com
-==========================================
-[1;33mStep 1: Updating system...[0m
-Hit:1 http://deb.debian.org/debian bookworm InRelease
-Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
-Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
-Get:4 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 InRelease [3005 B]
-Get:5 https://deb.nodesource.com/node_20.x nodistro InRelease [12.1 kB]
-Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages [288 kB]
-Get:7 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse amd64 Packages [102 kB]
-Get:8 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 Packages [100 kB]
-Fetched 609 kB in 1s (749 kB/s)
-Reading package lists...
-Building dependency tree...
-Reading state information...
-10 packages can be upgraded. Run 'apt list --upgradable' to see them.
-Reading package lists...
-Building dependency tree...
-Reading state information...
-Calculating upgrade...
-The following packages will be upgraded:
-  libssl-dev libssl3 mongodb-org mongodb-org-database
-  mongodb-org-database-tools-extra mongodb-org-mongos mongodb-org-server
-  mongodb-org-shell mongodb-org-tools openssl
-10 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-Need to get 64.5 MB of archives.
-After this operation, 368 kB of additional disk space will be used.
-Get:1 http://deb.debian.org/debian-security bookworm-security/main arm64 libssl-dev arm64 3.0.18-1~deb12u2 [2314 kB]
-Get:2 http://deb.debian.org/debian-security bookworm-security/main arm64 libssl3 arm64 3.0.18-1~deb12u2 [1818 kB]
-Get:3 http://deb.debian.org/debian-security bookworm-security/main arm64 openssl arm64 3.0.18-1~deb12u2 [1399 kB]
-Get:4 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org-shell arm64 7.0.29 [2988 B]
-Get:5 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org-server arm64 7.0.29 [34.6 MB]
-Get:6 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org-mongos arm64 7.0.29 [24.4 MB]
-Get:7 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org-database-tools-extra arm64 7.0.29 [7782 B]
-Get:8 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org-database arm64 7.0.29 [3424 B]
-Get:9 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org-tools arm64 7.0.29 [2770 B]
-Get:10 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0/multiverse arm64 mongodb-org arm64 7.0.29 [2804 B]
-Fetched 64.5 MB in 1s (62.1 MB/s)
-(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38194 files and directories currently installed.)
-Preparing to unpack .../0-libssl-dev_3.0.18-1~deb12u2_arm64.deb ...
-Unpacking libssl-dev:arm64 (3.0.18-1~deb12u2) over (3.0.18-1~deb12u1) ...
-Preparing to unpack .../1-libssl3_3.0.18-1~deb12u2_arm64.deb ...
-Unpacking libssl3:arm64 (3.0.18-1~deb12u2) over (3.0.18-1~deb12u1) ...
-Preparing to unpack .../2-mongodb-org-shell_7.0.29_arm64.deb ...
-Unpacking mongodb-org-shell (7.0.29) over (7.0.28) ...
-Preparing to unpack .../3-mongodb-org-server_7.0.29_arm64.deb ...
-Unpacking mongodb-org-server (7.0.29) over (7.0.28) ...
-Preparing to unpack .../4-mongodb-org-mongos_7.0.29_arm64.deb ...
-Unpacking mongodb-org-mongos (7.0.29) over (7.0.28) ...
-Preparing to unpack .../5-mongodb-org-database-tools-extra_7.0.29_arm64.deb ...
-Unpacking mongodb-org-database-tools-extra (7.0.29) over (7.0.28) ...
-Preparing to unpack .../6-mongodb-org-database_7.0.29_arm64.deb ...
-Unpacking mongodb-org-database (7.0.29) over (7.0.28) ...
-Preparing to unpack .../7-mongodb-org-tools_7.0.29_arm64.deb ...
-Unpacking mongodb-org-tools (7.0.29) over (7.0.28) ...
-Preparing to unpack .../8-mongodb-org_7.0.29_arm64.deb ...
-Unpacking mongodb-org (7.0.29) over (7.0.28) ...
-Preparing to unpack .../9-openssl_3.0.18-1~deb12u2_arm64.deb ...
-Unpacking openssl (3.0.18-1~deb12u2) over (3.0.18-1~deb12u1) ...
-Setting up libssl3:arm64 (3.0.18-1~deb12u2) ...
-Setting up mongodb-org-shell (7.0.29) ...
-Setting up libssl-dev:arm64 (3.0.18-1~deb12u2) ...
-Setting up mongodb-org-mongos (7.0.29) ...
-Setting up mongodb-org-database-tools-extra (7.0.29) ...
-Setting up openssl (3.0.18-1~deb12u2) ...
-Setting up mongodb-org-server (7.0.29) ...
-System has not been booted with systemd as init system (PID 1). Can't operate.
-Failed to connect to bus: Host is down
-Setting up mongodb-org-tools (7.0.29) ...
-Setting up mongodb-org-database (7.0.29) ...
-Setting up mongodb-org (7.0.29) ...
-Processing triggers for libc-bin (2.36-9+deb12u13) ...
-[1;33mStep 2: Installing Docker...[0m
-# Executing docker install script, commit: f381ee68b32e515bb4dc034b339266aff1fbc460
-
-================================================================================
-
-To run Docker as a non-privileged user, consider setting up the
-Docker daemon in rootless mode for your user:
-
-    dockerd-rootless-setuptool.sh install
-
-Visit https://docs.docker.com/go/rootless/ to learn about rootless mode.
-
-
-To run the Docker daemon as a fully privileged service, but granting non-root
-users access, refer to https://docs.docker.com/go/daemon-access/
-
-WARNING: Access to the remote API on a privileged Docker daemon is equivalent
-         to root access on the host. Refer to the 'Docker daemon attack surface'
-         documentation for details: https://docs.docker.com/go/attack-surface/
-
-================================================================================
--   
--   
--   [0;34m
-╔═══════════════════════════════════════════╗
-║     SocialSMS World - VPS Deployment      ║
-║     Domain: socialsmsworld.com            ║
-║     Server: 178.18.247.113                ║
-╚═══════════════════════════════════════════╝
-[0m
-
-[1;33m[1/8] Updating system packages...[0m
-Hit:1 http://deb.debian.org/debian bookworm InRelease
-Hit:2 http://deb.debian.org/debian bookworm-updates InRelease
-Hit:3 http://deb.debian.org/debian-security bookworm-security InRelease
-Hit:4 https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 InRelease
-Hit:5 https://download.docker.com/linux/debian bookworm InRelease
-Hit:6 https://deb.nodesource.com/node_20.x nodistro InRelease
-Reading package lists...
-Building dependency tree...
-Reading state information...
-All packages are up to date.
-Reading package lists...
-Building dependency tree...
-Reading state information...
-Calculating upgrade...
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-
-[1;33m[2/8] Installing Docker...[0m
-[0;32m✓ Docker already installed[0m
-
-[1;33m[3/8] Installing Docker Compose...[0m
-Reading package lists...
-Building dependency tree...
-Reading state information...
-docker-compose-plugin is already the newest version (5.0.2-1~debian.12~bookworm).
-curl is already the newest version (7.88.1-10+deb12u14).
-0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-[0;32m✓ Docker Compose installed[0m
-
-[1;33m[4/8] Configuring firewall...[0m
--   
+-    (created and updated)
+-    (updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Asks for instructions to deploy the SEO feature to the *other* server (). (Status: Addressed)
-2.  **User:** Clarifies that the brand name for the first server is Ucloudy and the directory is . (Status: Addressed)
-3.  **User:** Reports 3 critical issues: bank transfer double-crediting, need to simplify selfie verification (remove liveness), and need to use KYC upgrade endpoints. (Status: Implemented)
-4.  **User:** Clarifies a key problem:  is not being captured when a static bank account is created. (Status: Implemented)
-5.  **User:** States that  capture from the webhook is sufficient and to remove the capture from the account generation process. Also requests fixes for mobile address bar color and the page load color flash. (Status: Implemented)
-6.  **User:** Reports that the uploaded logo is too small, the KYC upgrade message needs a button, bill payment cards lead to blank pages, and the selfie camera shows a black background. (Status: In Progress)
-7.  **User:** Provides SSL certificate and key for the new server. (Status: Addressed)
-8.  **User:** Confirms deployment steps are done but the domain isn't loading. (Status: Addressed, agent provided debug steps)
-9.  **User:** Asks to make  an admin. (Status: Addressed)
-10. **User:** Points out that the new deployment has incorrect branding/SEO details and confirms they want an SEO settings section in the admin panel. (Status: Implemented)
+1.  **User:** Asks for markup on bills, UI improvements for virtual cards, and for the card balance to be fetched via API.
+2.  **User:** Requests removal of top balance on dashboard, layout fix for Add Money button, and provides a detailed screenshot for a new virtual card page design. Specifies a  fee for a second card.
+3.  **Agent:** Implements the requested changes, including a complete redesign of the virtual card page.
+4.  **User:** Asks for a screenshot of the new card page, claiming it's unchanged, and provides extensive Payscribe API documentation for card actions (get details, transactions, freeze/unfreeze, terminate).
+5.  **Agent:** Restarts frontend, provides a screenshot confirming the new (but incorrect) design is active, and updates the backend with the new API endpoints.
+6.  **Agent:** Provides screenshots of the new design on desktop and mobile.
+7.  **User:** Rejects the new design. Clarifies that the existing card *creation* flow is perfect and should not have been touched. The redesign was only for the *view* page for existing cards. Provides screenshots of the current, correct UI.
+8.  **Agent:** Apologizes, reverts  to the user's preferred version using git.
+9.  **Agent:** Re-implements the additional card fee feature on the restored component without altering the core UI.
+10. **User:** (LATEST) Clarifies the issues with the current card view page (details are too visible). Provides screenshots and re-iterates the need for a View details button, top stats, a More dropdown menu, and an improved transaction list, reinforcing the design from the previous messages.
 
 **Project Health Check:**
 -   **Broken:**
-    -   Bill payment sections (Airtime, Data, etc.) are rendering as blank pages.
-    -   Virtual card creation wizard is not functional.
-    -   Payscribe electricity and TV validation.
+    -   Virtual card *view* page UI does not meet user's design requirements.
+    -   Admin promotion (Make Admin button) on the live server.
+    -   SMS OTP reception on  (fix implemented, needs verification).
     -   PaymentPoint virtual account generation.
 -   **Mocked:** None.
 
 **3rd Party Integrations**
--   **Payscribe:** Used for all payment services. The app uses the live API key (). A key architectural change was made to handle existing customers via upgrade endpoints, relying on a  captured from webhooks. Electricity and TV validation are blocked by 500 errors from the Payscribe API.
+-   **Payscribe:** Used for payments, KYC, and virtual cards. The agent has recently updated the backend to use the latest API endpoints provided by the user.
+-   **slowapi:** For API rate limiting.
+-   **Multiple SMS providers:** (5sim, smspool, daisysms, tigersms) - Endpoints have been aliased to hide names from the frontend.
 
 **Testing status**
--   Testing agent used after significant changes: YES, the agent used the testing agent to validate the first set of features in this session (admin logo upload, KYC address fields).
+-   Testing agent used after significant changes: NO
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
--   Known regressions: Reseller Portal horizontal scroll on mobile.
+-   Known regressions: The virtual card UI was unintentionally changed and had to be reverted. The Make Admin button is reported as not working after its implementation.
 
 **Credentials to test flow:**
--   **Admin Account:** . User knows the password.
--   **Second Admin:** .
--   **Payscribe Public Key:** 
+-   **Admin Account:** . The user knows the password. A new admin  /  can be created if the DB is fresh.
 
 **What agent forgot to execute**
--   The agent has not yet implemented the transaction PIN protection for all bill payment types, which is a pending high-priority task from the previous session.</analysis>
+-   The P0 task Secure all bill payments with a transaction PIN has not been started.
+-   The newly implemented features (KYC retry, webhook fee logic, bill markups, API key fix) have not been tested end-to-end. A full regression test is needed.</analysis>
