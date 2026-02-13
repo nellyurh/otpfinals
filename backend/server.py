@@ -1946,11 +1946,16 @@ async def purchase_number_daisysms(service: str, max_price: float, area_code: Op
         return None
 
 async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Optional[Dict]:
+    """Purchase a number from TigerSMS."""
     try:
+        # Get API key from config first, then env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://api.tiger-sms.com/stubs/handler_api.php',
-                params={'api_key': TIGERSMS_API_KEY, 'action': 'getNumber', 'service': service, 'country': country},
+                params={'api_key': api_key, 'action': 'getNumber', 'service': service, 'country': country},
                 timeout=15.0
             )
             if response.status_code == 200:
