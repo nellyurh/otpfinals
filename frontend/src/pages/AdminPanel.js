@@ -1535,6 +1535,15 @@ const AdminPanel = ({ user, setUser }) => {
         reloadly_configured: response.data.reloadly_configured || false
       });
 
+      // Load Bill Payment Markups
+      setBillMarkups({
+        airtime_markup_percent: response.data.airtime_markup_percent ?? 2.0,
+        data_markup_percent: response.data.data_markup_percent ?? 2.0,
+        tv_markup_percent: response.data.tv_markup_percent ?? 2.0,
+        electricity_markup_percent: response.data.electricity_markup_percent ?? 1.0,
+        betting_markup_percent: response.data.betting_markup_percent ?? 2.0,
+      });
+
       // Load KYC Settings
       setKycSettings({
         kyc_tier1_max_balance: response.data.kyc_tier1_max_balance || 50000,
