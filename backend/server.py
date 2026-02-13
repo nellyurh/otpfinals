@@ -7879,7 +7879,7 @@ async def freeze_card(card_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.post("/cards/{card_id}/unfreeze")
 async def unfreeze_card(card_id: str, user: dict = Depends(get_current_user)):
-    """Unfreeze a virtual card"""
+    """Unfreeze a virtual card via Payscribe API"""
     try:
         card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
         
@@ -7889,7 +7889,19 @@ async def unfreeze_card(card_id: str, user: dict = Depends(get_current_user)):
         if card.get('status') != 'frozen':
             return {'success': True, 'message': 'Card is not frozen'}
         
-        # TODO: Call Payscribe unfreeze endpoint if available
+        provider_card_id = card.get('provider_card_id')
+        if provider_card_id:
+            # Call Payscribe unfreeze endpoint
+            result = await payscribe_request(
+                f'cards/{provider_card_id}/unfreeze',
+                'PATCH',
+                {'ref': str(uuid.uuid4())},
+                use_public_key=True
+            )
+            
+            if not result or not result.get('status'):
+                logger.error(f"Payscribe unfreeze failed: {result}")
+                raise HTTPException(status_code=400, detail="Failed to unfreeze card with provider")
         
         await db.virtual_cards.update_one(
             {'id': card_id},
