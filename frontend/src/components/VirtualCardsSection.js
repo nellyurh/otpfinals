@@ -742,8 +742,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 <span className="font-medium">${parseFloat(initialAmount || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Creation Fee</span>
-                <span className="font-medium">${(fees.creation_fee || 2.50).toFixed(2)}</span>
+                <span className="text-gray-500">{cards.length === 0 ? 'Creation Fee' : 'Additional Card Fee'}</span>
+                <span className="font-medium">${getCardCreationFee().toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Funding Fee</span>
@@ -752,7 +752,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               <div className="flex justify-between pt-2 border-t border-gray-200">
                 <span className="font-semibold text-gray-900">Total</span>
                 <span className="font-bold text-gray-900">
-                  ${(parseFloat(initialAmount || 0) + (fees.creation_fee || 2.50) + (fees.funding_fee || 0.30)).toFixed(2)}
+                  ${(parseFloat(initialAmount || 0) + getCardCreationFee() + (fees.funding_fee || 0.30)).toFixed(2)}
                 </span>
               </div>
             </div>
