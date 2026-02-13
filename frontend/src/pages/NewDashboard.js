@@ -1312,8 +1312,8 @@ const NewDashboard = () => {
                     onClick={() => setActiveSection('fund-wallet')}
                     className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-800 rounded-xl font-semibold text-sm transition-colors shadow-lg hover:bg-gray-100"
                   >
-                    <Plus className="w-4 h-4" />
                     Add Money
+                    <Plus className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -1324,8 +1324,8 @@ const NewDashboard = () => {
                   onClick={() => setActiveSection('fund-wallet')}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white text-gray-800 rounded-xl font-semibold text-sm transition-colors shadow-lg hover:bg-gray-100"
                 >
-                  <Plus className="w-4 h-4" />
                   Add Money
+                  <Plus className="w-4 h-4" />
                 </button>
               </div>
             </div>
