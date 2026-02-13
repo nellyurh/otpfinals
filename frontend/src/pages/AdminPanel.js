@@ -964,6 +964,7 @@ const AdminPanel = ({ user, setUser }) => {
   // Virtual Card Fees state
   const [cardFees, setCardFees] = useState({
     card_creation_fee: 2.50,
+    card_additional_card_fee: 5.00,
     card_funding_fee: 0.30,
     card_transaction_fee: 0.15,
     card_declined_fee: 0.50,
