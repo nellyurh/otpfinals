@@ -642,6 +642,15 @@ const AdminPanel = ({ user, setUser }) => {
     giftcard_usd_to_ngn_rate: 1650,
   });
 
+  // Bill payment markups (hidden from users)
+  const [billMarkups, setBillMarkups] = useState({
+    airtime_markup_percent: 2.0,
+    data_markup_percent: 2.0,
+    tv_markup_percent: 2.0,
+    electricity_markup_percent: 1.0,
+    betting_markup_percent: 2.0,
+  });
+
   const [giftcardsConfig, setGiftcardsConfig] = useState({
     reloadly_client_id: '',
     reloadly_client_secret: '',
