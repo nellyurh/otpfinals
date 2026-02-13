@@ -3895,6 +3895,55 @@ const AdminPanel = ({ user, setUser }) => {
                     </p>
                   </CardContent>
                 </Card>
+
+                {/* Bill Payment Markups - Hidden from users */}
+                <Card className="border border-amber-200 shadow-sm bg-gradient-to-br from-amber-50 to-orange-50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-amber-600" />
+                      Bill Payment Markups (Hidden from Users)
+                    </CardTitle>
+                    <CardDescription className="text-xs text-amber-600">
+                      Set profit margins on bill payments. Users see final prices only.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        ['airtime_markup_percent', 'Airtime', '📱', 'Airtime top-up markup'],
+                        ['data_markup_percent', 'Data Bundles', '📶', 'Internet data markup'],
+                        ['tv_markup_percent', 'TV Subscription', '📺', 'DSTV, GOtv, etc.'],
+                        ['electricity_markup_percent', 'Electricity', '⚡', 'Power bill markup'],
+                        ['betting_markup_percent', 'Betting', '🎮', 'Betting funding markup'],
+                      ].map(([key, label, icon, desc]) => (
+                        <div key={key} className="bg-white rounded-xl p-3 border border-amber-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">{icon}</span>
+                            <div>
+                              <p className="font-medium text-sm text-slate-800">{label}</p>
+                              <p className="text-[10px] text-slate-500">{desc}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              max="50"
+                              value={billMarkups[key]}
+                              onChange={(e) => setBillMarkups(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))}
+                              className="w-20 px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-amber-500 text-center"
+                            />
+                            <span className="text-sm text-slate-600 font-medium">%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-amber-600 mt-3 text-center">
+                      💰 Example: 2% markup on ₦1,000 airtime = user pays ₦1,020, you profit ₦20
+                    </p>
+                  </CardContent>
+                </Card>
                 
                 <Card className="border border-slate-200 shadow-sm bg-white">
                   <CardHeader className="pb-3">
