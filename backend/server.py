@@ -7769,7 +7769,7 @@ async def get_card_details(card_id: str, user: dict = Depends(get_current_user))
 
 @api_router.get("/cards/{card_id}/balance")
 async def get_card_balance(card_id: str, user: dict = Depends(get_current_user)):
-    """Get live card balance and details from Payscribe API"""
+    """Get live card balance and FULL details from Payscribe API"""
     try:
         card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
         
@@ -7778,53 +7778,87 @@ async def get_card_balance(card_id: str, user: dict = Depends(get_current_user))
         
         provider_card_id = card.get('provider_card_id')
         if not provider_card_id:
-            # Return stored balance if no provider ID
+            # Return stored data if no provider ID
             return {
                 'success': True,
-                'balance': card.get('balance', 0),
+                'balance': {
+                    'balance': card.get('balance', 0),
+                    'cashback': 0,
+                    'spent_this_month': 0,
+                },
+                'card_details': card,
                 'currency': 'USD',
                 'source': 'local'
             }
         
-        # Fetch card details from Payscribe (includes balance)
+        # Fetch FULL card details from Payscribe (includes balance, card_number, billing, etc.)
         result = await payscribe_request(f'cards/{provider_card_id}', 'GET', use_public_key=True)
         
         if result and result.get('status'):
             details = result.get('message', {}).get('details', {})
             live_balance = float(details.get('balance', 0))
             
+            # Build billing address object
+            billing_address = {
+                'street': details.get('billing', {}).get('address', ''),
+                'city': details.get('billing', {}).get('city', ''),
+                'state': details.get('billing', {}).get('state', ''),
+                'country': details.get('billing', {}).get('country', ''),
+                'postal_code': details.get('billing', {}).get('postal_code', ''),
+            }
+            
             # Update local card with latest info from Payscribe
             update_data = {
                 'balance': live_balance,
                 'balance_updated_at': datetime.now(timezone.utc).isoformat(),
                 'status': details.get('status', card.get('status', 'active')),
+                'card_number': details.get('card_number'),
+                'pan': details.get('card_number'),
+                'expiry': details.get('expiry'),
+                'cvv': details.get('ccv'),
+                'billing_address': billing_address,
             }
-            
-            # Also update card number if returned and we don't have it
-            if details.get('card_number') and not card.get('card_number'):
-                update_data['card_number'] = details.get('card_number')
-                update_data['pan'] = details.get('card_number')
-            
-            if details.get('expiry'):
-                update_data['expiry'] = details.get('expiry')
-            
-            if details.get('ccv'):
-                update_data['cvv'] = details.get('ccv')
             
             await db.virtual_cards.update_one({'id': card_id}, {'$set': update_data})
             
+            # Build full card details response
+            card_full = {
+                **card,
+                'card_number': details.get('card_number'),
+                'pan': details.get('card_number'),
+                'masked': details.get('masked'),
+                'first_six': details.get('first_six'),
+                'last_four': details.get('last_four'),
+                'expiry': details.get('expiry'),
+                'cvv': details.get('ccv'),
+                'balance': live_balance,
+                'status': details.get('status', 'active'),
+                'billing_address': billing_address,
+                'name': details.get('customer', {}).get('name') or card.get('name'),
+            }
+            
             return {
                 'success': True,
-                'balance': live_balance,
+                'balance': {
+                    'balance': live_balance,
+                    'cashback': 0,  # Payscribe doesn't provide cashback
+                    'spent_this_month': 0,  # Calculate from transactions if needed
+                },
+                'card_details': card_full,
                 'currency': details.get('currency', 'USD').upper(),
                 'status': details.get('status', 'active'),
                 'source': 'payscribe'
             }
         
-        # Fallback to stored balance
+        # Fallback to stored data
         return {
             'success': True,
-            'balance': card.get('balance', 0),
+            'balance': {
+                'balance': card.get('balance', 0),
+                'cashback': 0,
+                'spent_this_month': 0,
+            },
+            'card_details': card,
             'currency': 'USD',
             'source': 'local'
         }
@@ -7832,10 +7866,15 @@ async def get_card_balance(card_id: str, user: dict = Depends(get_current_user))
         raise
     except Exception as e:
         logger.error(f"Get card balance error: {str(e)}")
-        # Return stored balance on error
+        # Return stored data on error
         return {
             'success': False,
-            'balance': card.get('balance', 0) if card else 0,
+            'balance': {
+                'balance': card.get('balance', 0) if card else 0,
+                'cashback': 0,
+                'spent_this_month': 0,
+            },
+            'card_details': card if card else {},
             'currency': 'USD',
             'source': 'local',
             'error': str(e)
