@@ -615,10 +615,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <div>
-                  <p className="font-medium text-gray-900">Card Creation Fee</p>
-                  <p className="text-xs text-gray-500">One-time fee to create your card</p>
+                  <p className="font-medium text-gray-900">{cards.length === 0 ? 'Card Creation Fee' : 'Additional Card Fee'}</p>
+                  <p className="text-xs text-gray-500">{cards.length === 0 ? 'One-time fee to create your card' : 'Fee for additional card'}</p>
                 </div>
-                <span className="font-bold text-gray-900">${(fees.creation_fee || 2.50).toFixed(2)}</span>
+                <span className="font-bold text-gray-900">${getCardCreationFee().toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <div>
