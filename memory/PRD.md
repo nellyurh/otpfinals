@@ -1,25 +1,22 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-02-13 (Session 12 continued)**: SMS Polling Fix + Bill Markups + Virtual Card UI
-  - FIX: **SMS OTP Polling** - Fixed API key usage in polling functions to use config from database instead of hardcoded env variables. This should fix the issue where socialsmsworld doesn't receive codes.
-    - Updated: `poll_otp_smspool`, `poll_otp_daisysms_simple`, `poll_otp_tigersms`, `cancel_number_provider`, `purchase_number_smspool`, `purchase_number_tigersms`
-    - All now use `get_api_key()` to fetch from `pricing_config` collection first, then fall back to env vars
-  - NEW: **Bill Payment Markups (Hidden from Users)** - Admin can set profit margins on bill payments
-    - Added markup fields: `airtime_markup_percent`, `data_markup_percent`, `tv_markup_percent`, `electricity_markup_percent`, `betting_markup_percent`
-    - Updated airtime, data, and TV endpoints to apply markup
-    - Users see final price only (base + markup) without knowing the markup exists
-    - Admin UI shows editable percentage fields for each service type
-  - IMPROVED: **Virtual Card UI** - Better balance display with live API sync
-    - Added `/api/cards/{card_id}/balance` endpoint to fetch live balance from Payscribe
-    - Card detail view now shows real-time balance with refresh button
-    - Gradient card design with "Available Balance" section
-    - Auto-sync balance when card detail is opened
-  - SECURITY: **Hidden SMS Provider Names** - Provider names (daisysms, smspool, 5sim, tigersms) no longer visible to users
-    - Updated ALL frontend files (NewDashboard.js, Dashboard.js, VirtualNumbersSection.js) to use generic server names
-    - No more provider names visible in browser network tab
-  - NEW: **Individual Bill Payment Controls** - Admin can now hide/show each bill service individually
-    - Added `disable_betting` and `disable_wallet_transfer` toggles
+- **2026-02-13 (Session 12 continued)**: Dashboard UI + Virtual Cards Redesign + Bill Markups
+  - UI: **Removed top balance from dashboard header** - Balance is already shown in the balance card
+  - UI: **Added refresh icon to header** - Users can quickly refresh their balance
+  - UI: **Fixed "Add Money" button** - Text now comes first, plus icon on the right
+  - NEW: **Completely redesigned Virtual Cards page** - Modern responsive UI matching reference design:
+    - Overview/Transactions tabs
+    - Card Balance section with live API sync and refresh button
+    - Large card display with show/hide number & CVV
+    - Mini card carousel for multiple cards
+    - Recent Activity section
+    - Fund card modal with quick amount buttons
+    - Freeze/Unfreeze card functionality
+  - NEW: **Additional Card Fee** - First card has creation_fee, second+ cards have additional_card_fee ($5 default)
+    - Configurable from Admin Panel > Card Fees
+  - FIX: **SMS OTP Polling** - Fixed API key usage to fetch from database config instead of hardcoded env variables
+  - NEW: **Bill Payment Markups** - Admin can set hidden profit margins on airtime, data, TV, electricity, betting
 
 - **2026-02-06 (Session 11)**: Deployment Documentation + Admin UI Improvements
   - NEW: **DEPLOYMENT.md** - Comprehensive deployment guide with clear instructions for both sites:
