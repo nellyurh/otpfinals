@@ -7772,7 +7772,7 @@ async def get_card_balance(card_id: str, user: dict = Depends(get_current_user))
 
 @api_router.get("/cards/{card_id}/transactions")
 async def get_card_transactions(card_id: str, limit: int = 50, user: dict = Depends(get_current_user)):
-    """Get transactions for a specific card"""
+    """Get transactions for a specific card from Payscribe API"""
     try:
         # Verify card belongs to user
         card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
@@ -7780,18 +7780,53 @@ async def get_card_transactions(card_id: str, limit: int = 50, user: dict = Depe
         if not card:
             raise HTTPException(status_code=404, detail="Card not found")
         
-        # Get card transactions
+        provider_card_id = card.get('provider_card_id')
+        transactions = []
+        
+        if provider_card_id:
+            # Fetch from Payscribe API
+            from datetime import timedelta
+            end_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+            start_date = (datetime.now(timezone.utc) - timedelta(days=90)).strftime('%Y-%m-%d')
+            
+            result = await payscribe_request(
+                f'cards/{provider_card_id}/transactions?start_date={start_date}&end_date={end_date}&page_size={limit}&page=1',
+                'GET',
+                use_public_key=True
+            )
+            
+            if result and result.get('status'):
+                details = result.get('message', {}).get('details', {})
+                payscribe_txns = details.get('transactions', [])
+                
+                for txn in payscribe_txns:
+                    transactions.append({
+                        'id': txn.get('trans_id'),
+                        'type': 'purchase',
+                        'amount': float(txn.get('amount', 0)),
+                        'currency': txn.get('currency', 'USD').upper(),
+                        'status': txn.get('status', 'success'),
+                        'description': txn.get('description', 'Card transaction'),
+                        'remark': txn.get('remark', ''),
+                        'created_at': txn.get('created_at')
+                    })
+        
+        # Also get local funding transactions
         cursor = db.card_transactions.find(
             {'card_id': card_id},
             {'_id': 0}
         ).sort('created_at', -1).limit(limit)
         
-        transactions = await cursor.to_list(limit)
+        local_txns = await cursor.to_list(limit)
+        transactions.extend(local_txns)
+        
+        # Sort by date
+        transactions.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         
         return {
             'success': True,
             'card_id': card_id,
-            'transactions': transactions
+            'transactions': transactions[:limit]
         }
     except HTTPException:
         raise
@@ -7802,7 +7837,7 @@ async def get_card_transactions(card_id: str, limit: int = 50, user: dict = Depe
 
 @api_router.post("/cards/{card_id}/freeze")
 async def freeze_card(card_id: str, user: dict = Depends(get_current_user)):
-    """Freeze a virtual card"""
+    """Freeze a virtual card via Payscribe API"""
     try:
         card = await db.virtual_cards.find_one({'id': card_id, 'user_id': user['id']}, {'_id': 0})
         
@@ -7815,7 +7850,19 @@ async def freeze_card(card_id: str, user: dict = Depends(get_current_user)):
         if card.get('status') == 'terminated':
             raise HTTPException(status_code=400, detail="Card is terminated and cannot be frozen")
         
-        # TODO: Call Payscribe freeze endpoint if available
+        provider_card_id = card.get('provider_card_id')
+        if provider_card_id:
+            # Call Payscribe freeze endpoint
+            result = await payscribe_request(
+                f'cards/{provider_card_id}/freeze',
+                'PATCH',
+                {'ref': str(uuid.uuid4())},
+                use_public_key=True
+            )
+            
+            if not result or not result.get('status'):
+                logger.error(f"Payscribe freeze failed: {result}")
+                raise HTTPException(status_code=400, detail="Failed to freeze card with provider")
         
         await db.virtual_cards.update_one(
             {'id': card_id},
