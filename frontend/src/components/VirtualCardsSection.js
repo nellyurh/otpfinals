@@ -162,6 +162,13 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     }
   };
 
+  // Calculate card creation fee (first card vs additional)
+  const getCardCreationFee = () => {
+    return cards.length === 0 
+      ? (fees.creation_fee || 2.50) 
+      : (fees.additional_card_fee || 5.00);
+  };
+
   const handleCreateCard = async () => {
     const amount = parseFloat(initialAmount);
     
@@ -175,7 +182,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       return;
     }
 
-    const totalCost = amount + (fees.creation_fee || 2.50) + (fees.funding_fee || 0.30);
+    const cardFee = getCardCreationFee();
+    const totalCost = amount + cardFee + (fees.funding_fee || 0.30);
     
     if (totalCost > usdBalance) {
       toast.error(`Insufficient USD balance. You need $${totalCost.toFixed(2)} but have $${usdBalance.toFixed(2)}`);
