@@ -2000,11 +2000,16 @@ async def poll_otp_5sim(order_id: str) -> Optional[str]:
         return None
 
 async def poll_otp_smspool(order_id: str) -> Optional[str]:
+    """Poll SMS-pool for OTP using order ID."""
     try:
+        # Get key from config first, then env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'smspool_api_key', SMSPOOL_API_KEY)
+        
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 'https://api.smspool.net/sms/check',
-                params={'key': SMSPOOL_API_KEY, 'orderid': order_id},
+                params={'key': api_key, 'orderid': order_id},
                 timeout=10.0
             )
             if response.status_code == 200:
@@ -2016,11 +2021,16 @@ async def poll_otp_smspool(order_id: str) -> Optional[str]:
         return None
 
 async def poll_otp_daisysms_simple(activation_id: str) -> Optional[str]:
+    """Poll DaisySMS for OTP using activation ID."""
     try:
+        # Get key from config first, then env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'daisysms_api_key', DAISYSMS_API_KEY)
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://daisysms.com/stubs/handler_api.php',
-                params={'api_key': DAISYSMS_API_KEY, 'action': 'getStatus', 'id': activation_id},
+                params={'api_key': api_key, 'action': 'getStatus', 'id': activation_id},
                 timeout=10.0
             )
             if response.status_code == 200:
@@ -2035,11 +2045,16 @@ async def poll_otp_daisysms_simple(activation_id: str) -> Optional[str]:
         return None
 
 async def poll_otp_tigersms(activation_id: str) -> Optional[str]:
+    """Poll TigerSMS for OTP using activation ID."""
     try:
+        # Get key from config first, then env
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+        
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://api.tiger-sms.com/stubs/handler_api.php',
-                params={'api_key': TIGERSMS_API_KEY, 'action': 'getStatus', 'id': activation_id},
+                params={'api_key': api_key, 'action': 'getStatus', 'id': activation_id},
                 timeout=10.0
             )
             if response.status_code == 200:
