@@ -3402,7 +3402,7 @@ const AdminPanel = ({ user, setUser }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Card Creation Fee */}
                   <div className="bg-white rounded-xl border border-slate-200 p-4">
-                    <label className="block text-[10px] text-slate-500 mb-1">Card Creation Fee ($)</label>
+                    <label className="block text-[10px] text-slate-500 mb-1">First Card Fee ($)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -3411,7 +3411,21 @@ const AdminPanel = ({ user, setUser }) => {
                       onChange={(e) => setCardFees({...cardFees, card_creation_fee: parseFloat(e.target.value) || 0})}
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
                     />
-                    <p className="text-[9px] text-slate-400 mt-1">One-time fee to create a card</p>
+                    <p className="text-[9px] text-slate-400 mt-1">Fee for first card creation</p>
+                  </div>
+
+                  {/* Additional Card Fee */}
+                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                    <label className="block text-[10px] text-slate-500 mb-1">Additional Card Fee ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={cardFees.card_additional_card_fee}
+                      onChange={(e) => setCardFees({...cardFees, card_additional_card_fee: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Fee for 2nd, 3rd card etc.</p>
                   </div>
 
                   {/* Funding Fee */}
