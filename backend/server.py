@@ -7209,6 +7209,7 @@ async def get_user_cards(user: dict = Depends(get_current_user)):
         config = await db.pricing_config.find_one({}, {'_id': 0})
         fees = {
             'creation_fee': config.get('card_creation_fee', 2.50) if config else 2.50,
+            'additional_card_fee': config.get('card_additional_card_fee', 5.00) if config else 5.00,
             'funding_fee': config.get('card_funding_fee', 0.30) if config else 0.30,
             'transaction_fee': config.get('card_transaction_fee', 0.15) if config else 0.15,
             'monthly_fee': config.get('card_monthly_fee', 0.50) if config else 0.50,
