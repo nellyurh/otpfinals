@@ -86,6 +86,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   const [cards, setCards] = useState([]);
   const [fees, setFees] = useState({
     creation_fee: 2.50,
+    additional_card_fee: 5.00,
     funding_fee: 0.30,
     transaction_fee: 0.15,
     monthly_fee: 0.50,
