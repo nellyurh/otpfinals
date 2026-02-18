@@ -200,6 +200,9 @@ const NewDashboard = () => {
     support_email: 'support@smsrelay.com'
   });
   
+  // Travel feature visibility (site-specific - only shown on sites that enable it)
+  const [showTravelFeature, setShowTravelFeature] = useState(false);
+  
   const token = localStorage.getItem('token');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
