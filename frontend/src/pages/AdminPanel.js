@@ -1721,6 +1721,18 @@ const AdminPanel = ({ user, setUser }) => {
       if (!body.daisysms_api_key || body.daisysms_api_key === '********') delete body.daisysms_api_key;
       if (!body.smspool_api_key || body.smspool_api_key === '********') delete body.smspool_api_key;
       if (!body.fivesim_api_key || body.fivesim_api_key === '********') delete body.fivesim_api_key;
+      // Don't send masked PaymentPoint credentials
+      if (!body.paymentpoint_api_key || body.paymentpoint_api_key === '********') delete body.paymentpoint_api_key;
+      if (!body.paymentpoint_secret || body.paymentpoint_secret === '********') delete body.paymentpoint_secret;
+      if (!body.paymentpoint_business_id || body.paymentpoint_business_id === '********') delete body.paymentpoint_business_id;
+      // Don't send masked Payscribe credentials
+      if (!body.payscribe_api_key || body.payscribe_api_key === '********') delete body.payscribe_api_key;
+      if (!body.payscribe_public_key || body.payscribe_public_key === '********') delete body.payscribe_public_key;
+      // Don't send masked Ercaspay credentials
+      if (!body.ercaspay_api_key || body.ercaspay_api_key === '********') delete body.ercaspay_api_key;
+      // Don't send masked Plisio credentials
+      if (!body.plisio_secret_key || body.plisio_secret_key === '********') delete body.plisio_secret_key;
+      if (!body.plisio_webhook_secret || body.plisio_webhook_secret === '********') delete body.plisio_webhook_secret;
       // Don't send empty Reloadly credentials
       if (!body.reloadly_client_id) delete body.reloadly_client_id;
       if (!body.reloadly_client_secret) delete body.reloadly_client_secret;
