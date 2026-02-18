@@ -1731,13 +1731,23 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
     try:
         # Get keys from database first, fallback to env
         config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        # Log what we're getting from config for debugging
+        logger.info(f"PaymentPoint config check - config exists: {config is not None}")
+        
         pp_api_key = get_api_key(config, 'paymentpoint_api_key', PAYMENTPOINT_API_KEY)
         pp_secret = get_api_key(config, 'paymentpoint_secret', PAYMENTPOINT_SECRET)
         pp_business_id = get_api_key(config, 'paymentpoint_business_id', PAYMENTPOINT_BUSINESS_ID)
         
+        # Log credential status (without revealing actual values)
+        logger.info(f"PaymentPoint credentials: api_key={bool(pp_api_key)}, secret={bool(pp_secret)}, business_id={bool(pp_business_id)}")
+        
         if not pp_api_key or not pp_secret or not pp_business_id:
             logger.error("PaymentPoint not configured. Set keys in Admin → Payment Gateways")
             return None
+        
+        # Get PaymentPoint base URL from config or use default
+        pp_base_url = config.get('paymentpoint_base_url', PAYMENTPOINT_BASE_URL) if config else PAYMENTPOINT_BASE_URL
             
         headers = {
             'Authorization': f'Bearer {pp_secret}',
@@ -1753,17 +1763,23 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
             'businessId': pp_business_id
         }
         
+        logger.info(f"Creating PaymentPoint virtual account for user {user['id']} ({user['email']})")
+        
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f'{PAYMENTPOINT_BASE_URL}/createVirtualAccount',
+                f'{pp_base_url}/createVirtualAccount',
                 json=data,
                 headers=headers,
                 timeout=30.0
             )
             
+            logger.info(f"PaymentPoint response status: {response.status_code}")
+            
             # PaymentPoint returns 201 for successful creation
             if response.status_code in [200, 201]:
                 result = response.json()
+                logger.info(f"PaymentPoint response: status={result.get('status')}, has_accounts={bool(result.get('bankAccounts'))}")
+                
                 if result.get('status') == 'success' and result.get('bankAccounts'):
                     account_data = result['bankAccounts'][0]
                     customer_data = result.get('customer', {})
