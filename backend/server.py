@@ -1428,6 +1428,13 @@ class UpdatePricingRequest(BaseModel):
     enable_ercaspay: Optional[bool] = None
     enable_payscribe: Optional[bool] = None
 
+    # Amadeus Travel API Settings
+    amadeus_api_key: Optional[str] = None
+    amadeus_api_secret: Optional[str] = None
+    amadeus_base_url: Optional[str] = None  # test.api.amadeus.com or api.amadeus.com
+    enable_travel_booking: Optional[bool] = None
+    travel_markup_percent: Optional[float] = None  # Markup on all travel services
+
     # Support channel URLs
     whatsapp_support_url: Optional[str] = None
     telegram_support_url: Optional[str] = None
