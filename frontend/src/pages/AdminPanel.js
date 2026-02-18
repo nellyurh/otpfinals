@@ -51,6 +51,7 @@ import {
   Upload,
   Shield,
   Plane,
+  Lock,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
