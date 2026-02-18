@@ -9764,6 +9764,24 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['smtp_password'] = encrypt_secret(data.smtp_password)
         updated_sensitive_keys.append('smtp_password')
     
+    # Amadeus Travel API Settings
+    if data.amadeus_api_key is not None and data.amadeus_api_key != '********':
+        update_fields['amadeus_api_key'] = encrypt_secret(data.amadeus_api_key)
+        updated_sensitive_keys.append('amadeus_api_key')
+        # Invalidate token when API key changes
+        amadeus_token_manager.invalidate_token()
+    if data.amadeus_api_secret is not None and data.amadeus_api_secret != '********':
+        update_fields['amadeus_api_secret'] = encrypt_secret(data.amadeus_api_secret)
+        updated_sensitive_keys.append('amadeus_api_secret')
+        amadeus_token_manager.invalidate_token()
+    if data.amadeus_base_url is not None:
+        update_fields['amadeus_base_url'] = data.amadeus_base_url
+        amadeus_token_manager.invalidate_token()
+    if data.enable_travel_booking is not None:
+        update_fields['enable_travel_booking'] = data.enable_travel_booking
+    if data.travel_markup_percent is not None:
+        update_fields['travel_markup_percent'] = data.travel_markup_percent
+    
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
     
     await db.pricing_config.update_one({}, {'$set': update_fields}, upsert=True)
