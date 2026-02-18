@@ -8540,6 +8540,88 @@ async def admin_refund_payout(reference: str, admin: dict = Depends(require_admi
         raise HTTPException(status_code=500, detail="Refund failed")
 
 
+# ============ Admin PaymentPoint Debug ============
+
+@api_router.get("/admin/test-paymentpoint")
+async def admin_test_paymentpoint(admin: dict = Depends(require_admin)):
+    """Admin: Test PaymentPoint configuration and connectivity"""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        # Check if credentials exist in DB
+        db_api_key = config.get('paymentpoint_api_key') if config else None
+        db_secret = config.get('paymentpoint_secret') if config else None
+        db_business_id = config.get('paymentpoint_business_id') if config else None
+        
+        # Get decrypted values
+        pp_api_key = get_api_key(config, 'paymentpoint_api_key', PAYMENTPOINT_API_KEY)
+        pp_secret = get_api_key(config, 'paymentpoint_secret', PAYMENTPOINT_SECRET)
+        pp_business_id = get_api_key(config, 'paymentpoint_business_id', PAYMENTPOINT_BUSINESS_ID)
+        
+        result = {
+            'db_config_exists': config is not None,
+            'credentials_in_db': {
+                'api_key': bool(db_api_key) and db_api_key != '********',
+                'api_key_encrypted': db_api_key.startswith('ENC:') if db_api_key else False,
+                'secret': bool(db_secret) and db_secret != '********',
+                'secret_encrypted': db_secret.startswith('ENC:') if db_secret else False,
+                'business_id': bool(db_business_id) and db_business_id != '********',
+                'business_id_encrypted': db_business_id.startswith('ENC:') if db_business_id else False,
+            },
+            'credentials_from_env': {
+                'api_key': bool(PAYMENTPOINT_API_KEY),
+                'secret': bool(PAYMENTPOINT_SECRET),
+                'business_id': bool(PAYMENTPOINT_BUSINESS_ID),
+            },
+            'final_credentials': {
+                'api_key_available': bool(pp_api_key),
+                'api_key_length': len(pp_api_key) if pp_api_key else 0,
+                'secret_available': bool(pp_secret),
+                'secret_length': len(pp_secret) if pp_secret else 0,
+                'business_id_available': bool(pp_business_id),
+                'business_id_value': pp_business_id[:8] + '...' if pp_business_id and len(pp_business_id) > 8 else pp_business_id,
+            },
+            'base_url': PAYMENTPOINT_BASE_URL,
+            'enabled': config.get('enable_paymentpoint', True) if config else True,
+        }
+        
+        # If credentials are available, test connectivity
+        if pp_api_key and pp_secret and pp_business_id:
+            try:
+                headers = {
+                    'Authorization': f'Bearer {pp_secret}',
+                    'api-key': pp_api_key,
+                    'Content-Type': 'application/json'
+                }
+                
+                async with httpx.AsyncClient() as client:
+                    # Try a simple health check or list accounts
+                    response = await client.get(
+                        f'{PAYMENTPOINT_BASE_URL}/health',
+                        headers=headers,
+                        timeout=10.0
+                    )
+                    result['connectivity_test'] = {
+                        'status_code': response.status_code,
+                        'success': response.status_code in [200, 201],
+                        'response': response.text[:200] if response.text else None
+                    }
+            except Exception as e:
+                result['connectivity_test'] = {
+                    'success': False,
+                    'error': str(e)
+                }
+        else:
+            result['connectivity_test'] = {
+                'success': False,
+                'error': 'Missing credentials'
+            }
+        
+        return {'success': True, 'paymentpoint_status': result}
+    except Exception as e:
+        logger.error(f"PaymentPoint test error: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
 
 # ============ Admin Virtual Cards Management ============
 
