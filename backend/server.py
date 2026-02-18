@@ -9801,6 +9801,468 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     
     return {'success': True, 'updated': list(update_fields.keys())}
 
+
+# ============ Amadeus Travel Booking Routes ============
+
+class FlightSearchRequest(BaseModel):
+    origin: str
+    destination: str
+    departure_date: str
+    adults: int = 1
+    children: int = 0
+    infants: int = 0
+    return_date: Optional[str] = None
+    cabin_class: Optional[str] = None  # ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST
+    non_stop: bool = False
+    max_results: int = 10
+
+class HotelSearchRequest(BaseModel):
+    city_code: str
+    check_in_date: str
+    check_out_date: str
+    adults: int = 1
+    rooms: int = 1
+    currency: str = "USD"
+
+class TransferSearchRequest(BaseModel):
+    start_location_code: str
+    end_location_code: str
+    start_date_time: str
+    passengers: int = 1
+    transfer_type: str = "PRIVATE"  # PRIVATE, SHARED, TAXI, HOURLY
+
+class ActivitySearchRequest(BaseModel):
+    latitude: float
+    longitude: float
+    radius: int = 5  # km
+
+class TravelBookingRequest(BaseModel):
+    booking_type: str  # flight, hotel, transfer
+    booking_data: Dict[str, Any]
+    pin: str  # Transaction PIN required
+    total_amount_ngn: float
+
+
+@api_router.get("/travel/status")
+async def get_travel_status():
+    """Check if travel booking is enabled and configured"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    
+    amadeus_key = get_api_key(config, 'amadeus_api_key', AMADEUS_API_KEY)
+    amadeus_secret = get_api_key(config, 'amadeus_api_secret', AMADEUS_API_SECRET)
+    
+    return {
+        'enabled': config.get('enable_travel_booking', False) if config else False,
+        'configured': bool(amadeus_key and amadeus_secret),
+        'base_url': config.get('amadeus_base_url', AMADEUS_BASE_URL) if config else AMADEUS_BASE_URL,
+        'markup_percent': config.get('travel_markup_percent', 5.0) if config else 5.0
+    }
+
+
+@api_router.post("/travel/flights/search")
+async def api_search_flights(request: FlightSearchRequest, user: dict = Depends(get_current_user)):
+    """Search for available flights"""
+    # Check if travel booking is enabled
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        results = await search_flights(
+            origin=request.origin,
+            destination=request.destination,
+            departure_date=request.departure_date,
+            adults=request.adults,
+            children=request.children,
+            infants=request.infants,
+            return_date=request.return_date,
+            cabin_class=request.cabin_class,
+            non_stop=request.non_stop,
+            max_results=request.max_results
+        )
+        
+        # Apply markup to prices
+        markup_percent = config.get('travel_markup_percent', 5.0) if config else 5.0
+        if results.get('data'):
+            for flight in results['data']:
+                if flight.get('price', {}).get('total'):
+                    original_price = float(flight['price']['total'])
+                    flight['price']['original_total'] = flight['price']['total']
+                    flight['price']['total'] = str(round(original_price * (1 + markup_percent / 100), 2))
+        
+        # Store search for analytics
+        await db.travel_searches.insert_one({
+            'user_id': user['id'],
+            'type': 'flight',
+            'search_params': request.model_dump(),
+            'results_count': len(results.get('data', [])),
+            'created_at': datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {'success': True, 'data': results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Flight search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/travel/flights/price")
+async def api_get_flight_price(flight_offer: Dict[str, Any], user: dict = Depends(get_current_user)):
+    """Confirm flight price before booking"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        result = await get_flight_price(flight_offer)
+        return {'success': True, 'data': result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Flight price error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/travel/hotels/search-by-city")
+async def api_search_hotels_by_city(city_code: str, user: dict = Depends(get_current_user)):
+    """Search for hotels in a city"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        results = await search_hotels_by_city(city_code)
+        return {'success': True, 'data': results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Hotel city search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/travel/hotels/search")
+async def api_search_hotel_offers(request: HotelSearchRequest, user: dict = Depends(get_current_user)):
+    """Search for hotel offers with pricing"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        # First get hotel IDs for the city
+        hotels = await search_hotels_by_city(request.city_code)
+        hotel_ids = [h.get('hotelId') or h.get('id') for h in hotels.get('data', [])[:20]]
+        
+        if not hotel_ids:
+            return {'success': True, 'data': {'data': []}, 'message': 'No hotels found in this city'}
+        
+        # Then get offers
+        results = await search_hotel_offers(
+            hotel_ids=hotel_ids,
+            check_in_date=request.check_in_date,
+            check_out_date=request.check_out_date,
+            adults=request.adults,
+            rooms=request.rooms,
+            currency=request.currency
+        )
+        
+        # Apply markup
+        markup_percent = config.get('travel_markup_percent', 5.0) if config else 5.0
+        if results.get('data'):
+            for hotel in results['data']:
+                for offer in hotel.get('offers', []):
+                    if offer.get('price', {}).get('total'):
+                        original_price = float(offer['price']['total'])
+                        offer['price']['original_total'] = offer['price']['total']
+                        offer['price']['total'] = str(round(original_price * (1 + markup_percent / 100), 2))
+        
+        # Store search
+        await db.travel_searches.insert_one({
+            'user_id': user['id'],
+            'type': 'hotel',
+            'search_params': request.model_dump(),
+            'results_count': len(results.get('data', [])),
+            'created_at': datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {'success': True, 'data': results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Hotel search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/travel/transfers/search")
+async def api_search_transfers(request: TransferSearchRequest, user: dict = Depends(get_current_user)):
+    """Search for available transfers"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        results = await search_transfers(
+            start_location_code=request.start_location_code,
+            end_location_code=request.end_location_code,
+            start_date_time=request.start_date_time,
+            passengers=request.passengers,
+            transfer_type=request.transfer_type
+        )
+        
+        # Apply markup
+        markup_percent = config.get('travel_markup_percent', 5.0) if config else 5.0
+        if results.get('data'):
+            for transfer in results['data']:
+                if transfer.get('quotation', {}).get('monetaryAmount'):
+                    original_price = float(transfer['quotation']['monetaryAmount'])
+                    transfer['quotation']['original_amount'] = transfer['quotation']['monetaryAmount']
+                    transfer['quotation']['monetaryAmount'] = str(round(original_price * (1 + markup_percent / 100), 2))
+        
+        # Store search
+        await db.travel_searches.insert_one({
+            'user_id': user['id'],
+            'type': 'transfer',
+            'search_params': request.model_dump(),
+            'results_count': len(results.get('data', [])),
+            'created_at': datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {'success': True, 'data': results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Transfer search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/travel/activities/search")
+async def api_search_activities(request: ActivitySearchRequest, user: dict = Depends(get_current_user)):
+    """Search for activities and experiences near a location"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        results = await search_activities_by_location(
+            latitude=request.latitude,
+            longitude=request.longitude,
+            radius=request.radius
+        )
+        
+        # Store search
+        await db.travel_searches.insert_one({
+            'user_id': user['id'],
+            'type': 'activity',
+            'search_params': request.model_dump(),
+            'results_count': len(results.get('data', [])),
+            'created_at': datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {'success': True, 'data': results}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Activity search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/travel/activities/{activity_id}")
+async def api_get_activity_details(activity_id: str, user: dict = Depends(get_current_user)):
+    """Get details for a specific activity"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    try:
+        result = await get_activity_details(activity_id)
+        return {'success': True, 'data': result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Activity details error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/travel/book")
+async def api_create_travel_booking(request: TravelBookingRequest, user: dict = Depends(get_current_user)):
+    """Create a travel booking (flight, hotel, or transfer)"""
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    if config and not config.get('enable_travel_booking', False):
+        raise HTTPException(status_code=403, detail="Travel booking is not enabled")
+    
+    # Verify transaction PIN
+    db_user = await db.users.find_one({'id': user['id']})
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    stored_pin = db_user.get('transaction_pin')
+    if not stored_pin:
+        raise HTTPException(status_code=400, detail="Transaction PIN not set. Please set your PIN first.")
+    
+    if not bcrypt.checkpw(request.pin.encode(), stored_pin.encode()):
+        raise HTTPException(status_code=401, detail="Invalid transaction PIN")
+    
+    # Check user balance
+    if db_user.get('ngn_balance', 0) < request.total_amount_ngn:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+    
+    try:
+        # Create booking based on type
+        booking_result = None
+        if request.booking_type == 'flight':
+            booking_result = await create_flight_booking(request.booking_data)
+        elif request.booking_type == 'hotel':
+            booking_result = await create_hotel_booking(request.booking_data)
+        elif request.booking_type == 'transfer':
+            booking_result = await create_transfer_booking(request.booking_data)
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid booking type: {request.booking_type}")
+        
+        # Deduct from user balance
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'ngn_balance': -request.total_amount_ngn}}
+        )
+        
+        # Record transaction
+        transaction = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'type': f'travel_{request.booking_type}',
+            'amount': -request.total_amount_ngn,
+            'currency': 'NGN',
+            'description': f'{request.booking_type.capitalize()} booking',
+            'status': 'completed',
+            'metadata': {
+                'booking_type': request.booking_type,
+                'booking_response': booking_result
+            },
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.transactions.insert_one(transaction)
+        
+        # Store booking record
+        booking_record = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'booking_type': request.booking_type,
+            'amount_ngn': request.total_amount_ngn,
+            'booking_data': request.booking_data,
+            'booking_response': booking_result,
+            'status': 'confirmed',
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.travel_bookings.insert_one(booking_record)
+        
+        return {
+            'success': True,
+            'booking': booking_record,
+            'transaction_id': transaction['id']
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Travel booking error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/travel/bookings")
+async def api_get_user_travel_bookings(user: dict = Depends(get_current_user)):
+    """Get user's travel bookings"""
+    bookings = await db.travel_bookings.find(
+        {'user_id': user['id']},
+        {'_id': 0}
+    ).sort('created_at', -1).to_list(50)
+    
+    return {'success': True, 'bookings': bookings}
+
+
+# ============ Admin Amadeus Test Endpoint ============
+
+@api_router.get("/admin/test-amadeus")
+async def admin_test_amadeus(admin: dict = Depends(require_admin)):
+    """Admin: Test Amadeus API configuration and connectivity"""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        # Check credentials
+        db_api_key = config.get('amadeus_api_key') if config else None
+        db_api_secret = config.get('amadeus_api_secret') if config else None
+        
+        api_key = get_api_key(config, 'amadeus_api_key', AMADEUS_API_KEY)
+        api_secret = get_api_key(config, 'amadeus_api_secret', AMADEUS_API_SECRET)
+        base_url = config.get('amadeus_base_url', AMADEUS_BASE_URL) if config else AMADEUS_BASE_URL
+        
+        result = {
+            'db_config_exists': config is not None,
+            'credentials_in_db': {
+                'api_key_exists': bool(db_api_key) and db_api_key != '********',
+                'api_key_encrypted': db_api_key.startswith('ENC:') if db_api_key else False,
+                'api_secret_exists': bool(db_api_secret) and db_api_secret != '********',
+                'api_secret_encrypted': db_api_secret.startswith('ENC:') if db_api_secret else False,
+            },
+            'credentials_from_env': {
+                'api_key_set': bool(AMADEUS_API_KEY),
+                'api_secret_set': bool(AMADEUS_API_SECRET),
+            },
+            'final_credentials': {
+                'api_key_available': bool(api_key),
+                'api_key_length': len(api_key) if api_key else 0,
+                'api_secret_available': bool(api_secret),
+                'api_secret_length': len(api_secret) if api_secret else 0,
+            },
+            'base_url': base_url,
+            'enabled': config.get('enable_travel_booking', False) if config else False,
+            'markup_percent': config.get('travel_markup_percent', 5.0) if config else 5.0,
+        }
+        
+        # Test connectivity by getting a token
+        if api_key and api_secret:
+            try:
+                token = await amadeus_token_manager.get_token()
+                result['connectivity_test'] = {
+                    'success': True,
+                    'token_obtained': bool(token),
+                    'token_length': len(token) if token else 0
+                }
+                
+                # Try a simple search to verify API access
+                try:
+                    test_search = await search_flights(
+                        origin="LOS",
+                        destination="ABV",
+                        departure_date=(datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
+                        adults=1,
+                        max_results=1
+                    )
+                    result['api_test'] = {
+                        'success': True,
+                        'flights_found': len(test_search.get('data', []))
+                    }
+                except Exception as e:
+                    result['api_test'] = {
+                        'success': False,
+                        'error': str(e)
+                    }
+                    
+            except Exception as e:
+                result['connectivity_test'] = {
+                    'success': False,
+                    'error': str(e)
+                }
+        else:
+            result['connectivity_test'] = {
+                'success': False,
+                'error': 'Missing API credentials'
+            }
+        
+        return {'success': True, 'amadeus_status': result}
+    except Exception as e:
+        logger.error(f"Amadeus test error: {str(e)}")
+        return {'success': False, 'error': str(e)}
+
+
 # ============ Admin Email Management ============
 class SendBulkEmailRequest(BaseModel):
     subject: str
