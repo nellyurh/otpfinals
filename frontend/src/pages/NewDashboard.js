@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Receipt, Wallet, CreditCard, History, UserCircle, 
   MessageSquare, Gift, Settings, ChevronDown, Search, Phone, Plus,
-  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield
+  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield, Plane
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ import { AirtimeSection, BillsPaymentSection } from '../components/BillPaymentSe
 import { VirtualNumbersSection } from '../components/VirtualNumbersSection';
 import { FundWalletSection } from '../components/FundWalletSection';
 import { VirtualCardsSection } from '../components/VirtualCardsSection';
+import { TravelSection } from '../components/TravelSection';
 import AutoLogout from '../components/AutoLogout';
 
 const API = process.env.REACT_APP_BACKEND_URL;
