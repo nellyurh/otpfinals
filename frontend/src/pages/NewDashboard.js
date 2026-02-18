@@ -302,7 +302,8 @@ const NewDashboard = () => {
           fetchPageToggles(),
           fetchBranding(),
           fetchNotifications(),
-          fetchLoginPopups()
+          fetchLoginPopups(),
+          fetchTravelStatus()  // Check if travel feature should be visible
         ]);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
