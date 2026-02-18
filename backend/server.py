@@ -38,6 +38,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
+from airports_data import AIRPORTS, CITIES
 
 # Setup logging first
 logging.basicConfig(level=logging.INFO)
