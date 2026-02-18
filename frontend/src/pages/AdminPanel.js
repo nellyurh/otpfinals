@@ -4039,6 +4039,31 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Site-Specific Features */}
+                <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2">
+                      <Plane className="w-5 h-5 text-blue-600" />
+                      <CardTitle className="text-sm font-semibold text-slate-900">Site-Specific Features</CardTitle>
+                    </div>
+                    <CardDescription className="text-xs text-slate-500">
+                      Features that can be enabled/disabled per deployment. These are hidden from menus when disabled.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center justify-between rounded-xl border border-blue-200 px-4 py-3 bg-white hover:bg-blue-50 transition-colors">
+                      <div>
+                        <span className="text-slate-800 font-medium">Travel Booking (Amadeus)</span>
+                        <p className="text-[10px] text-slate-400 mt-0.5">Flights, Hotels, Transfers, Experiences - When OFF, completely hidden from site</p>
+                      </div>
+                      <Switch
+                        checked={pricing.show_travel_feature ?? false}
+                        onCheckedChange={(val) => setPricing((prev) => ({ ...prev, show_travel_feature: val }))}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               </section>
             )}
 
