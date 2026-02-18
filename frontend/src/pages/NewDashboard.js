@@ -798,7 +798,8 @@ const NewDashboard = () => {
           { id: 'airtime', icon: Phone, label: 'Airtime', toggle: 'enable_airtime' },
           { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', badge: 'NEW', toggle: 'enable_bills' },
         ]),
-        { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' }
+        { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' },
+        { id: 'travel', icon: Plane, label: 'Travel', badge: 'NEW', toggle: 'enable_travel_booking' }
       ]
     },
     {
