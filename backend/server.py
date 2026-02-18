@@ -9867,12 +9867,16 @@ async def get_travel_status():
     amadeus_key = get_api_key(config, 'amadeus_api_key', AMADEUS_API_KEY)
     amadeus_secret = get_api_key(config, 'amadeus_api_secret', AMADEUS_API_SECRET)
     
+    # Get dollar to naira rate for price conversion
+    dollar_rate = float(config.get('ngn_to_usd_rate', 1500.0) or 1500.0) if config else 1500.0
+    
     return {
         'visible': True,
         'enabled': config.get('enable_travel_booking', False) if config else False,
         'configured': bool(amadeus_key and amadeus_secret),
         'base_url': config.get('amadeus_base_url', AMADEUS_BASE_URL) if config else AMADEUS_BASE_URL,
-        'markup_percent': config.get('travel_markup_percent', 5.0) if config else 5.0
+        'markup_percent': config.get('travel_markup_percent', 5.0) if config else 5.0,
+        'dollar_rate': dollar_rate  # USD to NGN conversion rate
     }
 
 
