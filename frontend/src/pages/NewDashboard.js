@@ -429,6 +429,17 @@ const NewDashboard = () => {
     }
   };
 
+  // Fetch travel feature visibility (site-specific)
+  const fetchTravelStatus = async () => {
+    try {
+      const response = await axios.get(`${API}/api/travel/status`, axiosConfig);
+      setShowTravelFeature(response.data.visible === true);
+    } catch (error) {
+      console.error('Failed to fetch travel status');
+      setShowTravelFeature(false);
+    }
+  };
+
   // Fetch reseller data (called once when navigating to reseller section)
   const fetchResellerData = async () => {
     if (resellerFetched) return; // Already fetched, skip
