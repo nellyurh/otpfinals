@@ -1740,6 +1740,9 @@ const AdminPanel = ({ user, setUser }) => {
       // Don't send masked Plisio credentials
       if (!body.plisio_secret_key || body.plisio_secret_key === '********') delete body.plisio_secret_key;
       if (!body.plisio_webhook_secret || body.plisio_webhook_secret === '********') delete body.plisio_webhook_secret;
+      // Don't send masked Amadeus credentials
+      if (!body.amadeus_api_key || body.amadeus_api_key === '********') delete body.amadeus_api_key;
+      if (!body.amadeus_api_secret || body.amadeus_api_secret === '********') delete body.amadeus_api_secret;
       // Don't send empty Reloadly credentials
       if (!body.reloadly_client_id) delete body.reloadly_client_id;
       if (!body.reloadly_client_secret) delete body.reloadly_client_secret;
