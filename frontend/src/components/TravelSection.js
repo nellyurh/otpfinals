@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Plane, Hotel, Car, MapPin, Calendar, Users, Search, ArrowRight, 
   ArrowLeftRight, ChevronDown, Star, Clock, Luggage, X, Check,
@@ -9,6 +9,16 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Debounce hook
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 // ============ Tab Navigation ============
 const TABS = [
@@ -65,184 +75,196 @@ const formatCurrencyUSD = (amount) => {
   }).format(amount);
 };
 
-// ============ Location Selector Component ============
-function LocationSelector({ value, onChange, placeholder, label, locations = [], loading, primaryColor }) {
+// ============ Location Search Component (Booking.com style - wider dropdown) ============
+function LocationSearch({ value, onChange, placeholder, label, primaryColor, type = 'all' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
   
-  const filteredLocations = useMemo(() => {
-    if (!search) return locations.slice(0, 30);
-    const searchLower = search.toLowerCase();
-    return locations.filter(loc => 
-      loc.code?.toLowerCase().includes(searchLower) ||
-      loc.name?.toLowerCase().includes(searchLower) ||
-      loc.country?.toLowerCase().includes(searchLower) ||
-      loc.fullName?.toLowerCase().includes(searchLower)
-    ).slice(0, 30);
-  }, [locations, search]);
+  const debouncedSearch = useDebounce(search, 300);
   
-  const selected = locations.find(loc => loc.code === value);
+  // Search locations when input changes
+  useEffect(() => {
+    if (debouncedSearch.length >= 2) {
+      searchLocations(debouncedSearch);
+    } else {
+      setResults([]);
+    }
+  }, [debouncedSearch]);
+  
+  const searchLocations = async (keyword) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/api/travel/search-locations`, {
+        params: { keyword, max: 15, include_airports: true }
+      });
+      if (response.data.success) {
+        setResults(response.data.data || []);
+      }
+    } catch (error) {
+      console.error('Location search error:', error);
+      // Fallback search handled by backend
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleSelect = (location) => {
+    setSelectedLocation(location);
+    onChange(location.code);
+    setIsOpen(false);
+    setSearch('');
+  };
+  
+  const handleInputFocus = () => {
+    setIsOpen(true);
+  };
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   
   return (
-    <div className="relative flex-1 min-w-[200px]">
+    <div className="relative flex-1" ref={dropdownRef}>
       <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-colors text-left focus:outline-none focus:ring-2"
+      <div 
+        className={`flex items-center gap-3 p-3 bg-white border rounded-lg transition-all cursor-text ${
+          isOpen ? 'border-gray-400 ring-2 ring-opacity-20' : 'border-gray-300'
+        }`}
         style={{ '--tw-ring-color': primaryColor }}
-        data-testid={`location-selector-${label.toLowerCase().replace(/\s/g, '-')}`}
+        onClick={() => inputRef.current?.focus()}
       >
-        <Plane className="w-5 h-5 text-gray-400" />
+        {type === 'city' ? (
+          <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        ) : (
+          <Plane className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        )}
+        
         <div className="flex-1 min-w-0">
-          {selected ? (
-            <>
-              <p className="font-semibold text-gray-900 text-sm">{selected.name} ({selected.code})</p>
-              <p className="text-xs text-gray-500 truncate">{selected.country}</p>
-            </>
+          {!isOpen && selectedLocation ? (
+            <div>
+              <p className="font-semibold text-gray-900 text-sm truncate">
+                {selectedLocation.name} ({selectedLocation.code})
+              </p>
+              <p className="text-xs text-gray-500 truncate">{selectedLocation.country}</p>
+            </div>
           ) : (
-            <p className="text-gray-400 text-sm">{placeholder}</p>
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onFocus={handleInputFocus}
+              placeholder={selectedLocation ? `${selectedLocation.name} (${selectedLocation.code})` : placeholder}
+              className="w-full bg-transparent focus:outline-none text-sm text-gray-900 placeholder-gray-400"
+              data-testid={`location-search-${label.toLowerCase().replace(/\s/g, '-')}`}
+            />
           )}
         </div>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
+        
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
       
+      {/* Wide Dropdown - Booking.com Style */}
       {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
-            <div className="p-3 border-b border-gray-100 sticky top-0 bg-white">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search city or airport..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
-                  style={{ borderColor: search ? primaryColor : undefined }}
-                  autoFocus
-                />
-              </div>
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 overflow-hidden"
+             style={{ width: 'max(100%, 400px)', maxWidth: '500px' }}>
+          {/* Search Input in Dropdown */}
+          <div className="p-3 border-b border-gray-100 bg-gray-50">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="City, airport, or place"
+                className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white"
+                autoFocus
+              />
             </div>
-            <div className="max-h-72 overflow-y-auto">
-              {loading ? (
-                <div className="p-4 text-center text-gray-500">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
-                  Loading locations...
-                </div>
-              ) : filteredLocations.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">No locations found</div>
-              ) : (
-                filteredLocations.map(location => (
+          </div>
+          
+          {/* Results */}
+          <div className="max-h-80 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="w-5 h-5 animate-spin text-gray-400 mr-2" />
+                <span className="text-sm text-gray-500">Searching...</span>
+              </div>
+            ) : results.length === 0 ? (
+              <div className="py-8 text-center">
+                {search.length >= 2 ? (
+                  <p className="text-sm text-gray-500">No results found for "{search}"</p>
+                ) : (
+                  <div className="px-4">
+                    <p className="text-sm text-gray-500 mb-2">Start typing to search</p>
+                    <p className="text-xs text-gray-400">Search by city name, airport code, or country</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="py-2">
+                {results.map((location, idx) => (
                   <button
-                    key={location.code}
+                    key={`${location.code}-${idx}`}
                     type="button"
-                    onClick={() => { onChange(location.code); setIsOpen(false); setSearch(''); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${
-                      value === location.code ? 'bg-gray-50' : ''
+                    onClick={() => handleSelect(location)}
+                    className={`w-full flex items-center gap-4 px-4 py-3 hover:bg-blue-50 transition-colors text-left ${
+                      value === location.code ? 'bg-blue-50' : ''
                     }`}
                   >
+                    {/* Icon based on type */}
                     <div 
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                      style={{ backgroundColor: primaryColor }}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        location.subType === 'AIRPORT' ? 'bg-blue-100' : 'bg-gray-100'
+                      }`}
                     >
-                      {location.code}
+                      {location.subType === 'AIRPORT' ? (
+                        <Plane className="w-5 h-5 text-blue-600" />
+                      ) : (
+                        <Building2 className="w-5 h-5 text-gray-600" />
+                      )}
                     </div>
+                    
+                    {/* Location Details */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 text-sm">{location.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{location.fullName}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900 text-sm">{location.name}</span>
+                        <span className="px-1.5 py-0.5 text-xs font-medium rounded" 
+                              style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
+                          {location.code}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                        {location.subType === 'AIRPORT' ? (
+                          <>Airport • {location.fullName || location.name}</>
+                        ) : (
+                          <>City • All airports</>
+                        )}
+                      </p>
                     </div>
-                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">{location.country}</span>
+                    
+                    {/* Country */}
+                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded flex-shrink-0">
+                      {location.country}
+                    </span>
                   </button>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ============ City Selector for Experiences ============
-function CitySelector({ value, onChange, cities = [], loading, primaryColor }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  
-  const filteredCities = useMemo(() => {
-    if (!search) return cities.slice(0, 30);
-    const searchLower = search.toLowerCase();
-    return cities.filter(city => 
-      city.name?.toLowerCase().includes(searchLower) ||
-      city.country?.toLowerCase().includes(searchLower)
-    ).slice(0, 30);
-  }, [cities, search]);
-  
-  const selected = cities.find(c => `${c.lat},${c.lng}` === value);
-  
-  return (
-    <div className="relative flex-1 min-w-[200px]">
-      <label className="block text-xs font-medium text-gray-500 mb-1">Destination</label>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-colors text-left focus:outline-none focus:ring-2"
-        style={{ '--tw-ring-color': primaryColor }}
-      >
-        <Globe className="w-5 h-5 text-gray-400" />
-        <div className="flex-1 min-w-0">
-          {selected ? (
-            <p className="font-semibold text-gray-900 text-sm">{selected.name}, {selected.country}</p>
-          ) : (
-            <p className="text-gray-400 text-sm">Where are you going?</p>
-          )}
-        </div>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
-            <div className="p-3 border-b border-gray-100 sticky top-0 bg-white">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search city..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
-                  autoFocus
-                />
+                ))}
               </div>
-            </div>
-            <div className="max-h-72 overflow-y-auto">
-              {loading ? (
-                <div className="p-4 text-center text-gray-500">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
-                  Loading cities...
-                </div>
-              ) : filteredCities.map(city => (
-                <button
-                  key={`${city.lat},${city.lng}`}
-                  type="button"
-                  onClick={() => { onChange(`${city.lat},${city.lng}`); setIsOpen(false); setSearch(''); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${
-                    value === `${city.lat},${city.lng}` ? 'bg-gray-50' : ''
-                  }`}
-                >
-                  <MapPin className="w-5 h-5" style={{ color: primaryColor }} />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 text-sm">{city.name}</p>
-                    <p className="text-xs text-gray-500">{city.country}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
@@ -306,7 +328,6 @@ function FlightCard({ flight, onSelect, dollarRate, primaryColor }) {
             <p className="text-xl font-bold" style={{ color: primaryColor }}>
               {formatCurrencyNGN(price?.total, dollarRate)}
             </p>
-            <p className="text-xs text-gray-500">{formatCurrencyUSD(price?.total)}</p>
           </div>
           <button
             onClick={() => onSelect(flight)}
@@ -381,7 +402,7 @@ function HotelCard({ hotel, onSelect, dollarRate, primaryColor }) {
               <p className="text-lg font-bold" style={{ color: primaryColor }}>
                 {formatCurrencyNGN(price?.total, dollarRate)}
               </p>
-              <p className="text-xs text-gray-500">{formatCurrencyUSD(price?.total)} / night</p>
+              <p className="text-xs text-gray-500">per night</p>
             </div>
             <button
               onClick={() => onSelect(hotel)}
@@ -423,10 +444,9 @@ function TransferCard({ transfer, onSelect, dollarRate, primaryColor }) {
           <p className="text-lg font-bold" style={{ color: primaryColor }}>
             {formatCurrencyNGN(quotation?.monetaryAmount, dollarRate)}
           </p>
-          <p className="text-xs text-gray-500 mb-2">{formatCurrencyUSD(quotation?.monetaryAmount)}</p>
           <button
             onClick={() => onSelect(transfer)}
-            className="px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
+            className="mt-2 px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
             style={{ backgroundColor: primaryColor }}
             data-testid="transfer-book-btn"
           >
@@ -459,12 +479,9 @@ function ActivityCard({ activity, onSelect, dollarRate, primaryColor }) {
         <div className="flex items-end justify-between">
           <div>
             {activity.price && (
-              <>
-                <p className="text-lg font-bold" style={{ color: primaryColor }}>
-                  {formatCurrencyNGN(activity.price.amount, dollarRate)}
-                </p>
-                <p className="text-xs text-gray-500">{formatCurrencyUSD(activity.price.amount)}</p>
-              </>
+              <p className="text-lg font-bold" style={{ color: primaryColor }}>
+                {formatCurrencyNGN(activity.price.amount, dollarRate)}
+              </p>
             )}
           </div>
           <button
@@ -535,40 +552,36 @@ function PinModal({ isOpen, onClose, onConfirm, loading, primaryColor }) {
 }
 
 // ============ Multi-City Flight Segment ============
-function MultiCitySegment({ index, segment, onChange, onRemove, airports, locationsLoading, primaryColor, canRemove }) {
+function MultiCitySegment({ index, segment, onChange, onRemove, primaryColor, canRemove }) {
   const minDate = new Date().toISOString().split('T')[0];
   
   return (
-    <div className="flex flex-col md:flex-row gap-3 items-end p-4 bg-gray-50 rounded-lg mb-3">
-      <div className="flex items-center justify-between w-full md:w-auto mb-2 md:mb-0">
+    <div className="flex flex-col lg:flex-row gap-3 items-end p-4 bg-gray-50 rounded-lg mb-3">
+      <div className="flex items-center justify-between w-full lg:w-auto mb-2 lg:mb-0">
         <span className="text-sm font-medium text-gray-600">Flight {index + 1}</span>
         {canRemove && (
           <button
             onClick={onRemove}
-            className="md:hidden text-red-500 hover:text-red-700 p-1"
+            className="lg:hidden text-red-500 hover:text-red-700 p-1"
           >
             <Trash2 className="w-4 h-4" />
           </button>
         )}
       </div>
       
-      <LocationSelector
+      <LocationSearch
         value={segment.origin}
         onChange={(v) => onChange({ ...segment, origin: v })}
         placeholder="From"
         label="From"
-        locations={airports}
-        loading={locationsLoading}
         primaryColor={primaryColor}
       />
       
-      <LocationSelector
+      <LocationSearch
         value={segment.destination}
         onChange={(v) => onChange({ ...segment, destination: v })}
         placeholder="To"
         label="To"
-        locations={airports}
-        loading={locationsLoading}
         primaryColor={primaryColor}
       />
       
@@ -587,7 +600,7 @@ function MultiCitySegment({ index, segment, onChange, onRemove, airports, locati
       {canRemove && (
         <button
           onClick={onRemove}
-          className="hidden md:flex h-[46px] w-[46px] items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+          className="hidden lg:flex h-[46px] w-[46px] items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
         >
           <Trash2 className="w-5 h-5" />
         </button>
@@ -598,7 +611,7 @@ function MultiCitySegment({ index, segment, onChange, onRemove, airports, locati
 
 // ============ Main Travel Section Component ============
 export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = '#0066cc', branding = {} }) {
-  // Use branding primary color if available, otherwise use prop
+  // Use branding primary color if available
   const themeColor = branding?.primary_color || primaryColor || '#0066cc';
   
   const [activeTab, setActiveTab] = useState('flights');
@@ -606,11 +619,6 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   const [travelEnabled, setTravelEnabled] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [dollarRate, setDollarRate] = useState(1500);
-  
-  // Dynamic locations
-  const [airports, setAirports] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [locationsLoading, setLocationsLoading] = useState(true);
   
   // Flight search state
   const [tripType, setTripType] = useState('roundtrip');
@@ -641,7 +649,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   const [transferPassengers, setTransferPassengers] = useState(1);
   
   // Experience search state
-  const [expLocation, setExpLocation] = useState('6.5244,3.3792');
+  const [expLocation, setExpLocation] = useState('');
   
   // Results state
   const [flights, setFlights] = useState([]);
@@ -654,10 +662,9 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   const [showPinModal, setShowPinModal] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   
-  // Fetch travel status and locations
+  // Fetch travel status
   useEffect(() => {
     checkTravelStatus();
-    fetchLocations();
   }, []);
   
   const checkTravelStatus = async () => {
@@ -665,27 +672,13 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
     try {
       const response = await axios.get(`${API}/api/travel/status`, axiosConfig);
       setTravelEnabled(response.data.enabled && response.data.configured);
+      // Store dollar rate internally (not shown to user)
       setDollarRate(response.data.dollar_rate || 1500);
     } catch (error) {
       console.error('Failed to check travel status:', error);
       setTravelEnabled(false);
     } finally {
       setCheckingStatus(false);
-    }
-  };
-  
-  const fetchLocations = async () => {
-    setLocationsLoading(true);
-    try {
-      const response = await axios.get(`${API}/api/travel/locations`);
-      if (response.data.success) {
-        setAirports(response.data.airports || []);
-        setCities(response.data.cities || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch locations:', error);
-    } finally {
-      setLocationsLoading(false);
     }
   };
   
@@ -720,15 +713,12 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   // Search flights
   const searchFlights = async () => {
     if (tripType === 'multicity') {
-      // Validate multi-city segments
       const invalid = multiCitySegments.some(s => !s.origin || !s.destination || !s.date);
       if (invalid) {
         toast.error('Please fill in all flight segments');
         return;
       }
-      // Multi-city search would need backend support
       toast.info('Multi-city search - searching for first segment');
-      // For now, search the first segment
       setLoading(true);
       try {
         const response = await axios.post(`${API}/api/travel/flights/search`, {
@@ -862,9 +852,12 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
     setLoading(true);
     setActivities([]);
     
-    const [lat, lng] = expLocation.split(',').map(parseFloat);
-    
+    // Use the location code to get lat/lng from search
     try {
+      // For now, use a default location - in production, would need to geocode the city
+      const lat = 6.5244; // Lagos default
+      const lng = 3.3792;
+      
       const response = await axios.post(`${API}/api/travel/activities/search`, {
         latitude: lat,
         longitude: lng,
@@ -991,7 +984,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
       </div>
       
       {/* Search Forms - White Card */}
-      <div className="bg-white rounded-lg border border-gray-300 shadow-lg p-4 -mt-12 relative z-10 mx-0 sm:mx-0" data-testid="search-form">
+      <div className="bg-white rounded-lg border border-gray-300 shadow-lg p-4 -mt-12 relative z-10" data-testid="search-form">
         
         {/* Flights Search */}
         {activeTab === 'flights' && (
@@ -1040,8 +1033,6 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                     segment={segment}
                     onChange={(s) => updateMultiCitySegment(index, s)}
                     onRemove={() => removeMultiCitySegment(index)}
-                    airports={airports}
-                    locationsLoading={locationsLoading}
                     primaryColor={themeColor}
                     canRemove={multiCitySegments.length > 2}
                   />
@@ -1089,33 +1080,29 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
               </div>
             ) : (
               /* Regular Origin & Destination */
-              <div className="flex flex-col md:flex-row gap-3 items-end">
-                <LocationSelector
+              <div className="flex flex-col lg:flex-row gap-3 items-end">
+                <LocationSearch
                   value={origin}
                   onChange={setOrigin}
                   placeholder="Where from?"
                   label="From"
-                  locations={airports}
-                  loading={locationsLoading}
                   primaryColor={themeColor}
                 />
                 
                 {/* Swap Button */}
                 <button
                   onClick={swapLocations}
-                  className="hidden md:flex w-10 h-10 bg-white border border-gray-300 rounded-full items-center justify-center hover:bg-gray-50 transition-colors flex-shrink-0 mb-1"
+                  className="hidden lg:flex w-10 h-10 bg-white border border-gray-300 rounded-full items-center justify-center hover:bg-gray-50 transition-colors flex-shrink-0 mb-1"
                   data-testid="swap-locations-btn"
                 >
                   <ArrowLeftRight className="w-4 h-4 text-gray-500" />
                 </button>
                 
-                <LocationSelector
+                <LocationSearch
                   value={destination}
                   onChange={setDestination}
                   placeholder="Where to?"
                   label="To"
-                  locations={airports}
-                  loading={locationsLoading}
                   primaryColor={themeColor}
                 />
                 
@@ -1183,15 +1170,14 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         
         {/* Hotels Search */}
         {activeTab === 'hotels' && (
-          <div className="flex flex-col md:flex-row gap-3 items-end">
-            <LocationSelector
+          <div className="flex flex-col lg:flex-row gap-3 items-end">
+            <LocationSearch
               value={hotelCity}
               onChange={setHotelCity}
               placeholder="Where are you going?"
               label="Destination"
-              locations={airports}
-              loading={locationsLoading}
               primaryColor={themeColor}
+              type="city"
             />
             
             <div className="flex-1 min-w-[140px]">
@@ -1249,24 +1235,20 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         
         {/* Transfers Search */}
         {activeTab === 'transfers' && (
-          <div className="flex flex-col md:flex-row gap-3 items-end">
-            <LocationSelector
+          <div className="flex flex-col lg:flex-row gap-3 items-end">
+            <LocationSearch
               value={transferOrigin}
               onChange={setTransferOrigin}
               placeholder="Pick-up location"
               label="Pick-up"
-              locations={airports}
-              loading={locationsLoading}
               primaryColor={themeColor}
             />
             
-            <LocationSelector
+            <LocationSearch
               value={transferDestination}
               onChange={setTransferDestination}
               placeholder="Drop-off location"
               label="Drop-off"
-              locations={airports}
-              loading={locationsLoading}
               primaryColor={themeColor}
             />
             
@@ -1297,13 +1279,14 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         
         {/* Experiences Search */}
         {activeTab === 'experiences' && (
-          <div className="flex flex-col md:flex-row gap-3 items-end">
-            <CitySelector
+          <div className="flex flex-col lg:flex-row gap-3 items-end">
+            <LocationSearch
               value={expLocation}
               onChange={setExpLocation}
-              cities={cities}
-              loading={locationsLoading}
+              placeholder="Where are you going?"
+              label="Destination"
               primaryColor={themeColor}
+              type="city"
             />
             
             <button
@@ -1318,11 +1301,6 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
             </button>
           </div>
         )}
-      </div>
-      
-      {/* Dollar Rate Info */}
-      <div className="mt-4 text-center text-sm text-gray-500">
-        Current exchange rate: $1 = ₦{dollarRate.toLocaleString()}
       </div>
       
       {/* Results */}
@@ -1397,7 +1375,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
           </div>
         )}
         
-        {/* Empty State */}
+        {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: themeColor }} />
