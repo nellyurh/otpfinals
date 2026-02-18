@@ -641,6 +641,12 @@ const AdminPanel = ({ user, setUser }) => {
     fivesim_api_key: '',
     wallet_usd_to_ngn_rate: 1650,
     giftcard_usd_to_ngn_rate: 1650,
+    // Amadeus Travel API
+    amadeus_api_key: '',
+    amadeus_api_secret: '',
+    amadeus_base_url: 'https://test.api.amadeus.com',
+    enable_travel_booking: false,
+    travel_markup_percent: 5,
   });
 
   // Bill payment markups (hidden from users)
