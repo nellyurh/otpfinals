@@ -50,6 +50,7 @@ import {
   Ban,
   Upload,
   Shield,
+  Plane,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
