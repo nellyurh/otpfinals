@@ -10280,6 +10280,48 @@ async def admin_test_amadeus(admin: dict = Depends(require_admin)):
         return {'success': False, 'error': str(e)}
 
 
+# ============ Feature Unlock PIN Verification ============
+
+class FeatureToggleRequest(BaseModel):
+    feature: str  # e.g., 'show_travel_feature'
+    enabled: bool
+    pin: str
+
+@api_router.post("/admin/toggle-premium-feature")
+async def toggle_premium_feature(request: FeatureToggleRequest, admin: dict = Depends(require_admin)):
+    """Toggle premium/site-specific features with PIN verification"""
+    
+    # Verify PIN
+    if request.pin != FEATURE_UNLOCK_PIN:
+        raise HTTPException(status_code=401, detail="Invalid feature unlock PIN")
+    
+    # Allowed premium features that require PIN
+    allowed_features = ['show_travel_feature']
+    
+    if request.feature not in allowed_features:
+        raise HTTPException(status_code=400, detail=f"Invalid feature: {request.feature}")
+    
+    try:
+        # Update the feature toggle
+        await db.pricing_config.update_one(
+            {},
+            {'$set': {request.feature: request.enabled}},
+            upsert=True
+        )
+        
+        logger.info(f"Premium feature '{request.feature}' set to {request.enabled} by admin {admin.get('email')}")
+        
+        return {
+            'success': True,
+            'feature': request.feature,
+            'enabled': request.enabled,
+            'message': f"Feature '{request.feature}' has been {'enabled' if request.enabled else 'disabled'}"
+        }
+    except Exception as e:
+        logger.error(f"Error toggling premium feature: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update feature")
+
+
 # ============ Admin Email Management ============
 class SendBulkEmailRequest(BaseModel):
     subject: str
