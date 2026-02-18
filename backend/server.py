@@ -9851,10 +9851,21 @@ async def get_travel_status():
     """Check if travel booking is enabled and configured"""
     config = await db.pricing_config.find_one({}, {'_id': 0})
     
+    # Master visibility toggle - if False, travel feature is completely hidden
+    show_feature = config.get('show_travel_feature', False) if config else False
+    
+    if not show_feature:
+        return {
+            'visible': False,
+            'enabled': False,
+            'configured': False
+        }
+    
     amadeus_key = get_api_key(config, 'amadeus_api_key', AMADEUS_API_KEY)
     amadeus_secret = get_api_key(config, 'amadeus_api_secret', AMADEUS_API_SECRET)
     
     return {
+        'visible': True,
         'enabled': config.get('enable_travel_booking', False) if config else False,
         'configured': bool(amadeus_key and amadeus_secret),
         'base_url': config.get('amadeus_base_url', AMADEUS_BASE_URL) if config else AMADEUS_BASE_URL,
