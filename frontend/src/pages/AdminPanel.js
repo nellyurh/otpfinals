@@ -4555,6 +4555,136 @@ const AdminPanel = ({ user, setUser }) => {
               <GiftCardOrdersSection API={API} axiosConfig={axiosConfig} />
             )}
 
+            {/* TRAVEL (AMADEUS) PROVIDER SECTION */}
+            {activeSection === 'travel-provider' && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Travel Booking (Amadeus)</h2>
+                    <p className="text-xs text-slate-500 mt-1">Configure Amadeus API for flights, hotels, transfers, and experiences</p>
+                  </div>
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                    <Save className="w-3.5 h-3.5 mr-1.5" />
+                    {loading ? 'Saving…' : 'Save Changes'}
+                  </Button>
+                </div>
+
+                {/* Amadeus Card */}
+                <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                          <Plane className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-sm font-semibold text-blue-900">Amadeus API</CardTitle>
+                          <CardDescription className="text-xs text-blue-600">Travel booking provider</CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">Enable Travel</span>
+                        <Switch
+                          checked={pricing.enable_travel_booking ?? false}
+                          onCheckedChange={(checked) => setPricing({ ...pricing, enable_travel_booking: checked })}
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Test Connection Button */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={async () => {
+                          try {
+                            const res = await axios.get(`${API}/admin/test-amadeus`, axiosConfig);
+                            if (res.data.success) {
+                              const status = res.data.amadeus_status;
+                              if (status.connectivity_test?.success) {
+                                toast.success('Amadeus API connected successfully!');
+                              } else {
+                                toast.error(`Connection failed: ${status.connectivity_test?.error || 'Unknown error'}`);
+                              }
+                            }
+                          } catch (e) {
+                            toast.error(e.response?.data?.detail || 'Test failed');
+                          }
+                        }}
+                      >
+                        🔗 Test Connection
+                      </Button>
+                    </div>
+
+                    {/* API Credentials */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">API Key</Label>
+                        <Input
+                          type="password"
+                          value={pricing.amadeus_api_key || ''}
+                          onChange={(e) => setPricing({ ...pricing, amadeus_api_key: e.target.value })}
+                          placeholder="Enter Amadeus API Key"
+                          className="h-9 text-sm bg-slate-50 border-slate-200 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">API Secret</Label>
+                        <Input
+                          type="password"
+                          value={pricing.amadeus_api_secret || ''}
+                          onChange={(e) => setPricing({ ...pricing, amadeus_api_secret: e.target.value })}
+                          placeholder="Enter Amadeus API Secret"
+                          className="h-9 text-sm bg-slate-50 border-slate-200 font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Base URL & Markup */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">API Base URL</Label>
+                        <select
+                          value={pricing.amadeus_base_url || 'https://test.api.amadeus.com'}
+                          onChange={(e) => setPricing({ ...pricing, amadeus_base_url: e.target.value })}
+                          className="w-full h-9 text-sm bg-slate-50 border border-slate-200 rounded-md px-3"
+                        >
+                          <option value="https://test.api.amadeus.com">Test (Sandbox)</option>
+                          <option value="https://api.amadeus.com">Production (Live)</option>
+                        </select>
+                        <p className="text-[10px] text-blue-600">Use Test URL for development, Production for live bookings</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Markup Percentage (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          value={pricing.travel_markup_percent ?? 5}
+                          onChange={(e) => setPricing({ ...pricing, travel_markup_percent: parseFloat(e.target.value) || 0 })}
+                          placeholder="5"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[10px] text-slate-400">Added on top of Amadeus prices (e.g., 5% markup)</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-blue-700">
+                        <strong>Get your API keys:</strong> Visit{' '}
+                        <a href="https://developers.amadeus.com" target="_blank" rel="noopener noreferrer" className="underline">
+                          developers.amadeus.com
+                        </a>{' '}
+                        → Sign up → Create an app → Copy API Key & Secret
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {/* PROMO CODES SECTION */}
             {activeSection === 'promo-codes' && (
               <section className="space-y-6">
