@@ -3,7 +3,7 @@ import {
   Plane, Hotel, Car, MapPin, Calendar, Users, Search, ArrowRight, 
   ArrowLeftRight, ChevronDown, Star, Clock, Luggage, X, Check,
   RefreshCw, AlertCircle, CreditCard, Lock, ChevronLeft, ChevronRight,
-  Compass, Ticket, Building2, Filter, SortAsc, Bed, Globe
+  Compass, Ticket, Building2, Filter, SortAsc, Bed, Globe, Plus, Trash2
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -65,31 +65,32 @@ const formatCurrencyUSD = (amount) => {
   }).format(amount);
 };
 
-// ============ Location Selector Component (Booking.com style) ============
-function LocationSelector({ value, onChange, placeholder, label, locations = [], loading }) {
+// ============ Location Selector Component ============
+function LocationSelector({ value, onChange, placeholder, label, locations = [], loading, primaryColor }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   
   const filteredLocations = useMemo(() => {
-    if (!search) return locations.slice(0, 20);
+    if (!search) return locations.slice(0, 30);
     const searchLower = search.toLowerCase();
     return locations.filter(loc => 
       loc.code?.toLowerCase().includes(searchLower) ||
       loc.name?.toLowerCase().includes(searchLower) ||
       loc.country?.toLowerCase().includes(searchLower) ||
       loc.fullName?.toLowerCase().includes(searchLower)
-    ).slice(0, 20);
+    ).slice(0, 30);
   }, [locations, search]);
   
   const selected = locations.find(loc => loc.code === value);
   
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1 min-w-[200px]">
       <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg hover:border-[#003580] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#003580]"
+        className="w-full flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-colors text-left focus:outline-none focus:ring-2"
+        style={{ '--tw-ring-color': primaryColor }}
         data-testid={`location-selector-${label.toLowerCase().replace(/\s/g, '-')}`}
       >
         <Plane className="w-5 h-5 text-gray-400" />
@@ -109,7 +110,7 @@ function LocationSelector({ value, onChange, placeholder, label, locations = [],
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-80 overflow-hidden">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
             <div className="p-3 border-b border-gray-100 sticky top-0 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -118,12 +119,13 @@ function LocationSelector({ value, onChange, placeholder, label, locations = [],
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search city or airport..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#003580]"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
+                  style={{ borderColor: search ? primaryColor : undefined }}
                   autoFocus
                 />
               </div>
             </div>
-            <div className="max-h-60 overflow-y-auto">
+            <div className="max-h-72 overflow-y-auto">
               {loading ? (
                 <div className="p-4 text-center text-gray-500">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
@@ -137,11 +139,14 @@ function LocationSelector({ value, onChange, placeholder, label, locations = [],
                     key={location.code}
                     type="button"
                     onClick={() => { onChange(location.code); setIsOpen(false); setSearch(''); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left ${
-                      value === location.code ? 'bg-blue-50' : ''
+                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${
+                      value === location.code ? 'bg-gray-50' : ''
                     }`}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-[#003580] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    <div 
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+                      style={{ backgroundColor: primaryColor }}
+                    >
                       {location.code}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -161,28 +166,29 @@ function LocationSelector({ value, onChange, placeholder, label, locations = [],
 }
 
 // ============ City Selector for Experiences ============
-function CitySelector({ value, onChange, cities = [], loading }) {
+function CitySelector({ value, onChange, cities = [], loading, primaryColor }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   
   const filteredCities = useMemo(() => {
-    if (!search) return cities;
+    if (!search) return cities.slice(0, 30);
     const searchLower = search.toLowerCase();
     return cities.filter(city => 
       city.name?.toLowerCase().includes(searchLower) ||
       city.country?.toLowerCase().includes(searchLower)
-    );
+    ).slice(0, 30);
   }, [cities, search]);
   
   const selected = cities.find(c => `${c.lat},${c.lng}` === value);
   
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1 min-w-[200px]">
       <label className="block text-xs font-medium text-gray-500 mb-1">Destination</label>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg hover:border-[#003580] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-[#003580]"
+        className="w-full flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg hover:border-gray-400 transition-colors text-left focus:outline-none focus:ring-2"
+        style={{ '--tw-ring-color': primaryColor }}
       >
         <Globe className="w-5 h-5 text-gray-400" />
         <div className="flex-1 min-w-0">
@@ -198,7 +204,7 @@ function CitySelector({ value, onChange, cities = [], loading }) {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-80 overflow-hidden">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
             <div className="p-3 border-b border-gray-100 sticky top-0 bg-white">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -207,12 +213,12 @@ function CitySelector({ value, onChange, cities = [], loading }) {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search city..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#003580]"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none"
                   autoFocus
                 />
               </div>
             </div>
-            <div className="max-h-60 overflow-y-auto">
+            <div className="max-h-72 overflow-y-auto">
               {loading ? (
                 <div className="p-4 text-center text-gray-500">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2" />
@@ -223,11 +229,11 @@ function CitySelector({ value, onChange, cities = [], loading }) {
                   key={`${city.lat},${city.lng}`}
                   type="button"
                   onClick={() => { onChange(`${city.lat},${city.lng}`); setIsOpen(false); setSearch(''); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left ${
-                    value === `${city.lat},${city.lng}` ? 'bg-blue-50' : ''
+                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left ${
+                    value === `${city.lat},${city.lng}` ? 'bg-gray-50' : ''
                   }`}
                 >
-                  <MapPin className="w-5 h-5 text-[#003580]" />
+                  <MapPin className="w-5 h-5" style={{ color: primaryColor }} />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900 text-sm">{city.name}</p>
                     <p className="text-xs text-gray-500">{city.country}</p>
@@ -243,7 +249,7 @@ function CitySelector({ value, onChange, cities = [], loading }) {
 }
 
 // ============ Flight Card Component ============
-function FlightCard({ flight, onSelect, dollarRate }) {
+function FlightCard({ flight, onSelect, dollarRate, primaryColor }) {
   const itinerary = flight.itineraries?.[0];
   const segments = itinerary?.segments || [];
   const firstSegment = segments[0];
@@ -252,12 +258,12 @@ function FlightCard({ flight, onSelect, dollarRate }) {
   const stops = segments.length - 1;
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all hover:border-[#003580]" data-testid="flight-card">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all hover:border-gray-300" data-testid="flight-card">
       <div className="flex flex-col md:flex-row md:items-center gap-4">
         {/* Airline Info */}
         <div className="flex items-center gap-3 md:w-28">
           <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center">
-            <Plane className="w-5 h-5 text-[#003580]" />
+            <Plane className="w-5 h-5" style={{ color: primaryColor }} />
           </div>
           <div>
             <p className="font-semibold text-gray-900 text-sm">{firstSegment?.carrierCode || 'Airline'}</p>
@@ -269,19 +275,19 @@ function FlightCard({ flight, onSelect, dollarRate }) {
         <div className="flex-1 flex items-center gap-3">
           <div className="text-center">
             <p className="text-lg font-bold text-gray-900">{formatTime(firstSegment?.departure?.at)}</p>
-            <p className="text-sm font-medium text-[#003580]">{firstSegment?.departure?.iataCode}</p>
+            <p className="text-sm font-medium" style={{ color: primaryColor }}>{firstSegment?.departure?.iataCode}</p>
           </div>
           
           <div className="flex-1 flex flex-col items-center px-2">
             <p className="text-xs text-gray-500 mb-1">{formatDuration(itinerary?.duration)}</p>
             <div className="w-full flex items-center">
-              <div className="w-2 h-2 rounded-full border-2 border-[#003580]" />
+              <div className="w-2 h-2 rounded-full border-2" style={{ borderColor: primaryColor }} />
               <div className="flex-1 h-0.5 bg-gray-300 relative">
                 {stops > 0 && (
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500" />
                 )}
               </div>
-              <div className="w-2 h-2 rounded-full bg-[#003580]" />
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {stops === 0 ? 'Direct' : `${stops} stop${stops > 1 ? 's' : ''}`}
@@ -290,21 +296,22 @@ function FlightCard({ flight, onSelect, dollarRate }) {
           
           <div className="text-center">
             <p className="text-lg font-bold text-gray-900">{formatTime(lastSegment?.arrival?.at)}</p>
-            <p className="text-sm font-medium text-[#003580]">{lastSegment?.arrival?.iataCode}</p>
+            <p className="text-sm font-medium" style={{ color: primaryColor }}>{lastSegment?.arrival?.iataCode}</p>
           </div>
         </div>
         
         {/* Price & Select */}
         <div className="flex items-center gap-4 md:flex-col md:items-end border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4">
           <div className="text-right">
-            <p className="text-xl font-bold text-[#003580]">
+            <p className="text-xl font-bold" style={{ color: primaryColor }}>
               {formatCurrencyNGN(price?.total, dollarRate)}
             </p>
             <p className="text-xs text-gray-500">{formatCurrencyUSD(price?.total)}</p>
           </div>
           <button
             onClick={() => onSelect(flight)}
-            className="px-5 py-2 bg-[#0071c2] text-white rounded-md font-medium hover:bg-[#003580] transition-colors text-sm"
+            className="px-5 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
+            style={{ backgroundColor: primaryColor }}
             data-testid="flight-select-btn"
           >
             Select
@@ -328,28 +335,28 @@ function FlightCard({ flight, onSelect, dollarRate }) {
 }
 
 // ============ Hotel Card Component ============
-function HotelCard({ hotel, onSelect, dollarRate }) {
+function HotelCard({ hotel, onSelect, dollarRate, primaryColor }) {
   const offer = hotel.offers?.[0];
   const price = offer?.price;
   const rating = hotel.hotel?.rating || 3;
   
-  // Generate a placeholder image based on hotel name
   const hotelName = hotel.hotel?.name || 'Hotel';
-  const imageUrl = `https://source.unsplash.com/400x300/?hotel,${encodeURIComponent(hotelName.split(' ')[0])}`;
+  const cityName = hotel.hotel?.address?.cityName || 'City';
+  const imageUrl = `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop&q=80`;
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:border-[#003580] group" data-testid="hotel-card">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:border-gray-300 group" data-testid="hotel-card">
       <div className="relative h-44 bg-gray-200 overflow-hidden">
         <img 
           src={imageUrl}
           alt={hotelName}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
-          }}
+          loading="lazy"
         />
-        <div className="absolute top-2 right-2 bg-[#003580] text-white px-2 py-1 rounded text-xs font-semibold">
+        <div 
+          className="absolute top-2 right-2 text-white px-2 py-1 rounded text-xs font-semibold"
+          style={{ backgroundColor: primaryColor }}
+        >
           {rating}.0
         </div>
       </div>
@@ -357,7 +364,7 @@ function HotelCard({ hotel, onSelect, dollarRate }) {
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-sm">{hotelName}</h3>
         <div className="flex items-center gap-1 mb-2">
           {[...Array(rating)].map((_, i) => (
-            <Star key={i} className="w-3 h-3 fill-[#febb02] text-[#febb02]" />
+            <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
           ))}
           {[...Array(5 - rating)].map((_, i) => (
             <Star key={i} className="w-3 h-3 text-gray-300" />
@@ -365,20 +372,21 @@ function HotelCard({ hotel, onSelect, dollarRate }) {
         </div>
         <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
           <MapPin className="w-3 h-3" />
-          {hotel.hotel?.address?.cityName || 'City Center'}
+          {cityName}
         </p>
         
         {offer && (
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-lg font-bold text-[#003580]">
+              <p className="text-lg font-bold" style={{ color: primaryColor }}>
                 {formatCurrencyNGN(price?.total, dollarRate)}
               </p>
               <p className="text-xs text-gray-500">{formatCurrencyUSD(price?.total)} / night</p>
             </div>
             <button
               onClick={() => onSelect(hotel)}
-              className="px-4 py-2 bg-[#0071c2] text-white rounded-md font-medium hover:bg-[#003580] transition-colors text-sm"
+              className="px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
+              style={{ backgroundColor: primaryColor }}
               data-testid="hotel-book-btn"
             >
               Book
@@ -391,15 +399,15 @@ function HotelCard({ hotel, onSelect, dollarRate }) {
 }
 
 // ============ Transfer Card Component ============
-function TransferCard({ transfer, onSelect, dollarRate }) {
+function TransferCard({ transfer, onSelect, dollarRate, primaryColor }) {
   const quotation = transfer.quotation;
   const vehicle = transfer.vehicle;
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all hover:border-[#003580]" data-testid="transfer-card">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all hover:border-gray-300" data-testid="transfer-card">
       <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-          <Car className="w-8 h-8 text-[#003580]" />
+        <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+          <Car className="w-8 h-8" style={{ color: primaryColor }} />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900">{vehicle?.description || transfer.transferType}</h3>
@@ -412,13 +420,14 @@ function TransferCard({ transfer, onSelect, dollarRate }) {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-lg font-bold text-[#003580]">
+          <p className="text-lg font-bold" style={{ color: primaryColor }}>
             {formatCurrencyNGN(quotation?.monetaryAmount, dollarRate)}
           </p>
           <p className="text-xs text-gray-500 mb-2">{formatCurrencyUSD(quotation?.monetaryAmount)}</p>
           <button
             onClick={() => onSelect(transfer)}
-            className="px-4 py-2 bg-[#0071c2] text-white rounded-md font-medium hover:bg-[#003580] transition-colors text-sm"
+            className="px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
+            style={{ backgroundColor: primaryColor }}
             data-testid="transfer-book-btn"
           >
             Book
@@ -430,20 +439,17 @@ function TransferCard({ transfer, onSelect, dollarRate }) {
 }
 
 // ============ Activity Card Component ============
-function ActivityCard({ activity, onSelect, dollarRate }) {
-  const imageUrl = activity.pictures?.[0] || `https://source.unsplash.com/400x300/?${encodeURIComponent(activity.name || 'attraction')}`;
+function ActivityCard({ activity, onSelect, dollarRate, primaryColor }) {
+  const imageUrl = activity.pictures?.[0] || 'https://images.unsplash.com/photo-1499678329028-101435549a4e?w=400&h=300&fit=crop&q=80';
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:border-[#003580] group" data-testid="activity-card">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:border-gray-300 group" data-testid="activity-card">
       <div className="relative h-44 bg-gray-200 overflow-hidden">
         <img 
           src={imageUrl}
           alt={activity.name || 'Activity'}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = 'https://images.unsplash.com/photo-1499678329028-101435549a4e?w=400&h=300&fit=crop';
-          }}
+          loading="lazy"
         />
       </div>
       <div className="p-4">
@@ -454,7 +460,7 @@ function ActivityCard({ activity, onSelect, dollarRate }) {
           <div>
             {activity.price && (
               <>
-                <p className="text-lg font-bold text-[#003580]">
+                <p className="text-lg font-bold" style={{ color: primaryColor }}>
                   {formatCurrencyNGN(activity.price.amount, dollarRate)}
                 </p>
                 <p className="text-xs text-gray-500">{formatCurrencyUSD(activity.price.amount)}</p>
@@ -463,7 +469,8 @@ function ActivityCard({ activity, onSelect, dollarRate }) {
           </div>
           <button
             onClick={() => onSelect(activity)}
-            className="px-4 py-2 bg-[#0071c2] text-white rounded-md font-medium hover:bg-[#003580] transition-colors text-sm"
+            className="px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
+            style={{ backgroundColor: primaryColor }}
             data-testid="activity-view-btn"
           >
             View
@@ -475,7 +482,7 @@ function ActivityCard({ activity, onSelect, dollarRate }) {
 }
 
 // ============ PIN Verification Modal ============
-function PinModal({ isOpen, onClose, onConfirm, loading }) {
+function PinModal({ isOpen, onClose, onConfirm, loading, primaryColor }) {
   const [pin, setPin] = useState('');
   
   if (!isOpen) return null;
@@ -497,7 +504,8 @@ function PinModal({ isOpen, onClose, onConfirm, loading }) {
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
           placeholder="••••"
-          className="w-full text-center text-2xl tracking-widest px-4 py-3 border-2 rounded-lg focus:outline-none focus:border-[#003580] mb-4"
+          className="w-full text-center text-2xl tracking-widest px-4 py-3 border-2 rounded-lg focus:outline-none mb-4"
+          style={{ borderColor: pin.length === 4 ? primaryColor : '#e5e7eb' }}
           maxLength={4}
           data-testid="pin-input"
         />
@@ -505,7 +513,8 @@ function PinModal({ isOpen, onClose, onConfirm, loading }) {
         <button
           onClick={() => onConfirm(pin)}
           disabled={pin.length !== 4 || loading}
-          className="w-full py-3 bg-[#0071c2] text-white rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-[#003580] transition-colors"
+          className="w-full py-3 text-white rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90 transition-colors"
+          style={{ backgroundColor: primaryColor }}
           data-testid="confirm-booking-btn"
         >
           {loading ? (
@@ -525,8 +534,73 @@ function PinModal({ isOpen, onClose, onConfirm, loading }) {
   );
 }
 
+// ============ Multi-City Flight Segment ============
+function MultiCitySegment({ index, segment, onChange, onRemove, airports, locationsLoading, primaryColor, canRemove }) {
+  const minDate = new Date().toISOString().split('T')[0];
+  
+  return (
+    <div className="flex flex-col md:flex-row gap-3 items-end p-4 bg-gray-50 rounded-lg mb-3">
+      <div className="flex items-center justify-between w-full md:w-auto mb-2 md:mb-0">
+        <span className="text-sm font-medium text-gray-600">Flight {index + 1}</span>
+        {canRemove && (
+          <button
+            onClick={onRemove}
+            className="md:hidden text-red-500 hover:text-red-700 p-1"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+      
+      <LocationSelector
+        value={segment.origin}
+        onChange={(v) => onChange({ ...segment, origin: v })}
+        placeholder="From"
+        label="From"
+        locations={airports}
+        loading={locationsLoading}
+        primaryColor={primaryColor}
+      />
+      
+      <LocationSelector
+        value={segment.destination}
+        onChange={(v) => onChange({ ...segment, destination: v })}
+        placeholder="To"
+        label="To"
+        locations={airports}
+        loading={locationsLoading}
+        primaryColor={primaryColor}
+      />
+      
+      <div className="flex-1 min-w-[140px]">
+        <label className="block text-xs font-medium text-gray-500 mb-1">Departure</label>
+        <input
+          type="date"
+          value={segment.date}
+          onChange={(e) => onChange({ ...segment, date: e.target.value })}
+          min={minDate}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
+          style={{ '--tw-ring-color': primaryColor }}
+        />
+      </div>
+      
+      {canRemove && (
+        <button
+          onClick={onRemove}
+          className="hidden md:flex h-[46px] w-[46px] items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ============ Main Travel Section Component ============
-export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = '#003580', branding = {} }) {
+export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = '#0066cc', branding = {} }) {
+  // Use branding primary color if available, otherwise use prop
+  const themeColor = branding?.primary_color || primaryColor || '#0066cc';
+  
   const [activeTab, setActiveTab] = useState('flights');
   const [loading, setLoading] = useState(false);
   const [travelEnabled, setTravelEnabled] = useState(false);
@@ -546,6 +620,12 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   const [returnDate, setReturnDate] = useState('');
   const [passengers, setPassengers] = useState({ adults: 1, children: 0, infants: 0 });
   const [cabinClass, setCabinClass] = useState('ECONOMY');
+  
+  // Multi-city state
+  const [multiCitySegments, setMultiCitySegments] = useState([
+    { origin: '', destination: '', date: '' },
+    { origin: '', destination: '', date: '' }
+  ]);
   
   // Hotel search state
   const [hotelCity, setHotelCity] = useState('');
@@ -616,8 +696,64 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
     setDestination(temp);
   };
   
+  // Add multi-city segment
+  const addMultiCitySegment = () => {
+    if (multiCitySegments.length < 6) {
+      setMultiCitySegments([...multiCitySegments, { origin: '', destination: '', date: '' }]);
+    }
+  };
+  
+  // Remove multi-city segment
+  const removeMultiCitySegment = (index) => {
+    if (multiCitySegments.length > 2) {
+      setMultiCitySegments(multiCitySegments.filter((_, i) => i !== index));
+    }
+  };
+  
+  // Update multi-city segment
+  const updateMultiCitySegment = (index, segment) => {
+    const updated = [...multiCitySegments];
+    updated[index] = segment;
+    setMultiCitySegments(updated);
+  };
+  
   // Search flights
   const searchFlights = async () => {
+    if (tripType === 'multicity') {
+      // Validate multi-city segments
+      const invalid = multiCitySegments.some(s => !s.origin || !s.destination || !s.date);
+      if (invalid) {
+        toast.error('Please fill in all flight segments');
+        return;
+      }
+      // Multi-city search would need backend support
+      toast.info('Multi-city search - searching for first segment');
+      // For now, search the first segment
+      setLoading(true);
+      try {
+        const response = await axios.post(`${API}/api/travel/flights/search`, {
+          origin: multiCitySegments[0].origin,
+          destination: multiCitySegments[0].destination,
+          departure_date: multiCitySegments[0].date,
+          adults: passengers.adults,
+          children: passengers.children,
+          infants: passengers.infants,
+          cabin_class: cabinClass,
+          non_stop: false,
+          max_results: 20
+        }, axiosConfig);
+        
+        if (response.data.success) {
+          setFlights(response.data.data?.data || []);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.detail || 'Failed to search flights');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    
     if (!origin || !destination || !departureDate) {
       toast.error('Please fill in all required fields');
       return;
@@ -791,7 +927,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   if (checkingStatus) {
     return (
       <div className="flex items-center justify-center py-20">
-        <RefreshCw className="w-8 h-8 animate-spin text-[#003580]" />
+        <RefreshCw className="w-8 h-8 animate-spin" style={{ color: themeColor }} />
       </div>
     );
   }
@@ -801,9 +937,9 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
     return (
       <div className="space-y-6" data-testid="travel-section">
         <h2 className="text-2xl font-bold text-gray-900">Travel Booking</h2>
-        <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-xl p-8 text-center border border-blue-200">
-          <div className="w-16 h-16 mx-auto rounded-full bg-blue-100 flex items-center justify-center mb-4">
-            <Plane className="w-8 h-8 text-[#003580]" />
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 text-center border border-gray-200">
+          <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <Plane className="w-8 h-8" style={{ color: themeColor }} />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Travel Booking Coming Soon</h3>
           <p className="text-gray-600 max-w-md mx-auto">
@@ -818,8 +954,11 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   
   return (
     <div className="space-y-0" data-testid="travel-section">
-      {/* Booking.com Style Header */}
-      <div className="bg-[#003580] text-white -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 px-4 sm:px-6 pt-4 pb-8 mb-6">
+      {/* Header with app theme color */}
+      <div 
+        className="text-white -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 px-4 sm:px-6 pt-4 pb-8 mb-6"
+        style={{ backgroundColor: themeColor }}
+      >
         {/* Tabs */}
         <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
           {TABS.map(tab => {
@@ -864,7 +1003,8 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   type="radio"
                   checked={tripType === 'roundtrip'}
                   onChange={() => setTripType('roundtrip')}
-                  className="w-4 h-4 accent-[#003580]"
+                  className="w-4 h-4"
+                  style={{ accentColor: themeColor }}
                 />
                 <span className="text-sm font-medium text-gray-700">Round trip</span>
               </label>
@@ -873,96 +1013,171 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   type="radio"
                   checked={tripType === 'oneway'}
                   onChange={() => setTripType('oneway')}
-                  className="w-4 h-4 accent-[#003580]"
+                  className="w-4 h-4"
+                  style={{ accentColor: themeColor }}
                 />
                 <span className="text-sm font-medium text-gray-700">One way</span>
               </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  checked={tripType === 'multicity'}
+                  onChange={() => setTripType('multicity')}
+                  className="w-4 h-4"
+                  style={{ accentColor: themeColor }}
+                />
+                <span className="text-sm font-medium text-gray-700">Multi-city</span>
+              </label>
             </div>
             
-            {/* Origin & Destination */}
-            <div className="flex flex-col md:flex-row gap-3 items-end">
-              <LocationSelector
-                value={origin}
-                onChange={setOrigin}
-                placeholder="Where from?"
-                label="From"
-                locations={airports}
-                loading={locationsLoading}
-              />
-              
-              {/* Swap Button */}
-              <button
-                onClick={swapLocations}
-                className="hidden md:flex w-10 h-10 bg-white border border-gray-300 rounded-full items-center justify-center hover:bg-gray-50 transition-colors flex-shrink-0 mb-1"
-                data-testid="swap-locations-btn"
-              >
-                <ArrowLeftRight className="w-4 h-4 text-gray-500" />
-              </button>
-              
-              <LocationSelector
-                value={destination}
-                onChange={setDestination}
-                placeholder="Where to?"
-                label="To"
-                locations={airports}
-                loading={locationsLoading}
-              />
-              
-              {/* Dates */}
-              <div className="flex-1 min-w-[140px]">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Depart</label>
-                <input
-                  type="date"
-                  value={departureDate}
-                  onChange={(e) => setDepartureDate(e.target.value)}
-                  min={minDate}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003580] text-sm"
-                  data-testid="departure-date"
-                />
+            {/* Multi-city segments */}
+            {tripType === 'multicity' ? (
+              <div className="space-y-2">
+                {multiCitySegments.map((segment, index) => (
+                  <MultiCitySegment
+                    key={index}
+                    index={index}
+                    segment={segment}
+                    onChange={(s) => updateMultiCitySegment(index, s)}
+                    onRemove={() => removeMultiCitySegment(index)}
+                    airports={airports}
+                    locationsLoading={locationsLoading}
+                    primaryColor={themeColor}
+                    canRemove={multiCitySegments.length > 2}
+                  />
+                ))}
+                
+                {multiCitySegments.length < 6 && (
+                  <button
+                    onClick={addMultiCitySegment}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                    style={{ color: themeColor }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add another flight
+                  </button>
+                )}
+                
+                <div className="flex flex-wrap gap-3 items-end pt-2">
+                  <div className="flex-1 min-w-[160px]">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Travelers</label>
+                    <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg">
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <select
+                        value={passengers.adults}
+                        onChange={(e) => setPassengers(p => ({ ...p, adults: parseInt(e.target.value) }))}
+                        className="flex-1 bg-transparent focus:outline-none text-sm"
+                      >
+                        {[1, 2, 3, 4, 5, 6].map(n => (
+                          <option key={n} value={n}>{n} Adult{n > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={searchFlights}
+                    disabled={loading}
+                    className="px-6 py-3 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 h-[46px]"
+                    style={{ backgroundColor: themeColor }}
+                    data-testid="search-flights-btn"
+                  >
+                    {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                    Search
+                  </button>
+                </div>
               </div>
-              
-              {tripType === 'roundtrip' && (
+            ) : (
+              /* Regular Origin & Destination */
+              <div className="flex flex-col md:flex-row gap-3 items-end">
+                <LocationSelector
+                  value={origin}
+                  onChange={setOrigin}
+                  placeholder="Where from?"
+                  label="From"
+                  locations={airports}
+                  loading={locationsLoading}
+                  primaryColor={themeColor}
+                />
+                
+                {/* Swap Button */}
+                <button
+                  onClick={swapLocations}
+                  className="hidden md:flex w-10 h-10 bg-white border border-gray-300 rounded-full items-center justify-center hover:bg-gray-50 transition-colors flex-shrink-0 mb-1"
+                  data-testid="swap-locations-btn"
+                >
+                  <ArrowLeftRight className="w-4 h-4 text-gray-500" />
+                </button>
+                
+                <LocationSelector
+                  value={destination}
+                  onChange={setDestination}
+                  placeholder="Where to?"
+                  label="To"
+                  locations={airports}
+                  loading={locationsLoading}
+                  primaryColor={themeColor}
+                />
+                
+                {/* Dates */}
                 <div className="flex-1 min-w-[140px]">
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Return</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Depart</label>
                   <input
                     type="date"
-                    value={returnDate}
-                    onChange={(e) => setReturnDate(e.target.value)}
-                    min={departureDate || minDate}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003580] text-sm"
-                    data-testid="return-date"
+                    value={departureDate}
+                    onChange={(e) => setDepartureDate(e.target.value)}
+                    min={minDate}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                    style={{ '--tw-ring-color': themeColor }}
+                    data-testid="departure-date"
                   />
                 </div>
-              )}
-              
-              {/* Passengers & Class */}
-              <div className="flex-1 min-w-[160px]">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Travelers & Class</label>
-                <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <select
-                    value={passengers.adults}
-                    onChange={(e) => setPassengers(p => ({ ...p, adults: parseInt(e.target.value) }))}
-                    className="flex-1 bg-transparent focus:outline-none text-sm"
-                  >
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                      <option key={n} value={n}>{n} Adult{n > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
+                
+                {tripType === 'roundtrip' && (
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Return</label>
+                    <input
+                      type="date"
+                      value={returnDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      min={departureDate || minDate}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                      style={{ '--tw-ring-color': themeColor }}
+                      data-testid="return-date"
+                    />
+                  </div>
+                )}
+                
+                {/* Passengers & Class */}
+                <div className="flex-1 min-w-[160px]">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Travelers & Class</label>
+                  <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <select
+                      value={passengers.adults}
+                      onChange={(e) => setPassengers(p => ({ ...p, adults: parseInt(e.target.value) }))}
+                      className="flex-1 bg-transparent focus:outline-none text-sm"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map(n => (
+                        <option key={n} value={n}>{n} Adult{n > 1 ? 's' : ''}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+                
+                {/* Search Button */}
+                <button
+                  onClick={searchFlights}
+                  disabled={loading}
+                  className="px-6 py-3 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 h-[46px]"
+                  style={{ backgroundColor: themeColor }}
+                  data-testid="search-flights-btn"
+                >
+                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  Search
+                </button>
               </div>
-              
-              {/* Search Button */}
-              <button
-                onClick={searchFlights}
-                disabled={loading}
-                className="px-6 py-3 bg-[#0071c2] text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#003580] transition-colors disabled:opacity-50 h-[46px]"
-                data-testid="search-flights-btn"
-              >
-                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                Search
-              </button>
-            </div>
+            )}
           </div>
         )}
         
@@ -976,6 +1191,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
               label="Destination"
               locations={airports}
               loading={locationsLoading}
+              primaryColor={themeColor}
             />
             
             <div className="flex-1 min-w-[140px]">
@@ -985,7 +1201,8 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 value={checkInDate}
                 onChange={(e) => setCheckInDate(e.target.value)}
                 min={minDate}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003580] text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                style={{ '--tw-ring-color': themeColor }}
               />
             </div>
             
@@ -996,7 +1213,8 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 value={checkOutDate}
                 onChange={(e) => setCheckOutDate(e.target.value)}
                 min={checkInDate || minDate}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003580] text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                style={{ '--tw-ring-color': themeColor }}
               />
             </div>
             
@@ -1019,7 +1237,8 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
             <button
               onClick={searchHotels}
               disabled={loading}
-              className="px-6 py-3 bg-[#0071c2] text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#003580] transition-colors disabled:opacity-50 h-[46px]"
+              className="px-6 py-3 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 h-[46px]"
+              style={{ backgroundColor: themeColor }}
               data-testid="search-hotels-btn"
             >
               {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -1038,6 +1257,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
               label="Pick-up"
               locations={airports}
               loading={locationsLoading}
+              primaryColor={themeColor}
             />
             
             <LocationSelector
@@ -1047,6 +1267,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
               label="Drop-off"
               locations={airports}
               loading={locationsLoading}
+              primaryColor={themeColor}
             />
             
             <div className="flex-1 min-w-[140px]">
@@ -1056,14 +1277,16 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 value={transferDate}
                 onChange={(e) => setTransferDate(e.target.value)}
                 min={minDate}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003580] text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                style={{ '--tw-ring-color': themeColor }}
               />
             </div>
             
             <button
               onClick={searchTransfers}
               disabled={loading}
-              className="px-6 py-3 bg-[#0071c2] text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#003580] transition-colors disabled:opacity-50 h-[46px]"
+              className="px-6 py-3 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 h-[46px]"
+              style={{ backgroundColor: themeColor }}
               data-testid="search-transfers-btn"
             >
               {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -1080,12 +1303,14 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
               onChange={setExpLocation}
               cities={cities}
               loading={locationsLoading}
+              primaryColor={themeColor}
             />
             
             <button
               onClick={searchActivities}
               disabled={loading}
-              className="px-6 py-3 bg-[#0071c2] text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#003580] transition-colors disabled:opacity-50 h-[46px]"
+              className="px-6 py-3 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 h-[46px]"
+              style={{ backgroundColor: themeColor }}
               data-testid="search-activities-btn"
             >
               {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -1114,6 +1339,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   flight={flight}
                   onSelect={(f) => handleSelect(f, 'flight')}
                   dollarRate={dollarRate}
+                  primaryColor={themeColor}
                 />
               ))}
             </div>
@@ -1130,6 +1356,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   hotel={hotel}
                   onSelect={(h) => handleSelect(h, 'hotel')}
                   dollarRate={dollarRate}
+                  primaryColor={themeColor}
                 />
               ))}
             </div>
@@ -1146,6 +1373,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   transfer={transfer}
                   onSelect={(t) => handleSelect(t, 'transfer')}
                   dollarRate={dollarRate}
+                  primaryColor={themeColor}
                 />
               ))}
             </div>
@@ -1162,6 +1390,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   activity={activity}
                   onSelect={(a) => handleSelect(a, 'activity')}
                   dollarRate={dollarRate}
+                  primaryColor={themeColor}
                 />
               ))}
             </div>
@@ -1171,7 +1400,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         {/* Empty State */}
         {loading && (
           <div className="text-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#003580] mx-auto mb-4" />
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: themeColor }} />
             <p className="text-gray-500">Searching for the best deals...</p>
           </div>
         )}
@@ -1183,6 +1412,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         onClose={() => { setShowPinModal(false); setSelectedItem(null); }}
         onConfirm={handleConfirmBooking}
         loading={bookingLoading}
+        primaryColor={themeColor}
       />
     </div>
   );
