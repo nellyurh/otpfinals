@@ -1434,6 +1434,7 @@ class UpdatePricingRequest(BaseModel):
     amadeus_base_url: Optional[str] = None  # test.api.amadeus.com or api.amadeus.com
     enable_travel_booking: Optional[bool] = None
     travel_markup_percent: Optional[float] = None  # Markup on all travel services
+    show_travel_feature: Optional[bool] = None  # Master toggle - hides travel from entire site if False
 
     # Support channel URLs
     whatsapp_support_url: Optional[str] = None
