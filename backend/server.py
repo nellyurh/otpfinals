@@ -759,6 +759,11 @@ ERCASPAY_BASE_URL = os.environ.get('ERCASPAY_BASE_URL', 'https://api.ercaspay.co
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 
+# ============ Amadeus Travel API Configuration ============
+AMADEUS_API_KEY = os.environ.get('AMADEUS_API_KEY', '')
+AMADEUS_API_SECRET = os.environ.get('AMADEUS_API_SECRET', '')
+AMADEUS_BASE_URL = os.environ.get('AMADEUS_BASE_URL', 'https://test.api.amadeus.com')  # test or production
+
 # ============ Models ============
 
 class UserRegister(BaseModel):
