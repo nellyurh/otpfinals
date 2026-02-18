@@ -1868,12 +1868,15 @@ const AdminPanel = ({ user, setUser }) => {
               active={activeSection === 'giftcards-provider'}
               onClick={() => { setActiveSection('giftcards-provider'); setAdminSidebarOpen(false); }}
             />
-            <SidebarItem
-              icon={Plane}
-              label="Travel (Amadeus)"
-              active={activeSection === 'travel-provider'}
-              onClick={() => { setActiveSection('travel-provider'); setAdminSidebarOpen(false); }}
-            />
+            {/* Travel section only shows if show_travel_feature is enabled for this site */}
+            {pricing.show_travel_feature && (
+              <SidebarItem
+                icon={Plane}
+                label="Travel (Amadeus)"
+                active={activeSection === 'travel-provider'}
+                onClick={() => { setActiveSection('travel-provider'); setAdminSidebarOpen(false); }}
+              />
+            )}
             <SidebarItem
               icon={Tag}
               label="Promo Codes"
