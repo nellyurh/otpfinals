@@ -8568,37 +8568,49 @@ async def admin_test_paymentpoint(admin: dict = Depends(require_admin)):
         db_secret = config.get('paymentpoint_secret') if config else None
         db_business_id = config.get('paymentpoint_business_id') if config else None
         
-        # Get decrypted values
+        # Get decrypted values (uses DB first, then env fallback)
         pp_api_key = get_api_key(config, 'paymentpoint_api_key', PAYMENTPOINT_API_KEY)
         pp_secret = get_api_key(config, 'paymentpoint_secret', PAYMENTPOINT_SECRET)
         pp_business_id = get_api_key(config, 'paymentpoint_business_id', PAYMENTPOINT_BUSINESS_ID)
         
         result = {
             'db_config_exists': config is not None,
+            'secrets_master_key_set': bool(SECRETS_MASTER_KEY),
             'credentials_in_db': {
-                'api_key': bool(db_api_key) and db_api_key != '********',
+                'api_key_exists': bool(db_api_key) and db_api_key != '********',
                 'api_key_encrypted': db_api_key.startswith('ENC:') if db_api_key else False,
-                'secret': bool(db_secret) and db_secret != '********',
+                'api_key_preview': db_api_key[:30] + '...' if db_api_key and len(db_api_key) > 30 else db_api_key,
+                'secret_exists': bool(db_secret) and db_secret != '********',
                 'secret_encrypted': db_secret.startswith('ENC:') if db_secret else False,
-                'business_id': bool(db_business_id) and db_business_id != '********',
+                'business_id_exists': bool(db_business_id) and db_business_id != '********',
                 'business_id_encrypted': db_business_id.startswith('ENC:') if db_business_id else False,
             },
             'credentials_from_env': {
-                'api_key': bool(PAYMENTPOINT_API_KEY),
-                'secret': bool(PAYMENTPOINT_SECRET),
-                'business_id': bool(PAYMENTPOINT_BUSINESS_ID),
+                'api_key_set': bool(PAYMENTPOINT_API_KEY),
+                'secret_set': bool(PAYMENTPOINT_SECRET),
+                'business_id_set': bool(PAYMENTPOINT_BUSINESS_ID),
             },
-            'final_credentials': {
+            'final_credentials_used': {
                 'api_key_available': bool(pp_api_key),
                 'api_key_length': len(pp_api_key) if pp_api_key else 0,
+                'api_key_source': 'db' if (db_api_key and not db_api_key.startswith('ENC:') or (db_api_key and db_api_key.startswith('ENC:') and pp_api_key and pp_api_key != PAYMENTPOINT_API_KEY)) else ('env' if PAYMENTPOINT_API_KEY else 'none'),
                 'secret_available': bool(pp_secret),
                 'secret_length': len(pp_secret) if pp_secret else 0,
                 'business_id_available': bool(pp_business_id),
-                'business_id_value': pp_business_id[:8] + '...' if pp_business_id and len(pp_business_id) > 8 else pp_business_id,
+                'business_id_preview': pp_business_id[:8] + '...' if pp_business_id and len(pp_business_id) > 8 else pp_business_id,
             },
             'base_url': PAYMENTPOINT_BASE_URL,
             'enabled': config.get('enable_paymentpoint', True) if config else True,
         }
+        
+        # Test decryption specifically
+        if db_api_key and db_api_key.startswith('ENC:'):
+            test_decrypt = decrypt_secret(db_api_key)
+            result['decryption_test'] = {
+                'input_starts_with_enc': True,
+                'output_starts_with_enc': test_decrypt.startswith('ENC:'),
+                'decryption_successful': not test_decrypt.startswith('ENC:'),
+            }
         
         # If credentials are available, test connectivity
         if pp_api_key and pp_secret and pp_business_id:
@@ -8629,7 +8641,7 @@ async def admin_test_paymentpoint(admin: dict = Depends(require_admin)):
         else:
             result['connectivity_test'] = {
                 'success': False,
-                'error': 'Missing credentials'
+                'error': 'Missing credentials - check if DB keys can be decrypted'
             }
         
         return {'success': True, 'paymentpoint_status': result}
