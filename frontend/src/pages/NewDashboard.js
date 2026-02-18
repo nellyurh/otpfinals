@@ -1168,6 +1168,7 @@ const NewDashboard = () => {
             {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : maintenanceContent("Support Channels"))}
             {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} user={user} primaryColor={branding.primary_color_hex || '#059669'} branding={branding} onNavigateToKYC={() => setActiveSection('profile')} /> : maintenanceContent("Virtual Cards"))}
             {activeSection === 'giftcards' && (isPageEnabled('giftcards') ? <GiftCardsSection /> : maintenanceContent("Gift Cards"))}
+            {activeSection === 'travel' && <TravelSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} user={user} primaryColor={branding.primary_color_hex || '#059669'} branding={branding} />}
             {activeSection === 'convert-currency' && <ConvertCurrencySection />}
             {activeSection === 'reseller' && <ResellerSection />}
           </div>
