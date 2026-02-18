@@ -9782,6 +9782,8 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['enable_travel_booking'] = data.enable_travel_booking
     if data.travel_markup_percent is not None:
         update_fields['travel_markup_percent'] = data.travel_markup_percent
+    if data.show_travel_feature is not None:
+        update_fields['show_travel_feature'] = data.show_travel_feature
     
     update_fields['updated_at'] = datetime.now(timezone.utc).isoformat()
     
