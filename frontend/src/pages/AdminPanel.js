@@ -647,6 +647,7 @@ const AdminPanel = ({ user, setUser }) => {
     amadeus_base_url: 'https://test.api.amadeus.com',
     enable_travel_booking: false,
     travel_markup_percent: 5,
+    show_travel_feature: false, // Master toggle to show/hide travel feature on this site
   });
 
   // Bill payment markups (hidden from users)
