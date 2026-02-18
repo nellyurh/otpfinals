@@ -73,6 +73,135 @@ import { useNavigate } from 'react-router-dom';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Premium Feature Toggle Component with PIN verification
+const PremiumFeatureToggle = ({ feature, label, description, checked, onToggle, API, axiosConfig }) => {
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pin, setPin] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [pendingState, setPendingState] = useState(null);
+
+  const handleToggleClick = (newState) => {
+    setPendingState(newState);
+    setShowPinModal(true);
+    setPin('');
+  };
+
+  const handleSubmitPin = async () => {
+    if (pin.length < 4) {
+      toast.error('Please enter a valid PIN');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/admin/toggle-premium-feature`, {
+        feature: feature,
+        enabled: pendingState,
+        pin: pin
+      }, axiosConfig);
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        onToggle(pendingState);
+        setShowPinModal(false);
+        setPin('');
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error('Invalid PIN. Please try again.');
+      } else {
+        toast.error(error.response?.data?.detail || 'Failed to toggle feature');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between rounded-xl border border-blue-200 px-4 py-3 bg-white hover:bg-blue-50 transition-colors">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-800 font-medium">{label}</span>
+            <Lock className="w-3 h-3 text-blue-500" />
+          </div>
+          <p className="text-[10px] text-slate-400 mt-0.5">{description}</p>
+        </div>
+        <Switch
+          checked={checked}
+          onCheckedChange={handleToggleClick}
+        />
+      </div>
+
+      {/* PIN Modal */}
+      {showPinModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Feature Unlock PIN</h3>
+                  <p className="text-xs text-gray-500">Enter PIN to {pendingState ? 'enable' : 'disable'} this feature</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => { setShowPinModal(false); setPin(''); }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-3">
+                <strong>{label}</strong> will be {pendingState ? 'enabled' : 'disabled'} for this site.
+              </p>
+              <input
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="Enter PIN"
+                className="w-full text-center text-2xl tracking-widest px-4 py-3 border-2 rounded-xl focus:outline-none focus:border-blue-500"
+                maxLength={10}
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowPinModal(false); setPin(''); }}
+                className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitPin}
+                disabled={pin.length < 4 || loading}
+                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    Confirm
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 // Gift Card Orders Section Component
 const GiftCardOrdersSection = ({ API, axiosConfig }) => {
   const [orders, setOrders] = useState([]);
