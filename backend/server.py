@@ -102,17 +102,32 @@ def decrypt_secret(ciphertext: str) -> str:
     return ciphertext
 
 def get_api_key(config: dict, key_name: str, env_fallback: str = '') -> str:
-    """Get API key from config, decrypting if needed, with env fallback."""
+    """Get API key from config, decrypting if needed, with env fallback.
+    
+    Priority: Database (decrypted) > Environment Variable
+    """
     if not config:
+        logger.debug(f"get_api_key({key_name}): No config, using env fallback")
         return env_fallback
+    
     db_value = config.get(key_name)
     if not db_value or db_value == '********':
+        logger.debug(f"get_api_key({key_name}): No DB value or masked, using env fallback")
         return env_fallback
-    decrypted = decrypt_secret(db_value)
-    # If decryption failed (still has ENC: prefix), return env fallback
-    if decrypted.startswith('ENC:'):
-        return env_fallback
-    return decrypted or env_fallback
+    
+    # Check if value is encrypted
+    if db_value.startswith('ENC:'):
+        decrypted = decrypt_secret(db_value)
+        # If decryption failed (still has ENC: prefix), return env fallback
+        if decrypted.startswith('ENC:'):
+            logger.warning(f"get_api_key({key_name}): Decryption failed, using env fallback. Check SECRETS_MASTER_KEY.")
+            return env_fallback
+        logger.debug(f"get_api_key({key_name}): Using decrypted DB value (length={len(decrypted)})")
+        return decrypted
+    else:
+        # Value is not encrypted (plain text in DB)
+        logger.debug(f"get_api_key({key_name}): Using plain DB value (length={len(db_value)})")
+        return db_value
 
 # ============ Email Service ============
 class EmailService:
