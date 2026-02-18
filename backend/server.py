@@ -9880,6 +9880,117 @@ async def get_travel_status():
     }
 
 
+@api_router.get("/travel/locations")
+async def get_travel_locations():
+    """Get popular airport/city locations for travel booking"""
+    # Comprehensive list of popular airports including Nigerian and international destinations
+    locations = [
+        # Nigeria
+        {"code": "LOS", "name": "Lagos", "fullName": "Murtala Muhammed International Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "ABV", "name": "Abuja", "fullName": "Nnamdi Azikiwe International Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "PHC", "name": "Port Harcourt", "fullName": "Port Harcourt International Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "KAN", "name": "Kano", "fullName": "Mallam Aminu Kano International Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "ENU", "name": "Enugu", "fullName": "Akanu Ibiam International Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "BNI", "name": "Benin City", "fullName": "Benin Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "CBQ", "name": "Calabar", "fullName": "Margaret Ekpo International Airport", "country": "Nigeria", "type": "airport"},
+        {"code": "QOW", "name": "Owerri", "fullName": "Sam Mbakwe International Cargo Airport", "country": "Nigeria", "type": "airport"},
+        
+        # West Africa
+        {"code": "ACC", "name": "Accra", "fullName": "Kotoka International Airport", "country": "Ghana", "type": "airport"},
+        {"code": "DSS", "name": "Dakar", "fullName": "Blaise Diagne International Airport", "country": "Senegal", "type": "airport"},
+        {"code": "ABJ", "name": "Abidjan", "fullName": "Félix-Houphouët-Boigny International Airport", "country": "Ivory Coast", "type": "airport"},
+        {"code": "LFW", "name": "Lome", "fullName": "Gnassingbé Eyadéma International Airport", "country": "Togo", "type": "airport"},
+        {"code": "COO", "name": "Cotonou", "fullName": "Cadjehoun Airport", "country": "Benin", "type": "airport"},
+        
+        # East Africa
+        {"code": "NBO", "name": "Nairobi", "fullName": "Jomo Kenyatta International Airport", "country": "Kenya", "type": "airport"},
+        {"code": "ADD", "name": "Addis Ababa", "fullName": "Bole International Airport", "country": "Ethiopia", "type": "airport"},
+        {"code": "DAR", "name": "Dar es Salaam", "fullName": "Julius Nyerere International Airport", "country": "Tanzania", "type": "airport"},
+        {"code": "EBB", "name": "Entebbe", "fullName": "Entebbe International Airport", "country": "Uganda", "type": "airport"},
+        {"code": "KGL", "name": "Kigali", "fullName": "Kigali International Airport", "country": "Rwanda", "type": "airport"},
+        
+        # Southern Africa
+        {"code": "JNB", "name": "Johannesburg", "fullName": "OR Tambo International Airport", "country": "South Africa", "type": "airport"},
+        {"code": "CPT", "name": "Cape Town", "fullName": "Cape Town International Airport", "country": "South Africa", "type": "airport"},
+        {"code": "HRE", "name": "Harare", "fullName": "Robert Gabriel Mugabe International Airport", "country": "Zimbabwe", "type": "airport"},
+        {"code": "LUN", "name": "Lusaka", "fullName": "Kenneth Kaunda International Airport", "country": "Zambia", "type": "airport"},
+        
+        # North Africa & Middle East
+        {"code": "CAI", "name": "Cairo", "fullName": "Cairo International Airport", "country": "Egypt", "type": "airport"},
+        {"code": "CMN", "name": "Casablanca", "fullName": "Mohammed V International Airport", "country": "Morocco", "type": "airport"},
+        {"code": "DXB", "name": "Dubai", "fullName": "Dubai International Airport", "country": "UAE", "type": "airport"},
+        {"code": "AUH", "name": "Abu Dhabi", "fullName": "Abu Dhabi International Airport", "country": "UAE", "type": "airport"},
+        {"code": "DOH", "name": "Doha", "fullName": "Hamad International Airport", "country": "Qatar", "type": "airport"},
+        {"code": "JED", "name": "Jeddah", "fullName": "King Abdulaziz International Airport", "country": "Saudi Arabia", "type": "airport"},
+        {"code": "RUH", "name": "Riyadh", "fullName": "King Khalid International Airport", "country": "Saudi Arabia", "type": "airport"},
+        {"code": "TLV", "name": "Tel Aviv", "fullName": "Ben Gurion Airport", "country": "Israel", "type": "airport"},
+        {"code": "IST", "name": "Istanbul", "fullName": "Istanbul Airport", "country": "Turkey", "type": "airport"},
+        
+        # Europe
+        {"code": "LHR", "name": "London", "fullName": "Heathrow Airport", "country": "UK", "type": "airport"},
+        {"code": "LGW", "name": "London Gatwick", "fullName": "Gatwick Airport", "country": "UK", "type": "airport"},
+        {"code": "CDG", "name": "Paris", "fullName": "Charles de Gaulle Airport", "country": "France", "type": "airport"},
+        {"code": "FRA", "name": "Frankfurt", "fullName": "Frankfurt Airport", "country": "Germany", "type": "airport"},
+        {"code": "AMS", "name": "Amsterdam", "fullName": "Schiphol Airport", "country": "Netherlands", "type": "airport"},
+        {"code": "MAD", "name": "Madrid", "fullName": "Adolfo Suárez Madrid–Barajas Airport", "country": "Spain", "type": "airport"},
+        {"code": "BCN", "name": "Barcelona", "fullName": "Barcelona–El Prat Airport", "country": "Spain", "type": "airport"},
+        {"code": "FCO", "name": "Rome", "fullName": "Leonardo da Vinci International Airport", "country": "Italy", "type": "airport"},
+        {"code": "MXP", "name": "Milan", "fullName": "Milan Malpensa Airport", "country": "Italy", "type": "airport"},
+        {"code": "ZRH", "name": "Zurich", "fullName": "Zurich Airport", "country": "Switzerland", "type": "airport"},
+        
+        # Americas
+        {"code": "JFK", "name": "New York (JFK)", "fullName": "John F. Kennedy International Airport", "country": "USA", "type": "airport"},
+        {"code": "EWR", "name": "Newark", "fullName": "Newark Liberty International Airport", "country": "USA", "type": "airport"},
+        {"code": "LAX", "name": "Los Angeles", "fullName": "Los Angeles International Airport", "country": "USA", "type": "airport"},
+        {"code": "ORD", "name": "Chicago", "fullName": "O'Hare International Airport", "country": "USA", "type": "airport"},
+        {"code": "ATL", "name": "Atlanta", "fullName": "Hartsfield-Jackson Atlanta International Airport", "country": "USA", "type": "airport"},
+        {"code": "MIA", "name": "Miami", "fullName": "Miami International Airport", "country": "USA", "type": "airport"},
+        {"code": "IAH", "name": "Houston", "fullName": "George Bush Intercontinental Airport", "country": "USA", "type": "airport"},
+        {"code": "YYZ", "name": "Toronto", "fullName": "Toronto Pearson International Airport", "country": "Canada", "type": "airport"},
+        {"code": "GRU", "name": "São Paulo", "fullName": "São Paulo/Guarulhos International Airport", "country": "Brazil", "type": "airport"},
+        
+        # Asia
+        {"code": "SIN", "name": "Singapore", "fullName": "Singapore Changi Airport", "country": "Singapore", "type": "airport"},
+        {"code": "HKG", "name": "Hong Kong", "fullName": "Hong Kong International Airport", "country": "Hong Kong", "type": "airport"},
+        {"code": "BKK", "name": "Bangkok", "fullName": "Suvarnabhumi Airport", "country": "Thailand", "type": "airport"},
+        {"code": "KUL", "name": "Kuala Lumpur", "fullName": "Kuala Lumpur International Airport", "country": "Malaysia", "type": "airport"},
+        {"code": "DEL", "name": "New Delhi", "fullName": "Indira Gandhi International Airport", "country": "India", "type": "airport"},
+        {"code": "BOM", "name": "Mumbai", "fullName": "Chhatrapati Shivaji Maharaj International Airport", "country": "India", "type": "airport"},
+        {"code": "PEK", "name": "Beijing", "fullName": "Beijing Capital International Airport", "country": "China", "type": "airport"},
+        {"code": "PVG", "name": "Shanghai", "fullName": "Shanghai Pudong International Airport", "country": "China", "type": "airport"},
+        {"code": "NRT", "name": "Tokyo (Narita)", "fullName": "Narita International Airport", "country": "Japan", "type": "airport"},
+        {"code": "ICN", "name": "Seoul", "fullName": "Incheon International Airport", "country": "South Korea", "type": "airport"},
+    ]
+    
+    # Also return city coordinates for experiences
+    cities = [
+        {"lat": 6.5244, "lng": 3.3792, "name": "Lagos", "country": "Nigeria"},
+        {"lat": 9.0765, "lng": 7.3986, "name": "Abuja", "country": "Nigeria"},
+        {"lat": 4.8156, "lng": 7.0498, "name": "Port Harcourt", "country": "Nigeria"},
+        {"lat": 5.6037, "lng": -0.187, "name": "Accra", "country": "Ghana"},
+        {"lat": -1.2921, "lng": 36.8219, "name": "Nairobi", "country": "Kenya"},
+        {"lat": -26.2041, "lng": 28.0473, "name": "Johannesburg", "country": "South Africa"},
+        {"lat": 30.0444, "lng": 31.2357, "name": "Cairo", "country": "Egypt"},
+        {"lat": 25.2048, "lng": 55.2708, "name": "Dubai", "country": "UAE"},
+        {"lat": 51.5074, "lng": -0.1278, "name": "London", "country": "UK"},
+        {"lat": 48.8566, "lng": 2.3522, "name": "Paris", "country": "France"},
+        {"lat": 40.7128, "lng": -74.006, "name": "New York", "country": "USA"},
+        {"lat": 34.0522, "lng": -118.2437, "name": "Los Angeles", "country": "USA"},
+        {"lat": 41.9028, "lng": 12.4964, "name": "Rome", "country": "Italy"},
+        {"lat": 41.3851, "lng": 2.1734, "name": "Barcelona", "country": "Spain"},
+        {"lat": 1.3521, "lng": 103.8198, "name": "Singapore", "country": "Singapore"},
+        {"lat": 13.7563, "lng": 100.5018, "name": "Bangkok", "country": "Thailand"},
+        {"lat": 35.6762, "lng": 139.6503, "name": "Tokyo", "country": "Japan"},
+        {"lat": -33.8688, "lng": 151.2093, "name": "Sydney", "country": "Australia"},
+    ]
+    
+    return {
+        'success': True,
+        'airports': locations,
+        'cities': cities
+    }
+
+
 @api_router.post("/travel/flights/search")
 async def api_search_flights(request: FlightSearchRequest, user: dict = Depends(get_current_user)):
     """Search for available flights"""
