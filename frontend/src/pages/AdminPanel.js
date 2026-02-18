@@ -1858,6 +1858,12 @@ const AdminPanel = ({ user, setUser }) => {
               onClick={() => { setActiveSection('giftcards-provider'); setAdminSidebarOpen(false); }}
             />
             <SidebarItem
+              icon={Plane}
+              label="Travel (Amadeus)"
+              active={activeSection === 'travel-provider'}
+              onClick={() => { setActiveSection('travel-provider'); setAdminSidebarOpen(false); }}
+            />
+            <SidebarItem
               icon={Tag}
               label="Promo Codes"
               active={activeSection === 'promo-codes'}
