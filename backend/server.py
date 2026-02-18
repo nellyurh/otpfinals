@@ -1830,6 +1830,268 @@ async def create_paymentpoint_virtual_account(user: dict) -> Optional[VirtualAcc
         logger.error(f"Error creating virtual account: {str(e)}")
         return None
 
+
+# ============ Amadeus Travel API Integration ============
+
+class AmadeusTokenManager:
+    """Manages OAuth2 token lifecycle for Amadeus API authentication"""
+    
+    def __init__(self):
+        self.token: Optional[str] = None
+        self.token_expires_at: Optional[datetime] = None
+        self.lock = asyncio.Lock()
+    
+    async def get_credentials(self) -> Dict[str, str]:
+        """Get Amadeus credentials from database or env fallback"""
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        api_key = get_api_key(config, 'amadeus_api_key', AMADEUS_API_KEY)
+        api_secret = get_api_key(config, 'amadeus_api_secret', AMADEUS_API_SECRET)
+        base_url = config.get('amadeus_base_url', AMADEUS_BASE_URL) if config else AMADEUS_BASE_URL
+        
+        return {
+            "client_id": api_key,
+            "client_secret": api_secret,
+            "base_url": base_url
+        }
+    
+    async def get_token(self) -> str:
+        """Get valid access token, refreshing if necessary"""
+        # Check if current token is still valid (with 5 min buffer)
+        if self.token and self.token_expires_at:
+            buffer_time = timedelta(seconds=300)
+            if datetime.now(timezone.utc) < (self.token_expires_at - buffer_time):
+                return self.token
+        
+        # Token is invalid or doesn't exist, acquire new one
+        async with self.lock:
+            # Double-check after acquiring lock
+            if self.token and self.token_expires_at:
+                buffer_time = timedelta(seconds=300)
+                if datetime.now(timezone.utc) < (self.token_expires_at - buffer_time):
+                    return self.token
+            
+            return await self._request_token()
+    
+    async def _request_token(self) -> str:
+        """Request new access token from Amadeus authorization server"""
+        credentials = await self.get_credentials()
+        
+        if not credentials['client_id'] or not credentials['client_secret']:
+            raise HTTPException(status_code=500, detail="Amadeus API credentials not configured")
+        
+        token_url = f"{credentials['base_url']}/v1/security/oauth2/token"
+        
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": credentials['client_id'],
+            "client_secret": credentials['client_secret']
+        }
+        
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.post(
+                    token_url,
+                    data=payload,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"}
+                )
+                response.raise_for_status()
+            
+            token_data = response.json()
+            self.token = token_data['access_token']
+            
+            # Calculate expiration time
+            expires_in = token_data.get('expires_in', 1800)
+            self.token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+            
+            logger.info(f"Amadeus token obtained, expires at {self.token_expires_at}")
+            return self.token
+            
+        except httpx.HTTPError as e:
+            logger.error(f"Failed to obtain Amadeus token: {e}")
+            raise HTTPException(status_code=500, detail=f"Amadeus authentication failed: {str(e)}")
+    
+    def invalidate_token(self):
+        """Invalidate current token (e.g., when switching environments)"""
+        self.token = None
+        self.token_expires_at = None
+
+# Global Amadeus token manager
+amadeus_token_manager = AmadeusTokenManager()
+
+
+async def amadeus_request(endpoint: str, method: str = 'GET', params: Dict = None, data: Dict = None) -> Dict:
+    """Make authenticated request to Amadeus API"""
+    token = await amadeus_token_manager.get_token()
+    credentials = await amadeus_token_manager.get_credentials()
+    
+    url = f"{credentials['base_url']}{endpoint}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            if method.upper() == 'GET':
+                response = await client.get(url, params=params, headers=headers)
+            elif method.upper() == 'POST':
+                response = await client.post(url, json=data, headers=headers)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+            
+            response.raise_for_status()
+            return response.json()
+            
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Amadeus API error: {e.response.status_code} - {e.response.text}")
+        raise HTTPException(status_code=e.response.status_code, detail=f"Amadeus API error: {e.response.text}")
+    except httpx.HTTPError as e:
+        logger.error(f"Amadeus request failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Amadeus API request failed: {str(e)}")
+
+
+# ============ Amadeus Flight Functions ============
+
+async def search_flights(
+    origin: str,
+    destination: str,
+    departure_date: str,
+    adults: int = 1,
+    children: int = 0,
+    infants: int = 0,
+    return_date: str = None,
+    cabin_class: str = None,
+    non_stop: bool = False,
+    max_results: int = 10
+) -> Dict:
+    """Search for available flights using Amadeus Flight Offers Search API"""
+    params = {
+        "originLocationCode": origin.upper(),
+        "destinationLocationCode": destination.upper(),
+        "departureDate": departure_date,
+        "adults": str(adults),
+        "max": str(max_results)
+    }
+    
+    if children > 0:
+        params["children"] = str(children)
+    if infants > 0:
+        params["infants"] = str(infants)
+    if return_date:
+        params["returnDate"] = return_date
+    if cabin_class:
+        params["travelClass"] = cabin_class
+    if non_stop:
+        params["nonStop"] = "true"
+    
+    return await amadeus_request("/v2/shopping/flight-offers", "GET", params=params)
+
+
+async def get_flight_price(flight_offer: Dict) -> Dict:
+    """Confirm final flight price using Amadeus Flight Offers Price API"""
+    payload = {
+        "data": {
+            "type": "flight-offers-pricing",
+            "flightOffers": [flight_offer]
+        }
+    }
+    
+    return await amadeus_request("/v1/shopping/flight-offers/pricing", "POST", data=payload)
+
+
+async def create_flight_booking(booking_data: Dict) -> Dict:
+    """Create a flight booking using Amadeus Flight Create Orders API"""
+    return await amadeus_request("/v1/booking/flight-orders", "POST", data=booking_data)
+
+
+# ============ Amadeus Hotel Functions ============
+
+async def search_hotels_by_city(city_code: str, radius: int = 5, radius_unit: str = "KM") -> Dict:
+    """Search for hotels in a city using Amadeus Hotel List API"""
+    params = {
+        "cityCode": city_code.upper(),
+        "radius": str(radius),
+        "radiusUnit": radius_unit
+    }
+    
+    return await amadeus_request("/v1/reference-data/locations/hotels/by-city", "GET", params=params)
+
+
+async def search_hotel_offers(
+    hotel_ids: List[str],
+    check_in_date: str,
+    check_out_date: str,
+    adults: int = 1,
+    rooms: int = 1,
+    currency: str = "USD"
+) -> Dict:
+    """Search for available hotel offers with pricing"""
+    params = {
+        "hotelIds": ",".join(hotel_ids[:20]),  # API limit
+        "adults": str(adults),
+        "checkInDate": check_in_date,
+        "checkOutDate": check_out_date,
+        "roomQuantity": str(rooms),
+        "currency": currency
+    }
+    
+    return await amadeus_request("/v3/shopping/hotel-offers", "GET", params=params)
+
+
+async def create_hotel_booking(booking_data: Dict) -> Dict:
+    """Create a hotel booking using Amadeus Hotel Booking API"""
+    return await amadeus_request("/v2/booking/hotel-orders", "POST", data=booking_data)
+
+
+# ============ Amadeus Transfer Functions ============
+
+async def search_transfers(
+    start_location_code: str,
+    end_location_code: str,
+    start_date_time: str,
+    passengers: int = 1,
+    transfer_type: str = "PRIVATE"
+) -> Dict:
+    """Search for available transfers"""
+    payload = {
+        "startLocationCode": start_location_code.upper(),
+        "endLocationCode": end_location_code.upper(),
+        "startDateTime": start_date_time,
+        "transferType": transfer_type,
+        "passengers": passengers
+    }
+    
+    return await amadeus_request("/v1/shopping/transfer-offers", "POST", data=payload)
+
+
+async def create_transfer_booking(booking_data: Dict) -> Dict:
+    """Create a transfer booking"""
+    return await amadeus_request("/v1/ordering/transfer-orders", "POST", data=booking_data)
+
+
+# ============ Amadeus Activities/Experiences Functions ============
+
+async def search_activities_by_location(
+    latitude: float,
+    longitude: float,
+    radius: int = 5
+) -> Dict:
+    """Search for activities near a location"""
+    params = {
+        "latitude": str(latitude),
+        "longitude": str(longitude),
+        "radius": str(radius)
+    }
+    
+    return await amadeus_request("/v1/shopping/activities", "GET", params=params)
+
+
+async def get_activity_details(activity_id: str) -> Dict:
+    """Get details for a specific activity"""
+    return await amadeus_request(f"/v1/shopping/activities/{activity_id}", "GET")
+
+
 # ============ SMS Provider Functions (Updated) ============
 
 async def purchase_number_smspool(service: str, country: str, **kwargs) -> Optional[Dict]:
