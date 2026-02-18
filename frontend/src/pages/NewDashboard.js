@@ -815,7 +815,8 @@ const NewDashboard = () => {
           { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', badge: 'NEW', toggle: 'enable_bills' },
         ]),
         { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' },
-        { id: 'travel', icon: Plane, label: 'Travel', badge: 'NEW', toggle: 'enable_travel_booking' }
+        // Travel is only shown on sites that have it enabled (site-specific feature)
+        ...(showTravelFeature ? [{ id: 'travel', icon: Plane, label: 'Travel', badge: 'NEW', toggle: 'enable_travel_booking' }] : [])
       ]
     },
     {
