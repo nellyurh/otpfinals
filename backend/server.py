@@ -9891,6 +9891,111 @@ async def get_travel_locations():
     }
 
 
+@api_router.get("/travel/search-locations")
+async def search_travel_locations(keyword: str, max: int = 10, include_airports: bool = True):
+    """Search for cities and airports using Amadeus API"""
+    if not keyword or len(keyword) < 2:
+        return {'success': True, 'data': []}
+    
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    amadeus_key = get_api_key(config, 'amadeus_api_key', AMADEUS_API_KEY)
+    amadeus_secret = get_api_key(config, 'amadeus_api_secret', AMADEUS_API_SECRET)
+    base_url = config.get('amadeus_base_url', AMADEUS_BASE_URL) if config else AMADEUS_BASE_URL
+    
+    if not amadeus_key or not amadeus_secret:
+        # Fallback to static list search
+        keyword_lower = keyword.lower()
+        results = [
+            {**a, 'subType': 'AIRPORT'} for a in AIRPORTS 
+            if keyword_lower in a.get('name', '').lower() or 
+               keyword_lower in a.get('code', '').lower() or
+               keyword_lower in a.get('country', '').lower() or
+               keyword_lower in a.get('fullName', '').lower()
+        ][:max]
+        return {'success': True, 'data': results, 'source': 'static'}
+    
+    try:
+        # Get Amadeus token
+        token = await get_amadeus_token(amadeus_key, amadeus_secret, base_url)
+        if not token:
+            raise HTTPException(status_code=500, detail="Failed to authenticate with Amadeus")
+        
+        api_base = "https://test.api.amadeus.com" if base_url == "test" else "https://api.amadeus.com"
+        
+        # Search cities with optional airports
+        params = {
+            'keyword': keyword.upper(),
+            'max': max
+        }
+        if include_airports:
+            params['include'] = 'AIRPORTS'
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{api_base}/v1/reference-data/locations/cities",
+                headers={'Authorization': f'Bearer {token}'},
+                params=params,
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                cities = data.get('data', [])
+                included_airports = data.get('included', {}).get('airports', {})
+                
+                # Format results
+                results = []
+                for city in cities:
+                    # Add city itself
+                    results.append({
+                        'code': city.get('iataCode'),
+                        'name': city.get('name'),
+                        'fullName': f"{city.get('name')} City",
+                        'country': city.get('address', {}).get('countryCode', ''),
+                        'subType': 'CITY',
+                        'geoCode': city.get('geoCode', {})
+                    })
+                    
+                    # Add related airports
+                    for rel in city.get('relationships', []):
+                        airport_id = rel.get('id')
+                        if airport_id and airport_id in included_airports:
+                            airport = included_airports[airport_id]
+                            results.append({
+                                'code': airport.get('iataCode'),
+                                'name': airport.get('name'),
+                                'fullName': airport.get('name'),
+                                'country': city.get('address', {}).get('countryCode', ''),
+                                'subType': 'AIRPORT',
+                                'cityCode': city.get('iataCode')
+                            })
+                
+                return {'success': True, 'data': results, 'source': 'amadeus'}
+            else:
+                logger.warning(f"Amadeus city search failed: {response.status_code} - {response.text}")
+                # Fallback to static
+                keyword_lower = keyword.lower()
+                results = [
+                    {**a, 'subType': 'AIRPORT'} for a in AIRPORTS 
+                    if keyword_lower in a.get('name', '').lower() or 
+                       keyword_lower in a.get('code', '').lower() or
+                       keyword_lower in a.get('country', '').lower()
+                ][:max]
+                return {'success': True, 'data': results, 'source': 'static_fallback'}
+                
+    except Exception as e:
+        logger.error(f"Error searching locations: {str(e)}")
+        # Fallback to static list
+        keyword_lower = keyword.lower()
+        results = [
+            {**a, 'subType': 'AIRPORT'} for a in AIRPORTS 
+            if keyword_lower in a.get('name', '').lower() or 
+               keyword_lower in a.get('code', '').lower() or
+               keyword_lower in a.get('country', '').lower()
+        ][:max]
+        return {'success': True, 'data': results, 'source': 'static_error'}
+
+
 @api_router.post("/travel/flights/search")
 async def api_search_flights(request: FlightSearchRequest, user: dict = Depends(get_current_user)):
     """Search for available flights"""
