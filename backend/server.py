@@ -764,6 +764,9 @@ AMADEUS_API_KEY = os.environ.get('AMADEUS_API_KEY', '')
 AMADEUS_API_SECRET = os.environ.get('AMADEUS_API_SECRET', '')
 AMADEUS_BASE_URL = os.environ.get('AMADEUS_BASE_URL', 'https://test.api.amadeus.com')  # test or production
 
+# Feature Unlock PIN - Required to enable/disable site-specific premium features
+FEATURE_UNLOCK_PIN = os.environ.get('FEATURE_UNLOCK_PIN', '1234')  # Default PIN, change in production!
+
 # ============ Models ============
 
 class UserRegister(BaseModel):
