@@ -1,6 +1,30 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-02-18 (Session 13)**: Travel Section Major Improvements
+  - NEW: **Dynamic Airport/City Search** - Uses Amadeus API `/v1/reference-data/locations/cities` endpoint
+    - Real-time search as you type with debouncing
+    - Wide dropdown (400-500px) matching Booking.com design
+    - Shows airports with plane icons, cities with building icons
+    - Country tags, airport codes with theme-colored badges
+    - Fallback to static list (649 airports) if API unavailable
+  - NEW: **Multi-city Flight Search** - Added "Multi-city" trip type option
+    - Flight 1, Flight 2, etc. segments with From/To/Date
+    - "+ Add another flight" button (up to 6 flights)
+    - Remove segment with trash icon
+  - NEW: **Dynamic Theme Colors** - Travel section uses app's primary color (from branding/admin)
+    - Header, buttons, badges, icons all adapt to theme
+    - No more hardcoded blue (#003580)
+  - IMPROVED: **Exchange Rate Hidden** - Removed from user-facing UI
+    - Rate still used internally for USD to NGN conversion
+    - Admin configurable via `ngn_to_usd_rate` in pricing config
+  - IMPROVED: **649 Worldwide Airports** - Comprehensive list in `/app/backend/airports_data.py`
+    - Nigeria (20+), West Africa, East Africa, Southern Africa
+    - Middle East, Europe, Americas, Asia, Oceania
+  - IMPROVED: **171 Cities** for Attractions/Experiences
+  - FIXED: **Feature Unlock PIN** - Changed default to `11550099876`
+  - NEW: Backend endpoint `GET /api/travel/search-locations?keyword=XXX&max=15`
+
 - **2026-02-13 (Session 12 continued)**: Dashboard UI + Virtual Cards Redesign + Bill Markups
   - UI: **Removed top balance from dashboard header** - Balance is already shown in the balance card
   - UI: **Added refresh icon to header** - Users can quickly refresh their balance
