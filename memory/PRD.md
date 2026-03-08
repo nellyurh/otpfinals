@@ -1,6 +1,24 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-03-08 (Session 15)**: SMS Provider Database Caching Implementation
+  - **FIXED:** Tiger SMS and SMS Bower providers now functional with database caching
+  - **NEW:** Database caching for Tiger SMS - 20,960 services cached across 200 countries
+  - **NEW:** Database caching for SMS Bower - requires API key configuration in Admin Panel
+  - **NEW:** Admin endpoints for provider sync:
+    - `POST /api/admin/sms-providers/sync` - Sync all or specific provider
+    - `GET /api/admin/sms-providers/cache-status` - Get cache statistics
+  - **NEW:** Admin Panel "Sync Provider Services" card with:
+    - Sync All button
+    - Individual provider sync buttons (Tiger SMS, SMS Bower)
+    - Cache statistics display (services cached, countries, last synced)
+  - **IMPROVED:** `/api/services/tigersms` now accepts `country` parameter for filtered services
+  - **IMPROVED:** `/api/services/tigersms/countries` endpoint returns list of available countries
+  - **IMPROVED:** `/api/services/smsbower/countries` endpoint for SMS Bower countries
+  - **IMPROVED:** Purchase endpoint handles new provider server names (tigersms_us, smsbower_us, etc.)
+  - **VERIFIED:** UI correctly hides provider names - shows generic names (Premium Server, Server 1, Budget Server, Fast Server)
+  - Files modified: `/app/backend/server.py`, `/app/frontend/src/pages/AdminPanel.js`, `/app/frontend/src/components/VirtualNumbersSection.js`
+
 - **2026-03-08 (Session 14)**: SMS Provider Integration - Dropdown-Based Navigation
   - **KEPT:** Existing Virtual Numbers page with original 3 servers (US Server, International, Global)
   - **ADDED to dropdown:** "US Numbers" option with NEW badge - shows 4 provider cards:
