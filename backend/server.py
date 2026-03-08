@@ -997,7 +997,7 @@ class PricingConfig(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     # SMS Provider API Keys
     daisysms_api_key: str = ""
-    tigersmsms_api_key: str = ""
+    tigersms_api_key: str = ""  # Tiger SMS API key
     smspool_api_key: str = ""
     fivesim_api_key: str = ""
     smsbower_api_key: str = ""  # SMS Bower API key
@@ -1330,6 +1330,7 @@ class UpdatePricingRequest(BaseModel):
     smsbower_api_key: Optional[str] = None  # SMS Bower API key
     textverified_api_key: Optional[str] = None  # Text Verified API key
     textverified_email: Optional[str] = None  # Text Verified email
+    tigersms_api_key: Optional[str] = None  # Tiger SMS API key
     # SMS Provider Enable/Disable Toggles
     enable_provider_daisysms: Optional[bool] = None
     enable_provider_smspool: Optional[bool] = None
@@ -11847,7 +11848,7 @@ async def reseller_get_services(request: Request, server: str, country: Optional
     elif server == 'usa_tiger':
         # Tiger SMS (US)
         markup = pricing.get('tigersms_markup', 50)
-        tigersms_key = pricing.get('tigersmsms_api_key', '') or TIGERSMS_API_KEY
+        tigersms_key = pricing.get('tigersms_api_key', '') or TIGERSMS_API_KEY
         if tigersms_key:
             try:
                 async with httpx.AsyncClient() as client:

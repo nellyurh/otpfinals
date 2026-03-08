@@ -774,6 +774,7 @@ const AdminPanel = ({ user, setUser }) => {
     smsbower_api_key: '',
     textverified_api_key: '',
     textverified_email: '',
+    tigersms_api_key: '',  // Tiger SMS API key
     // Provider enable/disable toggles
     enable_provider_daisysms: false,
     enable_provider_smspool: true,
@@ -781,6 +782,7 @@ const AdminPanel = ({ user, setUser }) => {
     enable_provider_tigersms: true,
     enable_provider_smsbower: true,
     enable_provider_textverified: true,
+    tigersms_markup: 50,  // Tiger SMS markup
     wallet_usd_to_ngn_rate: 1650,
     giftcard_usd_to_ngn_rate: 1650,
     // Amadeus Travel API
@@ -1581,6 +1583,8 @@ const AdminPanel = ({ user, setUser }) => {
         smsbower_api_key: response.data.smsbower_api_key || '',
         textverified_api_key: response.data.textverified_api_key || '',
         textverified_email: response.data.textverified_email || '',
+        tigersms_api_key: response.data.tigersms_api_key || '',
+        tigersms_markup: response.data.tigersms_markup ?? 50,
         // Provider enable/disable toggles
         enable_provider_daisysms: response.data.enable_provider_daisysms ?? false,
         enable_provider_smspool: response.data.enable_provider_smspool ?? true,
@@ -1886,6 +1890,7 @@ const AdminPanel = ({ user, setUser }) => {
       // New provider keys
       if (!body.smsbower_api_key || body.smsbower_api_key === '********') delete body.smsbower_api_key;
       if (!body.textverified_api_key || body.textverified_api_key === '********') delete body.textverified_api_key;
+      if (!body.tigersms_api_key || body.tigersms_api_key === '********') delete body.tigersms_api_key;
       // Don't send masked PaymentPoint credentials
       if (!body.paymentpoint_api_key || body.paymentpoint_api_key === '********') delete body.paymentpoint_api_key;
       if (!body.paymentpoint_secret || body.paymentpoint_secret === '********') delete body.paymentpoint_secret;
@@ -6186,6 +6191,18 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                       </div>
                       <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Tiger SMS Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.tigersms_markup}
+                            onChange={(e) => setPricing({ ...pricing, tigersms_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">NGN/USD Rate</Label>
                         <div className="relative">
                           <Input
@@ -6255,6 +6272,11 @@ const AdminPanel = ({ user, setUser }) => {
                         <p className="text-[9px] text-slate-400">Account email for Text Verified authentication</p>
                       </div>
                     </div>
+                    <ApiKeyField
+                      label="Tiger SMS API Key"
+                      value={pricing.tigersms_api_key}
+                      onChange={(val) => setPricing({ ...pricing, tigersms_api_key: val })}
+                    />
                     
                     <div className="pt-3 border-t border-slate-100">
                       <p className="text-[10px] text-slate-500 mb-2">Environment-based keys (managed outside dashboard):</p>
