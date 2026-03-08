@@ -284,10 +284,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             break;
           case 'smsbower':
             endpoint = '/api/services/smsbower';
-            params = { country: '0' };
+            params = { country: '0' };  // 0 = Russia/US for SMS Bower
             break;
           case 'tigersms':
             endpoint = '/api/services/tigersms';
+            params = { country: '187' };  // 187 = USA for Tiger SMS
             break;
           default:
             return;
@@ -298,8 +299,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         if (response.data.success) {
           let serviceList = response.data.services || [];
           
-          // Normalize service format for tigersms
-          if (providerId === 'tigersms' && response.data.data) {
+          // Fallback: Normalize service format for tigersms if old format returned
+          if (providerId === 'tigersms' && !serviceList.length && response.data.data) {
             const usaServices = response.data.data['187'] || response.data.data['us'] || {};
             serviceList = Object.entries(usaServices).map(([code, info]) => ({
               value: code,
@@ -321,7 +322,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             endpoint = '/api/services/5sim';
             break;
           case 'smsbower':
-            endpoint = '/api/services/smsbower';
+            endpoint = '/api/services/smsbower/countries';
             break;
           case 'tigersms':
             endpoint = '/api/services/tigersms/countries';

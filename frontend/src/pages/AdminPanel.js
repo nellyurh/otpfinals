@@ -1171,8 +1171,45 @@ const AdminPanel = ({ user, setUser }) => {
   });
 
   const [providerBalances, setProviderBalances] = useState(null);
+  const [cacheStatus, setCacheStatus] = useState(null);
+  const [syncingProviders, setSyncingProviders] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editUser, setEditUser] = useState(null);
+
+  // Fetch SMS provider cache status
+  const fetchCacheStatus = async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/sms-providers/cache-status`, axiosConfig);
+      if (resp.data.success) {
+        setCacheStatus(resp.data.cache_status);
+      }
+    } catch (e) {
+      console.error('Failed to fetch cache status:', e);
+    }
+  };
+
+  // Sync SMS provider services to database
+  const syncProviderServices = async (provider = null) => {
+    setSyncingProviders(true);
+    try {
+      const url = provider 
+        ? `${API}/admin/sms-providers/sync?provider=${provider}`
+        : `${API}/admin/sms-providers/sync`;
+      const resp = await axios.post(url, {}, axiosConfig);
+      if (resp.data.success) {
+        toast.success('Provider services synced successfully!');
+        // Refresh cache status
+        await fetchCacheStatus();
+      } else {
+        toast.error(resp.data.message || 'Sync failed');
+      }
+    } catch (e) {
+      console.error('Sync error:', e);
+      toast.error('Failed to sync provider services');
+    } finally {
+      setSyncingProviders(false);
+    }
+  };
 
   const fetchAdminNotifications = async () => {
     try {
@@ -1423,6 +1460,7 @@ const AdminPanel = ({ user, setUser }) => {
     fetchResellerSalesOrders();
     fetchResellerSalesStats();
     fetchServiceStats();
+    fetchCacheStatus();
   }, []);
 
   useEffect(() => {
@@ -6116,6 +6154,119 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+
+                {/* Sync Provider Services */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                          <RefreshCw className="w-4 h-4 text-blue-600" />
+                          Sync Provider Services
+                        </CardTitle>
+                        <CardDescription className="text-xs">Sync country and service data from SMS providers to database cache</CardDescription>
+                      </div>
+                      <Button 
+                        variant="default" 
+                        className="h-8 px-4 text-xs bg-blue-600 hover:bg-blue-700"
+                        onClick={() => syncProviderServices()}
+                        disabled={syncingProviders}
+                      >
+                        {syncingProviders ? (
+                          <>
+                            <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" />
+                            Syncing...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="w-3 h-3 mr-1.5" />
+                            Sync All
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Tiger SMS Cache Status */}
+                      <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-amber-50 to-white">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🐯</span>
+                            <span className="font-semibold text-slate-800 text-sm">Tiger SMS</span>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="h-7 px-2 text-[10px]"
+                            onClick={() => syncProviderServices('tigersms')}
+                            disabled={syncingProviders}
+                          >
+                            Sync
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-slate-600">
+                          <div>
+                            <span className="text-slate-500">Services:</span>{' '}
+                            <span className="font-medium">{cacheStatus?.tigersms?.services_cached || 0}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Countries:</span>{' '}
+                            <span className="font-medium">{cacheStatus?.tigersms?.countries || 0}</span>
+                          </div>
+                        </div>
+                        {cacheStatus?.tigersms?.last_updated && (
+                          <div className="text-[10px] text-slate-400 mt-1">
+                            Last synced: {new Date(cacheStatus.tigersms.last_updated).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* SMS Bower Cache Status */}
+                      <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-blue-50 to-white">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">📱</span>
+                            <span className="font-semibold text-slate-800 text-sm">SMS Bower</span>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="h-7 px-2 text-[10px]"
+                            onClick={() => syncProviderServices('smsbower')}
+                            disabled={syncingProviders}
+                          >
+                            Sync
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-slate-600">
+                          <div>
+                            <span className="text-slate-500">Services:</span>{' '}
+                            <span className="font-medium">{cacheStatus?.smsbower?.services_cached || 0}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Countries:</span>{' '}
+                            <span className="font-medium">{cacheStatus?.smsbower?.countries || 0}</span>
+                          </div>
+                        </div>
+                        {cacheStatus?.smsbower?.last_updated && (
+                          <div className="text-[10px] text-slate-400 mt-1">
+                            Last synced: {new Date(cacheStatus.smsbower.last_updated).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <span className="text-amber-500 text-sm">⚠️</span>
+                        <p className="text-[11px] text-amber-800">
+                          <strong>Important:</strong> Sync services after adding API keys for Tiger SMS or SMS Bower. 
+                          This caches the available countries and services in your database for faster lookups.
+                        </p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 

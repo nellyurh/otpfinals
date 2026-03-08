@@ -1,91 +1,57 @@
 <analysis>**original_problem_statement:**
-The user is building BillHub, a comprehensive financial services application with two sites:  and .
+The user is building BillHub, a comprehensive financial services application. The current high-priority task is a major rework of the SMS provider services.
 
-Recent user requests have significantly evolved the project:
-1.  **Travel Section Overhaul:** The user requested a complete redesign and functional enhancement of the Amadeus-powered travel booking platform. This included:
-    *   Changing the admin unlock PIN to .
-    *   Redesigning the UI to be inspired by , using the app's primary theme colors (green) instead of hardcoded blue.
-    *   Replacing the static airport/city list with a dynamic, real-time search functionality powered by the Amadeus API. This search must be available for flights, stays, car rentals, and attractions.
-    *   Making the airport dropdown wider and more responsive.
-    *   Adding a Multi-city flight search option.
-    *   Implementing an admin-configurable USD to NGN exchange rate and using it to display all prices in Naira (NGN), while hiding the rate itself from the user interface.
-2.  **SMS Provider Rework:** A major new feature request to restructure the SMS services:
-    *   Add admin toggles to enable/disable specific SMS providers, as  is being deprecated.
-    *   Create a new US Numbers page with four provider cards: Text Verified, 5sim, SMS Bower, and Tiger SMS.
-    *   Create a new Global/Other Countries page with three provider cards and a country dropdown.
-    *   The existing  and  pages are to remain untouched.
-    *   The user has provided API documentation for  and a PHP implementation example for .
-3.  **Deployment Concerns:** The user shared a Docker deployment log, expressing concern, although the log indicates a successful deployment with only a non-critical warning.
+The user wants to keep the existing  page, which has three legacy server options in a dropdown. In addition, two new options must be added to that same dropdown: US Numbers and Other Countries.
+
+-   When US Numbers is selected, it should display four provider cards: Text Verified, 5sim, SMS Bower, and Tiger SMS.
+-   When Other Countries is selected, it should display three provider cards: 5sim, SMS Bower, and Tiger SMS.
+-   Crucially, the provider names (e.g., Text Verified, 5sim) **must not** be visible to the end-user. Instead, generic names like Premium Server, Server 1, Budget Server, and Fast Server should be displayed on the cards.
+-   The user has reported that the new providers are not working after adding the API keys. They have provided detailed API documentation for Tiger SMS and SMS Bower, clarifying that their available countries and services **must be fetched and stored in the database** for the integration to work.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack project with a React frontend, a FastAPI backend, and a MongoDB database.
-
-In this session, the agent performed a complete overhaul of the Travel section based on iterative user feedback. The UI was redesigned to mimic , using the app's primary theme colors. The most significant change was replacing the static airport list with a dynamic, live search endpoint () that queries the Amadeus API in real-time. A multi-city flight search feature was added, and the pricing was updated to use an admin-configurable exchange rate to convert and display all prices in Nigerian Naira (NGN).
-
-Following the completion of the travel section work, the user introduced a new high-priority requirement to restructure the SMS provider integrations. The agent has received the requirements and API documentation for two new providers (, ) and is poised to begin this new major task.
+The agent has gone through multiple complex and incorrect iterations of the SMS feature UI based on iterative user feedback, finally arriving at the currently requested structure. The frontend component  has been heavily modified to conditionally render provider cards based on a dropdown selection. The backend  has been updated with functions, reseller logic, and API endpoints for the new providers (Tiger SMS, SMS Bower, Text Verified). The admin panel at  has been updated with enable/disable toggles and API key fields for all new providers, including a fix for an initial typo in the  variable. However, the core functionality is broken because the backend logic does not yet cache the provider-specific country and service data in the database, which is a requirement for the Tiger SMS and SMS Bower APIs to function correctly.
 
 **Last working item**:
--   Last item agent was working: The agent was preparing to start the new SMS Provider Integration feature. The agent had just received API documentation and implementation examples for the new providers (SMS Bower and Text Verified) from the user, along with confirmation on the implementation plan.
--   Status: NOT STARTED
+-   Last item agent was working: The agent received explicit instructions and API documentation from the user explaining that the new SMS providers are not working because their services and countries are not being cached in the database. The agent was acknowledging this and preparing to implement the database caching logic.
+-   Status: IN PROGRESS
 -   Agent Testing Done: N
 -   Which testing method agent to use? both
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Implement the new SMS Provider structure with new pages and integrations (P0).
--   Issue 2: Verify the completely overhauled Travel Section (UI, dynamic search, multi-city, pricing) (P0).
--   Issue 3: Make Admin button not working on live server (P1).
--   Issue 4: SMS OTP codes not being received on  server (P1, fix implemented in a previous fork but needs user verification).
--   Issue 5: End-to-end user flow for virtual card creation is not fully tested (P2).
--   Issue 6: Implemented KYC verification retry flow is untested (P2).
--   Issue 7: Implemented Payscribe webhook fee handling is untested (P2).
--   Issue 8: Reseller Portal UI has a horizontal scroll issue on mobile (P2).
+-   **Issue 1:** New SMS providers (Tiger SMS, SMS Bower, Text Verified) are not functional because their country/service data is not cached in the database. (P0, HIGHEST)
+-   **Issue 2:** Verify the completely overhauled Travel Section (UI, dynamic search, multi-city, pricing). (P0)
+-   **Issue 3:** Make Admin button not working on live server. (P1)
+-   **Issue 4:** SMS OTP codes not being received on  server. (P1)
+-   **Issue 5:** End-to-end user flow for virtual card creation is not fully tested. (P2)
+-   **Issue 6:** Implemented KYC verification retry flow is untested. (P2)
+-   **Issue 7:** Implemented Payscribe webhook fee handling is untested. (P2)
+-   **Issue 8:** Reseller Portal UI has a horizontal scroll issue on mobile. (P2)
 
 **Issues Detail:**
--   **Issue 1: Implement the new SMS Provider structure**
-    -   **Attempted fixes:** None. This is a new feature request.
+-   **Issue 1: New SMS providers are not functional.**
+    -   **Attempted fixes:** The agent has implemented the UI as requested and added the necessary API key fields to the admin panel. A typo () was also corrected. These fixes were insufficient as the root cause was a missing architectural step.
     -   **Next debug checklist:**
-        1.  Analyze the provided API documentation for SMS Bower and the PHP code for Text Verified to create Python/FastAPI equivalents.
-        2.  Create new backend endpoints in  to handle the new providers (get services, get price, buy, check, cancel).
-        3.  Add admin toggles in the database () and backend logic to control provider availability.
-        4.  Create new React pages/components for US Numbers and Global Numbers.
-        5.  Implement the card-based UI as requested.
-        6.  Integrate the frontend with the new backend endpoints.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a high-priority user request to modernize the SMS offerings and replace a provider that is going out of business.
-    -   **Status:** NOT STARTED
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on other issue:** None
-
--   **Issue 2: Verify the overhauled Travel Section**
-    -   **Attempted fixes:** N/A. The feature was just built.
-    -   **Next debug checklist:**
-        1.  Ask the user to test the entire travel booking flow: Flights (One-way, Round trip, Multi-city), Stays, Car Rentals, Attractions.
-        2.  Confirm the dynamic location search works correctly across all tabs.
-        3.  Confirm the UI matches their expectations (Booking.com style, green theme).
-        4.  Confirm prices are displayed correctly in Naira (NGN).
-        5.  Confirm the admin can change the  and it reflects in the pricing.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a major feature that was just delivered and requires user validation before moving on.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on other issue:** None
-
--   **Issue 3: Make Admin button not working on live server**
-    -   **Attempted fixes:** None in this session.
-    -   **Next debug checklist:**
-        1.  Ask the user for network request/response details from their browser's developer tools on the live site.
-        2.  Guide the user to check live backend logs for errors.
-    -   **Why fix this issue and what will be achieved with the fix?** Core administrative function is broken in production.
-    -   **Status:** NOT STARTED
-    -   **Is recurring issue?** Y
+        1.  Create new MongoDB collections (e.g., , , ) or modify a general-purpose collection to store this data.
+        2.  In , create new utility functions/endpoints that call the provider APIs (, ) to fetch the service/country lists.
+        3.  Create a mechanism to populate/sync the database with this data (e.g., an admin-triggered button or a startup script).
+        4.  Modify the purchase functions (e.g., ) in  to query the local database for the correct service and country IDs before making a purchase request to the provider API.
+        5.  Test the entire flow: sync data from the admin panel, select a provider on the frontend, and attempt to purchase a number.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the primary blocker for the user's main feature request. The new SMS functionality is completely unusable without this fix.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y (The SMS feature implementation has been a multi-step process with several corrections).
     -   **Should Test frontend/backend/both after fix?** Both
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
-None. The travel task is complete from the agent's side, and the SMS task has not started.
+-   **Task 1: Complete the new SMS Provider structure**
+    -   **Where to resume:** Begin by implementing the database caching mechanism for Tiger SMS and SMS Bower in . Use the API documentation provided by the user in message #387.
+    -   **What will be achieved with this?** A fully functional SMS provider integration that meets all user requirements, allowing users to purchase numbers from the new providers via a card-based UI with provider names abstracted away.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
@@ -98,86 +64,83 @@ None. The travel task is complete from the agent's side, and the SMS task has no
     -   Implement account lockout after a set number of failed login attempts.
 
 **Completed work in this session**
--   **Complete Travel Section Overhaul:**
-    -   **UI Redesign:** Rewrote  to align with a  aesthetic, use the app's primary (green) theme color, and improve responsiveness of dropdowns.
-    -   **Dynamic Location Search:** Implemented a new backend endpoint  in  that calls the Amadeus API in real-time, replacing the previous static airport lists.
-    -   **Multi-City Flights:** Added a multi-city search option to the frontend UI.
-    -   **Currency Conversion:** Made the USD to NGN exchange rate configurable from the admin panel and hidden on the user-facing UI. Prices are now converted to and displayed in NGN.
-    -   **PIN Update:** Changed the  in  to .
--   **PRD Update:** Updated  to reflect the travel section improvements.
+-   **Iterative SMS Provider Implementation:**
+    -   Heavily modified  to add a dynamic mode that shows provider cards when new options are selected from the Select Server dropdown.
+    -   Implemented generic naming for provider cards (e.g., Premium Server) to hide provider identities from users.
+    -   Modified  to include enable/disable toggles and API key/markup fields for Tiger SMS, SMS Bower, and Text Verified.
+    -   Updated reseller API endpoints in  to support the new providers using generic server names.
+-   **Bug Fix:**
+    -   Corrected an inconsistent variable name for the Tiger SMS API key ( -> ) in both the frontend and backend.
+-   **PRD Update:**
+    -   The  file was updated multiple times to reflect the progress on the SMS feature.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Reseller Portal UI:** The portal still has a horizontal scroll issue on mobile devices.
--   **User Deployment Concern:** The user raised a concern about their deployment process, sharing a log file. The agent identified it as a non-blocking warning, but the user may still have underlying deployment issues.
+-   **User Deployment Concern:** A user concern about their deployment process was noted but not investigated.
 
 **Known issue recurrence from previous fork**
--   **Deployment/Configuration:** The user's concern about the  output highlights a recurring difficulty in managing two separate site configurations.
--   **Virtual Card Implementation:** The user has repeatedly requested changes to this section in the past. While it was not worked on in this session, it remains a sensitive area.
+-   The implementation of the SMS feature has been highly iterative, requiring multiple major corrections based on user feedback. This highlights a recurring difficulty in understanding complex, multi-step requirements upfront.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Dynamic API-Driven Search:** Transitioned from serving a static data file to a live, debounced search against a third-party API (Amadeus) for location data.
--   **Iterative UI/UX Refinement:** Progressively refined a major feature's UI/UX based on multiple rounds of specific user feedback and visual examples (screenshots).
--   **Backend-Driven Configuration:** Enhanced the use of database-driven configuration for dynamic pricing (USD to NGN exchange rate) controlled by an admin panel.
--   **Component Refactoring:** The  component was completely rewritten multiple times to accommodate new requirements, demonstrating a move towards more complex state management (e.g., multi-city flights).
+-   **Dynamic Conditional UI:** The  component now dynamically switches its entire layout between a traditional form and a new card-based view based on the user's dropdown selection.
+-   **Backend Abstraction:** The backend uses  in MongoDB for provider keys and toggles. The reseller API uses generic names (e.g., ) to abstract the underlying provider.
+-   **API Data Caching (Required next step):** The immediate next task is to implement a system to fetch data (countries, services) from third-party APIs (Tiger SMS, SMS Bower) and store it in the local database for reliable access.
 
 **key DB schema**
--   **pricing_config (collection):**
-    -   : (float) - **Actively used** for all travel pricing.
-    -   , , , , , .
+-   **pricing_config (collection):** Updated to include fields for the new providers:
+    -   , , 
+    -   , , , 
+    -   , , 
 
 **All files of reference**
--    (Heavily modified for travel API and currency conversion)
--    (Completely rewritten for new UI and functionality)
--    (New file, created to hold static data before being replaced by a dynamic API call)
--    (Modified PIN)
--    (Referenced by user)
--    (Referenced by user)
--    (Updated)
+-    (Main file for backend logic)
+-    (Main file for the feature's UI)
+-    (For admin configuration)
+-   User message #387, which contains the critical API documentation for Tiger SMS and SMS Bower.
 
 **Critical Info for New Agent**
--   **Shift in Priority:** The primary focus has shifted from the Amadeus Travel feature to a new, large-scale SMS provider integration. Do not start any other task until you have a clear plan for the SMS rework.
--   **SMS Provider Docs:** The user has provided API documentation for  and a PHP implementation file for  in the chat history. These are your primary sources for building the new backend integrations. Tiger SMS integration will need its documentation sourced.
--   **SMS UI/UX is Specific:** The user wants two new, separate pages (US Numbers and Global Numbers) with a card-based layout for the new providers. The existing SMS pages (, ) must not be changed.
--   **Travel Feature is Pending Verification:** The extensive work on the Travel section is complete from an implementation standpoint but has not been verified by the user. Be prepared for potential feedback or bug reports on it once the user tests it.
--   **Admin Toggles:** A key requirement for the new SMS providers is the ability for an admin to enable or disable them individually. This will require database schema changes () and backend logic.
+-   **PRIORITY 1:** The new SMS providers are not working. You must implement the database caching for countries and services for **Tiger SMS** and **SMS Bower** as per the user's last message (#387). The current implementation is broken without this.
+-   **UI is FINAL (for now):** Do not change the UI structure. The correct structure is: one  page -> one dropdown -> selecting US Numbers or Other Countries from the dropdown shows a grid of cards.
+-   **Provider Names MUST BE HIDDEN:** The cards must show generic names like Premium Server, not Text Verified. The agent has already implemented this part of the UI.
+-   The user has already added the API keys in their admin panel. The problem is not missing keys, but the backend code's failure to use them correctly to fetch prerequisite data (countries/services).
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md (Updated)
+-    (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (LATEST):** Provides yes to all your questions regarding the SMS provider plan and includes extensive API documentation for SMS Bower and a PHP implementation file for Text Verified.
-2.  **Agent:** Asks clarifying questions about the new SMS provider pages and logic.
-3.  **User:** Requests a major rework of the SMS providers, introducing SMS Bower, Text Verified, and Tiger SMS, and asks to create new pages for them, deprecating an old provider.
-4.  **Agent:** Finishes the Travel Section improvements and updates the PRD.
-5.  **User:** Provides new requirements for the Travel Section: use the Amadeus API for a dynamic airport list, make the dropdown wider, hide the exchange rate, and make it admin-configurable.
-6.  **Agent:** Confirms the multi-city and expanded airport list UI changes with screenshots.
-7.  **User:** Reports deployment issues, provides a log, and requests more changes: use app colors, expand the airport list to all world airports, and add multi-city search.
-8.  **Agent:** Calls the testing agent (but is interrupted before it can run).
-9.  **Agent:** Confirms all initial travel section changes (PIN, Booking.com UI, dynamic countries, NGN price) are complete via screenshots and API tests.
-10. **User:** Provides a screenshot of Booking.com and requests changes to the Travel section: new PIN, UI redesign, dynamic country list, NGN pricing, and fix for hotel images.
+10. **User (LATEST):** *Provides extensive API documentation for Tiger SMS and SMS Bower.* Reports that none of the new providers work after adding the keys and explains that for Tiger SMS and SMS Bower, the countries and services must be stored in the database.
+9.  **Agent:** Acknowledges and confirms the fix is implemented.
+8.  **User:** Reports that after changing the names nothing works and the Tiger SMS API key field is missing from the admin panel.
+7.  **Agent:** Implements the fix for the Tiger SMS key field in the admin panel.
+6.  **User:** States that end-users must not see provider names like Text Verified or 5sim.
+5.  **Agent:** Re-implements the UI to hide provider names.
+4.  **User:** Clarifies that the US Numbers and Other Countries sections should be options inside the Virtual Numbers dropdown, not separate pages.
+3.  **Agent:** Implements the feature with the new sections inside the dropdown.
+2.  **User:** Clarifies that he wants to *keep* the existing Virtual Numbers page and *add* two new pages (US Numbers, Other Countries).
+1.  **Agent:** Misunderstands and reverts all changes, removing the new pages entirely.
 
 **Project Health Check:**
 -   **Broken:**
+    -   The entire new SMS provider integration.
     -   Admin promotion (Make Admin button) on the live server.
-    -   SMS OTP reception on  (fix needs user verification).
+    -   SMS OTP reception on  (pending user verification).
 -   **Mocked:** None.
 
 **3rd Party Integrations**
 -   **Payscribe:** Payments, KYC, virtual cards.
--   **Amadeus:** Heavily used for the travel platform.
--   **Multiple SMS providers:** (5sim, smspool, daisysms, tigersms).
--   **Requested Integrations:** SMS Bower, Text Verified, Tiger SMS (to be added).
+-   **Amadeus:** Travel platform.
+-   **Existing SMS:** 5sim, smspool, daisysms.
+-   **In-progress SMS:** Tiger SMS, SMS Bower, Text Verified.
 
 **Testing status**
--   Testing agent used after significant changes: NO
+-   Testing agent used after significant changes: NO (An early, incorrect version was tested, but the final version has not been).
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
 -   Known regressions: None.
 
 **What agent forgot to execute**
--   The agent did not call the  after the major overhaul of the Travel section, despite planning to. The user interrupted with a new high-priority task.
--   The P0 task from the previous handover, Secure all bill payments with a transaction PIN, has not been started.
--   The agent did not explicitly ask for Tiger SMS documentation after receiving it for the other two new providers.</analysis>
+-   The agent completely missed the critical architectural requirement to cache provider-specific data (countries, services) in the database. This was only addressed after the user explicitly pointed it out with full API documentation at the very end of the session.
+-   The P0 task to verify the completed Travel Section has been pending for the entire session.</analysis>

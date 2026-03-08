@@ -1286,12 +1286,13 @@ class VirtualCard(BaseModel):
 # ============ Request/Response Models ============
 
 class PurchaseNumberRequest(BaseModel):
-    server: str  # us_server, server1, server2
+    server: str  # us_server, server1, server2, tigersms_us, smsbower_global, etc.
     service: str
     service_name: Optional[str] = None
     country: str
     payment_currency: str = 'NGN'  # Default to NGN
     promo_code: Optional[str] = None
+    provider: Optional[str] = None  # Direct provider name (tigersms, smsbower, textverified, 5sim)
     # Optional DaisySMS filters
     area_code: Optional[str] = None
     area_codes: Optional[str] = None  # Comma-separated for frontend
@@ -4130,37 +4131,180 @@ async def get_daisysms_services(user: dict = Depends(get_current_user)):
         return {'success': False, 'message': str(e)}
 
 @api_router.get("/services/tigersms")
-async def get_tigersms_services(user: dict = Depends(get_current_user), refresh: bool = False):
-    """Fetch available services and pricing from TigerSMS (RUB prices) with DB caching"""
+async def get_tigersms_services(user: dict = Depends(get_current_user), refresh: bool = False, country: Optional[str] = None):
+    """Fetch available services and pricing from TigerSMS (RUB prices) with DB caching.
+    
+    If country is provided, returns services array for that country.
+    Otherwise returns full data structure for all countries.
+    """
     try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        # Check if provider is enabled
+        if not config.get('enable_provider_tigersms', True):
+            return {'success': False, 'message': 'Tiger SMS is currently disabled'}
+        
+        api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+        if not api_key:
+            return {'success': False, 'message': 'Tiger SMS API key not configured'}
+        
+        rub_to_usd = config.get('rub_to_usd_rate', 0.010) if config else 0.010
+        ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+        markup_percent = config.get('tigersms_markup', 50.0) if config else 50.0
+        
         # Check cache first
-        if not refresh:
-            cached_count = await db.cached_services.count_documents({'provider': 'tigersms'})
-            if cached_count > 0:
+        cached_count = await db.cached_services.count_documents({'provider': 'tigersms'})
+        
+        if cached_count > 0 and not refresh:
+            # Return from cache
+            if country:
+                # Return services for specific country
+                cached_services = await db.cached_services.find({
+                    'provider': 'tigersms',
+                    'country_code': country
+                }, {'_id': 0}).to_list(10000)
+                
+                services = []
+                for svc in cached_services:
+                    price_usd = svc['base_price'] * rub_to_usd
+                    final_price = price_usd * (1 + markup_percent / 100)
+                    final_price_ngn = final_price * ngn_rate
+                    
+                    services.append({
+                        'value': svc['service_code'],
+                        'label': svc['service_name'],
+                        'name': svc['service_name'],
+                        'base_price': price_usd,
+                        'price_usd': final_price,
+                        'price_ngn': final_price_ngn
+                    })
+                
+                services.sort(key=lambda x: x['name'])
+                return {'success': True, 'services': services, 'country': country, 'cached': True}
+            else:
+                # Return full data structure
                 cached_services = await db.cached_services.find({'provider': 'tigersms'}, {'_id': 0}).to_list(10000)
-                
-                # Get RUB to USD conversion rate
-                config = await db.pricing_config.find_one({}, {'_id': 0})
-                rub_to_usd = config.get('rub_to_usd_rate', 0.010) if config else 0.010
-                
-                # Restructure for frontend with USD conversion
                 data = {}
                 for service in cached_services:
-                    country = service['country_code']
-                    if country not in data:
-                        data[country] = {}
-                    # Convert RUB to USD
+                    country_code = service['country_code']
+                    if country_code not in data:
+                        data[country_code] = {}
                     price_usd = service['base_price'] * rub_to_usd
-                    data[country][service['service_code']] = {
+                    data[country_code][service['service_code']] = {
                         'name': service['service_name'],
                         'cost': str(round(price_usd, 2))
                     }
                 return {'success': True, 'data': data, 'cached': True}
         
         # Fetch from API
-        # Get API key from config first, then env
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://api.tiger-sms.com/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getPrices'},
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Cache in DB
+                cached_services_list = []
+                for country_code, services in data.items():
+                    for service_code, service_info in services.items():
+                        price_rub = float(service_info.get('cost', 0))
+                        cached_service = CachedService(
+                            provider='tigersms',
+                            service_code=service_code,
+                            service_name=service_info.get('name', service_code),
+                            country_code=country_code,
+                            country_name=get_country_name(country_code),
+                            base_price=price_rub,
+                            currency='RUB'
+                        )
+                        cached_services_list.append(cached_service.model_dump())
+                
+                if cached_services_list:
+                    await db.cached_services.delete_many({'provider': 'tigersms'})
+                    for service in cached_services_list:
+                        service['last_updated'] = service['last_updated'].isoformat()
+                    await db.cached_services.insert_many(cached_services_list)
+                    logger.info(f"Cached {len(cached_services_list)} Tiger SMS services")
+                
+                # If country specified, return services array
+                if country and country in data:
+                    services = []
+                    for service_code, service_info in data[country].items():
+                        price_rub = float(service_info.get('cost', 0))
+                        price_usd = price_rub * rub_to_usd
+                        final_price = price_usd * (1 + markup_percent / 100)
+                        final_price_ngn = final_price * ngn_rate
+                        
+                        services.append({
+                            'value': service_code,
+                            'label': service_info.get('name', service_code),
+                            'name': service_info.get('name', service_code),
+                            'base_price': price_usd,
+                            'price_usd': final_price,
+                            'price_ngn': final_price_ngn
+                        })
+                    
+                    services.sort(key=lambda x: x['name'])
+                    return {'success': True, 'services': services, 'country': country, 'cached': False}
+                
+                # Convert prices to USD for frontend
+                for country_code in data:
+                    for service_code in data[country_code]:
+                        price_rub = float(data[country_code][service_code].get('cost', 0))
+                        data[country_code][service_code]['cost'] = str(round(price_rub * rub_to_usd, 2))
+                
+                return {'success': True, 'data': data, 'cached': False}
+            
+            return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
+    except Exception as e:
+        logger.error(f"TigerSMS service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+
+@api_router.get("/services/tigersms/countries")
+async def get_tigersms_countries(user: dict = Depends(get_current_user)):
+    """Get list of available countries from Tiger SMS cached data."""
+    try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        if not config.get('enable_provider_tigersms', True):
+            return {'success': False, 'message': 'Tiger SMS is currently disabled'}
+        
+        # Get unique countries from cached services
+        cached_count = await db.cached_services.count_documents({'provider': 'tigersms'})
+        
+        if cached_count > 0:
+            # Aggregate unique countries
+            pipeline = [
+                {'$match': {'provider': 'tigersms'}},
+                {'$group': {
+                    '_id': '$country_code',
+                    'country_name': {'$first': '$country_name'},
+                    'service_count': {'$sum': 1}
+                }},
+                {'$sort': {'country_name': 1}}
+            ]
+            result = await db.cached_services.aggregate(pipeline).to_list(500)
+            
+            countries = []
+            for item in result:
+                countries.append({
+                    'value': item['_id'],
+                    'label': item['country_name'] or item['_id'],
+                    'name': item['country_name'] or item['_id'],
+                    'service_count': item['service_count']
+                })
+            
+            return {'success': True, 'countries': countries, 'cached': True}
+        
+        # If no cache, fetch and cache from API
         api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+        if not api_key:
+            return {'success': False, 'message': 'Tiger SMS API key not configured'}
         
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -4172,52 +4316,51 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Get RUB to USD conversion rate
-                config = await db.pricing_config.find_one({}, {'_id': 0})
-                rub_to_usd = config.get('rub_to_usd_rate', 0.010) if config else 0.010
-                
-                # Cache in DB
-                cached_services = []
+                # Cache services while extracting countries
+                cached_services_list = []
+                countries = []
                 for country_code, services in data.items():
+                    country_name = get_country_name(country_code)
+                    countries.append({
+                        'value': country_code,
+                        'label': country_name or country_code,
+                        'name': country_name or country_code,
+                        'service_count': len(services)
+                    })
+                    
                     for service_code, service_info in services.items():
-                        # Store original RUB price
                         price_rub = float(service_info.get('cost', 0))
                         cached_service = CachedService(
                             provider='tigersms',
                             service_code=service_code,
                             service_name=service_info.get('name', service_code),
                             country_code=country_code,
-                            country_name=get_country_name(country_code),
-                            base_price=price_rub,  # Store in RUB
+                            country_name=country_name,
+                            base_price=price_rub,
                             currency='RUB'
                         )
-                        cached_services.append(cached_service.model_dump())
+                        cached_services_list.append(cached_service.model_dump())
                 
-                if cached_services:
+                if cached_services_list:
                     await db.cached_services.delete_many({'provider': 'tigersms'})
-                    for service in cached_services:
+                    for service in cached_services_list:
                         service['last_updated'] = service['last_updated'].isoformat()
-                    await db.cached_services.insert_many(cached_services)
+                    await db.cached_services.insert_many(cached_services_list)
+                    logger.info(f"Cached {len(cached_services_list)} Tiger SMS services")
                 
-                # Convert prices to USD for frontend
-                for country_code in data:
-                    for service_code in data[country_code]:
-                        price_rub = float(data[country_code][service_code].get('cost', 0))
-                        data[country_code][service_code]['cost'] = str(round(price_rub * rub_to_usd, 2))
-                        data[country_code][service_code]['cost_rub'] = f"{price_rub} ₽"
-                
-                return {'success': True, 'data': data, 'cached': False}
-            
-            return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
+                countries.sort(key=lambda x: x['name'])
+                return {'success': True, 'countries': countries, 'cached': False}
+        
+        return {'success': False, 'message': 'Failed to fetch Tiger SMS countries'}
     except Exception as e:
-        logger.error(f"TigerSMS service fetch error: {str(e)}")
+        logger.error(f"Tiger SMS countries fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
 
 # ============ SMS Bower Service Endpoints ============
 
 @api_router.get("/services/smsbower")
-async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user), country: Optional[str] = None):
-    """Get SMS Bower services with pricing."""
+async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user), country: Optional[str] = None, refresh: bool = False):
+    """Get SMS Bower services with pricing and database caching."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
         
@@ -4232,6 +4375,61 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
         markup_percent = config.get('smsbower_markup', 50.0) if config else 50.0
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
         
+        # Check cache first (unless refresh requested)
+        cached_count = await db.cached_services.count_documents({'provider': 'smsbower'})
+        
+        if cached_count > 0 and not refresh:
+            if country:
+                # Return services for specific country from cache
+                cached_services = await db.cached_services.find({
+                    'provider': 'smsbower',
+                    'country_code': country
+                }, {'_id': 0}).to_list(10000)
+                
+                services = []
+                for svc in cached_services:
+                    base_price = svc['base_price']
+                    if base_price <= 0:
+                        continue
+                    final_price = base_price * (1 + markup_percent / 100)
+                    final_price_ngn = final_price * ngn_rate
+                    
+                    services.append({
+                        'value': svc['service_code'],
+                        'label': svc['service_name'],
+                        'name': svc['service_name'],
+                        'base_price': base_price,
+                        'price_usd': final_price,
+                        'price_ngn': final_price_ngn
+                    })
+                
+                services.sort(key=lambda x: x['name'])
+                return {'success': True, 'services': services, 'country': country, 'cached': True}
+            else:
+                # Return unique countries from cache
+                pipeline = [
+                    {'$match': {'provider': 'smsbower'}},
+                    {'$group': {
+                        '_id': '$country_code',
+                        'country_name': {'$first': '$country_name'},
+                        'service_count': {'$sum': 1}
+                    }},
+                    {'$sort': {'country_name': 1}}
+                ]
+                result = await db.cached_services.aggregate(pipeline).to_list(500)
+                
+                countries = []
+                for item in result:
+                    countries.append({
+                        'value': item['_id'],
+                        'label': item['country_name'] or item['_id'],
+                        'name': item['country_name'] or item['_id'],
+                        'service_count': item['service_count']
+                    })
+                
+                return {'success': True, 'countries': countries, 'cached': True}
+        
+        # Fetch from API
         async with httpx.AsyncClient() as client:
             params = {'api_key': api_key, 'action': 'getPrices'}
             if country:
@@ -4240,47 +4438,166 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
             response = await client.get(
                 'https://smsbower.online/stubs/handler_api.php',
                 params=params,
-                timeout=20.0
+                timeout=30.0
             )
             
             if response.status_code == 200:
                 data = response.json()
                 
-                if country:
-                    # Return services for specific country
-                    services = []
-                    if country in data:
-                        for service_code, service_info in data[country].items():
+                # Cache all services if we're not filtering by country
+                if not country:
+                    cached_services_list = []
+                    for country_code, services in data.items():
+                        country_name = get_country_name(country_code)
+                        for service_code, service_info in services.items():
                             base_price = float(service_info.get('cost', 0))
-                            if base_price <= 0:
-                                continue
-                            final_price = base_price * (1 + markup_percent / 100)
-                            final_price_ngn = final_price * ngn_rate
-                            
-                            services.append({
-                                'value': service_code,
-                                'label': service_info.get('name', service_code),
-                                'name': service_info.get('name', service_code),
-                                'base_price': base_price,
-                                'price_usd': final_price,
-                                'price_ngn': final_price_ngn,
-                                'count': service_info.get('count', 0)
-                            })
+                            cached_service = CachedService(
+                                provider='smsbower',
+                                service_code=service_code,
+                                service_name=service_info.get('name', service_code),
+                                country_code=country_code,
+                                country_name=country_name or country_code,
+                                base_price=base_price,
+                                currency='USD'
+                            )
+                            cached_services_list.append(cached_service.model_dump())
                     
-                    services.sort(key=lambda x: x['name'])
-                    return {'success': True, 'services': services, 'country': country}
-                else:
+                    if cached_services_list:
+                        await db.cached_services.delete_many({'provider': 'smsbower'})
+                        for service in cached_services_list:
+                            service['last_updated'] = service['last_updated'].isoformat()
+                        await db.cached_services.insert_many(cached_services_list)
+                        logger.info(f"Cached {len(cached_services_list)} SMS Bower services")
+                    
                     # Return country list
-                    countries = [
-                        {'value': code, 'label': code.upper(), 'name': code.upper()}
-                        for code in data.keys()
-                    ]
+                    countries = []
+                    for code in data.keys():
+                        country_name = get_country_name(code)
+                        countries.append({
+                            'value': code,
+                            'label': country_name or code,
+                            'name': country_name or code
+                        })
                     countries.sort(key=lambda x: x['name'])
-                    return {'success': True, 'countries': countries}
+                    return {'success': True, 'countries': countries, 'cached': False}
+                
+                # Return services for specific country
+                services = []
+                if country in data:
+                    for service_code, service_info in data[country].items():
+                        base_price = float(service_info.get('cost', 0))
+                        if base_price <= 0:
+                            continue
+                        final_price = base_price * (1 + markup_percent / 100)
+                        final_price_ngn = final_price * ngn_rate
+                        
+                        services.append({
+                            'value': service_code,
+                            'label': service_info.get('name', service_code),
+                            'name': service_info.get('name', service_code),
+                            'base_price': base_price,
+                            'price_usd': final_price,
+                            'price_ngn': final_price_ngn,
+                            'count': service_info.get('count', 0)
+                        })
+                
+                services.sort(key=lambda x: x['name'])
+                return {'success': True, 'services': services, 'country': country, 'cached': False}
         
         return {'success': False, 'message': 'Failed to fetch SMS Bower services'}
     except Exception as e:
         logger.error(f"SMS Bower service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+
+@api_router.get("/services/smsbower/countries")
+async def get_smsbower_countries(user: dict = Depends(get_current_user)):
+    """Get list of available countries from SMS Bower cached data."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        if not config.get('enable_provider_smsbower', True):
+            return {'success': False, 'message': 'SMS Bower is currently disabled'}
+        
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return {'success': False, 'message': 'SMS Bower API key not configured'}
+        
+        # Get unique countries from cached services
+        cached_count = await db.cached_services.count_documents({'provider': 'smsbower'})
+        
+        if cached_count > 0:
+            pipeline = [
+                {'$match': {'provider': 'smsbower'}},
+                {'$group': {
+                    '_id': '$country_code',
+                    'country_name': {'$first': '$country_name'},
+                    'service_count': {'$sum': 1}
+                }},
+                {'$sort': {'country_name': 1}}
+            ]
+            result = await db.cached_services.aggregate(pipeline).to_list(500)
+            
+            countries = []
+            for item in result:
+                countries.append({
+                    'value': item['_id'],
+                    'label': item['country_name'] or item['_id'],
+                    'name': item['country_name'] or item['_id'],
+                    'service_count': item['service_count']
+                })
+            
+            return {'success': True, 'countries': countries, 'cached': True}
+        
+        # If no cache, fetch from API
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getPrices'},
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Cache services while extracting countries
+                cached_services_list = []
+                countries = []
+                for country_code, services in data.items():
+                    country_name = get_country_name(country_code)
+                    countries.append({
+                        'value': country_code,
+                        'label': country_name or country_code,
+                        'name': country_name or country_code,
+                        'service_count': len(services)
+                    })
+                    
+                    for service_code, service_info in services.items():
+                        base_price = float(service_info.get('cost', 0))
+                        cached_service = CachedService(
+                            provider='smsbower',
+                            service_code=service_code,
+                            service_name=service_info.get('name', service_code),
+                            country_code=country_code,
+                            country_name=country_name or country_code,
+                            base_price=base_price,
+                            currency='USD'
+                        )
+                        cached_services_list.append(cached_service.model_dump())
+                
+                if cached_services_list:
+                    await db.cached_services.delete_many({'provider': 'smsbower'})
+                    for service in cached_services_list:
+                        service['last_updated'] = service['last_updated'].isoformat()
+                    await db.cached_services.insert_many(cached_services_list)
+                    logger.info(f"Cached {len(cached_services_list)} SMS Bower services")
+                
+                countries.sort(key=lambda x: x['name'])
+                return {'success': True, 'countries': countries, 'cached': False}
+        
+        return {'success': False, 'message': 'Failed to fetch SMS Bower countries'}
+    except Exception as e:
+        logger.error(f"SMS Bower countries fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
 
 # ============ Text Verified Service Endpoints ============
@@ -4403,6 +4720,189 @@ async def get_providers_status(user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Provider status error: {str(e)}")
         return {'success': False, 'message': str(e)}
+
+
+# ============ Admin Provider Sync Endpoints ============
+
+@api_router.post("/admin/sms-providers/sync")
+async def admin_sync_sms_providers(user: dict = Depends(get_current_user), provider: Optional[str] = None):
+    """Admin endpoint to sync SMS provider services to database cache.
+    
+    If provider is specified, only syncs that provider.
+    Otherwise syncs all enabled providers.
+    """
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        if not config:
+            config = {}
+        
+        results = {}
+        
+        # Sync Tiger SMS
+        if not provider or provider == 'tigersms':
+            if config.get('enable_provider_tigersms', True):
+                api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+                if api_key:
+                    try:
+                        async with httpx.AsyncClient() as client:
+                            response = await client.get(
+                                'https://api.tiger-sms.com/stubs/handler_api.php',
+                                params={'api_key': api_key, 'action': 'getPrices'},
+                                timeout=60.0
+                            )
+                            
+                            if response.status_code == 200:
+                                data = response.json()
+                                cached_services_list = []
+                                
+                                for country_code, services in data.items():
+                                    country_name = get_country_name(country_code)
+                                    for service_code, service_info in services.items():
+                                        price_rub = float(service_info.get('cost', 0))
+                                        cached_service = CachedService(
+                                            provider='tigersms',
+                                            service_code=service_code,
+                                            service_name=service_info.get('name', service_code),
+                                            country_code=country_code,
+                                            country_name=country_name,
+                                            base_price=price_rub,
+                                            currency='RUB'
+                                        )
+                                        cached_services_list.append(cached_service.model_dump())
+                                
+                                if cached_services_list:
+                                    await db.cached_services.delete_many({'provider': 'tigersms'})
+                                    for service in cached_services_list:
+                                        service['last_updated'] = service['last_updated'].isoformat()
+                                    await db.cached_services.insert_many(cached_services_list)
+                                
+                                results['tigersms'] = {
+                                    'success': True,
+                                    'services_cached': len(cached_services_list),
+                                    'countries': len(data.keys())
+                                }
+                            else:
+                                results['tigersms'] = {'success': False, 'error': f"API returned {response.status_code}"}
+                    except Exception as e:
+                        results['tigersms'] = {'success': False, 'error': str(e)}
+                else:
+                    results['tigersms'] = {'success': False, 'error': 'API key not configured'}
+            else:
+                results['tigersms'] = {'success': False, 'error': 'Provider disabled'}
+        
+        # Sync SMS Bower
+        if not provider or provider == 'smsbower':
+            if config.get('enable_provider_smsbower', True):
+                api_key = config.get('smsbower_api_key', '')
+                if api_key:
+                    try:
+                        async with httpx.AsyncClient() as client:
+                            response = await client.get(
+                                'https://smsbower.online/stubs/handler_api.php',
+                                params={'api_key': api_key, 'action': 'getPrices'},
+                                timeout=60.0
+                            )
+                            
+                            if response.status_code == 200:
+                                data = response.json()
+                                cached_services_list = []
+                                
+                                for country_code, services in data.items():
+                                    country_name = get_country_name(country_code)
+                                    for service_code, service_info in services.items():
+                                        base_price = float(service_info.get('cost', 0))
+                                        cached_service = CachedService(
+                                            provider='smsbower',
+                                            service_code=service_code,
+                                            service_name=service_info.get('name', service_code),
+                                            country_code=country_code,
+                                            country_name=country_name or country_code,
+                                            base_price=base_price,
+                                            currency='USD'
+                                        )
+                                        cached_services_list.append(cached_service.model_dump())
+                                
+                                if cached_services_list:
+                                    await db.cached_services.delete_many({'provider': 'smsbower'})
+                                    for service in cached_services_list:
+                                        service['last_updated'] = service['last_updated'].isoformat()
+                                    await db.cached_services.insert_many(cached_services_list)
+                                
+                                results['smsbower'] = {
+                                    'success': True,
+                                    'services_cached': len(cached_services_list),
+                                    'countries': len(data.keys())
+                                }
+                            else:
+                                results['smsbower'] = {'success': False, 'error': f"API returned {response.status_code}"}
+                    except Exception as e:
+                        results['smsbower'] = {'success': False, 'error': str(e)}
+                else:
+                    results['smsbower'] = {'success': False, 'error': 'API key not configured'}
+            else:
+                results['smsbower'] = {'success': False, 'error': 'Provider disabled'}
+        
+        return {
+            'success': True,
+            'message': 'Provider sync completed',
+            'results': results
+        }
+    except Exception as e:
+        logger.error(f"Admin sync providers error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/sms-providers/cache-status")
+async def admin_get_cache_status(user: dict = Depends(get_current_user)):
+    """Get status of cached SMS provider services."""
+    if not user.get('is_admin'):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        # Get count and last updated for each provider
+        providers = ['tigersms', 'smsbower', 'daisysms', 'smspool', '5sim']
+        status = {}
+        
+        for provider in providers:
+            count = await db.cached_services.count_documents({'provider': provider})
+            last_updated = None
+            
+            if count > 0:
+                latest = await db.cached_services.find_one(
+                    {'provider': provider},
+                    {'_id': 0, 'last_updated': 1},
+                    sort=[('last_updated', -1)]
+                )
+                if latest:
+                    last_updated = latest.get('last_updated')
+            
+            # Get unique country count
+            country_count = 0
+            if count > 0:
+                pipeline = [
+                    {'$match': {'provider': provider}},
+                    {'$group': {'_id': '$country_code'}},
+                    {'$count': 'total'}
+                ]
+                result = await db.cached_services.aggregate(pipeline).to_list(1)
+                country_count = result[0]['total'] if result else 0
+            
+            status[provider] = {
+                'services_cached': count,
+                'countries': country_count,
+                'last_updated': last_updated
+            }
+        
+        return {
+            'success': True,
+            'cache_status': status
+        }
+    except Exception as e:
+        logger.error(f"Cache status error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def _apply_promo_discount(
@@ -4660,14 +5160,24 @@ async def purchase_number(
     # Block suspended users from creating new orders
     if user.get('is_suspended'):
         raise HTTPException(status_code=403, detail="Account suspended")
-    # Map server to provider
+    
+    # Map server to provider - support both old and new server names
     server_map = {
         'us_server': 'daisysms',
         'server1': 'smspool',
-        'server2': '5sim'
+        'server2': '5sim',
+        # New provider-based server names (US Numbers and Other Countries modes)
+        'tigersms_us': 'tigersms',
+        'tigersms_global': 'tigersms',
+        'smsbower_us': 'smsbower',
+        'smsbower_global': 'smsbower',
+        'textverified_us': 'textverified',
+        '5sim_us': '5sim',
+        '5sim_global': '5sim',
     }
     
-    provider = server_map.get(data.server)
+    # Also handle data.provider directly if specified
+    provider = data.provider if hasattr(data, 'provider') and data.provider else server_map.get(data.server)
     if not provider:
         raise HTTPException(status_code=400, detail="Invalid server selection")
     
@@ -4756,19 +5266,27 @@ async def purchase_number(
         if base_price_usd <= 0:
             raise HTTPException(status_code=400, detail="Invalid service price")
     else:
-        # Get from cached services (non-5sim providers)
-        cached_service = await db.cached_services.find_one({
-            'provider': provider,
-            'service_code': data.service,
-            'country_code': data.country
-        }, {'_id': 0})
+        # Get from cached services for tigersms, smsbower, smspool
+        # Text Verified is US only and doesn't use country codes the same way
+        if provider == 'textverified':
+            # Text Verified uses service name directly, doesn't use country codes
+            # Get base price from Text Verified API response
+            base_price_usd = 0.50  # Default Text Verified price
+            markup_key = 'textverified_markup'
+            # Don't check cache for textverified - pricing comes from API
+        else:
+            cached_service = await db.cached_services.find_one({
+                'provider': provider,
+                'service_code': data.service,
+                'country_code': data.country
+            }, {'_id': 0})
 
-        if not cached_service:
-            raise HTTPException(status_code=404, detail="Service not found")
+            if not cached_service:
+                raise HTTPException(status_code=404, detail="Service not found. Please refresh the services list.")
 
-        base_price_usd = cached_service['base_price']
-        if cached_service['currency'] == 'RUB':
-            base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
+            base_price_usd = cached_service['base_price']
+            if cached_service['currency'] == 'RUB':
+                base_price_usd = base_price_usd * config.get('rub_to_usd_rate', 0.010)
 
     # Apply our markup (default 50%) - use consistent key format with calculate-price
     markup_key = f'{provider}_markup'
@@ -4826,6 +5344,16 @@ async def purchase_number(
     elif provider == 'tigersms':
         result = await purchase_number_tigersms(data.service, data.country)
         if result and 'ACCESS_NUMBER' in str(result):
+            actual_price = base_price_usd
+    elif provider == 'smsbower':
+        # SMS Bower purchase
+        result = await purchase_number_smsbower(data.service, data.country)
+        if result and result.get('success'):
+            actual_price = base_price_usd
+    elif provider == 'textverified':
+        # Text Verified purchase (US only)
+        result = await purchase_number_textverified(data.service)
+        if result and result.get('success'):
             actual_price = base_price_usd
     elif provider == '5sim':
         # Use 5sim buy activation API - get key from config first, then env
@@ -4896,13 +5424,30 @@ async def purchase_number(
                 raise HTTPException(status_code=400, detail="Insufficient provider balance.")
             else:
                 raise HTTPException(status_code=400, detail=f"Provider error: {response_text}")
-    else:  # tigersms
-        response_text = str(result)
-        if 'ACCESS_NUMBER' in response_text:
-            parts = response_text.split(':')
-            if len(parts) >= 3:
-                activation_id = parts[1].strip()
-                phone_number = parts[2].strip()
+    else:  # tigersms, smsbower, textverified
+        if provider == 'smsbower':
+            # SMS Bower returns {success: True, activation_id: X, phone_number: Y}
+            if result and result.get('success'):
+                activation_id = str(result.get('activation_id', ''))
+                phone_number = str(result.get('phone_number', ''))
+            else:
+                error_text = result.get('text', '') if result else 'Unknown error'
+                raise HTTPException(status_code=400, detail=f"SMS Bower error: {error_text}")
+        elif provider == 'textverified':
+            # Text Verified returns {success: True, verification_id: X, phone_number: Y}
+            if result and result.get('success'):
+                activation_id = str(result.get('verification_id', ''))
+                phone_number = str(result.get('phone_number', ''))
+            else:
+                error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
+                raise HTTPException(status_code=400, detail=f"Text Verified error: {error_msg}")
+        else:  # tigersms
+            response_text = str(result)
+            if 'ACCESS_NUMBER' in response_text:
+                parts = response_text.split(':')
+                if len(parts) >= 3:
+                    activation_id = parts[1].strip()
+                    phone_number = parts[2].strip()
     
     if not activation_id or not phone_number:
         raise HTTPException(status_code=400, detail="Failed to get phone number from provider")
@@ -9920,7 +10465,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
-        "reseller_api_base_url": config.get("reseller_api_base_url", "https://sms-provider-rework.preview.emergentagent.com"),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://sms-providers-cache.preview.emergentagent.com"),
         "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
         "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
         "support_email": config.get("support_email", "support@smsrelay.com"),
