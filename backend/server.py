@@ -11536,6 +11536,9 @@ RESELLER_SERVER_MAP = {
     'usa': {'provider': 'daisysms', 'scope': 'US_ONLY', 'description': 'United States numbers only'},
     'all_country_1': {'provider': 'smspool', 'scope': 'GLOBAL', 'description': 'All countries - Primary server'},
     'all_country_2': {'provider': '5sim', 'scope': 'GLOBAL', 'description': 'All countries - Secondary server'},
+    'usa_premium': {'provider': 'textverified', 'scope': 'US_ONLY', 'description': 'United States premium numbers'},
+    'all_country_3': {'provider': 'smsbower', 'scope': 'GLOBAL', 'description': 'All countries - Budget server'},
+    'usa_tiger': {'provider': 'tigersms', 'scope': 'US_ONLY', 'description': 'United States - Tiger server'},
 }
 
 async def get_reseller_by_api_key(api_key: str) -> Optional[dict]:
@@ -11797,6 +11800,81 @@ async def reseller_get_services(request: Request, server: str, country: Optional
             except Exception as e:
                 logger.error(f"5sim services error: {e}")
     
+    elif server == 'usa_premium':
+        # Text Verified (US only)
+        markup = pricing.get('textverified_markup', 50)
+        try:
+            tv_services = await get_textverified_services()
+            if tv_services:
+                for svc in tv_services:
+                    base_usd = float(svc.get('cost', svc.get('price', 0.50)) or 0.50)
+                    base_ngn = base_usd * ngn_rate
+                    reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                    services.append({
+                        'code': svc.get('service', svc.get('name', '')),
+                        'name': svc.get('name', svc.get('service', '')),
+                        'price_ngn': round(reseller_price, 2),
+                        'price_usd': round(reseller_price / ngn_rate, 4),
+                        'available': svc.get('available', True)
+                    })
+        except Exception as e:
+            logger.error(f"Text Verified services error: {e}")
+    
+    elif server == 'all_country_3':
+        # SMS Bower
+        if not country:
+            raise HTTPException(status_code=400, detail="Country required for this server")
+        markup = pricing.get('smsbower_markup', 50)
+        try:
+            result = await get_smsbower_services(country)
+            if result:
+                for service_code, service_info in result.get(country, {}).items():
+                    base_usd = float(service_info.get('cost', 0))
+                    if base_usd <= 0:
+                        continue
+                    base_ngn = base_usd * ngn_rate
+                    reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                    services.append({
+                        'code': service_code,
+                        'name': service_info.get('name', service_code),
+                        'price_ngn': round(reseller_price, 2),
+                        'price_usd': round(reseller_price / ngn_rate, 4),
+                        'available': True
+                    })
+        except Exception as e:
+            logger.error(f"SMS Bower services error: {e}")
+    
+    elif server == 'usa_tiger':
+        # Tiger SMS (US)
+        markup = pricing.get('tigersms_markup', 50)
+        tigersms_key = pricing.get('tigersmsms_api_key', '') or TIGERSMS_API_KEY
+        if tigersms_key:
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.get(
+                        'https://api.tiger-sms.com/stubs/handler_api.php',
+                        params={'api_key': tigersms_key, 'action': 'getPrices', 'country': 187},
+                        timeout=15
+                    )
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        usa_services = data.get('187', {})
+                        for service_code, info in usa_services.items():
+                            base_usd = float(info.get('cost', 0))
+                            if base_usd <= 0:
+                                continue
+                            base_ngn = base_usd * ngn_rate
+                            reseller_price = calculate_reseller_price(base_ngn, markup, reseller, pricing)
+                            services.append({
+                                'code': service_code,
+                                'name': info.get('name', service_code),
+                                'price_ngn': round(reseller_price, 2),
+                                'price_usd': round(reseller_price / ngn_rate, 4),
+                                'available': True
+                            })
+            except Exception as e:
+                logger.error(f"Tiger SMS services error: {e}")
+    
     return {
         'success': True,
         'server': server,
@@ -11827,7 +11905,8 @@ async def reseller_buy_number(request: Request):
     if server not in RESELLER_SERVER_MAP:
         raise HTTPException(status_code=400, detail="Invalid server key")
     
-    if server != 'usa' and not country:
+    # Only require country for non-US servers
+    if server not in ['usa', 'usa_premium', 'usa_tiger'] and not country:
         raise HTTPException(status_code=400, detail="country is required for this server")
     
     provider = RESELLER_SERVER_MAP[server]['provider']
@@ -11913,6 +11992,34 @@ async def reseller_buy_number(request: Request):
                 phone_number = data.get('phone')
             else:
                 raise HTTPException(status_code=400, detail="Failed to purchase number")
+        
+        elif provider == 'smsbower':
+            # SMS Bower purchase
+            result = await purchase_number_smsbower(service, country or '0')
+            if result and result.get('success'):
+                provider_order_id = result.get('activation_id')
+                phone_number = result.get('phone_number')
+            else:
+                raise HTTPException(status_code=400, detail="Failed to purchase number from SMS Bower")
+        
+        elif provider == 'textverified':
+            # Text Verified purchase (US only)
+            result = await purchase_number_textverified(service)
+            if result and result.get('success'):
+                provider_order_id = result.get('verification_id')
+                phone_number = result.get('phone_number')
+            else:
+                raise HTTPException(status_code=400, detail="Failed to purchase number from Text Verified")
+        
+        elif provider == 'tigersms':
+            # Tiger SMS purchase
+            result = await purchase_number_tigersms(service, country or '187')
+            if result and result.get('success'):
+                provider_order_id = result.get('activation_id')
+                phone_number = result.get('phone_number')
+            else:
+                raise HTTPException(status_code=400, detail="Failed to purchase number from Tiger SMS")
+                
     except HTTPException:
         raise
     except Exception as e:
@@ -12031,6 +12138,24 @@ async def reseller_get_status(request: Request, provider_order_id: str):
                         sms_text = sms_list[0].get('text')
                         status = 'completed'
             
+            elif provider == 'smsbower':
+                polled_otp = await poll_otp_smsbower(provider_order_id)
+                if polled_otp:
+                    otp = polled_otp
+                    status = 'completed'
+            
+            elif provider == 'textverified':
+                polled_otp = await poll_otp_textverified(provider_order_id)
+                if polled_otp:
+                    otp = polled_otp
+                    status = 'completed'
+            
+            elif provider == 'tigersms':
+                polled_otp = await poll_otp_tigersms(provider_order_id)
+                if polled_otp:
+                    otp = polled_otp
+                    status = 'completed'
+            
             # Update order if OTP received
             if otp:
                 await db.reseller_orders.update_one(
@@ -12116,6 +12241,16 @@ async def reseller_cancel_order(request: Request):
             )
             if resp.ok:
                 cancelled = True
+        
+        elif provider == 'smsbower':
+            cancelled = await cancel_number_smsbower(provider_order_id)
+        
+        elif provider == 'textverified':
+            cancelled = await cancel_number_textverified(provider_order_id)
+        
+        elif provider == 'tigersms':
+            cancelled = await cancel_number_provider('tigersms', provider_order_id)
+            
     except Exception as e:
         logger.error(f"Cancel error: {e}")
     

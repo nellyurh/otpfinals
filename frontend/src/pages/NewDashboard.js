@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Receipt, Wallet, CreditCard, History, UserCircle, 
   MessageSquare, Gift, Settings, ChevronDown, Search, Phone, Plus,
-  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield, Plane, Globe, Flag
+  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield, Plane
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -13,8 +13,6 @@ import { VirtualNumbersSection } from '../components/VirtualNumbersSection';
 import { FundWalletSection } from '../components/FundWalletSection';
 import { VirtualCardsSection } from '../components/VirtualCardsSection';
 import { TravelSection } from '../components/TravelSection';
-import { USNumbersSection } from '../components/USNumbersSection';
-import { GlobalNumbersSection } from '../components/GlobalNumbersSection';
 import AutoLogout from '../components/AutoLogout';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -810,9 +808,7 @@ const NewDashboard = () => {
       items: [
         { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
         { id: 'convert-currency', icon: RefreshCw, label: 'Convert Currency' },
-        { id: 'us-numbers', icon: Flag, label: 'US Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
-        { id: 'global-numbers', icon: Globe, label: 'Global Numbers', badge: 'NEW', toggle: 'enable_virtual_numbers' },
-        { id: 'virtual-numbers', icon: Phone, label: 'All Numbers', toggle: 'enable_virtual_numbers' },
+        { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', toggle: 'enable_virtual_numbers' },
         { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
         ...(allBillsDisabled ? [] : [
           { id: 'airtime', icon: Phone, label: 'Airtime', toggle: 'enable_airtime' },
@@ -848,8 +844,6 @@ const NewDashboard = () => {
       transactions: 'enable_transactions',
       'fund-wallet': 'enable_fund_wallet',
       'virtual-numbers': 'enable_virtual_numbers',
-      'us-numbers': 'enable_virtual_numbers',
-      'global-numbers': 'enable_virtual_numbers',
       'buy-data': 'enable_buy_data',
       airtime: 'enable_airtime',
       'bills-payment': 'enable_bills',
@@ -1168,36 +1162,6 @@ const NewDashboard = () => {
                 />
               ) : (
                 maintenanceContent("Virtual Numbers")
-              )
-            )}
-
-            {activeSection === 'us-numbers' && (
-              isPageEnabled('virtual-numbers') ? (
-                <USNumbersSection
-                  user={user}
-                  orders={orders}
-                  axiosConfig={axiosConfig}
-                  fetchOrders={fetchOrders}
-                  fetchProfile={fetchProfile}
-                  primaryColor={branding.primary_color_hex || '#059669'}
-                />
-              ) : (
-                maintenanceContent("US Numbers")
-              )
-            )}
-
-            {activeSection === 'global-numbers' && (
-              isPageEnabled('virtual-numbers') ? (
-                <GlobalNumbersSection
-                  user={user}
-                  orders={orders}
-                  axiosConfig={axiosConfig}
-                  fetchOrders={fetchOrders}
-                  fetchProfile={fetchProfile}
-                  primaryColor={branding.primary_color_hex || '#059669'}
-                />
-              ) : (
-                maintenanceContent("Global Numbers")
               )
             )}
 

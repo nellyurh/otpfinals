@@ -1,37 +1,28 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-03-08 (Session 14)**: SMS Provider Rework - New Pages and Provider Integrations
-  - NEW: **US Numbers Page** - Card-based UI with 4 providers:
-    - Text Verified (Premium), 5sim (Popular), SMS Bower (Budget), Tiger SMS (Fast)
-    - Provider cards with badges, descriptions, and feature tags
-    - Service dropdown appears when provider selected
-    - Price display in NGN with admin-configurable markup
-  - NEW: **Global Numbers Page** - Card-based UI with 3 providers:
-    - SMS Pool (Popular), 5sim (Reliable), SMS Bower (Budget)
-    - Country dropdown followed by service dropdown
-    - Country flags displayed in dropdown options
+- **2026-03-08 (Session 14)**: SMS Provider Backend Integration (Hidden Providers)
+  - **REVERTED:** Removed separate US/Global Numbers pages - all numbers stay in Virtual Numbers page
+  - **KEPT:** Provider names hidden from users - shows generic "US Server", "International", "Global"
+  - NEW: **SMS Bower Integration** - Backend endpoints and polling:
+    - Purchase, poll OTP, and cancel functions
+    - Markup configurable in admin panel (`smsbower_markup`)
+  - NEW: **Text Verified Integration** - Backend endpoints with bearer token auth:
+    - Purchase, poll OTP, and cancel functions
+    - Requires API key + email for authentication (`textverified_api_key`, `textverified_email`)
   - NEW: **Provider Enable/Disable Toggles** - Admin can toggle individual providers:
     - DaisySMS (deprecated, disabled by default), SMS Pool, 5sim, Tiger SMS, SMS Bower, Text Verified
-    - Toggle cards show enabled/disabled state with color coding
-  - NEW: **SMS Bower Integration** - Backend endpoints and polling:
-    - GET `/api/services/smsbower` - Get services with pricing
-    - Purchase, poll OTP, and cancel functions
-    - Markup configurable in admin panel
-  - NEW: **Text Verified Integration** - Backend endpoints with bearer token auth:
-    - GET `/api/services/textverified` - Get services (US only)
-    - Purchase, poll OTP, and cancel functions
-    - Requires API key + email for authentication
+    - Toggle cards in Admin Panel > SMS Providers section
   - NEW: **Provider Status API** - GET `/api/services/providers/status`
     - Returns enabled/disabled status for all 6 providers
-    - Used by frontend to show/hide provider cards
-  - NEW: **Admin Panel SMS Providers Section Updates**:
-    - Provider Availability card with 6 toggle cards
-    - New markup fields: SMS Bower Markup (%), Text Verified Markup (%)
-    - New API key fields: SMS Bower API Key, Text Verified API Key/Email
-    - NEW badges on SMS Bower and Text Verified
-  - PRESERVED: **All Numbers page** (VirtualNumbersSection) unchanged
-  - Files: `/app/frontend/src/components/USNumbersSection.js`, `/app/frontend/src/components/GlobalNumbersSection.js`
+    - Used internally for admin management
+  - NEW: **Reseller API Support for New Providers**:
+    - `usa_premium` - Text Verified (US Premium)
+    - `all_country_3` - SMS Bower (Budget)
+    - `usa_tiger` - Tiger SMS (US)
+    - All use generic server names, provider names hidden from resellers
+  - PRESERVED: **Virtual Numbers page** uses original server-based UI
+  - Files: `/app/backend/server.py` (new provider functions and endpoints)
 
 
 - **2026-02-18 (Session 13)**: Travel Section Major Improvements
