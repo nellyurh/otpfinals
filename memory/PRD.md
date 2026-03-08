@@ -1,28 +1,24 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-03-08 (Session 14)**: SMS Provider Backend Integration (Hidden Providers)
-  - **REVERTED:** Removed separate US/Global Numbers pages - all numbers stay in Virtual Numbers page
-  - **KEPT:** Provider names hidden from users - shows generic "US Server", "International", "Global"
-  - NEW: **SMS Bower Integration** - Backend endpoints and polling:
-    - Purchase, poll OTP, and cancel functions
-    - Markup configurable in admin panel (`smsbower_markup`)
-  - NEW: **Text Verified Integration** - Backend endpoints with bearer token auth:
-    - Purchase, poll OTP, and cancel functions
-    - Requires API key + email for authentication (`textverified_api_key`, `textverified_email`)
-  - NEW: **Provider Enable/Disable Toggles** - Admin can toggle individual providers:
-    - DaisySMS (deprecated, disabled by default), SMS Pool, 5sim, Tiger SMS, SMS Bower, Text Verified
-    - Toggle cards in Admin Panel > SMS Providers section
-  - NEW: **Provider Status API** - GET `/api/services/providers/status`
-    - Returns enabled/disabled status for all 6 providers
-    - Used internally for admin management
+- **2026-03-08 (Session 14)**: SMS Provider Integration - New Pages Added
+  - **KEPT:** Existing Virtual Numbers page unchanged with 3 servers (US Server, International, Global)
+  - **NEW:** **US Numbers Page** - Card-based UI with 4 providers:
+    - Text Verified (Premium), 5sim (Popular), SMS Bower (Budget), Tiger SMS (Fast)
+    - Service dropdown appears when provider selected
+    - Price display in NGN with admin-configurable markup
+  - **NEW:** **Other Countries Page** - Card-based UI with 3 providers:
+    - 5sim (Reliable), SMS Bower (Budget), Tiger SMS (Fast)
+    - Country dropdown (excludes USA) followed by service dropdown
+    - Country flags displayed in dropdown options
+  - NEW: **SMS Bower Integration** - Backend endpoints and polling
+  - NEW: **Text Verified Integration** - Backend endpoints with bearer token auth
+  - NEW: **Provider Enable/Disable Toggles** - Admin can toggle individual providers
   - NEW: **Reseller API Support for New Providers**:
-    - `usa_premium` - Text Verified (US Premium)
-    - `all_country_3` - SMS Bower (Budget)
-    - `usa_tiger` - Tiger SMS (US)
-    - All use generic server names, provider names hidden from resellers
-  - PRESERVED: **Virtual Numbers page** uses original server-based UI
-  - Files: `/app/backend/server.py` (new provider functions and endpoints)
+    - `usa_premium` - Text Verified
+    - `all_country_3` - SMS Bower  
+    - `usa_tiger` - Tiger SMS
+  - Files: `/app/frontend/src/components/USNumbersSection.js`, `/app/frontend/src/components/OtherCountriesSection.js`
 
 
 - **2026-02-18 (Session 13)**: Travel Section Major Improvements
