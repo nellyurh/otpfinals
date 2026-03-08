@@ -2539,25 +2539,39 @@ async def cancel_number_smsbower(activation_id: str) -> bool:
 # ============ Text Verified Functions ============
 
 async def get_textverified_token() -> Optional[str]:
-    """Get Text Verified bearer token."""
+    """Get Text Verified bearer token using the correct API endpoint."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('textverified_api_key', '') if config else ''
-        email = config.get('textverified_email', '') if config else ''
+        api_key = get_api_key(config, 'textverified_api_key', '') if config else ''
+        email = get_api_key(config, 'textverified_email', '') if config else ''
         if not api_key or not email:
+            logger.warning("Text Verified credentials not configured")
             return None
         
         async with httpx.AsyncClient() as client:
+            # Use correct endpoint with X-API-KEY and X-API-USERNAME headers
             response = await client.post(
-                'https://api.textverified.com/v2/auth',
-                auth=(email, api_key),
-                headers={'Accept': 'application/json'},
+                'https://www.textverified.com/api/pub/v2/auth',
+                headers={
+                    'X-API-KEY': api_key,
+                    'X-API-USERNAME': email,
+                    'Accept': 'application/json'
+                },
                 timeout=15.0
             )
             if response.status_code == 200:
                 data = response.json()
-                return data.get('token')
-            logger.error(f"Text Verified auth error: {response.status_code} - {response.text}")
+                # Handle different response formats
+                if isinstance(data, str) and data.startswith('eyJ'):
+                    return data
+                token = data.get('bearer_token') or data.get('token')
+                if token:
+                    return token
+                # If response is the token itself
+                if isinstance(data, dict) and not token:
+                    logger.error(f"Text Verified unexpected response format: {data}")
+                return None
+            logger.error(f"Text Verified auth error: {response.status_code} - {response.text[:200]}")
             return None
     except Exception as e:
         logger.error(f"Text Verified token error: {str(e)}")
@@ -2572,7 +2586,7 @@ async def get_textverified_services() -> Optional[List[Dict]]:
         
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                'https://api.textverified.com/v2/services',
+                'https://www.textverified.com/api/pub/v2/targets',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Accept': 'application/json'
@@ -2581,7 +2595,11 @@ async def get_textverified_services() -> Optional[List[Dict]]:
             )
             if response.status_code == 200:
                 data = response.json()
-                return data.get('services', [])
+                # Handle different response formats
+                if isinstance(data, list):
+                    return data
+                return data.get('services', data.get('targets', []))
+            logger.error(f"Text Verified services error: {response.status_code} - {response.text[:200]}")
             return None
     except Exception as e:
         logger.error(f"Text Verified services error: {str(e)}")
@@ -2592,19 +2610,19 @@ async def purchase_number_textverified(service: str) -> Optional[Dict]:
     try:
         token = await get_textverified_token()
         if not token:
-            return None
+            return {'success': False, 'error': 'Failed to get Text Verified token'}
         
         async with httpx.AsyncClient() as client:
+            # Use correct API endpoint
             response = await client.post(
-                'https://api.textverified.com/v2/verifications',
+                'https://www.textverified.com/api/pub/v2/verifications',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
                 json={
-                    'service': service,
-                    'action': 'buy'
+                    'id': service  # Target ID
                 },
                 timeout=20.0
             )
@@ -2612,15 +2630,15 @@ async def purchase_number_textverified(service: str) -> Optional[Dict]:
                 data = response.json()
                 return {
                     'success': True,
-                    'verification_id': data.get('verification_id') or data.get('id'),
-                    'phone_number': data.get('number'),
-                    'cost': data.get('cost')
+                    'verification_id': data.get('id') or data.get('verification_id'),
+                    'phone_number': data.get('number') or data.get('phone_number'),
+                    'cost': data.get('cost') or data.get('credits')
                 }
             logger.error(f"Text Verified purchase error: {response.status_code} - {response.text}")
-            return {'success': False, 'error': response.text}
+            return {'success': False, 'error': response.text[:200]}
     except Exception as e:
         logger.error(f"Text Verified purchase error: {str(e)}")
-        return None
+        return {'success': False, 'error': str(e)}
 
 async def poll_otp_textverified(verification_id: str) -> Optional[str]:
     """Poll Text Verified for OTP."""
@@ -2631,7 +2649,7 @@ async def poll_otp_textverified(verification_id: str) -> Optional[str]:
         
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f'https://api.textverified.com/v2/verifications/{verification_id}/sms',
+                f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Accept': 'application/json'
@@ -2640,16 +2658,20 @@ async def poll_otp_textverified(verification_id: str) -> Optional[str]:
             )
             if response.status_code == 200:
                 data = response.json()
-                sms_list = data.get('sms', [])
-                if sms_list:
-                    # Extract code from first SMS
-                    sms_text = sms_list[0].get('text', '')
+                # Check for SMS/code in the response
+                sms_text = data.get('sms_code') or data.get('code') or data.get('sms')
+                if sms_text:
+                    return str(sms_text)
+                # Check if there's a messages array
+                messages = data.get('messages', [])
+                if messages and len(messages) > 0:
+                    sms_text = messages[0].get('text', '')
                     # Try to extract numeric code
                     import re
                     match = re.search(r'\b(\d{4,8})\b', sms_text)
                     if match:
                         return match.group(1)
-                    return sms_text[:20]  # Return first 20 chars if no code found
+                    return sms_text[:20]
             return None
     except Exception as e:
         logger.error(f"Text Verified OTP poll error: {str(e)}")
@@ -2663,12 +2685,14 @@ async def cancel_number_textverified(verification_id: str) -> bool:
             return False
         
         async with httpx.AsyncClient() as client:
-            response = await client.delete(
-                f'https://api.textverified.com/v2/verifications/{verification_id}',
+            response = await client.patch(
+                f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}',
                 headers={
                     'Authorization': f'Bearer {token}',
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
+                json={'cancelled': True},
                 timeout=10.0
             )
             return response.status_code in [200, 204]
@@ -4612,8 +4636,8 @@ async def get_textverified_services_endpoint(user: dict = Depends(get_current_us
         if not config.get('enable_provider_textverified', True):
             return {'success': False, 'message': 'Text Verified is currently disabled'}
         
-        api_key = config.get('textverified_api_key', '') if config else ''
-        email = config.get('textverified_email', '') if config else ''
+        api_key = get_api_key(config, 'textverified_api_key', '') if config else ''
+        email = get_api_key(config, 'textverified_email', '') if config else ''
         if not api_key or not email:
             return {'success': False, 'message': 'Text Verified credentials not configured'}
         
@@ -4626,8 +4650,9 @@ async def get_textverified_services_endpoint(user: dict = Depends(get_current_us
             return {'success': False, 'message': 'Failed to authenticate with Text Verified'}
         
         async with httpx.AsyncClient() as client:
+            # Use correct API endpoint for targets/services
             response = await client.get(
-                'https://api.textverified.com/v2/services',
+                'https://www.textverified.com/api/pub/v2/targets',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Accept': 'application/json'
@@ -4637,11 +4662,12 @@ async def get_textverified_services_endpoint(user: dict = Depends(get_current_us
             
             if response.status_code == 200:
                 data = response.json()
-                service_list = data.get('services', []) if isinstance(data, dict) else data
+                service_list = data if isinstance(data, list) else data.get('targets', data.get('services', []))
                 
                 services = []
                 for svc in service_list:
-                    base_price = float(svc.get('cost', svc.get('price', 0)) or 0)
+                    # Text Verified uses 'normalPrice' or 'reusablePrice' for costs
+                    base_price = float(svc.get('normalPrice', svc.get('cost', svc.get('price', 0))) or 0)
                     if base_price <= 0:
                         base_price = 0.50  # Default price if not provided
                     
@@ -4649,19 +4675,19 @@ async def get_textverified_services_endpoint(user: dict = Depends(get_current_us
                     final_price_ngn = final_price * ngn_rate
                     
                     services.append({
-                        'value': svc.get('service', svc.get('name', '')),
+                        'value': str(svc.get('id', svc.get('service', svc.get('name', '')))),
                         'label': svc.get('name', svc.get('service', '')),
                         'name': svc.get('name', svc.get('service', '')),
                         'base_price': base_price,
                         'price_usd': final_price,
                         'price_ngn': final_price_ngn,
-                        'available': svc.get('available', True)
+                        'available': svc.get('status') == 'available' if 'status' in svc else svc.get('available', True)
                     })
                 
                 services.sort(key=lambda x: x['name'])
                 return {'success': True, 'services': services}
         
-        return {'success': False, 'message': 'Failed to fetch Text Verified services'}
+        return {'success': False, 'message': f'Failed to fetch Text Verified services: {response.status_code}'}
     except Exception as e:
         logger.error(f"Text Verified service fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
@@ -6304,36 +6330,62 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
     textverified_email = get_api_key(config, 'textverified_email', '')
     if textverified_key and textverified_key != '********' and textverified_email and textverified_email != '********':
         try:
-            # First get bearer token
             async with httpx.AsyncClient(timeout=15.0) as client_http:
-                # Get auth token
+                # Generate bearer token using correct API endpoint
                 auth_resp = await client_http.post(
-                    'https://www.textverified.com/api/SimpleAuthentication',
-                    json={'apiKey': textverified_key, 'apiUsername': textverified_email},
-                    headers={'Content-Type': 'application/json'}
+                    'https://www.textverified.com/api/pub/v2/auth',
+                    headers={
+                        'X-API-KEY': textverified_key,
+                        'X-API-USERNAME': textverified_email
+                    }
                 )
                 if auth_resp.status_code == 200:
                     auth_data = auth_resp.json()
-                    bearer_token = auth_data.get('bearer_token') or auth_data.get('token')
-                    if bearer_token:
-                        # Get account info with balance
-                        account_resp = await client_http.get(
-                            'https://www.textverified.com/api/Users/me',
-                            headers={'Authorization': f'Bearer {bearer_token}'}
-                        )
-                        if account_resp.status_code == 200:
-                            account_data = account_resp.json()
+                    # Handle different response formats - token might be directly in response
+                    token = None
+                    if isinstance(auth_data, str) and auth_data.startswith('eyJ'):
+                        token = auth_data
+                    elif isinstance(auth_data, dict):
+                        token = auth_data.get('bearer_token') or auth_data.get('token') or auth_data.get('access_token')
+                    
+                    if token:
+                        # Try multiple possible account endpoints
+                        account_endpoints = [
+                            'https://www.textverified.com/api/pub/v2/account/me',
+                            'https://www.textverified.com/api/pub/v2/user',
+                            'https://www.textverified.com/api/pub/v2/me',
+                        ]
+                        
+                        account_data = None
+                        for endpoint in account_endpoints:
+                            account_resp = await client_http.get(
+                                endpoint,
+                                headers={'Authorization': f'Bearer {token}'}
+                            )
+                            if account_resp.status_code == 200:
+                                account_data = account_resp.json()
+                                break
+                        
+                        if account_data:
+                            # Handle camelCase field names
+                            balance = account_data.get('currentBalance') or account_data.get('credit_balance') or account_data.get('current_balance') or account_data.get('balance') or account_data.get('credits')
                             balances['textverified'] = {
-                                'balance': account_data.get('credit_balance') or account_data.get('current_balance') or account_data.get('balance'),
+                                'balance': balance,
                                 'currency': 'USD',
-                                'email': account_data.get('email')
+                                'email': account_data.get('username') or account_data.get('email') or textverified_email
                             }
                         else:
-                            balances['textverified'] = {'error': f'Account lookup failed: {account_resp.status_code}'}
+                            # Token works, show auth success even if can't get balance
+                            balances['textverified'] = {
+                                'auth': 'success',
+                                'message': 'Authenticated but unable to fetch balance',
+                                'token_preview': token[:20] + '...'
+                            }
                     else:
-                        balances['textverified'] = {'error': 'No bearer token in response'}
+                        balances['textverified'] = {'error': 'No bearer token in response', 'response': str(auth_data)[:100]}
                 else:
-                    balances['textverified'] = {'error': f'Auth failed: {auth_resp.status_code}', 'details': auth_resp.text[:100]}
+                    error_text = auth_resp.text[:200] if auth_resp.text else f'Status {auth_resp.status_code}'
+                    balances['textverified'] = {'error': f'Auth failed: {auth_resp.status_code}', 'details': error_text}
         except Exception as e:
             balances['textverified'] = {'error': str(e)}
     else:
