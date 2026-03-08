@@ -304,7 +304,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             break;
           case 'smsbower':
             endpoint = '/api/services/smsbower';
-            params = { country: '0' };  // 0 = Russia/US for SMS Bower
+            params = { country: '187' };  // 187 = USA for SMS Bower
             break;
           case 'tigersms':
             endpoint = '/api/services/tigersms';
@@ -442,7 +442,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         service: selectedService.value,
         service_name: selectedService.name || selectedService.label,
         country: isUSMode 
-          ? (selectedProvider.id === 'smsbower' ? '0' : (selectedProvider.id === '5sim' ? 'usa' : '187'))
+          ? (selectedProvider.id === '5sim' ? 'usa' : '187')
           : selectedCountry?.value,
         payment_currency: 'NGN'
       };
@@ -1074,8 +1074,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   <Select
                     className="react-select-container"
                     classNamePrefix="react-select"
-                    menuPortalTarget={document.body}
                     styles={selectStyles}
+                    menuPlacement="auto"
                     value={selectedService}
                     onChange={(option) => {
                       setSelectedService(option);
@@ -1096,7 +1096,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     isSearchable
                     formatOptionLabel={(option) => (
                       <div className="flex items-center justify-between w-full">
-                        <span className="text-xs">{getServiceName(option.value) || option.label || option.name}</span>
+                        <span className="text-xs">{option.label || option.name || getServiceName(option.value)}</span>
                         {option.price_ngn && (
                           <span className="text-emerald-600 font-semibold text-xs">
                             ₦{option.price_ngn.toFixed(2)}

@@ -10,13 +10,15 @@
     - Expanded SERVICE_NAMES dictionary with 400+ service mappings from Tiger SMS official API docs
     - Services like Claude (acz), ChatGPT (dr), BIGO LIVE (bl), etc. all properly named
   - **FIXED:** SMS Bower countries show proper names (Afghanistan, USA, etc.) not numeric codes (74, 187)
+  - **FIXED:** Frontend service dropdown was not displaying options - removed `menuPortalTarget` prop that was causing visibility issues
+  - **FIXED:** Frontend display now uses `option.label || option.name` first instead of `getServiceName(option.value)`, so proper names from backend are shown
   - **NEW:** Backend caching functions:
     - `get_smsbower_service_names()` - Caches service names from getServicesList endpoint (1 hour cache)
     - `get_smsbower_country_names()` - Caches country names from getCountries endpoint (1 hour cache)
   - **IMPROVED:** Admin sync endpoint now loads both service names and country names for SMS Bower
-  - **VERIFIED:** Backend test pass rate: 93% (13 passed, 1 skipped)
-  - **VERIFIED:** Frontend test pass rate: 100%
-  - Files modified: `/app/backend/server.py`
+  - **VERIFIED:** Budget Server (SMS Bower) shows proper names: 3Fun, AOL, Acima, Adidas, Adobe, AirBnb, AliPay, Alibaba, Amazon
+  - **VERIFIED:** Fast Server (Tiger SMS) shows proper names: 1688, 1xbet, AOL, Adidas, Airbnb, Alipay/Alibaba/1688, Amasia
+  - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`
 
 - **2026-03-08 (Session 15)**: SMS Provider Database Caching Implementation
   - **FIXED:** Tiger SMS and SMS Bower providers now functional with database caching

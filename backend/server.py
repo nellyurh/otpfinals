@@ -1748,15 +1748,16 @@ SERVICE_NAMES = {
     # ============ Comprehensive service mapping for Tiger SMS and other providers ============
     
     # ============ TIGER SMS OFFICIAL CODES (from tiger-sms.com/api) ============
-    # Social/Messaging
+    # Social/Messaging - MOST COMMON
     'tg': 'Telegram', 'wa': 'WhatsApp', 'wa2': 'WhatsApp2', 'fb': 'Facebook', 'ig': 'Instagram',
     'tw': 'Twitter', 'vk': 'VKontakte', 'ok': 'Odnoklassniki', 'vi': 'Viber',
-    'we': 'ДругВокруг', 'li': 'Baidu', 'sn': 'Snapchat', 'ds': 'Discord',
-    'dc': 'YikYak', 'sg': 'Signal', 'th': 'WestStein', 'rd': 'Reddit',
-    'pi': 'Pinterest', 'tm': 'Akulaku', 'sk': 'Skroutz', 'ln': 'Grofers',
-    'kk': 'Idealista', 'mj': 'Zalo', 'lf': 'TikTok/Douyin', 'bl': 'BIGO LIVE',
-    'wb': 'WeChat', 'yl': 'Yalla', 'iq': 'ICQ', 'xr': 'Tango', 'qn': 'Blued',
-    'qq': 'Tencent QQ', 'eh': 'Telegram 2.0', 'ta': 'Wink',
+    'kt': 'KakaoTalk', 'nv': 'Naver', 'me': 'Messenger', 'ln': 'Line',
+    'ds': 'Discord', 'sg': 'Signal', 'sn': 'Snapchat', 'rd': 'Reddit',
+    'pi': 'Pinterest', 'we': 'WeChat', 'wb': 'WeChat',
+    'mj': 'Zalo', 'lf': 'TikTok/Douyin', 'bl': 'BIGO LIVE',
+    'yl': 'Yalla', 'iq': 'ICQ', 'xr': 'Tango', 'qn': 'Blued',
+    'qq': 'Tencent QQ', 'eh': 'Telegram 2.0', 'ta': 'Wink', 'dc': 'YikYak',
+    'th': 'WestStein', 'tm': 'Akulaku', 'sk': 'Skroutz', 'kk': 'Idealista',
     
     # AI/Tech Services
     'acz': 'Claude', 'dr': 'ChatGPT', 'oa': 'OpenAI/ChatGPT',
@@ -1779,10 +1780,11 @@ SERVICE_NAMES = {
     
     # Tech & Services
     'go': 'Google/YouTube/Gmail', 'gf': 'GoogleVoice', 'gch': 'GoogleChat',
-    'gms': 'GoogleMessenger', 'ms': 'Microsoft', 'wx': 'Apple',
+    'gms': 'GoogleMessenger', 'ms': 'Microsoft', 'mm': 'Microsoft', 'wx': 'Apple',
     'ya': 'Yandex', 'wf': 'YandexGo', 'mb': 'Yahoo', 'zo': 'Zoom',
     'sp': 'Spotify', 'alj': 'Spotify', 'nf': 'Netflix', 'ud': 'Disney Hotstar',
     'hb': 'Twitch', 'yt': 'YouTube', 'uk': 'Airbnb', 'ag': 'Agoda',
+    'ts': 'PayPal', 'li': 'Baidu',
     
     # Gaming
     'mt': 'Steam', 'bz': 'Blizzard', 'hh': 'Uplay', 'ro': 'Roblox',
