@@ -1,24 +1,18 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-03-08 (Session 14)**: SMS Provider Integration - New Pages Added
-  - **KEPT:** Existing Virtual Numbers page unchanged with 3 servers (US Server, International, Global)
-  - **NEW:** **US Numbers Page** - Card-based UI with 4 providers:
+- **2026-03-08 (Session 14)**: SMS Provider Integration - Dropdown-Based Navigation
+  - **KEPT:** Existing Virtual Numbers page with original 3 servers (US Server, International, Global)
+  - **ADDED to dropdown:** "US Numbers" option with NEW badge - shows 4 provider cards:
     - Text Verified (Premium), 5sim (Popular), SMS Bower (Budget), Tiger SMS (Fast)
-    - Service dropdown appears when provider selected
-    - Price display in NGN with admin-configurable markup
-  - **NEW:** **Other Countries Page** - Card-based UI with 3 providers:
+  - **ADDED to dropdown:** "Other Countries" option with NEW badge - shows 3 provider cards:
     - 5sim (Reliable), SMS Bower (Budget), Tiger SMS (Fast)
-    - Country dropdown (excludes USA) followed by service dropdown
-    - Country flags displayed in dropdown options
-  - NEW: **SMS Bower Integration** - Backend endpoints and polling
-  - NEW: **Text Verified Integration** - Backend endpoints with bearer token auth
-  - NEW: **Provider Enable/Disable Toggles** - Admin can toggle individual providers
-  - NEW: **Reseller API Support for New Providers**:
-    - `usa_premium` - Text Verified
-    - `all_country_3` - SMS Bower  
-    - `usa_tiger` - Tiger SMS
-  - Files: `/app/frontend/src/components/USNumbersSection.js`, `/app/frontend/src/components/OtherCountriesSection.js`
+    - Includes country dropdown (excludes USA) followed by service dropdown
+  - **UI Flow:** Select dropdown option → If US Numbers/Other Countries → Show provider cards → Select provider → Select service → Purchase
+  - **Backend integrations:** SMS Bower, Text Verified, Tiger SMS - purchase, poll OTP, cancel
+  - **Reseller API:** New servers added (`usa_premium`, `all_country_3`, `usa_tiger`)
+  - **Admin toggles:** Enable/disable individual providers
+  - Files: `/app/frontend/src/components/VirtualNumbersSection.js`
 
 
 - **2026-02-18 (Session 13)**: Travel Section Major Improvements

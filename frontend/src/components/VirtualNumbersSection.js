@@ -1,10 +1,103 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Select from 'react-select';
-import { Phone, Plus, ChevronDown, RefreshCw, Copy } from 'lucide-react';
+import { Phone, Plus, ChevronDown, RefreshCw, Copy, Check, Globe } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Provider card data for US Numbers - 4 providers
+const US_PROVIDERS = [
+  {
+    id: 'textverified',
+    name: 'Text Verified',
+    description: 'Premium US Numbers with high success rate',
+    icon: '🔐',
+    color: 'from-blue-500 to-blue-600',
+    badge: 'Premium',
+    features: ['High Success Rate', 'Fast Delivery', 'US Only']
+  },
+  {
+    id: '5sim',
+    name: '5sim',
+    description: 'Global provider with US number support',
+    icon: '🌐',
+    color: 'from-purple-500 to-purple-600',
+    badge: 'Popular',
+    features: ['Multiple Countries', 'Wide Service Range', 'Reliable']
+  },
+  {
+    id: 'smsbower',
+    name: 'SMS Bower',
+    description: 'Affordable US numbers for verification',
+    icon: '📱',
+    color: 'from-green-500 to-green-600',
+    badge: 'Budget',
+    features: ['Low Prices', 'Good Availability', 'US Support']
+  },
+  {
+    id: 'tigersms',
+    name: 'Tiger SMS',
+    description: 'Fast and reliable US verifications',
+    icon: '🐯',
+    color: 'from-orange-500 to-orange-600',
+    badge: 'Fast',
+    features: ['Quick Delivery', 'Many Services', 'Stable']
+  }
+];
+
+// Provider card data for Other Countries - 3 providers
+const OTHER_COUNTRIES_PROVIDERS = [
+  {
+    id: '5sim',
+    name: '5sim',
+    description: 'Global provider with extensive coverage',
+    icon: '🌐',
+    color: 'from-purple-500 to-purple-600',
+    badge: 'Reliable',
+    features: ['Worldwide', 'Many Services', 'Stable']
+  },
+  {
+    id: 'smsbower',
+    name: 'SMS Bower',
+    description: 'Affordable international numbers',
+    icon: '📱',
+    color: 'from-green-500 to-green-600',
+    badge: 'Budget',
+    features: ['Low Prices', 'Good Coverage', 'Simple']
+  },
+  {
+    id: 'tigersms',
+    name: 'Tiger SMS',
+    description: 'Fast and reliable global verifications',
+    icon: '🐯',
+    color: 'from-orange-500 to-orange-600',
+    badge: 'Fast',
+    features: ['Quick Delivery', 'Many Countries', 'Stable']
+  }
+];
+
+// Country flag helper
+const getCountryFlagUrl = (countryValue) => {
+  if (!countryValue) return null;
+  const key = String(countryValue).toLowerCase().replace(/\s+/g, '');
+  
+  const known = {
+    usa: 'us', unitedstates: 'us', nigeria: 'ng', unitedkingdom: 'gb',
+    uk: 'gb', canada: 'ca', india: 'in', germany: 'de', france: 'fr',
+    spain: 'es', italy: 'it', brazil: 'br', russia: 'ru', china: 'cn',
+    japan: 'jp', australia: 'au', netherlands: 'nl', sweden: 'se',
+    indonesia: 'id', philippines: 'ph', vietnam: 'vn', thailand: 'th',
+    malaysia: 'my', singapore: 'sg', southkorea: 'kr', mexico: 'mx',
+    argentina: 'ar', colombia: 'co', chile: 'cl', peru: 'pe',
+    poland: 'pl', ukraine: 'ua', romania: 'ro', turkey: 'tr',
+    southafrica: 'za', egypt: 'eg', kenya: 'ke', ghana: 'gh'
+  };
+
+  const iso2 = known[key] || (/^[a-z]{2}$/.test(key) ? key : null);
+  if (!iso2) return null;
+  return `https://flagcdn.com/${iso2}.svg`;
+};
 
 // Shared Select styles to prevent blurry text and ensure dark, visible text
 const selectStyles = {
@@ -66,6 +159,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   const [selectedPool, setSelectedPool] = useState(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [selectedOperator, setSelectedOperator] = useState(null);
+
+  // NEW: Provider cards state for US Numbers and Other Countries
+  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [providerServices, setProviderServices] = useState([]);
+  const [providerCountries, setProviderCountries] = useState([]);
+  const [providerServicesLoading, setProviderServicesLoading] = useState(false);
+  const [providersStatus, setProvidersStatus] = useState({});
 
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [selectedAreaCodes, setSelectedAreaCodes] = useState([]);
@@ -144,6 +244,203 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       clearInterval(pollInterval);
     };
   }, [fetchOrders]);
+
+  // Fetch provider status on mount
+  useEffect(() => {
+    const fetchProvidersStatus = async () => {
+      try {
+        const response = await axios.get(`${API}/api/services/providers/status`, axiosConfig);
+        if (response.data.success) {
+          setProvidersStatus(response.data.providers);
+        }
+      } catch (error) {
+        console.error('Failed to fetch provider status:', error);
+      }
+    };
+    fetchProvidersStatus();
+  }, [axiosConfig]);
+
+  // Fetch services for selected provider (US Numbers or Other Countries mode)
+  const fetchProviderServices = useCallback(async (providerId, isUSMode) => {
+    if (!providerId) {
+      setProviderServices([]);
+      return;
+    }
+
+    setProviderServicesLoading(true);
+    try {
+      let endpoint = '';
+      let params = {};
+      
+      if (isUSMode) {
+        // US Numbers mode
+        switch (providerId) {
+          case 'textverified':
+            endpoint = '/api/services/textverified';
+            break;
+          case '5sim':
+            endpoint = '/api/services/5sim';
+            params = { country: 'usa' };
+            break;
+          case 'smsbower':
+            endpoint = '/api/services/smsbower';
+            params = { country: '0' };
+            break;
+          case 'tigersms':
+            endpoint = '/api/services/tigersms';
+            break;
+          default:
+            return;
+        }
+
+        const response = await axios.get(`${API}${endpoint}`, { ...axiosConfig, params });
+        
+        if (response.data.success) {
+          let serviceList = response.data.services || [];
+          
+          // Normalize service format for tigersms
+          if (providerId === 'tigersms' && response.data.data) {
+            const usaServices = response.data.data['187'] || response.data.data['us'] || {};
+            serviceList = Object.entries(usaServices).map(([code, info]) => ({
+              value: code,
+              label: info.name || code,
+              name: info.name || code,
+              price_ngn: parseFloat(info.cost || 0) * 1500 * 1.5,
+              price_usd: parseFloat(info.cost || 0) * 1.5
+            }));
+          }
+          
+          setProviderServices(serviceList);
+        } else {
+          setProviderServices([]);
+        }
+      } else {
+        // Other Countries mode - fetch countries first
+        switch (providerId) {
+          case '5sim':
+            endpoint = '/api/services/5sim';
+            break;
+          case 'smsbower':
+            endpoint = '/api/services/smsbower';
+            break;
+          case 'tigersms':
+            endpoint = '/api/services/tigersms/countries';
+            break;
+          default:
+            return;
+        }
+
+        const response = await axios.get(`${API}${endpoint}`, axiosConfig);
+        
+        if (response.data.success && response.data.countries) {
+          // Filter out USA for Other Countries mode
+          const filtered = response.data.countries.filter(c => {
+            const val = String(c.value || c.short_name || '').toLowerCase();
+            return !['usa', 'us', '187', '0'].includes(val);
+          });
+          setProviderCountries(filtered);
+        }
+        setProviderServices([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch provider services:', error);
+      toast.error('Failed to load services');
+      setProviderServices([]);
+    } finally {
+      setProviderServicesLoading(false);
+    }
+  }, [axiosConfig]);
+
+  // Fetch services when country changes in Other Countries mode
+  const fetchProviderServicesForCountry = useCallback(async (providerId, countryCode) => {
+    if (!providerId || !countryCode) {
+      setProviderServices([]);
+      return;
+    }
+
+    setProviderServicesLoading(true);
+    try {
+      let endpoint = '';
+      let params = { country: countryCode };
+      
+      switch (providerId) {
+        case '5sim':
+          endpoint = '/api/services/5sim';
+          break;
+        case 'smsbower':
+          endpoint = '/api/services/smsbower';
+          break;
+        case 'tigersms':
+          endpoint = '/api/services/tigersms';
+          break;
+        default:
+          return;
+      }
+
+      const response = await axios.get(`${API}${endpoint}`, { ...axiosConfig, params });
+      
+      if (response.data.success && response.data.services) {
+        setProviderServices(response.data.services);
+      } else {
+        setProviderServices([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch services for country:', error);
+      setProviderServices([]);
+    } finally {
+      setProviderServicesLoading(false);
+    }
+  }, [axiosConfig]);
+
+  // Handle provider card selection
+  const handleProviderSelect = (provider) => {
+    setSelectedProvider(provider);
+    setSelectedService(null);
+    setSelectedCountry(null);
+    setProviderServices([]);
+    setProviderCountries([]);
+    setEstimatedPrice(null);
+    
+    const isUSMode = selectedServer?.value === 'us_numbers';
+    fetchProviderServices(provider.id, isUSMode);
+  };
+
+  // Handle purchase for provider cards mode
+  const handleProviderPurchase = async () => {
+    if (!selectedService || !selectedProvider) {
+      toast.error('Please select a service');
+      return;
+    }
+
+    setPurchasing(true);
+    try {
+      const isUSMode = selectedServer?.value === 'us_numbers';
+      const payload = {
+        server: `${selectedProvider.id}_${isUSMode ? 'us' : 'global'}`,
+        provider: selectedProvider.id,
+        service: selectedService.value,
+        service_name: selectedService.name || selectedService.label,
+        country: isUSMode 
+          ? (selectedProvider.id === 'smsbower' ? '0' : (selectedProvider.id === '5sim' ? 'usa' : '187'))
+          : selectedCountry?.value,
+        payment_currency: 'NGN'
+      };
+
+      const response = await axios.post(`${API}/api/orders/purchase`, payload, axiosConfig);
+
+      if (response.data.success) {
+        toast.success('Number purchased successfully!');
+        setSelectedService(null);
+        fetchOrders();
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.detail || 'Purchase failed');
+    } finally {
+      setPurchasing(false);
+    }
+  };
 
   // Fetch services for selected server
   const fetchServicesForServer = async (serverValue) => {
@@ -587,8 +884,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             setSelectedService(null);
             setSelectedCountry(null);
             setEstimatedPrice(null);
+            setSelectedProvider(null);
+            setProviderServices([]);
+            setProviderCountries([]);
             if (option) {
-              fetchServicesForServer(option.value);
+              if (option.value === 'us_numbers' || option.value === 'other_countries') {
+                // Provider cards mode - don't fetch services yet
+              } else {
+                fetchServicesForServer(option.value);
+              }
             } else {
               setAvailableServices([]);
               setAvailableCountries([]);
@@ -597,8 +901,20 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           options={[
             { value: 'us_server', label: '🇺🇸 US Server' },
             { value: 'server1', label: '🌍 International' },
-            { value: 'server2', label: '🌐 Global' }
+            { value: 'server2', label: '🌐 Global' },
+            { value: 'us_numbers', label: '🇺🇸 US Numbers', badge: 'NEW' },
+            { value: 'other_countries', label: '🌍 Other Countries', badge: 'NEW' }
           ]}
+          formatOptionLabel={(option) => (
+            <div className="flex items-center justify-between w-full">
+              <span>{option.label}</span>
+              {option.badge && (
+                <span className="ml-2 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded">
+                  {option.badge}
+                </span>
+              )}
+            </div>
+          )}
           placeholder="Choose server"
           className="react-select-container"
           classNamePrefix="react-select"
@@ -606,7 +922,208 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         />
       </div>
 
-      {/* Purchase New Number */}
+      {/* Provider Cards - Show for US Numbers and Other Countries */}
+      {selectedServer && (selectedServer.value === 'us_numbers' || selectedServer.value === 'other_countries') && (
+        <div className="space-y-4">
+          {/* Provider Cards Grid */}
+          <div className={`grid gap-3 ${selectedServer.value === 'us_numbers' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
+            {(selectedServer.value === 'us_numbers' ? US_PROVIDERS : OTHER_COUNTRIES_PROVIDERS).map((provider) => {
+              const status = providersStatus[provider.id];
+              const isEnabled = status?.enabled !== false;
+              const isSelected = selectedProvider?.id === provider.id;
+
+              return (
+                <button
+                  key={provider.id}
+                  data-testid={`provider-card-${provider.id}`}
+                  onClick={() => isEnabled && handleProviderSelect(provider)}
+                  disabled={!isEnabled}
+                  className={`relative p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
+                    !isEnabled 
+                      ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
+                      : isSelected
+                        ? 'border-emerald-500 bg-emerald-50 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-emerald-300 hover:shadow-md'
+                  }`}
+                >
+                  {/* Badge */}
+                  <div className="absolute top-2 right-2">
+                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full text-white bg-gradient-to-r ${provider.color}`}>
+                      {provider.badge}
+                    </span>
+                  </div>
+
+                  {/* Provider Info */}
+                  <div className="flex items-start gap-2">
+                    <span className="text-2xl">{provider.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-gray-900 text-sm">{provider.name}</h3>
+                      <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1">{provider.description}</p>
+                      
+                      {/* Features */}
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {provider.features.slice(0, 2).map((feature, idx) => (
+                          <span key={idx} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[9px] rounded-full">
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Selected indicator */}
+                  {isSelected && (
+                    <div className="absolute bottom-2 right-2">
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    </div>
+                  )}
+
+                  {/* Disabled overlay */}
+                  {!isEnabled && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 rounded-xl">
+                      <span className="text-[10px] font-semibold text-gray-500">Unavailable</span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Service Selection for Provider Cards */}
+          {selectedProvider && (
+            <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{selectedProvider.icon}</span>
+                <h3 className="font-semibold text-gray-900 text-sm">{selectedProvider.name}</h3>
+              </div>
+
+              {/* Country Dropdown - Only for Other Countries mode */}
+              {selectedServer.value === 'other_countries' && (
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                    Select Country
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={selectStyles}
+                    value={selectedCountry}
+                    onChange={(option) => {
+                      setSelectedCountry(option);
+                      setSelectedService(null);
+                      setEstimatedPrice(null);
+                      if (option) {
+                        fetchProviderServicesForCountry(selectedProvider.id, option.value);
+                      } else {
+                        setProviderServices([]);
+                      }
+                    }}
+                    options={providerCountries}
+                    isLoading={providerServicesLoading && providerCountries.length === 0}
+                    isDisabled={providerServicesLoading && providerCountries.length === 0}
+                    placeholder="Select a country..."
+                    isClearable
+                    isSearchable
+                    formatOptionLabel={(option) => {
+                      const flagUrl = getCountryFlagUrl(option.value || option.short_name || option.label);
+                      return (
+                        <div className="flex items-center gap-2">
+                          {flagUrl && (
+                            <img
+                              src={flagUrl}
+                              alt={option.label}
+                              className="w-5 h-4 rounded border border-gray-200 object-cover"
+                            />
+                          )}
+                          <span className="text-xs">{option.label || option.name}</span>
+                        </div>
+                      );
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Service Selection */}
+              {(selectedServer.value === 'us_numbers' || selectedCountry) && (
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                    Select Service
+                  </label>
+                  <Select
+                    menuPortalTarget={document.body}
+                    styles={selectStyles}
+                    value={selectedService}
+                    onChange={(option) => {
+                      setSelectedService(option);
+                      if (option) {
+                        setEstimatedPrice({
+                          price_ngn: option.price_ngn || option.final_price_ngn || 0,
+                          price_usd: option.price_usd || option.final_price || 0
+                        });
+                      } else {
+                        setEstimatedPrice(null);
+                      }
+                    }}
+                    options={providerServices}
+                    isLoading={providerServicesLoading}
+                    isDisabled={providerServicesLoading}
+                    placeholder={providerServicesLoading ? 'Loading services...' : 'Search for a service...'}
+                    isClearable
+                    isSearchable
+                    formatOptionLabel={(option) => (
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-xs">{option.label || option.name}</span>
+                        {option.price_ngn && (
+                          <span className="text-emerald-600 font-semibold text-xs">
+                            ₦{option.price_ngn.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
+
+              {/* Price Display */}
+              {estimatedPrice && estimatedPrice.price_ngn > 0 && (
+                <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-200 rounded-xl p-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="block text-[10px] font-semibold text-emerald-700 uppercase">Total Cost</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="block text-lg font-bold text-emerald-700">
+                        ₦{estimatedPrice.price_ngn?.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Purchase Button */}
+              <button
+                onClick={handleProviderPurchase}
+                disabled={!selectedService || purchasing}
+                data-testid="purchase-provider-btn"
+                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                <Phone className="w-4 h-4" />
+                {purchasing ? 'Purchasing...' : 'Purchase Number'}
+              </button>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!selectedProvider && (
+            <div className="text-center py-6 text-gray-500 bg-white rounded-xl border">
+              <Phone className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+              <p className="text-xs">Select a provider to get started</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Purchase New Number - Only for original servers */}
+      {selectedServer && !['us_numbers', 'other_countries'].includes(selectedServer.value) && (
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
         <button
           onClick={() => setPurchaseExpanded(!purchaseExpanded)}
@@ -1070,6 +1587,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           </div>
         )}
       </div>
+      )}
 
       {/* Your Verifications - Mobile-first responsive design */}
       <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 md:p-6">
