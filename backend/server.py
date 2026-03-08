@@ -2293,7 +2293,10 @@ async def purchase_number_daisysms(service: str, max_price: float, area_code: Op
         return None
 
 async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Optional[Dict]:
-    """Purchase a number from TigerSMS."""
+    """Purchase a number from TigerSMS.
+    
+    Response format: ACCESS_NUMBER:activation_id:phone_number
+    """
     try:
         # Get API key from config first, then env
         config = await db.pricing_config.find_one({}, {'_id': 0})
@@ -2306,7 +2309,19 @@ async def purchase_number_tigersms(service: str, country: str, **kwargs) -> Opti
                 timeout=15.0
             )
             if response.status_code == 200:
-                return response.json()
+                text = response.text.strip()
+                if 'ACCESS_NUMBER' in text:
+                    # Format: ACCESS_NUMBER:activation_id:phone_number
+                    parts = text.split(':')
+                    if len(parts) >= 3:
+                        return {
+                            'success': True,
+                            'activation_id': parts[1].strip(),
+                            'phone_number': parts[2].strip(),
+                            'raw': text
+                        }
+                # Return error response
+                return {'success': False, 'error': text, 'raw': text}
             return None
     except Exception as e:
         logger.error(f"TigerSMS purchase error: {str(e)}")
@@ -2424,6 +2439,29 @@ async def poll_otp_tigersms(activation_id: str) -> Optional[str]:
         logger.error(f"TigerSMS OTP poll error: {str(e)}")
         return None
 
+async def cancel_number_tigersms(activation_id: str) -> bool:
+    """Cancel TigerSMS order.
+    
+    Sets status to 8 (cancel) using setStatus action.
+    """
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://api.tiger-sms.com/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 8},
+                timeout=10.0
+            )
+            if response.status_code == 200:
+                text = response.text
+                return 'ACCESS_CANCEL' in text or 'ACCESS_READY' in text
+            return False
+    except Exception as e:
+        logger.error(f"TigerSMS cancel error: {str(e)}")
+        return False
+
 # ============ SMS Bower Functions ============
 
 async def get_smsbower_services(country: Optional[str] = None) -> Optional[Dict]:
@@ -2518,7 +2556,10 @@ async def poll_otp_smsbower(activation_id: str) -> Optional[str]:
         return None
 
 async def cancel_number_smsbower(activation_id: str) -> bool:
-    """Cancel SMS Bower order."""
+    """Cancel SMS Bower order.
+    
+    Note: SMS Bower may deny early cancellation with EARLY_CANCEL_DENIED
+    """
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
         api_key = config.get('smsbower_api_key', '') if config else ''
@@ -2531,7 +2572,14 @@ async def cancel_number_smsbower(activation_id: str) -> bool:
                 params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 8},
                 timeout=10.0
             )
-            return 'ACCESS_CANCEL' in response.text
+            text = response.text
+            # ACCESS_CANCEL means cancelled, EARLY_CANCEL_DENIED means too early
+            if 'ACCESS_CANCEL' in text:
+                return True
+            elif 'EARLY_CANCEL_DENIED' in text:
+                logger.warning(f"SMS Bower: Early cancellation denied for {activation_id}")
+                return False
+            return False
     except Exception as e:
         logger.error(f"SMS Bower cancel error: {str(e)}")
         return False
@@ -2585,20 +2633,21 @@ async def get_textverified_services() -> Optional[List[Dict]]:
             return None
         
         async with httpx.AsyncClient() as client:
+            # Use correct API endpoint - /api/Targets (capital T)
             response = await client.get(
-                'https://www.textverified.com/api/pub/v2/targets',
+                'https://www.textverified.com/api/Targets',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Accept': 'application/json'
                 },
-                timeout=15.0
+                timeout=20.0
             )
             if response.status_code == 200:
                 data = response.json()
-                # Handle different response formats
+                # Response is a list of targets
                 if isinstance(data, list):
                     return data
-                return data.get('services', data.get('targets', []))
+                return data.get('targets', data.get('services', []))
             logger.error(f"Text Verified services error: {response.status_code} - {response.text[:200]}")
             return None
     except Exception as e:
@@ -2606,14 +2655,18 @@ async def get_textverified_services() -> Optional[List[Dict]]:
         return None
 
 async def purchase_number_textverified(service: str) -> Optional[Dict]:
-    """Purchase a number from Text Verified."""
+    """Purchase a number from Text Verified.
+    
+    Args:
+        service: The service name (e.g., 'whatsapp', 'telegram')
+    """
     try:
         token = await get_textverified_token()
         if not token:
             return {'success': False, 'error': 'Failed to get Text Verified token'}
         
         async with httpx.AsyncClient() as client:
-            # Use correct API endpoint
+            # Use correct API endpoint with required fields
             response = await client.post(
                 'https://www.textverified.com/api/pub/v2/verifications',
                 headers={
@@ -2622,18 +2675,41 @@ async def purchase_number_textverified(service: str) -> Optional[Dict]:
                     'Accept': 'application/json'
                 },
                 json={
-                    'id': service  # Target ID
+                    'serviceName': service,  # e.g., 'whatsapp'
+                    'capability': 'sms',
+                    'areaCode': ''  # Empty for any area
                 },
                 timeout=20.0
             )
-            if response.status_code == 200 or response.status_code == 201:
+            
+            if response.status_code in [200, 201, 202]:
                 data = response.json()
-                return {
-                    'success': True,
-                    'verification_id': data.get('id') or data.get('verification_id'),
-                    'phone_number': data.get('number') or data.get('phone_number'),
-                    'cost': data.get('cost') or data.get('credits')
-                }
+                # Response contains href to get verification details
+                verification_href = data.get('href', '')
+                
+                if verification_href:
+                    # Follow the href to get full verification details
+                    details_resp = await client.get(
+                        verification_href,
+                        headers={'Authorization': f'Bearer {token}'},
+                        timeout=10.0
+                    )
+                    
+                    if details_resp.status_code == 200:
+                        details = details_resp.json()
+                        return {
+                            'success': True,
+                            'verification_id': details.get('id', ''),
+                            'phone_number': details.get('number', ''),
+                            'cost': details.get('totalCost', 0),
+                            'ends_at': details.get('endsAt', ''),
+                            'sms_href': details.get('sms', {}).get('href', ''),
+                            'cancel_href': details.get('cancel', {}).get('link', {}).get('href', ''),
+                            'can_cancel': details.get('cancel', {}).get('canCancel', False)
+                        }
+                
+                return {'success': True, 'data': data, 'message': 'Verification created, follow href for details'}
+            
             logger.error(f"Text Verified purchase error: {response.status_code} - {response.text}")
             return {'success': False, 'error': response.text[:200]}
     except Exception as e:
@@ -2641,61 +2717,95 @@ async def purchase_number_textverified(service: str) -> Optional[Dict]:
         return {'success': False, 'error': str(e)}
 
 async def poll_otp_textverified(verification_id: str) -> Optional[str]:
-    """Poll Text Verified for OTP."""
+    """Poll Text Verified for OTP.
+    
+    Args:
+        verification_id: The verification ID (e.g., 'lr_01KK72SSD1HWPBMWJXATF16M5T')
+    """
     try:
         token = await get_textverified_token()
         if not token:
             return None
         
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}',
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Accept': 'application/json'
-                },
+            # First get verification details to get the SMS href
+            verification_url = f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}'
+            resp = await client.get(
+                verification_url,
+                headers={'Authorization': f'Bearer {token}'},
                 timeout=10.0
             )
-            if response.status_code == 200:
-                data = response.json()
-                # Check for SMS/code in the response
-                sms_text = data.get('sms_code') or data.get('code') or data.get('sms')
-                if sms_text:
-                    return str(sms_text)
-                # Check if there's a messages array
-                messages = data.get('messages', [])
-                if messages and len(messages) > 0:
-                    sms_text = messages[0].get('text', '')
-                    # Try to extract numeric code
-                    import re
-                    match = re.search(r'\b(\d{4,8})\b', sms_text)
-                    if match:
-                        return match.group(1)
-                    return sms_text[:20]
+            
+            if resp.status_code == 200:
+                data = resp.json()
+                sms_href = data.get('sms', {}).get('href', '')
+                
+                if sms_href:
+                    # Get SMS messages
+                    sms_resp = await client.get(
+                        sms_href,
+                        headers={'Authorization': f'Bearer {token}'},
+                        timeout=10.0
+                    )
+                    
+                    if sms_resp.status_code == 200:
+                        sms_data = sms_resp.json()
+                        messages = sms_data.get('data', []) if isinstance(sms_data, dict) else sms_data
+                        
+                        if messages and len(messages) > 0:
+                            # Get the latest message
+                            latest_sms = messages[-1] if isinstance(messages, list) else messages
+                            sms_text = latest_sms.get('text', '') or latest_sms.get('message', '') or latest_sms.get('body', '')
+                            
+                            if sms_text:
+                                # Try to extract numeric code
+                                import re
+                                match = re.search(r'\b(\d{4,8})\b', sms_text)
+                                if match:
+                                    return match.group(1)
+                                return sms_text[:50]  # Return first 50 chars if no code found
             return None
     except Exception as e:
         logger.error(f"Text Verified OTP poll error: {str(e)}")
         return None
 
 async def cancel_number_textverified(verification_id: str) -> bool:
-    """Cancel Text Verified order."""
+    """Cancel Text Verified order.
+    
+    Args:
+        verification_id: The verification ID (e.g., 'lr_01KK72SSD1HWPBMWJXATF16M5T')
+    """
     try:
         token = await get_textverified_token()
         if not token:
             return False
         
         async with httpx.AsyncClient() as client:
-            response = await client.patch(
-                f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}',
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                json={'cancelled': True},
+            # First check if cancellation is allowed
+            verification_url = f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}'
+            resp = await client.get(
+                verification_url,
+                headers={'Authorization': f'Bearer {token}'},
                 timeout=10.0
             )
-            return response.status_code in [200, 204]
+            
+            if resp.status_code == 200:
+                data = resp.json()
+                can_cancel = data.get('cancel', {}).get('canCancel', False)
+                cancel_href = data.get('cancel', {}).get('link', {}).get('href', '')
+                
+                if can_cancel and cancel_href:
+                    cancel_resp = await client.post(
+                        cancel_href,
+                        headers={'Authorization': f'Bearer {token}'},
+                        timeout=10.0
+                    )
+                    return cancel_resp.status_code in [200, 204]
+                elif not can_cancel:
+                    logger.warning(f"Text Verified verification {verification_id} cannot be cancelled (canCancel=False)")
+                    return False
+            
+            return False
     except Exception as e:
         logger.error(f"Text Verified cancel error: {str(e)}")
         return False
@@ -4650,9 +4760,9 @@ async def get_textverified_services_endpoint(user: dict = Depends(get_current_us
             return {'success': False, 'message': 'Failed to authenticate with Text Verified'}
         
         async with httpx.AsyncClient() as client:
-            # Use correct API endpoint for targets/services
+            # Use correct API endpoint - /api/Targets (capital T)
             response = await client.get(
-                'https://www.textverified.com/api/pub/v2/targets',
+                'https://www.textverified.com/api/Targets',
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Accept': 'application/json'
@@ -4666,22 +4776,29 @@ async def get_textverified_services_endpoint(user: dict = Depends(get_current_us
                 
                 services = []
                 for svc in service_list:
-                    # Text Verified uses 'normalPrice' or 'reusablePrice' for costs
-                    base_price = float(svc.get('normalPrice', svc.get('cost', svc.get('price', 0))) or 0)
+                    # Text Verified uses 'cost' field for price (in credits/dollars)
+                    base_price = float(svc.get('cost', 0) or 0)
                     if base_price <= 0:
                         base_price = 0.50  # Default price if not provided
                     
                     final_price = base_price * (1 + markup_percent / 100)
                     final_price_ngn = final_price * ngn_rate
                     
+                    # Skip unavailable services
+                    status = svc.get('status', 'available')
+                    if status != 'available':
+                        continue
+                    
+                    # Use normalizedName for API calls, display name for UI
                     services.append({
-                        'value': str(svc.get('id', svc.get('service', svc.get('name', '')))),
-                        'label': svc.get('name', svc.get('service', '')),
-                        'name': svc.get('name', svc.get('service', '')),
+                        'value': svc.get('normalizedName', svc.get('name', '').lower().replace(' ', '')),
+                        'label': svc.get('name', ''),
+                        'name': svc.get('name', ''),
                         'base_price': base_price,
                         'price_usd': final_price,
                         'price_ngn': final_price_ngn,
-                        'available': svc.get('status') == 'available' if 'status' in svc else svc.get('available', True)
+                        'available': status == 'available',
+                        'targetId': svc.get('targetId')
                     })
                 
                 services.sort(key=lambda x: x['name'])
