@@ -6139,18 +6139,60 @@ const AdminPanel = ({ user, setUser }) => {
                     {!providerBalances ? (
                       <p className="text-xs text-slate-500">Loading balances…</p>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-                          <div className="text-xs text-slate-500 mb-1">DaisySMS</div>
-                          <div className="text-xl font-bold text-slate-900">{providerBalances.daisysms?.balance ?? providerBalances.daisysms?.raw ?? '-'}</div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        {/* DaisySMS */}
+                        <div className="p-3 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+                          <div className="text-[10px] text-slate-500 mb-1">DaisySMS</div>
+                          <div className="text-lg font-bold text-slate-900">
+                            {providerBalances.daisysms?.balance != null ? `$${providerBalances.daisysms.balance}` : providerBalances.daisysms?.error || '-'}
+                          </div>
                         </div>
-                        <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-                          <div className="text-xs text-slate-500 mb-1">SMS-pool</div>
-                          <div className="text-xl font-bold text-slate-900">{providerBalances.smspool?.balance ?? providerBalances.smspool?.data?.balance ?? '-'}</div>
+                        {/* SMS-pool */}
+                        <div className="p-3 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+                          <div className="text-[10px] text-slate-500 mb-1">SMS-pool</div>
+                          <div className="text-lg font-bold text-slate-900">
+                            {providerBalances.smspool?.balance ?? providerBalances.smspool?.data?.balance ?? providerBalances.smspool?.error ?? '-'}
+                          </div>
                         </div>
-                        <div className="p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-                          <div className="text-xs text-slate-500 mb-1">5sim</div>
-                          <div className="text-xl font-bold text-slate-900">{providerBalances['5sim']?.balance ?? providerBalances['5sim']?.balance_rub ?? providerBalances['5sim']?.balance_usd ?? '-'}</div>
+                        {/* 5sim */}
+                        <div className="p-3 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+                          <div className="text-[10px] text-slate-500 mb-1">5sim</div>
+                          <div className="text-lg font-bold text-slate-900">
+                            {providerBalances['5sim']?.balance ?? providerBalances['5sim']?.balance_usd ?? providerBalances['5sim']?.error ?? '-'}
+                          </div>
+                        </div>
+                        {/* Tiger SMS */}
+                        <div className="p-3 rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white">
+                          <div className="text-[10px] text-amber-700 mb-1 flex items-center gap-1">
+                            <span>🐯</span> Tiger SMS
+                          </div>
+                          <div className="text-lg font-bold text-slate-900">
+                            {providerBalances.tigersms?.balance != null 
+                              ? `₽${providerBalances.tigersms.balance}` 
+                              : providerBalances.tigersms?.error || (providerBalances.tigersms === null ? 'Not configured' : '-')}
+                          </div>
+                        </div>
+                        {/* SMS Bower */}
+                        <div className="p-3 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+                          <div className="text-[10px] text-blue-700 mb-1 flex items-center gap-1">
+                            <span>📱</span> SMS Bower
+                          </div>
+                          <div className="text-lg font-bold text-slate-900">
+                            {providerBalances.smsbower?.balance != null 
+                              ? `$${providerBalances.smsbower.balance}` 
+                              : providerBalances.smsbower?.error || (providerBalances.smsbower === null ? 'Not configured' : '-')}
+                          </div>
+                        </div>
+                        {/* Text Verified */}
+                        <div className="p-3 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-white">
+                          <div className="text-[10px] text-green-700 mb-1 flex items-center gap-1">
+                            <span>✅</span> Text Verified
+                          </div>
+                          <div className="text-lg font-bold text-slate-900">
+                            {providerBalances.textverified?.balance != null 
+                              ? `$${providerBalances.textverified.balance}` 
+                              : providerBalances.textverified?.error || (providerBalances.textverified === null ? 'Not configured' : '-')}
+                          </div>
                         </div>
                       </div>
                     )}

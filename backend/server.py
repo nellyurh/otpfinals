@@ -6210,6 +6210,9 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
         'daisysms': None,
         'smspool': None,
         '5sim': None,
+        'tigersms': None,
+        'smsbower': None,
+        'textverified': None,
     }
 
     # DaisySMS balance
@@ -6249,6 +6252,92 @@ async def admin_provider_balances(admin: dict = Depends(require_admin)):
                 balances['5sim'] = {'status_code': r.status_code}
         except Exception:
             balances['5sim'] = {'error': 'failed'}
+
+    # Tiger SMS balance
+    tigersms_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
+    if tigersms_key and tigersms_key != '********':
+        try:
+            url = f"https://api.tiger-sms.com/stubs/handler_api.php?api_key={tigersms_key}&action=getBalance"
+            async with httpx.AsyncClient(timeout=15.0) as client_http:
+                r = await client_http.get(url)
+            if r.status_code == 200:
+                txt = r.text.strip()
+                if txt.startswith('ACCESS_BALANCE'):
+                    parts = txt.split(':')
+                    balances['tigersms'] = {'raw': txt, 'balance': float(parts[1]) if len(parts) > 1 else None, 'currency': 'RUB'}
+                elif txt == 'BAD_KEY':
+                    balances['tigersms'] = {'error': 'Invalid API key'}
+                else:
+                    balances['tigersms'] = {'raw': txt, 'error': txt}
+            else:
+                balances['tigersms'] = {'status_code': r.status_code}
+        except Exception as e:
+            balances['tigersms'] = {'error': str(e)}
+    else:
+        balances['tigersms'] = None
+
+    # SMS Bower balance
+    smsbower_key = get_api_key(config, 'smsbower_api_key', '')
+    if smsbower_key and smsbower_key != '********':
+        try:
+            url = f"https://smsbower.online/stubs/handler_api.php?api_key={smsbower_key}&action=getBalance"
+            async with httpx.AsyncClient(timeout=15.0) as client_http:
+                r = await client_http.get(url)
+            if r.status_code == 200:
+                txt = r.text.strip()
+                if txt.startswith('ACCESS_BALANCE'):
+                    parts = txt.split(':')
+                    balances['smsbower'] = {'raw': txt, 'balance': float(parts[1]) if len(parts) > 1 else None, 'currency': 'USD'}
+                elif txt == 'BAD_KEY':
+                    balances['smsbower'] = {'error': 'Invalid API key'}
+                else:
+                    balances['smsbower'] = {'raw': txt, 'error': txt}
+            else:
+                balances['smsbower'] = {'status_code': r.status_code}
+        except Exception as e:
+            balances['smsbower'] = {'error': str(e)}
+    else:
+        balances['smsbower'] = None
+
+    # Text Verified balance
+    textverified_key = get_api_key(config, 'textverified_api_key', '')
+    textverified_email = get_api_key(config, 'textverified_email', '')
+    if textverified_key and textverified_key != '********' and textverified_email and textverified_email != '********':
+        try:
+            # First get bearer token
+            async with httpx.AsyncClient(timeout=15.0) as client_http:
+                # Get auth token
+                auth_resp = await client_http.post(
+                    'https://www.textverified.com/api/SimpleAuthentication',
+                    json={'apiKey': textverified_key, 'apiUsername': textverified_email},
+                    headers={'Content-Type': 'application/json'}
+                )
+                if auth_resp.status_code == 200:
+                    auth_data = auth_resp.json()
+                    bearer_token = auth_data.get('bearer_token') or auth_data.get('token')
+                    if bearer_token:
+                        # Get account info with balance
+                        account_resp = await client_http.get(
+                            'https://www.textverified.com/api/Users/me',
+                            headers={'Authorization': f'Bearer {bearer_token}'}
+                        )
+                        if account_resp.status_code == 200:
+                            account_data = account_resp.json()
+                            balances['textverified'] = {
+                                'balance': account_data.get('credit_balance') or account_data.get('current_balance') or account_data.get('balance'),
+                                'currency': 'USD',
+                                'email': account_data.get('email')
+                            }
+                        else:
+                            balances['textverified'] = {'error': f'Account lookup failed: {account_resp.status_code}'}
+                    else:
+                        balances['textverified'] = {'error': 'No bearer token in response'}
+                else:
+                    balances['textverified'] = {'error': f'Auth failed: {auth_resp.status_code}', 'details': auth_resp.text[:100]}
+        except Exception as e:
+            balances['textverified'] = {'error': str(e)}
+    else:
+        balances['textverified'] = None
 
     return {'success': True, 'balances': balances}
 
