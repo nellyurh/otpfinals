@@ -1743,6 +1743,78 @@ def get_country_name(code: str) -> str:
     """Get country name from code"""
     return COUNTRY_NAMES.get(str(code).lower(), code.upper())
 
+# Service code to full name mapping (common across SMS providers)
+SERVICE_NAMES = {
+    # Social Media
+    'tg': 'Telegram', 'wa': 'WhatsApp', 'fb': 'Facebook', 'ig': 'Instagram',
+    'tw': 'Twitter', 'vk': 'VKontakte', 'ok': 'Odnoklassniki', 'vi': 'Viber',
+    'we': 'WeChat', 'li': 'LinkedIn', 'sn': 'Snapchat', 'tt': 'TikTok',
+    'dc': 'Discord', 'ds': 'Discord', 'sg': 'Signal', 'th': 'Threads', 'rd': 'Reddit',
+    'pi': 'Pinterest', 'tm': 'Tumblr', 'sk': 'Skype', 'ln': 'Line',
+    'kk': 'KakaoTalk', 'zl': 'Zalo', 'im': 'iMessage', 'me': 'Messenger',
+    
+    # Dating
+    'ti': 'Tinder', 'bm': 'Bumble', 'bd': 'Badoo', 'hg': 'Hinge',
+    'hw': 'Happn', 'mf': 'Match', 'gr': 'Grindr', 'hd': 'Her Dating',
+    'pm': 'PlentyOfFish', 'cm': 'Coffee Meets Bagel', 'hr': 'Hinge',
+    
+    # E-commerce & Delivery
+    'am': 'Amazon', 'eb': 'eBay', 'al': 'AliExpress', 'wb': 'Wildberries',
+    'oz': 'Ozon', 'av': 'Avito', 'ub': 'Uber', 'ly': 'Lyft', 'dd': 'DoorDash',
+    'dh': 'DoorDash', 'gh': 'GrubHub', 'ue': 'UberEats', 'ic': 'Instacart',
+    'sh': 'Shein', 'wm': 'Walmart', 'tg': 'Target', 'et': 'Etsy',
+    'az': 'AliPay', 'pp': 'PayPal', 'st': 'Stripe', 'sq': 'Square',
+    'vn': 'Venmo', 'ca': 'Cash App', 'za': 'Zelle', 'kl': 'Klarna',
+    
+    # Tech & Services
+    'go': 'Google', 'gl': 'Gmail', 'ms': 'Microsoft', 'ap': 'Apple',
+    'ya': 'Yahoo', 'dr': 'Dropbox', 'zo': 'Zoom', 'sl': 'Slack',
+    'sp': 'Spotify', 'nf': 'Netflix', 'hz': 'HBO Max', 'hu': 'Hulu',
+    'di': 'Disney+', 'yt': 'YouTube', 'tw': 'Twitch', 'pr': 'Prime Video',
+    'oa': 'OpenAI/ChatGPT', 'ai': 'Airbnb', 'bk': 'Booking.com',
+    
+    # Gaming
+    'st': 'Steam', 'ep': 'Epic Games', 'ps': 'PlayStation', 'xb': 'Xbox',
+    'ni': 'Nintendo', 'ro': 'Roblox', 'mc': 'Minecraft', 'fo': 'Fortnite',
+    'lol': 'League of Legends', 'cod': 'Call of Duty', 'pu': 'PUBG',
+    
+    # Finance & Banking
+    'ba': 'Binance', 'cb': 'Coinbase', 'kr': 'Kraken', 'by': 'Bybit',
+    'ku': 'KuCoin', 'ft': 'FTX', 'rv': 'Revolut', 'ws': 'Wise',
+    'n2': 'N26', 'ch': 'Chime', 'rb': 'Robinhood',
+    
+    # Food & Restaurants
+    'sb': 'Starbucks', 'mcd': 'McDonald\'s', 'dn': 'Dunkin',
+    'cp': 'Chipotle', 'pz': 'Pizza Hut', 'dm': 'Domino\'s',
+    
+    # Travel
+    'ex': 'Expedia', 'tr': 'TripAdvisor', 'ka': 'Kayak', 'ho': 'Hotels.com',
+    'vr': 'VRBO', 'yp': 'Yelp', 'aa': 'American Airlines', 'ua': 'United',
+    
+    # Communication
+    'em': 'Email', 'ph': 'Phone', 'tx': 'Text', 'sm': 'SMS',
+    'mt': 'Mail.ru', 'ym': 'Yandex Mail', 'pm': 'ProtonMail',
+    
+    # Generic/Other
+    'an': 'Any Service', 'ot': 'Other', 'nw': 'New Service', 'ol': 'Old Service',
+    'mm': 'Miscellaneous', 'uu': 'Unknown', 'xx': 'Other Service',
+    'bl': 'Blizzard', 'bo': 'Bolt', 'bt': 'BlaBlaCar',
+}
+
+def get_service_name(code: str) -> str:
+    """Get full service name from code"""
+    if not code:
+        return ''
+    code_lower = str(code).lower().strip()
+    # Return mapped name or format the code nicely
+    if code_lower in SERVICE_NAMES:
+        return SERVICE_NAMES[code_lower]
+    # If code is 2-3 chars, return uppercase
+    if len(code_lower) <= 3:
+        return code.upper()
+    # Otherwise capitalize first letter of each word
+    return code.title()
+
 def validate_nigerian_phone(phone: str) -> bool:
     """Validate Nigerian phone number format: 08168617185"""
     pattern = r'^0[789][01]\d{8}$'
@@ -4304,10 +4376,14 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
                     final_price = price_usd * (1 + markup_percent / 100)
                     final_price_ngn = final_price * ngn_rate
                     
+                    # Use get_service_name to convert code to full name
+                    service_code = svc['service_code']
+                    service_name = get_service_name(service_code)
+                    
                     services.append({
-                        'value': svc['service_code'],
-                        'label': svc['service_name'],
-                        'name': svc['service_name'],
+                        'value': service_code,
+                        'label': service_name,
+                        'name': service_name,
                         'base_price': price_usd,
                         'price_usd': final_price,
                         'price_ngn': final_price_ngn
@@ -4528,10 +4604,14 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
                     final_price = base_price * (1 + markup_percent / 100)
                     final_price_ngn = final_price * ngn_rate
                     
+                    # Use get_service_name to convert code to full name
+                    service_code = svc['service_code']
+                    service_name = get_service_name(service_code)
+                    
                     services.append({
-                        'value': svc['service_code'],
-                        'label': svc['service_name'],
-                        'name': svc['service_name'],
+                        'value': service_code,
+                        'label': service_name,
+                        'name': service_name,
                         'base_price': base_price,
                         'price_usd': final_price,
                         'price_ngn': final_price_ngn
@@ -4646,7 +4726,7 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
 
 @api_router.get("/services/smsbower/countries")
 async def get_smsbower_countries(user: dict = Depends(get_current_user)):
-    """Get list of available countries from SMS Bower cached data."""
+    """Get list of available countries from SMS Bower."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
         
@@ -4657,77 +4737,28 @@ async def get_smsbower_countries(user: dict = Depends(get_current_user)):
         if not api_key:
             return {'success': False, 'message': 'SMS Bower API key not configured'}
         
-        # Get unique countries from cached services
-        cached_count = await db.cached_services.count_documents({'provider': 'smsbower'})
-        
-        if cached_count > 0:
-            pipeline = [
-                {'$match': {'provider': 'smsbower'}},
-                {'$group': {
-                    '_id': '$country_code',
-                    'country_name': {'$first': '$country_name'},
-                    'service_count': {'$sum': 1}
-                }},
-                {'$sort': {'country_name': 1}}
-            ]
-            result = await db.cached_services.aggregate(pipeline).to_list(500)
-            
-            countries = []
-            for item in result:
-                countries.append({
-                    'value': item['_id'],
-                    'label': item['country_name'] or item['_id'],
-                    'name': item['country_name'] or item['_id'],
-                    'service_count': item['service_count']
-                })
-            
-            return {'success': True, 'countries': countries, 'cached': True}
-        
-        # If no cache, fetch from API
+        # Use getCountries endpoint for proper country names
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 'https://smsbower.online/stubs/handler_api.php',
-                params={'api_key': api_key, 'action': 'getPrices'},
+                params={'api_key': api_key, 'action': 'getCountries'},
                 timeout=30.0
             )
             
             if response.status_code == 200:
                 data = response.json()
                 
-                # Cache services while extracting countries
-                cached_services_list = []
                 countries = []
-                for country_code, services in data.items():
-                    country_name = get_country_name(country_code)
+                for country_code, country_info in data.items():
+                    country_name = country_info.get('eng', country_info.get('rus', country_code))
                     countries.append({
                         'value': country_code,
-                        'label': country_name or country_code,
-                        'name': country_name or country_code,
-                        'service_count': len(services)
+                        'label': country_name,
+                        'name': country_name
                     })
-                    
-                    for service_code, service_info in services.items():
-                        base_price = float(service_info.get('cost', 0))
-                        cached_service = CachedService(
-                            provider='smsbower',
-                            service_code=service_code,
-                            service_name=service_info.get('name', service_code),
-                            country_code=country_code,
-                            country_name=country_name or country_code,
-                            base_price=base_price,
-                            currency='USD'
-                        )
-                        cached_services_list.append(cached_service.model_dump())
-                
-                if cached_services_list:
-                    await db.cached_services.delete_many({'provider': 'smsbower'})
-                    for service in cached_services_list:
-                        service['last_updated'] = service['last_updated'].isoformat()
-                    await db.cached_services.insert_many(cached_services_list)
-                    logger.info(f"Cached {len(cached_services_list)} SMS Bower services")
                 
                 countries.sort(key=lambda x: x['name'])
-                return {'success': True, 'countries': countries, 'cached': False}
+                return {'success': True, 'countries': countries}
         
         return {'success': False, 'message': 'Failed to fetch SMS Bower countries'}
     except Exception as e:

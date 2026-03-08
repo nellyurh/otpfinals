@@ -178,26 +178,50 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   const [issuesTipOpen, setIssuesTipOpen] = useState(false);
   const [buyTipsOpen, setBuyTipsOpen] = useState(false);
 
-  // Service code to full name mapping
+  // Service code to full name mapping (comprehensive)
   const serviceNames = {
-    wa: 'WhatsApp',
-    tg: 'Telegram',
-    go: 'Google',
-    fb: 'Facebook',
-    ig: 'Instagram',
-    tw: 'Twitter',
-    ds: 'Discord',
-    tt: 'TikTok',
-    oa: 'OpenAI/ChatGPT',
-    ub: 'Uber',
-    pp: 'PayPal',
-    am: 'Amazon',
-    cb: 'Coinbase',
-    sn: 'Snapchat',
-    ca: 'Cash App'
+    // Social Media
+    wa: 'WhatsApp', tg: 'Telegram', fb: 'Facebook', ig: 'Instagram',
+    tw: 'Twitter', vk: 'VKontakte', ok: 'Odnoklassniki', vi: 'Viber',
+    we: 'WeChat', li: 'LinkedIn', sn: 'Snapchat', tt: 'TikTok',
+    dc: 'Discord', ds: 'Discord', sg: 'Signal', th: 'Threads', rd: 'Reddit',
+    pi: 'Pinterest', tm: 'Tumblr', sk: 'Skype', ln: 'Line',
+    kk: 'KakaoTalk', zl: 'Zalo',
+    
+    // Dating
+    ti: 'Tinder', bm: 'Bumble', bd: 'Badoo', hg: 'Hinge',
+    hw: 'Happn', mf: 'Match', gr: 'Grindr',
+    
+    // E-commerce & Delivery
+    am: 'Amazon', eb: 'eBay', al: 'AliExpress', wb: 'Wildberries',
+    oz: 'Ozon', av: 'Avito', ub: 'Uber', ly: 'Lyft', dd: 'DoorDash',
+    ue: 'UberEats', ic: 'Instacart', sh: 'Shein',
+    
+    // Finance
+    pp: 'PayPal', ca: 'Cash App', vn: 'Venmo', za: 'Zelle',
+    cb: 'Coinbase', ba: 'Binance', kr: 'Kraken', rv: 'Revolut',
+    ws: 'Wise', ro: 'Robinhood', st: 'Stripe', sq: 'Square',
+    
+    // Tech & Services
+    go: 'Google', gl: 'Gmail', ms: 'Microsoft', ap: 'Apple',
+    ya: 'Yahoo', dr: 'Dropbox', zo: 'Zoom', sl: 'Slack',
+    gh: 'GitHub', sp: 'Spotify', nf: 'Netflix', oa: 'OpenAI/ChatGPT',
+    yt: 'YouTube', ai: 'Airbnb', bk: 'Booking',
+    
+    // Gaming
+    ps: 'PlayStation', xb: 'Xbox', ni: 'Nintendo', mc: 'Minecraft',
+    fo: 'Fortnite', ep: 'Epic Games',
+    
+    // Other common
+    dh: 'DoorDash', sb: 'Starbucks', an: 'Any Service',
+    ot: 'Other', nw: 'New Service', mm: 'Miscellaneous'
   };
 
- 
+  const getServiceName = (code) => {
+    if (!code) return '';
+    const lowerCode = code.toLowerCase();
+    return serviceNames[lowerCode] || code.toUpperCase();
+  };
 
   const getCountryFlagUrl = (countryValue) => {
     if (!countryValue) return null;
@@ -219,10 +243,6 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
     // Use svg for better compatibility
     return `https://flagcdn.com/${iso2}.svg`;
-  };
-
-  const getServiceName = (code) => {
-    return serviceNames[code] || (code ? code.toUpperCase() : '');
   };
 
   // Update timer every second (for countdown in active orders)
@@ -1076,7 +1096,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     isSearchable
                     formatOptionLabel={(option) => (
                       <div className="flex items-center justify-between w-full">
-                        <span className="text-xs">{option.label || option.name}</span>
+                        <span className="text-xs">{getServiceName(option.value) || option.label || option.name}</span>
                         {option.price_ngn && (
                           <span className="text-emerald-600 font-semibold text-xs">
                             ₦{option.price_ngn.toFixed(2)}
