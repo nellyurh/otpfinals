@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Select from 'react-select';
-import { Phone, Plus, ChevronDown, RefreshCw, Copy, Check, Globe } from 'lucide-react';
+import { Phone, Plus, ChevronDown, RefreshCw, Copy, Check, Globe, X, Zap, TrendingUp } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -167,6 +167,12 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   const [providerServicesLoading, setProviderServicesLoading] = useState(false);
   const [providersStatus, setProvidersStatus] = useState({});
 
+  // NEW: Provider/Operator selection modal state
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [serviceProviders, setServiceProviders] = useState([]);
+  const [selectedServiceProvider, setSelectedServiceProvider] = useState(null);
+  const [providersLoading, setProvidersLoading] = useState(false);
+
   const [selectedCarrier, setSelectedCarrier] = useState(null);
   const [selectedAreaCodes, setSelectedAreaCodes] = useState([]);
   const [preferredNumber, setPreferredNumber] = useState('');
@@ -221,6 +227,15 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     if (!code) return '';
     const lowerCode = code.toLowerCase();
     return serviceNames[lowerCode] || code.toUpperCase();
+  };
+
+  // Get timer duration based on provider (in seconds)
+  // 5sim: 20 minutes, smsbower: 25 minutes, others: 10 minutes
+  const getTimerDuration = (order) => {
+    const provider = order.provider || order.server || '';
+    if (provider.includes('5sim')) return 20 * 60; // 20 minutes
+    if (provider.includes('smsbower')) return 25 * 60; // 25 minutes
+    return 10 * 60; // Default 10 minutes
   };
 
   const getCountryFlagUrl = (countryValue) => {
@@ -413,6 +428,74 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     }
   }, [axiosConfig]);
 
+  // Fetch operators/providers for a specific service (5sim and smsbower)
+  const fetchServiceProviders = useCallback(async (providerId, serviceCode, countryCode) => {
+    // Only for 5sim and smsbower
+    if (!['5sim', 'smsbower'].includes(providerId)) {
+      return [];
+    }
+
+    setProvidersLoading(true);
+    try {
+      let endpoint = '';
+      let params = {};
+
+      if (providerId === '5sim') {
+        // 5sim uses the prices endpoint with country and product
+        endpoint = '/api/services/5sim/operators';
+        params = { country: countryCode || 'usa', service: serviceCode };
+      } else if (providerId === 'smsbower') {
+        // SMS Bower uses getPricesV3 which returns providers per service
+        endpoint = '/api/services/smsbower/providers';
+        params = { country: countryCode || '187', service: serviceCode };
+      }
+
+      const response = await axios.get(`${API}${endpoint}`, { ...axiosConfig, params });
+      
+      if (response.data.success && response.data.providers) {
+        setServiceProviders(response.data.providers);
+        return response.data.providers;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch service providers:', error);
+      return [];
+    } finally {
+      setProvidersLoading(false);
+    }
+  }, [axiosConfig]);
+
+  // Handle service selection - show provider modal for 5sim and smsbower
+  const handleServiceSelect = async (service) => {
+    if (!service || !selectedProvider) return;
+    
+    // For 5sim and smsbower, show the provider selection modal
+    if (['5sim', 'smsbower'].includes(selectedProvider.id)) {
+      setSelectedService(service);
+      const isUSMode = selectedServer?.value === 'us_numbers';
+      const countryCode = isUSMode 
+        ? (selectedProvider.id === '5sim' ? 'usa' : '187')
+        : selectedCountry?.value;
+      
+      await fetchServiceProviders(selectedProvider.id, service.value, countryCode);
+      setShowProviderModal(true);
+    } else {
+      // For other providers, just select the service directly
+      setSelectedService(service);
+      setEstimatedPrice(service.price_ngn);
+    }
+  };
+
+  // Handle provider/operator selection from modal
+  const handleProviderSelection = (provider) => {
+    setSelectedServiceProvider(provider);
+    setShowProviderModal(false);
+    // Update estimated price based on selected provider
+    if (provider.price_ngn) {
+      setEstimatedPrice(provider.price_ngn);
+    }
+  };
+
   // Handle provider card selection
   const handleProviderSelect = (provider) => {
     setSelectedProvider(provider);
@@ -433,6 +516,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       return;
     }
 
+    // For 5sim and smsbower, require provider/operator selection
+    if (['5sim', 'smsbower'].includes(selectedProvider.id) && !selectedServiceProvider) {
+      toast.error('Please select a provider/operator');
+      setShowProviderModal(true);
+      return;
+    }
+
     setPurchasing(true);
     try {
       const isUSMode = selectedServer?.value === 'us_numbers';
@@ -447,11 +537,23 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         payment_currency: 'NGN'
       };
 
+      // Add operator for 5sim
+      if (selectedProvider.id === '5sim' && selectedServiceProvider) {
+        payload.operator = selectedServiceProvider.operator || selectedServiceProvider.name;
+      }
+      
+      // Add provider_id for smsbower
+      if (selectedProvider.id === 'smsbower' && selectedServiceProvider) {
+        payload.provider_id = selectedServiceProvider.provider_id;
+      }
+
       const response = await axios.post(`${API}/api/orders/purchase`, payload, axiosConfig);
 
       if (response.data.success) {
         toast.success('Number purchased successfully!');
         setSelectedService(null);
+        setSelectedServiceProvider(null);
+        setServiceProviders([]);
         fetchOrders();
         fetchProfile();
       }
@@ -1124,10 +1226,61 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 </div>
               )}
 
+              {/* Selected Provider/Operator Display (for 5sim and smsbower) */}
+              {['5sim', 'smsbower'].includes(selectedProvider?.id) && selectedService && selectedServiceProvider && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-semibold text-blue-700 uppercase block mb-1">Selected Operator</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-blue-900 text-sm">
+                          {selectedServiceProvider.name || selectedServiceProvider.operator || `Provider ${selectedServiceProvider.provider_id}`}
+                        </span>
+                        {selectedServiceProvider.delivery_rate > 0 && (
+                          <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                            <TrendingUp className="w-3 h-3" />
+                            {selectedServiceProvider.delivery_rate}%
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-emerald-700 font-bold text-sm">
+                        ₦{selectedServiceProvider.price_ngn?.toFixed(2)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowProviderModal(true)}
+                      className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Prompt to select operator for 5sim/smsbower */}
+              {['5sim', 'smsbower'].includes(selectedProvider?.id) && selectedService && !selectedServiceProvider && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                  <p className="text-amber-800 text-xs mb-2">Select an operator to see pricing and availability</p>
+                  <button
+                    onClick={() => {
+                      const isUSMode = selectedServer?.value === 'us_numbers';
+                      const countryCode = isUSMode 
+                        ? (selectedProvider.id === '5sim' ? 'usa' : '187')
+                        : selectedCountry?.value;
+                      fetchServiceProviders(selectedProvider.id, selectedService.value, countryCode);
+                      setShowProviderModal(true);
+                    }}
+                    className="px-4 py-2 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 transition-colors"
+                  >
+                    Select Operator
+                  </button>
+                </div>
+              )}
+
               {/* Purchase Button */}
               <button
                 onClick={handleProviderPurchase}
-                disabled={!selectedService || purchasing}
+                disabled={!selectedService || purchasing || (['5sim', 'smsbower'].includes(selectedProvider?.id) && !selectedServiceProvider)}
                 data-testid="purchase-provider-btn"
                 className="w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
@@ -1647,7 +1800,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   const createdAt = new Date(order.created_at);
                   const now = new Date();
                   const elapsedSeconds = Math.floor((now - createdAt) / 1000);
-                  const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
+                  const timerDuration = getTimerDuration(order);
+                  const remainingSeconds = Math.max(0, timerDuration - elapsedSeconds);
                   const minutes = Math.floor(remainingSeconds / 60);
                   const seconds = remainingSeconds % 60;
                   const hasOTP = order.otp || order.otp_code;
@@ -1749,7 +1903,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       const createdAt = new Date(order.created_at);
                       const now = new Date();
                       const elapsedSeconds = Math.floor((now - createdAt) / 1000);
-                      const remainingSeconds = Math.max(0, 600 - elapsedSeconds);
+                      const timerDuration = getTimerDuration(order);
+                      const remainingSeconds = Math.max(0, timerDuration - elapsedSeconds);
                       const minutes = Math.floor(remainingSeconds / 60);
                       const seconds = remainingSeconds % 60;
                       const hasOTP = order.otp || order.otp_code;
@@ -1838,6 +1993,118 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           </div>
         )}
       </div>
+
+      {/* Provider/Operator Selection Bottom Sheet Modal */}
+      {showProviderModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowProviderModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-lg bg-white rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col animate-slide-up">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            </div>
+            
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 pb-3 border-b">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Select Operator</h3>
+                <p className="text-xs text-gray-500">
+                  {selectedService?.label || selectedService?.name} • {serviceProviders.length} operators available
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowProviderModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Provider List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {providersLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+                  <span className="ml-2 text-gray-500">Loading operators...</span>
+                </div>
+              ) : serviceProviders.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No operators available for this service</p>
+                </div>
+              ) : (
+                serviceProviders.map((provider, index) => (
+                  <button
+                    key={provider.provider_id || provider.operator || index}
+                    onClick={() => handleProviderSelection(provider)}
+                    className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
+                      selectedServiceProvider?.provider_id === provider.provider_id || 
+                      selectedServiceProvider?.operator === provider.operator
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : 'border-gray-200 hover:border-emerald-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900">
+                            {provider.name || provider.operator || `Provider ${provider.provider_id}`}
+                          </span>
+                          {provider.delivery_rate > 0 && (
+                            <span className={`flex items-center gap-1 text-xs px-1.5 py-0.5 rounded ${
+                              provider.delivery_rate >= 70 ? 'bg-green-100 text-green-700' :
+                              provider.delivery_rate >= 40 ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                            }`}>
+                              <TrendingUp className="w-3 h-3" />
+                              {provider.delivery_rate.toFixed(1)}%
+                            </span>
+                          )}
+                          {index === 0 && (
+                            <span className="flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                              <Zap className="w-3 h-3" />
+                              Cheapest
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-xs text-gray-500">
+                            {provider.count || 0} available
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-emerald-600">
+                          ₦{provider.price_ngn?.toFixed(2)}
+                        </span>
+                        <span className="block text-[10px] text-gray-400">
+                          ${provider.price_usd?.toFixed(3)}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t bg-gray-50">
+              <button
+                onClick={() => setShowProviderModal(false)}
+                disabled={!selectedServiceProvider}
+                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-400"
+              >
+                {selectedServiceProvider ? 'Confirm Selection' : 'Select an Operator'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

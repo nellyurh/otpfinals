@@ -1303,6 +1303,8 @@ class PurchaseNumberRequest(BaseModel):
     pool: Optional[str] = None
     # Optional 5sim operator selector
     operator: Optional[str] = None
+    # Optional SMS Bower provider selector
+    provider_id: Optional[str] = None
 
 class CalculatePriceRequest(BaseModel):
     server: str
@@ -2792,8 +2794,15 @@ async def get_smsbower_services(country: Optional[str] = None) -> Optional[Dict]
         logger.error(f"SMS Bower services error: {str(e)}")
         return None
 
-async def purchase_number_smsbower(service: str, country: str = '0', max_price: Optional[float] = None) -> Optional[Dict]:
-    """Purchase a number from SMS Bower."""
+async def purchase_number_smsbower(service: str, country: str = '0', max_price: Optional[float] = None, provider_id: Optional[str] = None) -> Optional[Dict]:
+    """Purchase a number from SMS Bower.
+    
+    Args:
+        service: Service code
+        country: Country code (default '0' for Russia, '187' for USA)
+        max_price: Maximum price to pay (optional)
+        provider_id: Specific provider/operator ID to use (optional)
+    """
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
         api_key = config.get('smsbower_api_key', '') if config else ''
@@ -2802,12 +2811,14 @@ async def purchase_number_smsbower(service: str, country: str = '0', max_price: 
         
         params = {
             'api_key': api_key,
-            'action': 'getNumber',
+            'action': 'getNumberV2',  # Use V2 API for provider selection
             'service': service,
             'country': country
         }
         if max_price:
             params['maxPrice'] = max_price
+        if provider_id:
+            params['operator'] = provider_id
         
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -4515,6 +4526,80 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
         logger.error(f"5sim services fetch error: {str(e)}")
         return {"success": False, "message": str(e)}
 
+
+@api_router.get("/services/5sim/operators")
+async def get_5sim_operators(
+    user: dict = Depends(get_current_user),
+    country: str = "usa",
+    service: str = ""
+):
+    """Get available operators for a specific 5sim service with individual prices and delivery rates."""
+    try:
+        if not service:
+            return {'success': False, 'message': 'Service code required'}
+        
+        config = await db.pricing_config.find_one({}, {"_id": 0})
+        markup = float(config.get("fivesim_markup", 50.0) or 50.0)
+        ngn_rate = float(config.get("ngn_to_usd_rate", 1500.0) or 1500.0)
+        
+        async with httpx.AsyncClient() as client:
+            # Fetch prices for specific country and product
+            resp = await client.get(
+                f"{FIVESIM_BASE_URL}/guest/prices",
+                params={"country": country, "product": service},
+                timeout=20.0,
+            )
+            
+            if resp.status_code != 200:
+                logger.error(f"5sim operators error {resp.status_code}: {resp.text}")
+                return {"success": False, "message": "Failed to fetch 5sim operators"}
+            
+            data = resp.json() or {}
+            
+            operators = []
+            country_block = data.get(country, {})
+            service_block = country_block.get(service, {})
+            
+            for operator_name, info in service_block.items():
+                try:
+                    base_price_usd = float(info.get("cost", 0) or 0)
+                except Exception:
+                    base_price_usd = 0.0
+                
+                if base_price_usd <= 0:
+                    continue
+                
+                count = int(info.get("count", 0) or 0)
+                delivery_rate = float(info.get("rate", 0) or 0)  # Delivery success rate percentage
+                
+                final_price_usd = base_price_usd * (1 + markup / 100)
+                final_price_ngn = final_price_usd * ngn_rate
+                
+                operators.append({
+                    'operator': operator_name,
+                    'name': operator_name,
+                    'count': count,
+                    'base_price': base_price_usd,
+                    'price_usd': final_price_usd,
+                    'price_ngn': final_price_ngn,
+                    'delivery_rate': delivery_rate
+                })
+            
+            # Sort by price (lowest first)
+            operators.sort(key=lambda x: x['price_ngn'])
+            
+            return {
+                'success': True,
+                'service': service,
+                'service_name': get_service_name(service),
+                'country': country,
+                'providers': operators
+            }
+    except Exception as e:
+        logger.error(f"5sim operators fetch error: {str(e)}")
+        return {"success": False, "message": str(e)}
+
+
 @api_router.get("/services/daisysms")
 async def get_daisysms_services(user: dict = Depends(get_current_user)):
     """Get DaisySMS services with LIVE pricing from API"""
@@ -5053,6 +5138,88 @@ async def get_smsbower_countries(user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"SMS Bower countries fetch error: {str(e)}")
         return {'success': False, 'message': str(e)}
+
+
+@api_router.get("/services/smsbower/providers")
+async def get_smsbower_providers(
+    user: dict = Depends(get_current_user),
+    country: str = "187",
+    service: str = ""
+):
+    """Get available providers/operators for a specific SMS Bower service with individual prices."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        if not config.get('enable_provider_smsbower', True):
+            return {'success': False, 'message': 'SMS Bower is currently disabled'}
+        
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return {'success': False, 'message': 'SMS Bower API key not configured'}
+        
+        if not service:
+            return {'success': False, 'message': 'Service code required'}
+        
+        markup_percent = config.get('smsbower_markup', 50.0) if config else 50.0
+        ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+        
+        # Get service names mapping
+        service_names_map = await get_smsbower_service_names(api_key)
+        service_name = service_names_map.get(service.lower()) or get_service_name(service)
+        
+        # Fetch providers from getPricesV3
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getPricesV3', 'country': country},
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                providers = []
+                if country in data and service in data[country]:
+                    provider_data = data[country][service]
+                    
+                    for provider_id, info in provider_data.items():
+                        if not isinstance(info, dict):
+                            continue
+                        
+                        base_price = float(info.get('price', 0))
+                        if base_price <= 0:
+                            continue
+                        
+                        count = int(info.get('count', 0))
+                        final_price = base_price * (1 + markup_percent / 100)
+                        final_price_ngn = final_price * ngn_rate
+                        
+                        providers.append({
+                            'provider_id': provider_id,
+                            'name': f"Provider {provider_id}",
+                            'count': count,
+                            'base_price': base_price,
+                            'price_usd': final_price,
+                            'price_ngn': final_price_ngn,
+                            'delivery_rate': None  # SMS Bower doesn't provide delivery rates
+                        })
+                    
+                    # Sort by price (lowest first)
+                    providers.sort(key=lambda x: x['price_ngn'])
+                
+                return {
+                    'success': True,
+                    'service': service,
+                    'service_name': service_name,
+                    'country': country,
+                    'providers': providers
+                }
+        
+        return {'success': False, 'message': 'Failed to fetch SMS Bower providers'}
+    except Exception as e:
+        logger.error(f"SMS Bower providers fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
 
 # ============ Text Verified Service Endpoints ============
 
@@ -5763,6 +5930,37 @@ async def purchase_number(
             base_price_usd = 0.50  # Default Text Verified price
             markup_key = 'textverified_markup'
             # Don't check cache for textverified - pricing comes from API
+        elif provider == 'smsbower' and hasattr(data, 'provider_id') and data.provider_id:
+            # Get price from the selected provider
+            config = await db.pricing_config.find_one({}, {'_id': 0})
+            api_key = config.get('smsbower_api_key', '') if config else ''
+            if api_key:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        'https://smsbower.online/stubs/handler_api.php',
+                        params={'api_key': api_key, 'action': 'getPricesV3', 'country': data.country},
+                        timeout=15.0
+                    )
+                    if response.status_code == 200:
+                        prices_data = response.json()
+                        if data.country in prices_data and data.service in prices_data[data.country]:
+                            provider_data = prices_data[data.country][data.service]
+                            if data.provider_id in provider_data:
+                                base_price_usd = float(provider_data[data.provider_id].get('price', 0))
+                            else:
+                                # Fallback to cached
+                                cached_service = await db.cached_services.find_one({
+                                    'provider': provider,
+                                    'service_code': data.service,
+                                    'country_code': data.country
+                                }, {'_id': 0})
+                                base_price_usd = float(cached_service.get('base_price', 0) or 0) if cached_service else 0
+                        else:
+                            raise HTTPException(status_code=404, detail="Service not found")
+                    else:
+                        raise HTTPException(status_code=500, detail="Failed to fetch pricing")
+            else:
+                raise HTTPException(status_code=400, detail="SMS Bower API key not configured")
         else:
             cached_service = await db.cached_services.find_one({
                 'provider': provider,
@@ -5835,8 +6033,9 @@ async def purchase_number(
         if result and 'ACCESS_NUMBER' in str(result):
             actual_price = base_price_usd
     elif provider == 'smsbower':
-        # SMS Bower purchase
-        result = await purchase_number_smsbower(data.service, data.country)
+        # SMS Bower purchase - pass provider_id if selected
+        provider_id = data.provider_id if hasattr(data, 'provider_id') else None
+        result = await purchase_number_smsbower(data.service, data.country, provider_id=provider_id)
         if result and result.get('success'):
             actual_price = base_price_usd
     elif provider == 'textverified':

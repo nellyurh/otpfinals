@@ -1,6 +1,25 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-03-08 (Session 16b)**: Provider/Operator Selection Modal Implementation
+  - **NEW:** Bottom sheet modal for 5sim and SMS Bower operator/provider selection
+    - Shows all available operators with individual prices sorted cheapest first
+    - Displays delivery success rate percentage for 5sim operators
+    - "Cheapest" badge on the lowest-priced option
+    - Count of available numbers per operator
+    - Both NGN and USD prices displayed
+  - **NEW:** "Change" button to reopen operator selection modal after making a selection
+  - **NEW:** "Select Operator" prompt appears when service is selected but no operator chosen
+  - **FIXED:** Timers now provider-specific:
+    - 5sim: 20 minutes
+    - SMS Bower: 25 minutes  
+    - Other providers: 10 minutes (default)
+  - **NEW:** Backend endpoints:
+    - `GET /api/services/smsbower/providers?country=X&service=Y` - Returns all providers for a service with prices
+    - `GET /api/services/5sim/operators?country=X&service=Y` - Returns all operators with delivery rates
+  - **UPDATED:** Purchase flow now includes selected provider_id for SMS Bower and operator for 5sim
+  - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`, `/app/frontend/src/index.css`
+
 - **2026-03-08 (Session 16)**: SMS Provider Service Names Rework (P0 Complete)
   - **FIXED:** SMS Bower integration completely refactored to use correct API endpoints:
     - `getServicesList` endpoint for fetching service names (code → full name mapping)
