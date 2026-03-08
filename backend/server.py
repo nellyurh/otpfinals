@@ -10594,6 +10594,26 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['fivesim_api_key'] = encrypt_secret(data.fivesim_api_key)
         updated_sensitive_keys.append('fivesim_api_key')
     
+    # New SMS Provider Keys - Tiger SMS, SMS Bower, Text Verified
+    if data.tigersms_api_key is not None and data.tigersms_api_key != '********':
+        update_fields['tigersms_api_key'] = encrypt_secret(data.tigersms_api_key)
+        updated_sensitive_keys.append('tigersms_api_key')
+    if data.smsbower_api_key is not None and data.smsbower_api_key != '********':
+        update_fields['smsbower_api_key'] = encrypt_secret(data.smsbower_api_key)
+        updated_sensitive_keys.append('smsbower_api_key')
+    if data.textverified_api_key is not None and data.textverified_api_key != '********':
+        update_fields['textverified_api_key'] = encrypt_secret(data.textverified_api_key)
+        updated_sensitive_keys.append('textverified_api_key')
+    if data.textverified_email is not None and data.textverified_email != '********':
+        update_fields['textverified_email'] = encrypt_secret(data.textverified_email)
+        updated_sensitive_keys.append('textverified_email')
+    
+    # SMS Provider markups
+    if data.smsbower_markup is not None:
+        update_fields['smsbower_markup'] = data.smsbower_markup
+    if data.textverified_markup is not None:
+        update_fields['textverified_markup'] = data.textverified_markup
+    
     if data.fivesim_markup is not None:
         update_fields['fivesim_markup'] = data.fivesim_markup
     if data.daisysms_advanced_markup is not None:
@@ -10777,6 +10797,13 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         'kyc_tier2_fee',
         'kyc_tier3_max_balance',
         'kyc_tier3_fee',
+        # SMS Provider toggles
+        'enable_provider_daisysms',
+        'enable_provider_smspool',
+        'enable_provider_5sim',
+        'enable_provider_tigersms',
+        'enable_provider_smsbower',
+        'enable_provider_textverified',
     ]:
         val = getattr(data, key, None)
         if val is not None:
