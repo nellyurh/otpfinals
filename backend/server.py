@@ -1745,60 +1745,179 @@ def get_country_name(code: str) -> str:
 
 # Service code to full name mapping (common across SMS providers)
 SERVICE_NAMES = {
-    # Social Media
-    'tg': 'Telegram', 'wa': 'WhatsApp', 'fb': 'Facebook', 'ig': 'Instagram',
+    # ============ Comprehensive service mapping for Tiger SMS and other providers ============
+    
+    # ============ TIGER SMS OFFICIAL CODES (from tiger-sms.com/api) ============
+    # Social/Messaging
+    'tg': 'Telegram', 'wa': 'WhatsApp', 'wa2': 'WhatsApp2', 'fb': 'Facebook', 'ig': 'Instagram',
     'tw': 'Twitter', 'vk': 'VKontakte', 'ok': 'Odnoklassniki', 'vi': 'Viber',
-    'we': 'WeChat', 'li': 'LinkedIn', 'sn': 'Snapchat', 'tt': 'TikTok',
-    'dc': 'Discord', 'ds': 'Discord', 'sg': 'Signal', 'th': 'Threads', 'rd': 'Reddit',
-    'pi': 'Pinterest', 'tm': 'Tumblr', 'sk': 'Skype', 'ln': 'Line',
-    'kk': 'KakaoTalk', 'zl': 'Zalo', 'im': 'iMessage', 'me': 'Messenger',
+    'we': 'ДругВокруг', 'li': 'Baidu', 'sn': 'Snapchat', 'ds': 'Discord',
+    'dc': 'YikYak', 'sg': 'Signal', 'th': 'WestStein', 'rd': 'Reddit',
+    'pi': 'Pinterest', 'tm': 'Akulaku', 'sk': 'Skroutz', 'ln': 'Grofers',
+    'kk': 'Idealista', 'mj': 'Zalo', 'lf': 'TikTok/Douyin', 'bl': 'BIGO LIVE',
+    'wb': 'WeChat', 'yl': 'Yalla', 'iq': 'ICQ', 'xr': 'Tango', 'qn': 'Blued',
+    'qq': 'Tencent QQ', 'eh': 'Telegram 2.0', 'ta': 'Wink',
+    
+    # AI/Tech Services
+    'acz': 'Claude', 'dr': 'ChatGPT', 'oa': 'OpenAI/ChatGPT',
     
     # Dating
-    'ti': 'Tinder', 'bm': 'Bumble', 'bd': 'Badoo', 'hg': 'Hinge',
-    'hw': 'Happn', 'mf': 'Match', 'gr': 'Grindr', 'hd': 'Her Dating',
-    'pm': 'PlentyOfFish', 'cm': 'Coffee Meets Bagel', 'hr': 'Hinge',
+    'oi': 'Tinder', 'mo': 'Bumble', 'qv': 'Badoo', 'df': 'Happn', 'vz': 'Hinge',
+    'yw': 'Grindr', 'wh': 'TanTan', 'ws': 'Feeld', 'rt': 'Hily', 'uh': 'Yubo',
+    'ir': 'Chispa', 'mv': 'Fruitz',
     
     # E-commerce & Delivery
-    'am': 'Amazon', 'eb': 'eBay', 'al': 'AliExpress', 'wb': 'Wildberries',
-    'oz': 'Ozon', 'av': 'Avito', 'ub': 'Uber', 'ly': 'Lyft', 'dd': 'DoorDash',
-    'dh': 'DoorDash', 'gh': 'GrubHub', 'ue': 'UberEats', 'ic': 'Instacart',
-    'sh': 'Shein', 'wm': 'Walmart', 'tg': 'Target', 'et': 'Etsy',
-    'az': 'AliPay', 'pp': 'PayPal', 'st': 'Stripe', 'sq': 'Square',
-    'vn': 'Venmo', 'ca': 'Cash App', 'za': 'Zelle', 'kl': 'Klarna',
+    'am': 'Amazon', 'dh': 'eBay', 'hx': 'AliExpress', 'hw': 'Alipay/Alibaba/1688',
+    'qd': 'Taobao', 'hn': '1688', 'av': 'Avito', 'ub': 'Uber', 'ac': 'Doordash',
+    'sh': 'ВкусВилл', 'kc': 'Vinted', 'tx': 'Bolt', 'dt': 'Delivery Club',
+    'uu': 'Wildberries', 'xk': 'DiDi', 'xd': 'Tokopedia', 'ni': 'Gojek',
+    'nz': 'Foodpanda', 'zk': 'Deliveroo', 'ls': 'Careem', 'rr': 'Wolt',
+    'gt': 'Gett', 'yy': 'Venmo', 'it': 'CashApp', 'jg': 'Grab', 'jx': 'Swiggy',
+    'ul': 'Getir', 'yn': 'Allegro', 'pr': 'Trendyol', 'gx': 'Hepsiburadacom',
+    'ua': 'BlaBlaCar', 'sd': 'DodoPizza', 'ep': 'Temu', 'st': 'Auchan',
+    'fk': 'BLIBLI', 'wr': 'Walmart',
     
     # Tech & Services
-    'go': 'Google', 'gl': 'Gmail', 'ms': 'Microsoft', 'ap': 'Apple',
-    'ya': 'Yahoo', 'dr': 'Dropbox', 'zo': 'Zoom', 'sl': 'Slack',
-    'sp': 'Spotify', 'nf': 'Netflix', 'hz': 'HBO Max', 'hu': 'Hulu',
-    'di': 'Disney+', 'yt': 'YouTube', 'tw': 'Twitch', 'pr': 'Prime Video',
-    'oa': 'OpenAI/ChatGPT', 'ai': 'Airbnb', 'bk': 'Booking.com',
+    'go': 'Google/YouTube/Gmail', 'gf': 'GoogleVoice', 'gch': 'GoogleChat',
+    'gms': 'GoogleMessenger', 'ms': 'Microsoft', 'wx': 'Apple',
+    'ya': 'Yandex', 'wf': 'YandexGo', 'mb': 'Yahoo', 'zo': 'Zoom',
+    'sp': 'Spotify', 'alj': 'Spotify', 'nf': 'Netflix', 'ud': 'Disney Hotstar',
+    'hb': 'Twitch', 'yt': 'YouTube', 'uk': 'Airbnb', 'ag': 'Agoda',
     
     # Gaming
-    'st': 'Steam', 'ep': 'Epic Games', 'ps': 'PlayStation', 'xb': 'Xbox',
-    'ni': 'Nintendo', 'ro': 'Roblox', 'mc': 'Minecraft', 'fo': 'Fortnite',
-    'lol': 'League of Legends', 'cod': 'Call of Duty', 'pu': 'PUBG',
+    'mt': 'Steam', 'bz': 'Blizzard', 'hh': 'Uplay', 'ro': 'Roblox',
+    'mc': 'MiChat', 'fo': 'Fortnite', 'ah': 'EscapeFromTarkov', 've': 'Dream11',
+    'pp': 'Huya', 'ak': 'Douyu', 'vs': 'WinzoGame', 'ed': 'Gamer',
     
     # Finance & Banking
-    'ba': 'Binance', 'cb': 'Coinbase', 'kr': 'Kraken', 'by': 'Bybit',
-    'ku': 'KuCoin', 'ft': 'FTX', 'rv': 'Revolut', 'ws': 'Wise',
-    'n2': 'N26', 'ch': 'Chime', 'rb': 'Robinhood',
+    're': 'Coinbase', 'gc': 'TradingView', 'gr': 'Astropay', 'ti': 'crypto.com',
+    'vj': 'Stormgain', 'nu': 'Stripe', 'rz': 'EasyPay', 'ba': 'Expressmoney',
+    'ht': 'Bitso', 'ne': 'Coindcx', 'nh': 'AlloBank', 'ji': 'Monobank',
+    'jn': 'CloudBet', 'jo': 'SticPay', 'bo': 'Wise', 'cpl': 'Capitalist',
+    'lt': 'BitClout', 'zz': 'DENT', 'qx': 'WorldRemit', 'mw': 'Transfergo',
     
     # Food & Restaurants
-    'sb': 'Starbucks', 'mcd': 'McDonald\'s', 'dn': 'Dunkin',
-    'cp': 'Chipotle', 'pz': 'Pizza Hut', 'dm': 'Domino\'s',
+    'sb': 'Starbucks', 'sr': 'Starbucks', 'ip': 'Burger King', 'dz': 'Dominos',
+    'te': 'eFood', 'tlb': 'Talabat', 'yi': 'Yemeksepeti', 'dy': 'Zomato',
     
     # Travel
-    'ex': 'Expedia', 'tr': 'TripAdvisor', 'ka': 'Kayak', 'ho': 'Hotels.com',
-    'vr': 'VRBO', 'yp': 'Yelp', 'aa': 'American Airlines', 'ua': 'United',
+    'jl': 'Hopi', 'yp': 'Yelp', 'ho': 'Cathay', 'gp': 'Ticketmaster',
+    'bp': 'GoFundMe', 'cp': 'Uklon',
     
     # Communication
-    'em': 'Email', 'ph': 'Phone', 'tx': 'Text', 'sm': 'SMS',
-    'mt': 'Mail.ru', 'ym': 'Yandex Mail', 'pm': 'ProtonMail',
+    'ym': 'Юла', 'tl': 'Truecaller', 'gw': 'CallApp', 'dd': 'CloudChat',
+    'em': 'ZéDelivery',
+    
+    # 4Fun & Entertainment
+    'hk': '4Fun', 'et': 'Clubhouse', 'ck': 'BeReal', 'kp': 'HQ Trivia',
+    'yo': 'Amasia', 'zs': 'Bilibili', 'vp': 'Kwai',
+    
+    # Tiger SMS Additional Codes
+    'wp': '163СOM', 'ahs': '1and1', 'wj': '1хbet', 'lh': '24betting',
+    'erc': '2domains', 'qi': '32red', 'exc': '51exchange', 'll': '888casino',
+    'fw': '99acres', 'ki': '99app', 'qkb': '99Game', 'amq': '99k Outlet',
+    'acv': 'A23', 'gn': 'A9A', 'ags': 'Abbott', 'rh': 'Ace2Three',
+    'amf': 'Acko', 'ko': 'AdaKami', 'bq': 'Adani', 'an': 'Adidas',
+    'agw': 'Adverts', 'aip': 'AfreecaTV', 'sa': 'AGIBANK', 'cs': 'AgriDevelop',
+    'qu': 'Agroinform', 'zl': 'Airtel', 'acy': 'Airtime', 'wv': 'AIS',
+    'jj': 'Aitu', 'rf': 'Akudo', 'aav': 'Alchemy', 'bt': 'Alfa',
+    'bn': 'Alfagift', 'lp': 'Algida', 'ab': 'Alibaba', 'al': 'Altyn-i',
+    'afi': 'Ame Digital', 'aee': 'Amway', 'aha': 'Angel One', 'agh': 'Anibis',
+    'alg': 'Ankama', 'ot': 'Any other', 'pm': 'AOL', 'ml': 'ApostaGanha',
+    'gk': 'AptekaRU', 'rq': 'AptekiPlus', 'aco': 'AR Lens', 'abt': 'ArenaPlus',
+    'amo': 'Argent', 'hs': 'Asda', 'ajp': 'AsiaMiles', 'afd': 'Astra Otoshop',
+    'aem': 'AstraPay', 'atb': 'Atlasbus', 'du': 'AUBANK', 'aup': 'Aurora.plus',
+    'kd': 'Author24', 'aej': 'Autoru', 'ajl': 'av100pro', 'ff': 'AVON',
+    'aws': 'AWS', 'aaw': 'Aya Bank', 'azs': 'Azsirbis', 'avu': 'B4U',
+    'bc': 'GCash', 'cb': 'Bazos', 'alu': 'BC Game', 'adf': 'BCA Syariah',
+    'aar': 'Bearwww', 'aly': 'Bebeclub', 'acx': 'beboo', 'abd': 'BeeBoo',
+    'ov': 'Beget', 'um': 'Belwest', 'ie': 'bet365', 'agl': 'Betano',
+    'vd': 'Betfair', 'aab': 'BharatPe', 'zn': 'Biedronka', 'zu': 'BigC',
+    'vcc': 'BigCash', 'bgl': 'Biglion', 'ri': 'BillMill', 'uv': 'BinBin',
+    'qjd': 'Bingo101', 'ww': 'BIP', 'el': 'Bisu', 'qk': 'Bit', 'pt': 'Bitaqaty',
+    'ahx': 'Bitrue', 'bjp': 'Bjp', 'akq': 'Blank Street', 'rw': 'BLS-SPAIN',
+    'ajr': 'boku', 'acp': 'BonusLink', 'akg': 'Book My Play', 'bok': 'Book24',
+    'adr': 'Boosty', 'btl': 'BotIm', 'aax': 'Boyaa', 'aci': 'BPJS',
+    'abu': 'BPJSTK', 'jw': 'Br777', 'sy': 'Brahma', 'vo': 'Brand20ua',
+    'aiz': 'Brevo', 'ahm': 'BRO', 'bdb': 'Broadblue', 'vt': 'Budget4me',
+    'zt': 'Budweiser', 'bff': 'Buff.163', 'kh': 'Bukalapak', 'afc': 'Bunda',
+    'ahe': 'Bunq', 'adx': 'BusyFly', 'iu': 'Bykea', 'abi': 'BytePlus',
+    'aff': 'C6 Bank', 'adp': 'Cabify', 'uo': 'CafeBazaar', 'my': 'CAIXA',
+    'cpt': 'Capture', 'gj': 'Carousell', 'oy': 'CashFly', 'ii': 'CashKaro',
+    'ld': 'Cashmine', 'pc': 'Casino/bet/gambling', 'alz': 'CasinoAndFriends',
+    'wd': 'CasinoPlus', 'afa': 'CDEK', 'pq': 'CDkeys', 'ix': 'Celcoin',
+    'ai': 'CELEBe', 'td': 'ChaingeFinance', 'akn': 'Chakra Rewards',
+    'cha': 'Chase', 'acd': 'CheckDomain', 'chi': 'Checkin', 'chs': 'Checkscan',
+    'afk': 'Chevron', 'chb': 'CHIBBIS', 'adv': 'Cian', 'si': 'Cita Previa',
+    'az': 'CityBase', 'acu': 'CityMall', 'yf': 'Citymobil', 'hf': 'Cleartrip',
+    'cle': 'ClickEntregas', 'fe': 'CliQQ', 'ael': 'Cloud Manager', 'agm': 'CMB',
+    'ql': 'CMTcuzdan', 'abb': 'Coca-Cola', 'oe': 'Codashop', 'pn': 'CoffeeLike',
+    'ajo': 'CoffeeTea', 'cfx': 'Cofix', 'xy2': 'CoinFantasy', 'vw': 'CoinField',
+    'ctt': 'Coinut', 'acg': 'CollabAct', 'zx': 'CommunityGaming', 'amn': 'constitutioner',
+    'jv': 'Consultant', 'eg': 'ContactSys', 'om': 'Corona', 'aby': 'Couponscom',
+    'yg': 'CourseHero', 'wc': 'Craigslist', 'ahg': 'Credcesta', 'ax': 'CrefisaMais',
+    'lu': 'Crickpe', 'sx': 'Crowdtap', 'ahh': 'Cumbuca', 'aje': 'CupidMedia',
+    'abp': 'D5BET', 'akk': 'Dagangan', 'ahi': 'Daki', 'ox': 'Damejidlo',
+    'fr': 'DANA', 'aju': 'Daya Auto', 'tj': 'dbrUA', 'oc': 'DealShare',
+    'xy': 'Depop', 'lx': 'DewuPoison', 'os': 'Dhani', 'zv': 'Digikala',
+    'ake': 'DIKIDI', 'dw': 'Divar', 'akl': 'DOKU', 'agv': 'DoneDeal',
+    'bx': 'Dosi', 'dsm': 'Dosmart', 'sv': 'Dostavista', 'cj': 'Dotz',
+    'hz': 'Drom', 'fi': 'Dundle', 'le': 'E bike Gewinnspiel', 'adl': 'EarnEasy',
+    'akj': 'Easycash', 'eb': 'Voltz', 'uf': 'Eneba', 'aek': 'EnerGO',
+    'cba': 'ENILIVE', 'eng': 'EnticeGames', 'alq': 'Etsy', 'yj': 'eWallet',
+    'kr': 'Eyecon', 'db': 'ezbuy', 'rm': 'Faberlic', 'qz': 'Faceit',
+    'alc': 'Facily', 'fal': 'Falla', 'xn': 'Familia', 'xy1': 'Fanball',
+    'lm': 'FarPost', 'fss': 'FARШ', 'mr': 'Fastmail', 'akd': 'Feels',
+    'ait': 'FeetFinder', 'ug': 'Fiqsy', 'adm': 'FitCredit', 'cn': 'Fiverr',
+    'fxp': 'FixPrice', 'ahy': 'Fliff', 'agn': 'Flik', 'tv': 'Flink',
+    'aew': 'Flip', 'flo': 'flor2u', 'aeg': 'Flowwow', 'iy': 'FoodHub',
+    'abe': 'Foodora', 'kw': 'Foody', 'flc': 'Foot Locker', 'gu': 'Fora',
+    'ajg': 'Fortumo', 'xg': 'FortunaSK', 'amc': 'Fortune Slots', 'rk': 'Fotka',
+    'kq': 'FotoCasa', 'wz': 'FoxFord', 'kg': 'FreeChargeApp', 'gq': 'Freelancer',
+    'zb': 'FreeNow', 'nj': 'FreshKarta', 'fcl': 'FriendsClub', 'abz': 'Friendtech',
+    'adh': 'Frizza', 'ahf': 'Fugeelah', 'ng': 'FunPay', 'aih': 'Fups',
+    'od': 'FWDMAX', 'aja': 'G2A', 'bk': 'G2G', 'ou': 'Gabi', 'xex': 'Galaxy',
+    'xe': 'GalaxyChat', 'af': 'GalaxyWin', 'wn': 'GameArena', 'pa': 'Gamekit',
+    'afx': 'Gamesofa', 'gts': 'Gamestheshop', 'cg': 'Gemgala', 'ajm': 'Gener8',
+    'cz': 'Getmega', 'aiu': 'GetNinjas', 'ajs': 'GetPlus', 'ala': 'GetResponse',
+    'qe': 'GG', 'nn': 'Giftcloud', 'jd': 'GiraBank', 'nk': 'Gittigidiyor',
+    'iz': 'Global24', 'gl': 'GlobalTel', 'hm': 'Globus', 'aq': 'Glovo',
+    'ams': 'GlowRoad', 'mq': 'GMNG', 'abk': 'GMX', 'ads': 'GoChat',
+    'aeq': 'Godrej', 'ez': 'GoerliFaucet', 'aky': 'GOMOFY', 'aeb': 'GoPayz',
+    'ajn': 'Gopuff', 'amk': 'GORDAN', 'afe': 'GovBr', 'abl': 'gpnbonus',
+    'agd': 'Grailed', 'als': 'Greggs', 'aet': 'Greywoods', 'xs': 'GroupMe',
+    'grz': 'Grozd', 'alb': 'Guiche Web', 'gul': 'Gulliver-ul', 'akb': 'Gurmanika',
+    'ik': 'GuruBets', 'gh': 'GyFTR', 'ach': 'Haleon', 'rp': 'hamrahaval',
+    'sj': 'HandyPick', 'aks': 'Hanya', 'sp': 'HappyFresh', 'or': 'HAPPYTUK',
+    'au': 'Haraj', 'hdfc': 'HDFC ERGO', 'agp': 'hdfcbank', 'akp': 'Her',
+    'en': 'Hermes', 'vx': 'HeyBox', 'ss': 'Hezzl', 'yh': 'hh',
+    'aii': 'Hinge Dating', 'ks': 'Hirect', 'hyc': 'Hiyachat', 'hff': 'Hoff',
+    'ru': 'HOP', 'gi': 'Hotline', 'un': 'HumbleBundle', 'gv': 'Humta',
+    'hun': 'Hunter', 'dq': 'IceCasino', 'amj': 'ICNKR', 'afs': 'Idealista',
+    'acr': 'iFood', 'yi': 'IKEA', 'yw': 'Imo', 'tp': 'IndiaGold',
+    'xk': 'inDriver', 'ih': 'TeenPattiStarpro', 'bj': 'Вита экспресс',
+    'rb': 'Tick', 'vl': 'Ортека', 'qc': 'Праймериз 2020',
+    'sl': 'СберАптека', 'xj': 'СберМаркет', 'be': 'СберМегаМаркет',
+    'ke': 'Эльдорадо', 'ut': 'Энергобум', 'mg': 'Магнит', 'ol': 'Магнит.Маркет',
+    'qp': 'Максавит', 'tk': 'МВидео', 'aji': 'МИГРАНТ СЕРВИС', 'qs': 'МирЗнакомств',
+    'ty': 'Окей', 'yz': 'Около', 'pl': 'Перекресток', 'ptr': 'Петрович',
+    'ajc': 'Почта России', 'adw': 'Профи', 'ahn': 'Рив Гош', 'cy': 'РСА',
+    'uj': 'СhampionСasino', 'jr': 'Самокат', 'sbt': 'Сберчаевые',
+    'ybb': 'Система Город', 'yk': 'СпортМастер', 'hj': 'Столото', 'sut': 'Суточно',
+    'aiw': 'СушиВёсла', 'wtt': 'Твоё', 'ady': 'ТОКИО-CITY', 'xa': 'УлыбкаРадуги',
+    'abm': 'Утконос', 'yq': 'Фокстрот', 'aie': 'Фотострана', 'abv': 'Халва',
+    'chc': 'ЧитайГород', 'adz': 'Шоколадница', 'vh': 'Штолле',
+    'rj': 'Детский мир', 'afv': 'Джилекс', 'ux': 'Домовой', 'io': 'ЗдравСити',
+    'zyy': 'Золотая Корона', 'aes': 'Золотое Яблоко', 'yb': 'Квартплата+',
+    'fq': 'Контур', 'vb': 'Кораблик', 'ahz': 'Кузбасс Онлайн', 'ct': 'КухняНаРайоне',
+    'tz': 'Лейка', 'xm': 'Лэтуаль', 'afu': 'ВсеИнструменты', 'gzp': 'Газпром',
+    'js': 'Голос', 'ajt': 'Город', 'aef': 'Велобайк', 'nb': 'Верный',
+    'br': 'Вкусно и Точка', 'ahk': 'БлинБери', 'ajb': 'Бери заряд',
+    'ft': 'Букмекерские', 'md': 'Банки',
     
     # Generic/Other
-    'an': 'Any Service', 'ot': 'Other', 'nw': 'New Service', 'ol': 'Old Service',
-    'mm': 'Miscellaneous', 'uu': 'Unknown', 'xx': 'Other Service',
-    'bl': 'Blizzard', 'bo': 'Bolt', 'bt': 'BlaBlaCar',
+    'uu': 'Wildberries', 'nw': 'Ximalaya', 'bi': '勇仕网络Ys4fun',
+    'cu': '炙热星河', 'yd': '米画师Mihuashi',
 }
 
 def get_service_name(code: str) -> str:
@@ -2536,8 +2655,118 @@ async def cancel_number_tigersms(activation_id: str) -> bool:
 
 # ============ SMS Bower Functions ============
 
+# Cache for SMS Bower service names (code -> full name)
+_smsbower_service_names_cache: Dict[str, str] = {}
+_smsbower_service_names_cache_time: Optional[datetime] = None
+
+# Cache for SMS Bower country names (code -> full name)
+_smsbower_country_names_cache: Dict[str, str] = {}
+_smsbower_country_names_cache_time: Optional[datetime] = None
+
+async def get_smsbower_country_names(api_key: str, force_refresh: bool = False) -> Dict[str, str]:
+    """Fetch SMS Bower country names using getCountries endpoint.
+    
+    Returns a mapping of country code to full country name.
+    Results are cached for 1 hour.
+    """
+    global _smsbower_country_names_cache, _smsbower_country_names_cache_time
+    
+    # Check cache (1 hour expiry)
+    if not force_refresh and _smsbower_country_names_cache:
+        if _smsbower_country_names_cache_time:
+            cache_age = (datetime.now(timezone.utc) - _smsbower_country_names_cache_time).total_seconds()
+            if cache_age < 3600:  # 1 hour cache
+                return _smsbower_country_names_cache
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getCountries'},
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Response format: {"id": {"id": "74", "rus": "Афганистан", "eng": "Afghanistan", "chn": "阿富汗"}, ...}
+                # or list format: [{"id": 74, "rus": "...", "eng": "...", "chn": "..."}, ...]
+                country_names = {}
+                
+                if isinstance(data, dict):
+                    for country_id, country_info in data.items():
+                        if isinstance(country_info, dict):
+                            name = country_info.get('eng', country_info.get('rus', country_id))
+                            country_names[str(country_id)] = name
+                elif isinstance(data, list):
+                    for country_info in data:
+                        if isinstance(country_info, dict):
+                            country_id = str(country_info.get('id', ''))
+                            name = country_info.get('eng', country_info.get('rus', country_id))
+                            if country_id:
+                                country_names[country_id] = name
+                
+                # Update cache
+                _smsbower_country_names_cache = country_names
+                _smsbower_country_names_cache_time = datetime.now(timezone.utc)
+                logger.info(f"Cached {len(country_names)} SMS Bower country names")
+                return country_names
+                    
+        logger.warning("Failed to fetch SMS Bower country names, using fallback")
+        return {}
+    except Exception as e:
+        logger.error(f"SMS Bower getCountries error: {str(e)}")
+        return {}
+
+async def get_smsbower_service_names(api_key: str, force_refresh: bool = False) -> Dict[str, str]:
+    """Fetch SMS Bower service names using getServicesList endpoint.
+    
+    Returns a mapping of service code to full service name.
+    Results are cached for 1 hour.
+    """
+    global _smsbower_service_names_cache, _smsbower_service_names_cache_time
+    
+    # Check cache (1 hour expiry)
+    if not force_refresh and _smsbower_service_names_cache:
+        if _smsbower_service_names_cache_time:
+            cache_age = (datetime.now(timezone.utc) - _smsbower_service_names_cache_time).total_seconds()
+            if cache_age < 3600:  # 1 hour cache
+                return _smsbower_service_names_cache
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getServicesList'},
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Response format: {"status": "success", "services": [{"code": "kt", "name": "KakaoTalk"}, ...]}
+                if data.get('status') == 'success' and 'services' in data:
+                    service_names = {}
+                    for svc in data['services']:
+                        code = svc.get('code', '')
+                        name = svc.get('name', code)
+                        if code:
+                            service_names[code.lower()] = name
+                    
+                    # Update cache
+                    _smsbower_service_names_cache = service_names
+                    _smsbower_service_names_cache_time = datetime.now(timezone.utc)
+                    logger.info(f"Cached {len(service_names)} SMS Bower service names")
+                    return service_names
+                    
+        logger.warning("Failed to fetch SMS Bower service names, using fallback")
+        return {}
+    except Exception as e:
+        logger.error(f"SMS Bower getServicesList error: {str(e)}")
+        return {}
+
 async def get_smsbower_services(country: Optional[str] = None) -> Optional[Dict]:
-    """Get SMS Bower services and pricing."""
+    """Get SMS Bower services and pricing using getPricesV3 for detailed provider info."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
         api_key = config.get('smsbower_api_key', '') if config else ''
@@ -2545,7 +2774,8 @@ async def get_smsbower_services(country: Optional[str] = None) -> Optional[Dict]
             return None
         
         async with httpx.AsyncClient() as client:
-            params = {'api_key': api_key, 'action': 'getPrices'}
+            # Use getPricesV3 for more detailed pricing with provider breakdown
+            params = {'api_key': api_key, 'action': 'getPricesV3'}
             if country:
                 params['country'] = country
             response = await client.get(
@@ -4422,10 +4652,12 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
                 for country_code, services in data.items():
                     for service_code, service_info in services.items():
                         price_rub = float(service_info.get('cost', 0))
+                        # Use get_service_name to get proper name
+                        service_name = get_service_name(service_code)
                         cached_service = CachedService(
                             provider='tigersms',
                             service_code=service_code,
-                            service_name=service_info.get('name', service_code),
+                            service_name=service_name,
                             country_code=country_code,
                             country_name=get_country_name(country_code),
                             base_price=price_rub,
@@ -4449,10 +4681,13 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
                         final_price = price_usd * (1 + markup_percent / 100)
                         final_price_ngn = final_price * ngn_rate
                         
+                        # Use get_service_name to convert code to full name
+                        service_name = get_service_name(service_code)
+                        
                         services.append({
                             'value': service_code,
-                            'label': service_info.get('name', service_code),
-                            'name': service_info.get('name', service_code),
+                            'label': service_name,
+                            'name': service_name,
                             'base_price': price_usd,
                             'price_usd': final_price,
                             'price_ngn': final_price_ngn
@@ -4570,7 +4805,7 @@ async def get_tigersms_countries(user: dict = Depends(get_current_user)):
 
 @api_router.get("/services/smsbower")
 async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user), country: Optional[str] = None, refresh: bool = False):
-    """Get SMS Bower services with pricing and database caching."""
+    """Get SMS Bower services with pricing using getServicesList for names and getPricesV3 for pricing."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
         
@@ -4585,7 +4820,13 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
         markup_percent = config.get('smsbower_markup', 50.0) if config else 50.0
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
         
-        # Check cache first (unless refresh requested)
+        # Get service names from getServicesList endpoint (cached)
+        service_names_map = await get_smsbower_service_names(api_key, force_refresh=refresh)
+        
+        # Get country names from getCountries endpoint (cached)
+        country_names_map = await get_smsbower_country_names(api_key, force_refresh=refresh)
+        
+        # Check database cache first (unless refresh requested)
         cached_count = await db.cached_services.count_documents({'provider': 'smsbower'})
         
         if cached_count > 0 and not refresh:
@@ -4604,9 +4845,9 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
                     final_price = base_price * (1 + markup_percent / 100)
                     final_price_ngn = final_price * ngn_rate
                     
-                    # Use get_service_name to convert code to full name
+                    # Get service name from API mapping first, then fallback to cached name or static mapping
                     service_code = svc['service_code']
-                    service_name = get_service_name(service_code)
+                    service_name = service_names_map.get(service_code.lower()) or svc.get('service_name') or get_service_name(service_code)
                     
                     services.append({
                         'value': service_code,
@@ -4634,18 +4875,23 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
                 
                 countries = []
                 for item in result:
+                    # Prefer country names from API mapping, then cached name, then code
+                    country_code = item['_id']
+                    country_name = country_names_map.get(country_code) or item['country_name'] or country_code
                     countries.append({
-                        'value': item['_id'],
-                        'label': item['country_name'] or item['_id'],
-                        'name': item['country_name'] or item['_id'],
+                        'value': country_code,
+                        'label': country_name,
+                        'name': country_name,
                         'service_count': item['service_count']
                     })
                 
+                # Sort by name
+                countries.sort(key=lambda x: x['name'])
                 return {'success': True, 'countries': countries, 'cached': True}
         
-        # Fetch from API
+        # Fetch from API using getPricesV3 for detailed provider info
         async with httpx.AsyncClient() as client:
-            params = {'api_key': api_key, 'action': 'getPrices'}
+            params = {'api_key': api_key, 'action': 'getPricesV3'}
             if country:
                 params['country'] = country
             
@@ -4658,20 +4904,41 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
             if response.status_code == 200:
                 data = response.json()
                 
+                # getPricesV3 response format:
+                # { "country": { "service": { "provider_id": { "count": N, "price": P, "provider_id": X }, ... } } }
+                
                 # Cache all services if we're not filtering by country
                 if not country:
                     cached_services_list = []
-                    for country_code, services in data.items():
-                        country_name = get_country_name(country_code)
-                        for service_code, service_info in services.items():
-                            base_price = float(service_info.get('cost', 0))
+                    for country_code, services_data in data.items():
+                        if not isinstance(services_data, dict):
+                            continue
+                        # Use country names from API mapping first, then fallback to get_country_name
+                        country_name = country_names_map.get(country_code) or get_country_name(country_code) or country_code
+                        for service_code, provider_data in services_data.items():
+                            if not isinstance(provider_data, dict):
+                                continue
+                            # Find the cheapest provider price
+                            min_price = float('inf')
+                            for provider_id, info in provider_data.items():
+                                if isinstance(info, dict) and 'price' in info:
+                                    price = float(info.get('price', 0))
+                                    if price > 0 and price < min_price:
+                                        min_price = price
+                            
+                            if min_price == float('inf'):
+                                continue
+                            
+                            # Get service name from API mapping
+                            service_name = service_names_map.get(service_code.lower()) or get_service_name(service_code)
+                            
                             cached_service = CachedService(
                                 provider='smsbower',
                                 service_code=service_code,
-                                service_name=service_info.get('name', service_code),
+                                service_name=service_name,
                                 country_code=country_code,
-                                country_name=country_name or country_code,
-                                base_price=base_price,
+                                country_name=country_name,
+                                base_price=min_price,
                                 currency='USD'
                             )
                             cached_services_list.append(cached_service.model_dump())
@@ -4681,38 +4948,58 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
                         for service in cached_services_list:
                             service['last_updated'] = service['last_updated'].isoformat()
                         await db.cached_services.insert_many(cached_services_list)
-                        logger.info(f"Cached {len(cached_services_list)} SMS Bower services")
+                        logger.info(f"Cached {len(cached_services_list)} SMS Bower services using getPricesV3")
                     
-                    # Return country list
+                    # Return country list with proper names
                     countries = []
                     for code in data.keys():
-                        country_name = get_country_name(code)
+                        if not isinstance(data[code], dict):
+                            continue
+                        # Use country names from API mapping first
+                        country_name = country_names_map.get(code) or get_country_name(code) or code
                         countries.append({
                             'value': code,
-                            'label': country_name or code,
-                            'name': country_name or code
+                            'label': country_name,
+                            'name': country_name
                         })
                     countries.sort(key=lambda x: x['name'])
                     return {'success': True, 'countries': countries, 'cached': False}
                 
                 # Return services for specific country
                 services = []
-                if country in data:
-                    for service_code, service_info in data[country].items():
-                        base_price = float(service_info.get('cost', 0))
-                        if base_price <= 0:
+                if country in data and isinstance(data[country], dict):
+                    for service_code, provider_data in data[country].items():
+                        if not isinstance(provider_data, dict):
                             continue
-                        final_price = base_price * (1 + markup_percent / 100)
+                        
+                        # Find the cheapest provider price and total count
+                        min_price = float('inf')
+                        total_count = 0
+                        for provider_id, info in provider_data.items():
+                            if isinstance(info, dict):
+                                price = float(info.get('price', 0))
+                                count = int(info.get('count', 0))
+                                total_count += count
+                                if price > 0 and price < min_price:
+                                    min_price = price
+                        
+                        if min_price == float('inf') or min_price <= 0:
+                            continue
+                        
+                        final_price = min_price * (1 + markup_percent / 100)
                         final_price_ngn = final_price * ngn_rate
+                        
+                        # Get service name from API mapping
+                        service_name = service_names_map.get(service_code.lower()) or get_service_name(service_code)
                         
                         services.append({
                             'value': service_code,
-                            'label': service_info.get('name', service_code),
-                            'name': service_info.get('name', service_code),
-                            'base_price': base_price,
+                            'label': service_name,
+                            'name': service_name,
+                            'base_price': min_price,
                             'price_usd': final_price,
                             'price_ngn': final_price_ngn,
-                            'count': service_info.get('count', 0)
+                            'count': total_count
                         })
                 
                 services.sort(key=lambda x: x['name'])
@@ -4967,16 +5254,20 @@ async def admin_sync_sms_providers(user: dict = Depends(get_current_user), provi
             else:
                 results['tigersms'] = {'success': False, 'error': 'Provider disabled'}
         
-        # Sync SMS Bower
+        # Sync SMS Bower (using getPricesV3 and getServicesList)
         if not provider or provider == 'smsbower':
             if config.get('enable_provider_smsbower', True):
                 api_key = config.get('smsbower_api_key', '')
                 if api_key:
                     try:
+                        # First get service names from getServicesList
+                        service_names_map = await get_smsbower_service_names(api_key, force_refresh=True)
+                        
                         async with httpx.AsyncClient() as client:
+                            # Use getPricesV3 for detailed pricing
                             response = await client.get(
                                 'https://smsbower.online/stubs/handler_api.php',
-                                params={'api_key': api_key, 'action': 'getPrices'},
+                                params={'api_key': api_key, 'action': 'getPricesV3'},
                                 timeout=60.0
                             )
                             
@@ -4984,17 +5275,37 @@ async def admin_sync_sms_providers(user: dict = Depends(get_current_user), provi
                                 data = response.json()
                                 cached_services_list = []
                                 
-                                for country_code, services in data.items():
-                                    country_name = get_country_name(country_code)
-                                    for service_code, service_info in services.items():
-                                        base_price = float(service_info.get('cost', 0))
+                                # Get country names from API
+                                country_names_map = await get_smsbower_country_names(api_key, force_refresh=True)
+                                
+                                for country_code, services_data in data.items():
+                                    if not isinstance(services_data, dict):
+                                        continue
+                                    country_name = country_names_map.get(country_code) or get_country_name(country_code) or country_code
+                                    for service_code, provider_data in services_data.items():
+                                        if not isinstance(provider_data, dict):
+                                            continue
+                                        # Find the cheapest provider price
+                                        min_price = float('inf')
+                                        for provider_id, info in provider_data.items():
+                                            if isinstance(info, dict) and 'price' in info:
+                                                price = float(info.get('price', 0))
+                                                if price > 0 and price < min_price:
+                                                    min_price = price
+                                        
+                                        if min_price == float('inf'):
+                                            continue
+                                        
+                                        # Get service name from API mapping
+                                        service_name = service_names_map.get(service_code.lower()) or get_service_name(service_code)
+                                        
                                         cached_service = CachedService(
                                             provider='smsbower',
                                             service_code=service_code,
-                                            service_name=service_info.get('name', service_code),
+                                            service_name=service_name,
                                             country_code=country_code,
-                                            country_name=country_name or country_code,
-                                            base_price=base_price,
+                                            country_name=country_name,
+                                            base_price=min_price,
                                             currency='USD'
                                         )
                                         cached_services_list.append(cached_service.model_dump())
@@ -5008,7 +5319,9 @@ async def admin_sync_sms_providers(user: dict = Depends(get_current_user), provi
                                 results['smsbower'] = {
                                     'success': True,
                                     'services_cached': len(cached_services_list),
-                                    'countries': len(data.keys())
+                                    'countries': len([k for k in data.keys() if isinstance(data[k], dict)]),
+                                    'service_names_loaded': len(service_names_map),
+                                    'country_names_loaded': len(country_names_map)
                                 }
                             else:
                                 results['smsbower'] = {'success': False, 'error': f"API returned {response.status_code}"}
@@ -10754,7 +11067,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
-        "reseller_api_base_url": config.get("reseller_api_base_url", "https://sms-providers-cache.preview.emergentagent.com"),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://billhub-payments.preview.emergentagent.com"),
         "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
         "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
         "support_email": config.get("support_email", "support@smsrelay.com"),

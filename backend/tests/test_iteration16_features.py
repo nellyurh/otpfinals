@@ -10,7 +10,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sms-providers-cache.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://billhub-payments.preview.emergentagent.com')
 
 class TestCaseInsensitiveLogin:
     """Test case-insensitive email login functionality"""
