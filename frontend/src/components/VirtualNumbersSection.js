@@ -6,74 +6,74 @@ import { toast } from 'sonner';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Provider card data for US Numbers - 4 providers
+// Provider card data for US Numbers - 4 providers (names hidden from users)
 const US_PROVIDERS = [
   {
     id: 'textverified',
-    name: 'Text Verified',
-    description: 'Premium US Numbers with high success rate',
+    name: 'Premium Server',
+    description: 'High success rate US numbers',
     icon: '🔐',
     color: 'from-blue-500 to-blue-600',
     badge: 'Premium',
-    features: ['High Success Rate', 'Fast Delivery', 'US Only']
+    features: ['High Success Rate', 'Fast Delivery']
   },
   {
     id: '5sim',
-    name: '5sim',
-    description: 'Global provider with US number support',
+    name: 'Server 1',
+    description: 'Reliable US number support',
     icon: '🌐',
     color: 'from-purple-500 to-purple-600',
     badge: 'Popular',
-    features: ['Multiple Countries', 'Wide Service Range', 'Reliable']
+    features: ['Wide Service Range', 'Reliable']
   },
   {
     id: 'smsbower',
-    name: 'SMS Bower',
-    description: 'Affordable US numbers for verification',
+    name: 'Budget Server',
+    description: 'Affordable US numbers',
     icon: '📱',
     color: 'from-green-500 to-green-600',
     badge: 'Budget',
-    features: ['Low Prices', 'Good Availability', 'US Support']
+    features: ['Low Prices', 'Good Availability']
   },
   {
     id: 'tigersms',
-    name: 'Tiger SMS',
-    description: 'Fast and reliable US verifications',
+    name: 'Fast Server',
+    description: 'Quick US verifications',
     icon: '🐯',
     color: 'from-orange-500 to-orange-600',
     badge: 'Fast',
-    features: ['Quick Delivery', 'Many Services', 'Stable']
+    features: ['Quick Delivery', 'Many Services']
   }
 ];
 
-// Provider card data for Other Countries - 3 providers
+// Provider card data for Other Countries - 3 providers (names hidden from users)
 const OTHER_COUNTRIES_PROVIDERS = [
   {
     id: '5sim',
-    name: '5sim',
-    description: 'Global provider with extensive coverage',
+    name: 'Server 1',
+    description: 'Extensive global coverage',
     icon: '🌐',
     color: 'from-purple-500 to-purple-600',
     badge: 'Reliable',
-    features: ['Worldwide', 'Many Services', 'Stable']
+    features: ['Worldwide', 'Many Services']
   },
   {
     id: 'smsbower',
-    name: 'SMS Bower',
+    name: 'Budget Server',
     description: 'Affordable international numbers',
     icon: '📱',
     color: 'from-green-500 to-green-600',
     badge: 'Budget',
-    features: ['Low Prices', 'Good Coverage', 'Simple']
+    features: ['Low Prices', 'Good Coverage']
   },
   {
     id: 'tigersms',
-    name: 'Tiger SMS',
-    description: 'Fast and reliable global verifications',
+    name: 'Fast Server',
+    description: 'Quick global verifications',
     icon: '🐯',
     color: 'from-orange-500 to-orange-600',
     badge: 'Fast',
-    features: ['Quick Delivery', 'Many Countries', 'Stable']
+    features: ['Quick Delivery', 'Many Countries']
   }
 ];
 
