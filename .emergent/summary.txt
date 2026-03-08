@@ -1,204 +1,183 @@
 <analysis>**original_problem_statement:**
-The user is building BillHub, a comprehensive financial services application deployed as two separate sites:  and . The project involves fixing bugs, adding new features, improving security, and resolving deployment issues across both sites.
+The user is building BillHub, a comprehensive financial services application with two sites:  and .
 
-**Recent and In-Flight Requests:**
-1.  **Make Admin Bug:** The Make Admin button in the admin panel is not working correctly on the live server.
-2.  **Deployment Issues:** The user runs two separate sites from the same codebase and is experiencing container conflicts and login failures on the  site.
-3.  **File Persistence:** Uploaded files (logos, banners, KYC documents) are disappearing after server restarts.
-4.  **Security/Anonymity:** The user wants to hide the names of third-party SMS providers (e.g., daisysms, smspool) from being visible to end-users in the frontend.
-5.  **KYC Flow:** Implement a retry mechanism for failed Tier 3 KYC verification, allowing users to edit their details and be charged the verification fee again.
-6.  **Transaction Fees:** When a user funds their account via Payscribe bank transfer, the fee returned in the webhook should be recorded as a separate debit transaction.
-7.  **Admin Controls & Pricing:**
-    *   Add individual toggles in the admin panel to enable/disable each bill payment service (Data, TV, Electricity, Airtime, Betting, Send Money).
-    *   Add editable percentage-based markups for Airtime, Data, and TV bills.
-8.  **UI/UX Redesign:**
-    *   Redesign the Virtual Cards page to match a user-provided reference image. This includes hiding card details behind a button, showing stats (Balance, Spent, etc.), adding a More actions menu, and improving the transaction list.
-    *   Add a separate, configurable fee for creating a second virtual card.
-    *   Remove the main balance display from the dashboard header and replace it with notification/refresh icons.
-    *   Adjust the layout of the Add Money button.
-9.  **Virtual Card API:** The API endpoints for virtual cards (get details, transactions, freeze/unfreeze) need to be updated to match the latest Payscribe documentation.
-10. **SMS Reception Bug:** SMS OTP codes are not being received on the  server, while they work on the  server.
+Recent user requests have significantly evolved the project:
+1.  **Travel Section Overhaul:** The user requested a complete redesign and functional enhancement of the Amadeus-powered travel booking platform. This included:
+    *   Changing the admin unlock PIN to .
+    *   Redesigning the UI to be inspired by , using the app's primary theme colors (green) instead of hardcoded blue.
+    *   Replacing the static airport/city list with a dynamic, real-time search functionality powered by the Amadeus API. This search must be available for flights, stays, car rentals, and attractions.
+    *   Making the airport dropdown wider and more responsive.
+    *   Adding a Multi-city flight search option.
+    *   Implementing an admin-configurable USD to NGN exchange rate and using it to display all prices in Naira (NGN), while hiding the rate itself from the user interface.
+2.  **SMS Provider Rework:** A major new feature request to restructure the SMS services:
+    *   Add admin toggles to enable/disable specific SMS providers, as  is being deprecated.
+    *   Create a new US Numbers page with four provider cards: Text Verified, 5sim, SMS Bower, and Tiger SMS.
+    *   Create a new Global/Other Countries page with three provider cards and a country dropdown.
+    *   The existing  and  pages are to remain untouched.
+    *   The user has provided API documentation for  and a PHP implementation example for .
+3.  **Deployment Concerns:** The user shared a Docker deployment log, expressing concern, although the log indicates a successful deployment with only a non-critical warning.
 
 **User's preferred language**: English
 
 **what currently exists?**
 The application is a full-stack project with a React frontend, a FastAPI backend, and a MongoDB database.
 
-Recent work focused on resolving critical operational issues and implementing user-requested features:
--   **File Persistence:** A major fix was implemented to correct the Docker volume mount paths in , , and , ensuring that uploaded files like logos, banners, and KYC documents are now persistent across container restarts.
--   **Provider Anonymity:** Third-party SMS provider names have been hidden from the frontend. This was achieved by creating generic, aliased API endpoints (e.g., ) on the backend and updating all frontend components (, , ) to use these new routes.
--   **Admin Controls:** The admin panel has been significantly enhanced. It now includes individual toggles for all bill payment services and a new section to manage percentage-based markups for Airtime, Data, TV, Electricity, and Betting.
--   **Virtual Card Fees:** A new fee for creating an additional virtual card has been added. The backend, admin panel, and  were updated to handle and display this new fee structure.
--   **KYC & Webhook Logic:** The backend was updated to support a KYC retry flow and to process Payscribe webhook fees as separate transactions. These changes are implemented but not yet tested.
--   **API Key Fix:** A critical bug was fixed where OTP polling functions used hardcoded API keys from environment variables instead of the dynamic keys from the database config. This likely resolves the SMS reception issue on the  server.
--   **UI/UX Tweaks:** The dashboard header was updated to remove the balance and add a refresh icon. The Add Money button layout was corrected.
--   **Deployment Guidance:** A  file was created and updated with clear instructions for the two-site setup and for migrating existing uploaded files to the new persistent volume path.
+In this session, the agent performed a complete overhaul of the Travel section based on iterative user feedback. The UI was redesigned to mimic , using the app's primary theme colors. The most significant change was replacing the static airport list with a dynamic, live search endpoint () that queries the Amadeus API in real-time. A multi-city flight search feature was added, and the pricing was updated to use an admin-configurable exchange rate to convert and display all prices in Nigerian Naira (NGN).
+
+Following the completion of the travel section work, the user introduced a new high-priority requirement to restructure the SMS provider integrations. The agent has received the requirements and API documentation for two new providers (, ) and is poised to begin this new major task.
 
 **Last working item**:
--   Last item agent was working: Redesigning the  component to match a detailed UI/UX provided by the user in screenshots. The previous attempt was reverted because it incorrectly modified the initial card creation flow. The agent was in the process of re-implementing the new design for the *card view* page (for users who already have a card), leaving the creation flow untouched. This includes hiding card details, adding stats, a More actions menu, and an improved transaction list. The backend APIs for card management have been updated based on new documentation provided by the user.
--   Status: IN PROGRESS
+-   Last item agent was working: The agent was preparing to start the new SMS Provider Integration feature. The agent had just received API documentation and implementation examples for the new providers (SMS Bower and Text Verified) from the user, along with confirmation on the implementation plan.
+-   Status: NOT STARTED
 -   Agent Testing Done: N
--   Which testing method agent to use? Frontend testing agent
+-   Which testing method agent to use? both
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Redesign the virtual card view page (P0).
--   Issue 2: Make Admin button not working on live server (P0).
--   Issue 3: SMS OTP codes not being received on  server (P0, fix implemented but needs verification).
--   Issue 4: End-to-end user flow for virtual card creation is not fully tested (P1).
--   Issue 5: Implemented KYC verification retry flow is untested (P1).
--   Issue 6: Implemented Payscribe webhook fee handling is untested (P1).
--   Issue 7: Two-site deployment process may still cause user confusion (P1).
--   Issue 8: PaymentPoint virtual account generation is not working (P2).
--   Issue 9: Reseller Portal UI has a horizontal scroll issue on mobile (P2).
+-   Issue 1: Implement the new SMS Provider structure with new pages and integrations (P0).
+-   Issue 2: Verify the completely overhauled Travel Section (UI, dynamic search, multi-city, pricing) (P0).
+-   Issue 3: Make Admin button not working on live server (P1).
+-   Issue 4: SMS OTP codes not being received on  server (P1, fix implemented in a previous fork but needs user verification).
+-   Issue 5: End-to-end user flow for virtual card creation is not fully tested (P2).
+-   Issue 6: Implemented KYC verification retry flow is untested (P2).
+-   Issue 7: Implemented Payscribe webhook fee handling is untested (P2).
+-   Issue 8: Reseller Portal UI has a horizontal scroll issue on mobile (P2).
 
 **Issues Detail:**
--   **Issue 1: Redesign the virtual card view page**
-    -   **Attempted fixes:** A full rewrite of  was done but reverted by user request as it altered the initial card creation flow. The file has been restored. The backend API endpoints for getting card details, transactions, and performing actions (freeze/unfreeze) have been updated to match the latest Payscribe documentation.
+-   **Issue 1: Implement the new SMS Provider structure**
+    -   **Attempted fixes:** None. This is a new feature request.
     -   **Next debug checklist:**
-        1.  In , conditionally render the new UI design *only* when .
-        2.  Keep the existing card creation wizard () as is for  or when the Add Another Card button is clicked.
-        3.  Implement the new card view with hidden details (requiring a button click to reveal), stats (Balance, Spent), and a More actions dropdown.
-        4.  Create endpoints and UI for the More actions (Change Alias, View Limits, Withdraw, Download Statement).
-        5.  Integrate the new  backend endpoint to display a transaction list.
-    -   **Why fix this issue and what will be achieved with the fix?** To provide a more professional and secure user experience for managing virtual cards, as per the user's explicit design requirements.
-    -   **Status:** IN PROGRESS
+        1.  Analyze the provided API documentation for SMS Bower and the PHP code for Text Verified to create Python/FastAPI equivalents.
+        2.  Create new backend endpoints in  to handle the new providers (get services, get price, buy, check, cancel).
+        3.  Add admin toggles in the database () and backend logic to control provider availability.
+        4.  Create new React pages/components for US Numbers and Global Numbers.
+        5.  Implement the card-based UI as requested.
+        6.  Integrate the frontend with the new backend endpoints.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a high-priority user request to modernize the SMS offerings and replace a provider that is going out of business.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on other issue:** None
+
+-   **Issue 2: Verify the overhauled Travel Section**
+    -   **Attempted fixes:** N/A. The feature was just built.
+    -   **Next debug checklist:**
+        1.  Ask the user to test the entire travel booking flow: Flights (One-way, Round trip, Multi-city), Stays, Car Rentals, Attractions.
+        2.  Confirm the dynamic location search works correctly across all tabs.
+        3.  Confirm the UI matches their expectations (Booking.com style, green theme).
+        4.  Confirm prices are displayed correctly in Naira (NGN).
+        5.  Confirm the admin can change the  and it reflects in the pricing.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a major feature that was just delivered and requires user validation before moving on.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Both
+    -   **Blocked on other issue:** None
+
+-   **Issue 3: Make Admin button not working on live server**
+    -   **Attempted fixes:** None in this session.
+    -   **Next debug checklist:**
+        1.  Ask the user for network request/response details from their browser's developer tools on the live site.
+        2.  Guide the user to check live backend logs for errors.
+    -   **Why fix this issue and what will be achieved with the fix?** Core administrative function is broken in production.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Both
     -   **Blocked on other issue:** None
 
--   **Issue 2: Make Admin button not working on live server**
-    -   **Attempted fixes:** The backend API () was confirmed to work correctly in the preview environment. The frontend was improved with toast notifications. The user reported a data mismatch between the UI and a database query for different emails.
-    -   **Next debug checklist:**
-        1.  Ask the user to use the browser's developer tools on the live site to inspect the network request when the Make Admin button is clicked. Check the request payload and the server's response.
-        2.  Guide the user to check the live backend logs () for errors related to that API call.
-        3.  Investigate the email mismatch. Ask the user to query the database for the exact email shown in the UI () to confirm its  status.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a core administrative function that is currently broken in the user's production environment.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on other issue:** Potentially related to deployment issues.
-
--   **Issue 3: SMS OTP codes not being received on  server**
-    -   **Attempted fixes:** The agent identified and fixed a critical bug in  where OTP polling functions (, , etc.) and number cancellation functions were using hardcoded API keys from environment variables instead of fetching the correct keys from the database configuration for the specific site.
-    -   **Next debug checklist:**
-        1.  Inform the user that a potential fix has been deployed.
-        2.  Ask the user to test purchasing a number and receiving an SMS on the  server again.
-        3.  If it still fails, guide the user to check the backend logs () on that server immediately after a failed attempt to look for polling errors.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a core, revenue-generating feature that is completely broken on one of the two live sites.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Backend fix is done, requires user verification on live environment.
-    -   **Blocked on other issue:** None.
-
 **In progress Task List**:
--   **Task 1: Complete the Virtual Card View Redesign**
-    -   **Where to resume:** . The file has been restored to the user's preferred version.
-    -   **What will be achieved with this?** A professional, responsive, and secure UI for users to manage their existing virtual cards, matching the user's specific design.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on something:** None.
+None. The travel task is complete from the agent's side, and the SMS task has not started.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **P0:** Secure **all** bill payments (Data, Airtime, TV, etc.) with a transaction PIN.
+    -   **P0:** Secure all bill payments (Data, Airtime, TV, etc.) with a transaction PIN.
     -   **P1:** Refactor the monolithic  into a modular structure using FastAPI's .
-    -   **P2:** Break down large React components like  and  into smaller, manageable sub-components.
+    -   **P2:** Break down large React components like  and .
 -   **Future Tasks:**
     -   Add filtering by category/brand for the gift card store.
     -   Implement a GitHub Actions CI/CD workflow.
     -   Implement account lockout after a set number of failed login attempts.
 
 **Completed work in this session**
--   **File Persistence Fix:** Corrected Docker volume paths to prevent uploaded logos, banners, and KYC documents from being deleted on container restart.
--   **SMS Provider Anonymization:** Hid third-party SMS provider names from the frontend by creating and using aliased API endpoints.
--   **Individual Bill Toggles:** Added toggles to the admin panel to show/hide each bill payment service individually.
--   **Bill Payment Markups:** Implemented an admin feature to add editable, percentage-based markups to Airtime, Data, TV, Electricity, and Betting services.
--   **Virtual Card Fee for 2nd Card:** Added a configurable fee for creating subsequent virtual cards, and updated the UI to reflect this.
--   **Dashboard UI Refresh:** Removed the top balance from the main dashboard header and corrected the layout of the Add Money button.
--   **API Key Bug Fix:** Corrected all OTP polling and number purchase functions to use API keys from the database config instead of hardcoded environment variables.
--   **Virtual Card API Update:** Updated the backend endpoints for freezing, unfreezing, and getting card balances to match the latest Payscribe API documentation.
--   **Deployment Documentation:** Created and updated  with instructions for the two-site setup and file migration.
--   **KYC & Webhook Logic (Untested):** Implemented backend logic for KYC verification retry and for handling Payscribe webhook fees as a separate transaction.
+-   **Complete Travel Section Overhaul:**
+    -   **UI Redesign:** Rewrote  to align with a  aesthetic, use the app's primary (green) theme color, and improve responsiveness of dropdowns.
+    -   **Dynamic Location Search:** Implemented a new backend endpoint  in  that calls the Amadeus API in real-time, replacing the previous static airport lists.
+    -   **Multi-City Flights:** Added a multi-city search option to the frontend UI.
+    -   **Currency Conversion:** Made the USD to NGN exchange rate configurable from the admin panel and hidden on the user-facing UI. Prices are now converted to and displayed in NGN.
+    -   **PIN Update:** Changed the  in  to .
+-   **PRD Update:** Updated  to reflect the travel section improvements.
 
 **Earlier issues found/mentioned but not fixed**
--   **PaymentPoint Integration:** The virtual account generation for PaymentPoint is not working.
 -   **Reseller Portal UI:** The portal still has a horizontal scroll issue on mobile devices.
+-   **User Deployment Concern:** The user raised a concern about their deployment process, sharing a log file. The agent identified it as a non-blocking warning, but the user may still have underlying deployment issues.
 
 **Known issue recurrence from previous fork**
--   **Virtual Card Creation:** The end-to-end flow for new users remains a critical area that needs full testing.
--   **Deployment/Configuration:** The user has repeatedly had issues deploying and managing their two sites.  is a step towards resolving this.
--   **Reseller Portal UI:** Horizontal scroll on mobile devices persists.
+-   **Deployment/Configuration:** The user's concern about the  output highlights a recurring difficulty in managing two separate site configurations.
+-   **Virtual Card Implementation:** The user has repeatedly requested changes to this section in the past. While it was not worked on in this session, it remains a sensitive area.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **API Endpoint Aliasing:** Creating generic backend routes () that map to specific provider logic internally. This prevents exposing third-party provider names to the client.
--   **Dynamic Pricing with Markups:** Applying percentage-based markups fetched from a central configuration () to the final price of services shown to the user.
--   **Docker Volume Persistence:** Correctly mapping a host directory to a container directory () to ensure file uploads survive container restarts and rebuilds.
--   **Conditional Rendering (React):** Used to display different UI elements based on application state (e.g., showing a card creation wizard vs. a card view page based on ).
+-   **Dynamic API-Driven Search:** Transitioned from serving a static data file to a live, debounced search against a third-party API (Amadeus) for location data.
+-   **Iterative UI/UX Refinement:** Progressively refined a major feature's UI/UX based on multiple rounds of specific user feedback and visual examples (screenshots).
+-   **Backend-Driven Configuration:** Enhanced the use of database-driven configuration for dynamic pricing (USD to NGN exchange rate) controlled by an admin panel.
+-   **Component Refactoring:** The  component was completely rewritten multiple times to accommodate new requirements, demonstrating a move towards more complex state management (e.g., multi-city flights).
 
 **key DB schema**
 -   **pricing_config (collection):**
-    -   , , , , : (float)
-    -   : (float)
-    -   , , , , , : (boolean)
+    -   : (float) - **Actively used** for all travel pricing.
+    -   , , , , , .
 
 **All files of reference**
--   
--   
--   
--   
--   
--   
--   
--   
+-    (Heavily modified for travel API and currency conversion)
+-    (Completely rewritten for new UI and functionality)
+-    (New file, created to hold static data before being replaced by a dynamic API call)
+-    (Modified PIN)
+-    (Referenced by user)
+-    (Referenced by user)
+-    (Updated)
 
 **Critical Info for New Agent**
--   **Virtual Card UI is Priority #1:** The user has very specific design requirements for the page that displays existing virtual cards. The previous attempt to implement this was reverted. You MUST modify  to show the new design *only* for users who already have a card, leaving the initial creation flow untouched. Refer to the user's latest screenshots and API documentation.
--   **Verify The SMS Fix:** A critical fix for hardcoded API keys in OTP polling functions was implemented. This is the likely cause of SMS failures on the  server. The next step is to have the user verify this on their live environment.
--   **Untested Logic:** Be aware that several new backend features (KYC retry flow, webhook fee separation, bill markups) have been implemented but have **not been tested**. They will require a full end-to-end test to verify functionality.
--   **Deployment Confusion Persists:** While  was created, the user is still struggling with managing the two sites. Issues like the Make Admin button failing on live are likely symptoms of deployment or caching problems, not code bugs. Be prepared to guide the user through debugging their live environment.
+-   **Shift in Priority:** The primary focus has shifted from the Amadeus Travel feature to a new, large-scale SMS provider integration. Do not start any other task until you have a clear plan for the SMS rework.
+-   **SMS Provider Docs:** The user has provided API documentation for  and a PHP implementation file for  in the chat history. These are your primary sources for building the new backend integrations. Tiger SMS integration will need its documentation sourced.
+-   **SMS UI/UX is Specific:** The user wants two new, separate pages (US Numbers and Global Numbers) with a card-based layout for the new providers. The existing SMS pages (, ) must not be changed.
+-   **Travel Feature is Pending Verification:** The extensive work on the Travel section is complete from an implementation standpoint but has not been verified by the user. Be prepared for potential feedback or bug reports on it once the user tests it.
+-   **Admin Toggles:** A key requirement for the new SMS providers is the ability for an admin to enable or disable them individually. This will require database schema changes () and backend logic.
 
 **documents and test reports created in this job**
--    (created and updated)
--    (updated multiple times)
+-   /app/memory/PRD.md (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Asks for markup on bills, UI improvements for virtual cards, and for the card balance to be fetched via API.
-2.  **User:** Requests removal of top balance on dashboard, layout fix for Add Money button, and provides a detailed screenshot for a new virtual card page design. Specifies a  fee for a second card.
-3.  **Agent:** Implements the requested changes, including a complete redesign of the virtual card page.
-4.  **User:** Asks for a screenshot of the new card page, claiming it's unchanged, and provides extensive Payscribe API documentation for card actions (get details, transactions, freeze/unfreeze, terminate).
-5.  **Agent:** Restarts frontend, provides a screenshot confirming the new (but incorrect) design is active, and updates the backend with the new API endpoints.
-6.  **Agent:** Provides screenshots of the new design on desktop and mobile.
-7.  **User:** Rejects the new design. Clarifies that the existing card *creation* flow is perfect and should not have been touched. The redesign was only for the *view* page for existing cards. Provides screenshots of the current, correct UI.
-8.  **Agent:** Apologizes, reverts  to the user's preferred version using git.
-9.  **Agent:** Re-implements the additional card fee feature on the restored component without altering the core UI.
-10. **User:** (LATEST) Clarifies the issues with the current card view page (details are too visible). Provides screenshots and re-iterates the need for a View details button, top stats, a More dropdown menu, and an improved transaction list, reinforcing the design from the previous messages.
+1.  **User (LATEST):** Provides yes to all your questions regarding the SMS provider plan and includes extensive API documentation for SMS Bower and a PHP implementation file for Text Verified.
+2.  **Agent:** Asks clarifying questions about the new SMS provider pages and logic.
+3.  **User:** Requests a major rework of the SMS providers, introducing SMS Bower, Text Verified, and Tiger SMS, and asks to create new pages for them, deprecating an old provider.
+4.  **Agent:** Finishes the Travel Section improvements and updates the PRD.
+5.  **User:** Provides new requirements for the Travel Section: use the Amadeus API for a dynamic airport list, make the dropdown wider, hide the exchange rate, and make it admin-configurable.
+6.  **Agent:** Confirms the multi-city and expanded airport list UI changes with screenshots.
+7.  **User:** Reports deployment issues, provides a log, and requests more changes: use app colors, expand the airport list to all world airports, and add multi-city search.
+8.  **Agent:** Calls the testing agent (but is interrupted before it can run).
+9.  **Agent:** Confirms all initial travel section changes (PIN, Booking.com UI, dynamic countries, NGN price) are complete via screenshots and API tests.
+10. **User:** Provides a screenshot of Booking.com and requests changes to the Travel section: new PIN, UI redesign, dynamic country list, NGN pricing, and fix for hotel images.
 
 **Project Health Check:**
 -   **Broken:**
-    -   Virtual card *view* page UI does not meet user's design requirements.
     -   Admin promotion (Make Admin button) on the live server.
-    -   SMS OTP reception on  (fix implemented, needs verification).
-    -   PaymentPoint virtual account generation.
+    -   SMS OTP reception on  (fix needs user verification).
 -   **Mocked:** None.
 
 **3rd Party Integrations**
--   **Payscribe:** Used for payments, KYC, and virtual cards. The agent has recently updated the backend to use the latest API endpoints provided by the user.
--   **slowapi:** For API rate limiting.
--   **Multiple SMS providers:** (5sim, smspool, daisysms, tigersms) - Endpoints have been aliased to hide names from the frontend.
+-   **Payscribe:** Payments, KYC, virtual cards.
+-   **Amadeus:** Heavily used for the travel platform.
+-   **Multiple SMS providers:** (5sim, smspool, daisysms, tigersms).
+-   **Requested Integrations:** SMS Bower, Text Verified, Tiger SMS (to be added).
 
 **Testing status**
 -   Testing agent used after significant changes: NO
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
--   Known regressions: The virtual card UI was unintentionally changed and had to be reverted. The Make Admin button is reported as not working after its implementation.
-
-**Credentials to test flow:**
--   **Admin Account:** . The user knows the password. A new admin  /  can be created if the DB is fresh.
+-   Known regressions: None.
 
 **What agent forgot to execute**
--   The P0 task Secure all bill payments with a transaction PIN has not been started.
--   The newly implemented features (KYC retry, webhook fee logic, bill markups, API key fix) have not been tested end-to-end. A full regression test is needed.</analysis>
+-   The agent did not call the  after the major overhaul of the Travel section, despite planning to. The user interrupted with a new high-priority task.
+-   The P0 task from the previous handover, Secure all bill payments with a transaction PIN, has not been started.
+-   The agent did not explicitly ask for Tiger SMS documentation after receiving it for the other two new providers.</analysis>

@@ -760,6 +760,8 @@ const AdminPanel = ({ user, setUser }) => {
     daisysms_markup: 20,
     smspool_markup: 20,
     fivesim_markup: 50,
+    smsbower_markup: 50,
+    textverified_markup: 50,
     ngn_to_usd_rate: 1500,
     btc_usd_rate: 1420,
     eth_usd_rate: 1420,
@@ -769,6 +771,16 @@ const AdminPanel = ({ user, setUser }) => {
     daisysms_api_key: '',
     smspool_api_key: '',
     fivesim_api_key: '',
+    smsbower_api_key: '',
+    textverified_api_key: '',
+    textverified_email: '',
+    // Provider enable/disable toggles
+    enable_provider_daisysms: false,
+    enable_provider_smspool: true,
+    enable_provider_5sim: true,
+    enable_provider_tigersms: true,
+    enable_provider_smsbower: true,
+    enable_provider_textverified: true,
     wallet_usd_to_ngn_rate: 1650,
     giftcard_usd_to_ngn_rate: 1650,
     // Amadeus Travel API
@@ -1559,11 +1571,23 @@ const AdminPanel = ({ user, setUser }) => {
         daisysms_markup: response.data.daisysms_markup,
         smspool_markup: response.data.smspool_markup,
         fivesim_markup: response.data.fivesim_markup ?? prev.fivesim_markup,
+        smsbower_markup: response.data.smsbower_markup ?? prev.smsbower_markup,
+        textverified_markup: response.data.textverified_markup ?? prev.textverified_markup,
         ngn_to_usd_rate: response.data.ngn_to_usd_rate,
         // keep masked values from GET; only update if user types a new key
         daisysms_api_key: response.data.daisysms_api_key || '',
         smspool_api_key: response.data.smspool_api_key || '',
         fivesim_api_key: response.data.fivesim_api_key || '',
+        smsbower_api_key: response.data.smsbower_api_key || '',
+        textverified_api_key: response.data.textverified_api_key || '',
+        textverified_email: response.data.textverified_email || '',
+        // Provider enable/disable toggles
+        enable_provider_daisysms: response.data.enable_provider_daisysms ?? false,
+        enable_provider_smspool: response.data.enable_provider_smspool ?? true,
+        enable_provider_5sim: response.data.enable_provider_5sim ?? true,
+        enable_provider_tigersms: response.data.enable_provider_tigersms ?? true,
+        enable_provider_smsbower: response.data.enable_provider_smsbower ?? true,
+        enable_provider_textverified: response.data.enable_provider_textverified ?? true,
         paymentpoint_configured: response.data.paymentpoint_configured,
         payscribe_configured: response.data.payscribe_configured,
         plisio_configured: response.data.plisio_configured,
@@ -1859,6 +1883,9 @@ const AdminPanel = ({ user, setUser }) => {
       if (!body.daisysms_api_key || body.daisysms_api_key === '********') delete body.daisysms_api_key;
       if (!body.smspool_api_key || body.smspool_api_key === '********') delete body.smspool_api_key;
       if (!body.fivesim_api_key || body.fivesim_api_key === '********') delete body.fivesim_api_key;
+      // New provider keys
+      if (!body.smsbower_api_key || body.smsbower_api_key === '********') delete body.smsbower_api_key;
+      if (!body.textverified_api_key || body.textverified_api_key === '********') delete body.textverified_api_key;
       // Don't send masked PaymentPoint credentials
       if (!body.paymentpoint_api_key || body.paymentpoint_api_key === '********') delete body.paymentpoint_api_key;
       if (!body.paymentpoint_secret || body.paymentpoint_secret === '********') delete body.paymentpoint_secret;
@@ -5907,13 +5934,149 @@ const AdminPanel = ({ user, setUser }) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">SMS Providers</h2>
-                    <p className="text-xs text-slate-500 mt-1">Configure API keys, markup rates, and exchange settings</p>
+                    <p className="text-xs text-slate-500 mt-1">Configure API keys, markup rates, and enable/disable providers</p>
                   </div>
                   <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
                 </div>
+
+                {/* Provider Enable/Disable Toggles */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-emerald-600" />
+                      Provider Availability
+                    </CardTitle>
+                    <CardDescription className="text-xs">Enable or disable SMS providers for users</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* DaisySMS - Deprecated */}
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_daisysms ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🌼</span>
+                            <span className="font-semibold text-slate-800 text-sm">DaisySMS</span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pricing.enable_provider_daisysms}
+                              onChange={(e) => setPricing({ ...pricing, enable_provider_daisysms: e.target.checked })}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-slate-500">US Numbers (Being Deprecated)</p>
+                      </div>
+
+                      {/* SMS Pool */}
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_smspool ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🌍</span>
+                            <span className="font-semibold text-slate-800 text-sm">SMS Pool</span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pricing.enable_provider_smspool}
+                              onChange={(e) => setPricing({ ...pricing, enable_provider_smspool: e.target.checked })}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-slate-500">Global Numbers - Server 1</p>
+                      </div>
+
+                      {/* 5sim */}
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_5sim ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🌐</span>
+                            <span className="font-semibold text-slate-800 text-sm">5sim</span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pricing.enable_provider_5sim}
+                              onChange={(e) => setPricing({ ...pricing, enable_provider_5sim: e.target.checked })}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-slate-500">Global Numbers</p>
+                      </div>
+
+                      {/* Tiger SMS */}
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_tigersms ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🐯</span>
+                            <span className="font-semibold text-slate-800 text-sm">Tiger SMS</span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pricing.enable_provider_tigersms}
+                              onChange={(e) => setPricing({ ...pricing, enable_provider_tigersms: e.target.checked })}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-slate-500">US & Global Numbers</p>
+                      </div>
+
+                      {/* SMS Bower */}
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_smsbower ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">📱</span>
+                            <span className="font-semibold text-slate-800 text-sm">SMS Bower</span>
+                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[9px] font-semibold rounded">NEW</span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pricing.enable_provider_smsbower}
+                              onChange={(e) => setPricing({ ...pricing, enable_provider_smsbower: e.target.checked })}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-slate-500">US & Global Numbers (Budget)</p>
+                      </div>
+
+                      {/* Text Verified */}
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_textverified ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🔐</span>
+                            <span className="font-semibold text-slate-800 text-sm">Text Verified</span>
+                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[9px] font-semibold rounded">NEW</span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pricing.enable_provider_textverified}
+                              onChange={(e) => setPricing({ ...pricing, enable_provider_textverified: e.target.checked })}
+                              className="sr-only peer"
+                            />
+                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          </label>
+                        </div>
+                        <p className="text-[10px] text-slate-500">US Numbers (Premium)</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Provider Balances */}
                 <Card className="border border-slate-200 shadow-sm bg-white">
@@ -5961,7 +6124,7 @@ const AdminPanel = ({ user, setUser }) => {
                     <CardDescription className="text-xs">Control your profit margins on each provider</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">DaisySMS Markup (%)</Label>
                         <div className="relative">
@@ -5987,7 +6150,7 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">5sim/Global Server Markup (%)</Label>
+                        <Label className="text-xs font-semibold text-slate-600">5sim Markup (%)</Label>
                         <div className="relative">
                           <Input
                             type="number"
@@ -5997,7 +6160,30 @@ const AdminPanel = ({ user, setUser }) => {
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
                         </div>
-                        <p className="text-[9px] text-slate-400">Applied to 5sim/Global Server prices</p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">SMS Bower Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.smsbower_markup}
+                            onChange={(e) => setPricing({ ...pricing, smsbower_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Text Verified Markup (%)</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={pricing.textverified_markup}
+                            onChange={(e) => setPricing({ ...pricing, textverified_markup: parseFloat(e.target.value) || 0 })}
+                            className="h-9 text-sm bg-slate-50 border-slate-200 pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
+                        </div>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">NGN/USD Rate</Label>
@@ -6041,6 +6227,35 @@ const AdminPanel = ({ user, setUser }) => {
                       value={pricing.fivesim_api_key}
                       onChange={(val) => setPricing({ ...pricing, fivesim_api_key: val })}
                     />
+                    
+                    {/* New Providers */}
+                    <div className="pt-3 border-t border-slate-100">
+                      <p className="text-xs font-semibold text-slate-700 mb-3">New Providers</p>
+                    </div>
+                    <ApiKeyField
+                      label="SMS Bower API Key"
+                      value={pricing.smsbower_api_key}
+                      onChange={(val) => setPricing({ ...pricing, smsbower_api_key: val })}
+                    />
+                    <div className="space-y-3">
+                      <ApiKeyField
+                        label="Text Verified API Key"
+                        value={pricing.textverified_api_key}
+                        onChange={(val) => setPricing({ ...pricing, textverified_api_key: val })}
+                      />
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Text Verified Email</Label>
+                        <Input
+                          type="email"
+                          value={pricing.textverified_email}
+                          onChange={(e) => setPricing({ ...pricing, textverified_email: e.target.value })}
+                          placeholder="your@email.com"
+                          className="h-9 text-sm bg-slate-50 border-slate-200"
+                        />
+                        <p className="text-[9px] text-slate-400">Account email for Text Verified authentication</p>
+                      </div>
+                    </div>
+                    
                     <div className="pt-3 border-t border-slate-100">
                       <p className="text-[10px] text-slate-500 mb-2">Environment-based keys (managed outside dashboard):</p>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

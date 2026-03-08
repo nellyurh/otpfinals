@@ -1000,6 +1000,17 @@ class PricingConfig(BaseModel):
     tigersmsms_api_key: str = ""
     smspool_api_key: str = ""
     fivesim_api_key: str = ""
+    smsbower_api_key: str = ""  # SMS Bower API key
+    textverified_api_key: str = ""  # Text Verified API key
+    textverified_email: str = ""  # Text Verified account email
+    
+    # SMS Provider Enable/Disable Toggles
+    enable_provider_daisysms: bool = False  # DaisySMS (being deprecated)
+    enable_provider_smspool: bool = True  # SMS Pool (Server 1)
+    enable_provider_5sim: bool = True  # 5sim (Global)
+    enable_provider_tigersms: bool = True  # Tiger SMS
+    enable_provider_smsbower: bool = True  # SMS Bower (new)
+    enable_provider_textverified: bool = True  # Text Verified (new)
     # Payment Gateway API Keys
     paymentpoint_api_key: str = ""
     paymentpoint_secret: str = ""
@@ -1015,6 +1026,8 @@ class PricingConfig(BaseModel):
     daisysms_markup: float = 50.0
     smspool_markup: float = 50.0
     fivesim_markup: float = 50.0  # 5sim markup
+    smsbower_markup: float = 50.0  # SMS Bower markup
+    textverified_markup: float = 50.0  # Text Verified markup
     # Currency conversion
     ngn_to_usd_rate: float = 1500.0
     rub_to_usd_rate: float = 0.010  # 1 RUB = ~0.01 USD
@@ -1306,12 +1319,24 @@ class UpdatePricingRequest(BaseModel):
     daisysms_markup: Optional[float] = None
     smspool_markup: Optional[float] = None
     fivesim_markup: Optional[float] = None  # 5sim markup
+    smsbower_markup: Optional[float] = None  # SMS Bower markup
+    textverified_markup: Optional[float] = None  # Text Verified markup
     ngn_to_usd_rate: Optional[float] = None
     rub_to_usd_rate: Optional[float] = None
     # SMS Provider API Keys
     daisysms_api_key: Optional[str] = None
     smspool_api_key: Optional[str] = None
     fivesim_api_key: Optional[str] = None
+    smsbower_api_key: Optional[str] = None  # SMS Bower API key
+    textverified_api_key: Optional[str] = None  # Text Verified API key
+    textverified_email: Optional[str] = None  # Text Verified email
+    # SMS Provider Enable/Disable Toggles
+    enable_provider_daisysms: Optional[bool] = None
+    enable_provider_smspool: Optional[bool] = None
+    enable_provider_5sim: Optional[bool] = None
+    enable_provider_tigersms: Optional[bool] = None
+    enable_provider_smsbower: Optional[bool] = None
+    enable_provider_textverified: Optional[bool] = None
     # Payment Gateway API Keys
     paymentpoint_api_key: Optional[str] = None
     paymentpoint_secret: Optional[str] = None
@@ -2397,6 +2422,258 @@ async def poll_otp_tigersms(activation_id: str) -> Optional[str]:
         logger.error(f"TigerSMS OTP poll error: {str(e)}")
         return None
 
+# ============ SMS Bower Functions ============
+
+async def get_smsbower_services(country: Optional[str] = None) -> Optional[Dict]:
+    """Get SMS Bower services and pricing."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return None
+        
+        async with httpx.AsyncClient() as client:
+            params = {'api_key': api_key, 'action': 'getPrices'}
+            if country:
+                params['country'] = country
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params=params,
+                timeout=15.0
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+    except Exception as e:
+        logger.error(f"SMS Bower services error: {str(e)}")
+        return None
+
+async def purchase_number_smsbower(service: str, country: str = '0', max_price: Optional[float] = None) -> Optional[Dict]:
+    """Purchase a number from SMS Bower."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return None
+        
+        params = {
+            'api_key': api_key,
+            'action': 'getNumber',
+            'service': service,
+            'country': country
+        }
+        if max_price:
+            params['maxPrice'] = max_price
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params=params,
+                timeout=15.0
+            )
+            if response.status_code == 200:
+                text = response.text
+                if 'ACCESS_NUMBER' in text:
+                    # Format: ACCESS_NUMBER:activation_id:phone_number
+                    parts = text.split(':')
+                    if len(parts) >= 3:
+                        return {
+                            'success': True,
+                            'activation_id': parts[1].strip(),
+                            'phone_number': parts[2].strip(),
+                            'text': text
+                        }
+                return {'success': False, 'text': text}
+            return None
+    except Exception as e:
+        logger.error(f"SMS Bower purchase error: {str(e)}")
+        return None
+
+async def poll_otp_smsbower(activation_id: str) -> Optional[str]:
+    """Poll SMS Bower for OTP using activation ID."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return None
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'getStatus', 'id': activation_id},
+                timeout=10.0
+            )
+            if response.status_code == 200:
+                text = response.text
+                if 'STATUS_OK' in text:
+                    # Format: STATUS_OK:code
+                    parts = text.split(':')
+                    if len(parts) > 1:
+                        return parts[1].strip()
+            return None
+    except Exception as e:
+        logger.error(f"SMS Bower OTP poll error: {str(e)}")
+        return None
+
+async def cancel_number_smsbower(activation_id: str) -> bool:
+    """Cancel SMS Bower order."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return False
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params={'api_key': api_key, 'action': 'setStatus', 'id': activation_id, 'status': 8},
+                timeout=10.0
+            )
+            return 'ACCESS_CANCEL' in response.text
+    except Exception as e:
+        logger.error(f"SMS Bower cancel error: {str(e)}")
+        return False
+
+# ============ Text Verified Functions ============
+
+async def get_textverified_token() -> Optional[str]:
+    """Get Text Verified bearer token."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        api_key = config.get('textverified_api_key', '') if config else ''
+        email = config.get('textverified_email', '') if config else ''
+        if not api_key or not email:
+            return None
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                'https://api.textverified.com/v2/auth',
+                auth=(email, api_key),
+                headers={'Accept': 'application/json'},
+                timeout=15.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('token')
+            logger.error(f"Text Verified auth error: {response.status_code} - {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Text Verified token error: {str(e)}")
+        return None
+
+async def get_textverified_services() -> Optional[List[Dict]]:
+    """Get Text Verified services list."""
+    try:
+        token = await get_textverified_token()
+        if not token:
+            return None
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://api.textverified.com/v2/services',
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Accept': 'application/json'
+                },
+                timeout=15.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('services', [])
+            return None
+    except Exception as e:
+        logger.error(f"Text Verified services error: {str(e)}")
+        return None
+
+async def purchase_number_textverified(service: str) -> Optional[Dict]:
+    """Purchase a number from Text Verified."""
+    try:
+        token = await get_textverified_token()
+        if not token:
+            return None
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                'https://api.textverified.com/v2/verifications',
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                json={
+                    'service': service,
+                    'action': 'buy'
+                },
+                timeout=20.0
+            )
+            if response.status_code == 200 or response.status_code == 201:
+                data = response.json()
+                return {
+                    'success': True,
+                    'verification_id': data.get('verification_id') or data.get('id'),
+                    'phone_number': data.get('number'),
+                    'cost': data.get('cost')
+                }
+            logger.error(f"Text Verified purchase error: {response.status_code} - {response.text}")
+            return {'success': False, 'error': response.text}
+    except Exception as e:
+        logger.error(f"Text Verified purchase error: {str(e)}")
+        return None
+
+async def poll_otp_textverified(verification_id: str) -> Optional[str]:
+    """Poll Text Verified for OTP."""
+    try:
+        token = await get_textverified_token()
+        if not token:
+            return None
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f'https://api.textverified.com/v2/verifications/{verification_id}/sms',
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Accept': 'application/json'
+                },
+                timeout=10.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                sms_list = data.get('sms', [])
+                if sms_list:
+                    # Extract code from first SMS
+                    sms_text = sms_list[0].get('text', '')
+                    # Try to extract numeric code
+                    import re
+                    match = re.search(r'\b(\d{4,8})\b', sms_text)
+                    if match:
+                        return match.group(1)
+                    return sms_text[:20]  # Return first 20 chars if no code found
+            return None
+    except Exception as e:
+        logger.error(f"Text Verified OTP poll error: {str(e)}")
+        return None
+
+async def cancel_number_textverified(verification_id: str) -> bool:
+    """Cancel Text Verified order."""
+    try:
+        token = await get_textverified_token()
+        if not token:
+            return False
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                f'https://api.textverified.com/v2/verifications/{verification_id}',
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Accept': 'application/json'
+                },
+                timeout=10.0
+            )
+            return response.status_code in [200, 204]
+    except Exception as e:
+        logger.error(f"Text Verified cancel error: {str(e)}")
+        return False
+
 async def cancel_number_provider(provider: str, activation_id: str) -> bool:
     """Cancel a number order with the provider."""
     try:
@@ -2436,7 +2713,6 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                     timeout=10.0
                 )
                 return resp.status_code == 200
-
         elif provider == 'tigersms':
             api_key = get_api_key(config, 'tigersms_api_key', TIGERSMS_API_KEY)
             async with httpx.AsyncClient() as client:
@@ -2446,6 +2722,10 @@ async def cancel_number_provider(provider: str, activation_id: str) -> bool:
                     timeout=10.0
                 )
                 return 'ACCESS_CANCEL' in response.text
+        elif provider == 'smsbower':
+            return await cancel_number_smsbower(activation_id)
+        elif provider == 'textverified':
+            return await cancel_number_textverified(activation_id)
         return False
     except Exception as e:
         logger.error(f"Cancel number error: {str(e)}")
@@ -2724,6 +3004,10 @@ async def otp_polling_task(order_id: str):
                 otp = await poll_otp_tigersms(order['activation_id'])
             elif order['provider'] == '5sim' and order.get('activation_id'):
                 otp = await poll_otp_5sim(order['activation_id'])
+            elif order['provider'] == 'smsbower' and order.get('activation_id'):
+                otp = await poll_otp_smsbower(order['activation_id'])
+            elif order['provider'] == 'textverified' and order.get('activation_id'):
+                otp = await poll_otp_textverified(order['activation_id'])
 
             if otp:
                 await db.sms_orders.update_one(
@@ -3926,6 +4210,197 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
             return {'success': False, 'message': 'Failed to fetch TigerSMS services'}
     except Exception as e:
         logger.error(f"TigerSMS service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+# ============ SMS Bower Service Endpoints ============
+
+@api_router.get("/services/smsbower")
+async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user), country: Optional[str] = None):
+    """Get SMS Bower services with pricing."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        # Check if provider is enabled
+        if not config.get('enable_provider_smsbower', True):
+            return {'success': False, 'message': 'SMS Bower is currently disabled'}
+        
+        api_key = config.get('smsbower_api_key', '') if config else ''
+        if not api_key:
+            return {'success': False, 'message': 'SMS Bower API key not configured'}
+        
+        markup_percent = config.get('smsbower_markup', 50.0) if config else 50.0
+        ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+        
+        async with httpx.AsyncClient() as client:
+            params = {'api_key': api_key, 'action': 'getPrices'}
+            if country:
+                params['country'] = country
+            
+            response = await client.get(
+                'https://smsbower.online/stubs/handler_api.php',
+                params=params,
+                timeout=20.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if country:
+                    # Return services for specific country
+                    services = []
+                    if country in data:
+                        for service_code, service_info in data[country].items():
+                            base_price = float(service_info.get('cost', 0))
+                            if base_price <= 0:
+                                continue
+                            final_price = base_price * (1 + markup_percent / 100)
+                            final_price_ngn = final_price * ngn_rate
+                            
+                            services.append({
+                                'value': service_code,
+                                'label': service_info.get('name', service_code),
+                                'name': service_info.get('name', service_code),
+                                'base_price': base_price,
+                                'price_usd': final_price,
+                                'price_ngn': final_price_ngn,
+                                'count': service_info.get('count', 0)
+                            })
+                    
+                    services.sort(key=lambda x: x['name'])
+                    return {'success': True, 'services': services, 'country': country}
+                else:
+                    # Return country list
+                    countries = [
+                        {'value': code, 'label': code.upper(), 'name': code.upper()}
+                        for code in data.keys()
+                    ]
+                    countries.sort(key=lambda x: x['name'])
+                    return {'success': True, 'countries': countries}
+        
+        return {'success': False, 'message': 'Failed to fetch SMS Bower services'}
+    except Exception as e:
+        logger.error(f"SMS Bower service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+# ============ Text Verified Service Endpoints ============
+
+@api_router.get("/services/textverified")
+async def get_textverified_services_endpoint(user: dict = Depends(get_current_user)):
+    """Get Text Verified services (US only)."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        
+        # Check if provider is enabled
+        if not config.get('enable_provider_textverified', True):
+            return {'success': False, 'message': 'Text Verified is currently disabled'}
+        
+        api_key = config.get('textverified_api_key', '') if config else ''
+        email = config.get('textverified_email', '') if config else ''
+        if not api_key or not email:
+            return {'success': False, 'message': 'Text Verified credentials not configured'}
+        
+        markup_percent = config.get('textverified_markup', 50.0) if config else 50.0
+        ngn_rate = config.get('ngn_to_usd_rate', 1500.0) if config else 1500.0
+        
+        # Get bearer token
+        token = await get_textverified_token()
+        if not token:
+            return {'success': False, 'message': 'Failed to authenticate with Text Verified'}
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                'https://api.textverified.com/v2/services',
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Accept': 'application/json'
+                },
+                timeout=20.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                service_list = data.get('services', []) if isinstance(data, dict) else data
+                
+                services = []
+                for svc in service_list:
+                    base_price = float(svc.get('cost', svc.get('price', 0)) or 0)
+                    if base_price <= 0:
+                        base_price = 0.50  # Default price if not provided
+                    
+                    final_price = base_price * (1 + markup_percent / 100)
+                    final_price_ngn = final_price * ngn_rate
+                    
+                    services.append({
+                        'value': svc.get('service', svc.get('name', '')),
+                        'label': svc.get('name', svc.get('service', '')),
+                        'name': svc.get('name', svc.get('service', '')),
+                        'base_price': base_price,
+                        'price_usd': final_price,
+                        'price_ngn': final_price_ngn,
+                        'available': svc.get('available', True)
+                    })
+                
+                services.sort(key=lambda x: x['name'])
+                return {'success': True, 'services': services}
+        
+        return {'success': False, 'message': 'Failed to fetch Text Verified services'}
+    except Exception as e:
+        logger.error(f"Text Verified service fetch error: {str(e)}")
+        return {'success': False, 'message': str(e)}
+
+# ============ Provider Status Endpoint ============
+
+@api_router.get("/services/providers/status")
+async def get_providers_status(user: dict = Depends(get_current_user)):
+    """Get status of all SMS providers (enabled/disabled)."""
+    try:
+        config = await db.pricing_config.find_one({}, {'_id': 0})
+        if not config:
+            config = {}
+        
+        return {
+            'success': True,
+            'providers': {
+                'daisysms': {
+                    'enabled': config.get('enable_provider_daisysms', False),
+                    'name': 'DaisySMS',
+                    'description': 'US Numbers (Legacy)',
+                    'type': 'us'
+                },
+                'smspool': {
+                    'enabled': config.get('enable_provider_smspool', True),
+                    'name': 'SMS Pool',
+                    'description': 'International Numbers',
+                    'type': 'global'
+                },
+                '5sim': {
+                    'enabled': config.get('enable_provider_5sim', True),
+                    'name': '5sim',
+                    'description': 'Global Numbers',
+                    'type': 'global'
+                },
+                'tigersms': {
+                    'enabled': config.get('enable_provider_tigersms', True),
+                    'name': 'Tiger SMS',
+                    'description': 'US & Global Numbers',
+                    'type': 'both'
+                },
+                'smsbower': {
+                    'enabled': config.get('enable_provider_smsbower', True),
+                    'name': 'SMS Bower',
+                    'description': 'US & Global Numbers',
+                    'type': 'both'
+                },
+                'textverified': {
+                    'enabled': config.get('enable_provider_textverified', True),
+                    'name': 'Text Verified',
+                    'description': 'US Numbers (Premium)',
+                    'type': 'us'
+                }
+            }
+        }
+    except Exception as e:
+        logger.error(f"Provider status error: {str(e)}")
         return {'success': False, 'message': str(e)}
 
 
@@ -9444,7 +9919,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
-        "reseller_api_base_url": config.get("reseller_api_base_url", "https://billhub-finance-1.preview.emergentagent.com"),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://sms-provider-rework.preview.emergentagent.com"),
         "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
         "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
         "support_email": config.get("support_email", "support@smsrelay.com"),
