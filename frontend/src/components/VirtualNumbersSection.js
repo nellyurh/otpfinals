@@ -1005,6 +1005,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     Select Country
                   </label>
                   <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
                     menuPortalTarget={document.body}
                     styles={selectStyles}
                     value={selectedCountry}
@@ -1050,6 +1052,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     Select Service
                   </label>
                   <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
                     menuPortalTarget={document.body}
                     styles={selectStyles}
                     value={selectedService}

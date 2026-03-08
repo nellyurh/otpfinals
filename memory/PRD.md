@@ -3,6 +3,7 @@
 ## Changelog
 - **2026-03-08 (Session 15)**: SMS Provider Database Caching Implementation
   - **FIXED:** Tiger SMS and SMS Bower providers now functional with database caching
+  - **FIXED:** Service dropdown wasn't opening - missing className and classNamePrefix on Select components
   - **NEW:** Database caching for Tiger SMS - 20,960 services cached across 200 countries
   - **NEW:** Database caching for SMS Bower - requires API key configuration in Admin Panel
   - **NEW:** Admin endpoints for provider sync:
@@ -17,6 +18,7 @@
   - **IMPROVED:** `/api/services/smsbower/countries` endpoint for SMS Bower countries
   - **IMPROVED:** Purchase endpoint handles new provider server names (tigersms_us, smsbower_us, etc.)
   - **VERIFIED:** UI correctly hides provider names - shows generic names (Premium Server, Server 1, Budget Server, Fast Server)
+  - **VERIFIED:** Service dropdown opens and shows 128 Tiger SMS USA services with prices in NGN
   - Files modified: `/app/backend/server.py`, `/app/frontend/src/pages/AdminPanel.js`, `/app/frontend/src/components/VirtualNumbersSection.js`
 
 - **2026-03-08 (Session 14)**: SMS Provider Integration - Dropdown-Based Navigation
