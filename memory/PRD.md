@@ -1,6 +1,23 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-03-08 (Session 16)**: SMS Provider Service Names Rework (P0 Complete)
+  - **FIXED:** SMS Bower integration completely refactored to use correct API endpoints:
+    - `getServicesList` endpoint for fetching service names (code → full name mapping)
+    - `getPricesV3` endpoint for detailed pricing with provider breakdown
+    - `getCountries` endpoint for country name mapping (code → full name)
+  - **FIXED:** Tiger SMS services now show full names (WhatsApp, Telegram, etc.) instead of codes (wa, tg)
+    - Expanded SERVICE_NAMES dictionary with 400+ service mappings from Tiger SMS official API docs
+    - Services like Claude (acz), ChatGPT (dr), BIGO LIVE (bl), etc. all properly named
+  - **FIXED:** SMS Bower countries show proper names (Afghanistan, USA, etc.) not numeric codes (74, 187)
+  - **NEW:** Backend caching functions:
+    - `get_smsbower_service_names()` - Caches service names from getServicesList endpoint (1 hour cache)
+    - `get_smsbower_country_names()` - Caches country names from getCountries endpoint (1 hour cache)
+  - **IMPROVED:** Admin sync endpoint now loads both service names and country names for SMS Bower
+  - **VERIFIED:** Backend test pass rate: 93% (13 passed, 1 skipped)
+  - **VERIFIED:** Frontend test pass rate: 100%
+  - Files modified: `/app/backend/server.py`
+
 - **2026-03-08 (Session 15)**: SMS Provider Database Caching Implementation
   - **FIXED:** Tiger SMS and SMS Bower providers now functional with database caching
   - **FIXED:** Service dropdown wasn't opening - missing className and classNamePrefix on Select components
