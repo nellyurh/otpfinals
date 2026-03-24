@@ -5987,7 +5987,7 @@ async def purchase_number(
                     else:
                         raise HTTPException(status_code=500, detail="Failed to fetch pricing")
             else:
-                raise HTTPException(status_code=400, detail="SMS Bower API key not configured")
+                raise HTTPException(status_code=400, detail="Server API not configured. Please contact admin.")
         else:
             cached_service = await db.cached_services.find_one({
                 'provider': provider,
@@ -6081,7 +6081,7 @@ async def purchase_number(
         fivesim_key = get_api_key(config, 'fivesim_api_key', FIVESIM_API_KEY)
         if not fivesim_key:
             logger.error("FIVESIM_API_KEY not configured")
-            raise HTTPException(status_code=500, detail="Server API not configured. Please set 5sim API key in Admin → SMS Providers")
+            raise HTTPException(status_code=500, detail="Server API not configured. Please contact admin.")
         headers = {
             'Authorization': f'Bearer {fivesim_key}',
             'Accept': 'application/json'
@@ -13428,7 +13428,7 @@ async def reseller_buy_number(request: Request):
                 provider_order_id = result.get('activation_id')
                 phone_number = result.get('phone_number')
             else:
-                raise HTTPException(status_code=400, detail="Failed to purchase number from SMS Bower")
+                raise HTTPException(status_code=400, detail="No numbers available. Please try another server.")
         
         elif provider == 'textverified':
             # Text Verified purchase (US only)
@@ -13437,7 +13437,7 @@ async def reseller_buy_number(request: Request):
                 provider_order_id = result.get('verification_id')
                 phone_number = result.get('phone_number')
             else:
-                raise HTTPException(status_code=400, detail="Failed to purchase number from Text Verified")
+                raise HTTPException(status_code=400, detail="No numbers available. Please try another server.")
         
         elif provider == 'tigersms':
             # Tiger SMS purchase
@@ -13446,7 +13446,7 @@ async def reseller_buy_number(request: Request):
                 provider_order_id = result.get('activation_id')
                 phone_number = result.get('phone_number')
             else:
-                raise HTTPException(status_code=400, detail="Failed to purchase number from Tiger SMS")
+                raise HTTPException(status_code=400, detail="No numbers available. Please try another server.")
                 
     except HTTPException:
         raise

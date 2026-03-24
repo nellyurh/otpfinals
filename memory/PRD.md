@@ -1,36 +1,29 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-03-24 (Session 17)**: P0 Bug Fixes + Travel Section Verification
-  - **FIXED:** Tiger SMS phone number parsing — `str(result).split(':')` on a parsed dict produced garbage. Now uses `result.get('phone_number')` directly.
-  - **FIXED:** Tiger SMS purchase condition check — uses `result.get('success')` instead of fragile string check.
-  - **FIXED:** SMS Bower V2 API JSON parsing — `getNumberV2` returns JSON `{activationId, phoneNumber, ...}` but code only checked for `ACCESS_NUMBER:id:phone` text format. Now parses both JSON and legacy formats.
-  - **FIXED:** Error messages sanitized — no longer expose provider names (e.g., 'SMS Bower error', 'Tiger SMS error'). Now show generic messages like "No numbers available. Please try another server."
-  - **FIXED:** Text Verified timer changed from 10 min default to 5 min max.
-  - **FIXED:** Phone number formatting — added `formatPhoneNumber()` helper that cleans malformed data (e.g., `'999...', 'phone_number'`) and adds `+` prefix to all numbers.
-  - **FIXED:** Country display added — `getCountryName()` maps numeric/text codes to readable country names. Shown in both mobile cards and desktop table.
-  - **FIXED:** Server name column added to verification table — shows Server 1, Budget Server, Fast Server, Premium Server.
-  - **FIXED:** Country column added to desktop verification table.
-  - **FIXED:** Removed colored background from bottom sheet modal cards (bg-white instead of bg-slate-100).
-  - **FIXED:** Updated `PROVIDER_TO_SERVER` mapping and `list_orders` server_names to match frontend names.
-  - **VERIFIED:** Travel Section overhaul working correctly — dynamic search, multi-city, Flights/Stays/Car Rentals/Attractions tabs, theme colors.
+- **2026-03-24 (Session 17b)**: API Key Decryption + ₦500 Minimum Price Fix
+  - **FIXED:** SMS Bower API keys — All 10 occurrences of `config.get('smsbower_api_key')` changed to `get_api_key(config, 'smsbower_api_key', '')` which handles Fernet decryption. This was causing SMS Bower failures on the deployed Contabo server where keys are encrypted.
+  - **FIXED:** Tiger SMS API keys already used `get_api_key()` correctly (8 occurrences verified).
+  - **FIXED:** ₦500 minimum price enforced across ALL servers:
+    - Backend: `calculate-price` and `purchase` endpoints now enforce `final_price_ngn >= 500`
+    - Frontend: `enforceMinPrice()` helper applied to ALL 13+ price display points (service dropdowns, total cost, pool selection, operator selection, bottom sheet modal)
+  - **FIXED:** All error messages sanitized — zero provider names (SMS Bower, Tiger SMS, Text Verified, 5sim) exposed in user-facing errors. Generic messages like "No numbers available. Please try another server."
+  - **FIXED:** SMS Bower V2 API JSON parsing — `getNumberV2` returns JSON `{activationId, phoneNumber}`, now parsed correctly alongside legacy `ACCESS_NUMBER:id:phone` format.
+  - **FIXED:** Text Verified timer set to 5 minutes (was 10 min default).
+  - **FIXED:** Phone number formatting — `formatPhoneNumber()` cleans malformed data and adds `+` prefix.
+  - **FIXED:** Country display added to order cards (mobile + desktop).
+  - **FIXED:** Server name column in verification table.
   - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`
 
-- **2026-03-08 (Session 16b)**: Provider/Operator Selection Modal Implementation
-  - Bottom sheet modal for 5sim and SMS Bower operator/provider selection
-  - Timers: 5sim=20min, SMS Bower=25min, Text Verified=5min, default=10min
-  - Backend endpoints for operator/provider fetching
-  - Purchase flow includes selected operator
-
-- **2026-03-08 (Session 16)**: SMS Provider Service Names Rework
-  - SMS Bower integration refactored to correct API endpoints
-  - Tiger SMS full service names (400+ mappings)
+- **2026-03-24 (Session 17a)**: Tiger SMS Phone Parsing + Travel Verification
+  - Fixed Tiger SMS phone number parsing (str(dict).split(':') bug)
+  - Verified Travel Section overhaul working correctly
 
 ## Known Issues
 
 ### P1 (High Priority)
 - **"Make Admin" button** not working on live server
-- **Bill Payments PIN**: PIN protection not yet implemented for Data, Airtime, TV, Betting
+- **Bill Payments PIN**: PIN protection not yet implemented
 
 ### P2 (Medium Priority)
 - Reseller Portal horizontal scroll issue on mobile
@@ -39,25 +32,6 @@
 - Payscribe webhook fee handling untested
 - Refactor monolithic server.py into modular routers
 - Break down large React components
-
-## Upcoming Tasks
-- **P0:** Secure all bill payments with a transaction PIN
-- **P1:** Refactor monolithic server.py using APIRouter
-- **P2:** Break down large React components
-
-## Future/Backlog
-- Gift card store filtering by category/brand
-- GitHub Actions CI/CD workflow
-- Account lockout after failed login attempts
-
-## Technology Stack
-- **Frontend**: React, Tailwind CSS, shadcn/ui
-- **Backend**: FastAPI, Python
-- **Database**: MongoDB
-- **Authentication**: JWT + Transaction PIN
-- **Payments**: Ercaspay, Payscribe, PaymentPoint, Plisio
-- **SMS Providers**: 5sim, smspool, daisysms, Tiger SMS, SMS Bower, Text Verified
-- **Travel**: Amadeus API
 
 ## Timer Durations
 | Provider | Timer |
@@ -78,8 +52,12 @@
 | DaisySMS | US Server |
 | SMSPool | Server 1 |
 
+## Price Rules
+- **Minimum ₦500** enforced on ALL services across ALL servers
+- Applied at: Backend (calculate-price, purchase) + Frontend (all display points)
+
 ## Files of Reference
 - /app/backend/server.py — Main backend
-- /app/frontend/src/components/VirtualNumbersSection.js — Virtual numbers with provider modal
-- /app/frontend/src/components/TravelSection.js — Travel booking section
+- /app/frontend/src/components/VirtualNumbersSection.js — Virtual numbers
+- /app/frontend/src/components/TravelSection.js — Travel section
 - /app/frontend/src/pages/NewDashboard.js — Main dashboard
