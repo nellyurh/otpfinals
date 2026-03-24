@@ -11,7 +11,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tiger-sms-orders.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://pricing-fix-test-1.preview.emergentagent.com')
 
 # Test credentials
 ADMIN_EMAIL = "admin@smsrelay.com"

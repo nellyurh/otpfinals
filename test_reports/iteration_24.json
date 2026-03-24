@@ -1,0 +1,105 @@
+{
+  "summary": "Iteration 24 testing complete. Verified ₦500 minimum price floor and promo code support for new provider server names (tigersms_us, tigersms_global, smsbower_us, smsbower_global, 5sim_us, 5sim_global, textverified_us). All 26 backend tests passed (1 skipped due to missing cache data). Frontend code verified to have promo code input with correct data-testid attributes.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration24_pricing_promo.py",
+    "/app/test_reports/pytest/pytest_results_iter24.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration24_pricing_promo.py"
+  ],
+  "success_rate": {
+    "backend": "100% (26/27 tests passed, 1 skipped)",
+    "frontend": "Code verified - promo input present with data-testid"
+  },
+  "test_credentials": {
+    "test_user": {
+      "email": "testfloor@test.com",
+      "password": "Test1234!",
+      "balance": "₦5,000.00"
+    },
+    "promo_codes": {
+      "SAVE40": "40% off, reusable",
+      "TEST10": "10% off, one-time per user"
+    }
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 24 fixes verified. The calculate-price endpoint's server_map now includes: tigersms_us, tigersms_global, smsbower_us, smsbower_global, textverified_us, 5sim_us, 5sim_global. The ₦500 minimum floor is applied at lines 5862-5865 in calculate-price and lines 6104-6106 in purchase. Frontend promo code input is at lines 1378-1455 with data-testid='provider-promo-input' and data-testid='provider-promo-apply-btn'.",
+  "features_tested": {
+    "calculate_price_new_servers": {
+      "status": "PASS",
+      "details": "All new server names (tigersms_us, tigersms_global, smsbower_us, smsbower_global, 5sim_us, 5sim_global, textverified_us) are recognized and return valid prices",
+      "code_location": "server.py lines 5760-5771"
+    },
+    "calculate_price_500_floor": {
+      "status": "PASS",
+      "details": "₦500 minimum floor applied for all servers - cheap services return ₦500.0",
+      "code_location": "server.py lines 5862-5865"
+    },
+    "calculate_price_old_servers": {
+      "status": "PASS",
+      "details": "Old server names (us_server, server1, server2) still work correctly",
+      "code_location": "server.py lines 5760-5763"
+    },
+    "promo_code_on_new_providers": {
+      "status": "PASS",
+      "details": "SAVE40 promo code works on tigersms_us, smsbower_global, 5sim_us, textverified_us",
+      "code_location": "server.py lines 5867-5887"
+    },
+    "purchase_endpoint_500_floor": {
+      "status": "PASS",
+      "details": "Purchase endpoint has ₦500 floor at lines 6104-6106",
+      "code_location": "server.py lines 6104-6106"
+    },
+    "frontend_promo_input_us_numbers": {
+      "status": "PASS",
+      "details": "Promo code input present in provider cards section for US Numbers mode",
+      "code_location": "VirtualNumbersSection.js lines 1378-1455"
+    },
+    "frontend_promo_input_other_countries": {
+      "status": "PASS",
+      "details": "Promo code input present in provider cards section for Other Countries mode",
+      "code_location": "VirtualNumbersSection.js lines 1378-1455"
+    },
+    "frontend_promo_apply_button": {
+      "status": "PASS",
+      "details": "Apply button calls calculate-price with correct server name format (provider_us or provider_global)",
+      "code_location": "VirtualNumbersSection.js lines 1401-1443"
+    }
+  },
+  "api_verification_summary": {
+    "GET /api/health": "PASS - Returns healthy status",
+    "POST /api/auth/login": "PASS - Returns token for testfloor@test.com",
+    "POST /api/orders/calculate-price (tigersms_us)": "PASS - Returns ₦500 floor price",
+    "POST /api/orders/calculate-price (tigersms_global)": "PASS - Returns ₦500 floor price",
+    "POST /api/orders/calculate-price (smsbower_us)": "PASS - Returns ₦500 floor price",
+    "POST /api/orders/calculate-price (smsbower_global)": "PASS - Returns ₦500 floor price",
+    "POST /api/orders/calculate-price (5sim_us)": "PASS - Returns ₦500 floor price",
+    "POST /api/orders/calculate-price (textverified_us)": "PASS - Returns ₦500 floor price",
+    "POST /api/orders/calculate-price (us_server)": "PASS - Old server still works",
+    "POST /api/orders/calculate-price (server1)": "PASS - Old server still works",
+    "POST /api/orders/calculate-price (server2)": "PASS - Old server still works",
+    "POST /api/orders/calculate-price with promo": "PASS - Promo codes apply correctly"
+  },
+  "code_verification_summary": {
+    "server_map_calculate_price": "Lines 5760-5771: Includes tigersms_us, tigersms_global, smsbower_us, smsbower_global, textverified_us, 5sim_us, 5sim_global",
+    "server_map_purchase": "Lines 5918-5930: Same server names supported in purchase endpoint",
+    "500_floor_calculate_price": "Lines 5862-5865: if final_price_ngn > 0 and final_price_ngn < 500: final_price_ngn = 500.0",
+    "500_floor_purchase": "Lines 6104-6106: Same floor logic in purchase endpoint",
+    "promo_discount_function": "Lines 5625-5688: _apply_promo_discount handles percent, fixed_ngn, fixed_usd discount types",
+    "frontend_promo_input": "Lines 1382-1398: Input with data-testid='provider-promo-input'",
+    "frontend_promo_apply": "Lines 1400-1444: Button with data-testid='provider-promo-apply-btn' calls calculate-price API"
+  }
+}

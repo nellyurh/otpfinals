@@ -1,65 +1,54 @@
 <analysis>**original_problem_statement:**
-The user is building BillHub, a comprehensive financial services application. The initial task was a major rework of the SMS provider services, which has now evolved into a series of detailed UI/UX enhancements for the Virtual Numbers feature.
+The user is building BillHub, a comprehensive financial services application. The initial task was a major rework of the SMS provider services, which has now evolved into a series of detailed UI/UX enhancements and critical bug fixes for the Virtual Numbers feature.
 
-The latest user requests are:
-1.  A bottom-sheet modal for selecting sub-providers (operators) for 5sim and SMS Bower, showing individual prices and delivery rates.
-2.  Adjust timers for active orders: 20 minutes for 5sim and 25 minutes for SMS Bower.
-3.  Change the UI flow to first show services without prices, and then open the provider selection modal automatically when a service is selected.
-4.  Style the modal to be responsive, full-width, and match a user-provided reference image, using admin-defined colors.
-5.  Implement specific business logic: sort 5sim operators by the highest success rate, sort SMS Bower providers by the lowest price, and enforce a minimum price of ₦500 for all services.
-6.  Fix bugs in the active order display for Tiger SMS purchases: the phone number format is incorrect, the server name is missing, and the background color of the modal cards needs to be removed.
+Key requirements and issues addressed include:
+1.  **Provider Anonymization:** A critical requirement was to hide all underlying SMS provider names (e.g., , ) from the user. This involved sanitizing API responses, removing provider fields, and renaming API URL paths to generic names like .
+2.  **API Key Security:** A severe bug was causing API keys to be double-encrypted in the admin panel. This was fixed by ensuring sensitive keys were properly masked in GET responses and adding guards to the PUT/save logic to prevent re-encrypting already encrypted values.
+3.  **Pricing & Billing:**
+    *   A business rule dictates that any service priced below ₦500 should be rounded up to a floor of ₦500. There have been multiple bugs ensuring this is reflected on the display and, most importantly, correctly debited from the user's wallet.
+    *   A price mismatch for the Text Verified service was fixed (purchase was using a hardcoded price, while the display used the live API price).
+    *   A bug preventing promo code discounts from being applied was fixed.
+4.  **Order Flow & UI:**
+    *   Fixed OTP polling for Text Verified, which was failing due to an outdated API response parsing logic.
+    *   Fixed an issue where orders with a received OTP would disappear from the UI because the list was filtering only for  status.
+    *   Corrected the display and copy-to-clipboard behavior for Text Verified phone numbers (display with , copy raw number).
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has successfully implemented the complex SMS provider feature with a multi-provider selection flow.
--   The frontend () features a dynamic UI that shows services, opens a responsive bottom-sheet modal for operator selection (for 5sim & SMS Bower), and displays active orders with custom timers.
--   The modal has been styled multiple times to meet user specifications, including using admin-defined colors and a layout from a reference image.
--   The backend () has new endpoints to fetch operators/providers for specific services and has updated purchase logic to handle the operator selection.
--   Business logic for sorting providers/operators and enforcing a ₦500 minimum price is implemented on the frontend.
+The Virtual Numbers feature is highly functional but has undergone numerous iterative fixes.
+-   The backend () now correctly handles API key encryption/decryption, anonymizes provider data in all user-facing responses, and has robust (though complex) pricing logic. All provider-specific API endpoints have been renamed to generic server names.
+-   The frontend () has been updated to use the new anonymized API endpoints and includes specific UI logic for displaying and copying Text Verified numbers.
+-   The admin panel's security flaw regarding double-encryption of API keys has been resolved.
 
 **Last working item**:
--   Last item agent was working: The user reported three issues with the active order display for Tiger SMS purchases:
-    1.  The phone number is displayed incorrectly (e.g., ).
-    2.  The name of the server the number was purchased from (e.g., Tiger SMS) is not being displayed on the order card.
-    3.  The cards within the bottom-sheet selection modal have a colored background that should be removed.
-    The agent had begun investigating the cause, identifying that the phone number format issue likely stems from how the Tiger SMS API response is parsed and stored in the backend  function.
--   Status: IN PROGRESS
--   Agent Testing Done: N
--   Which testing method agent to use? both
+-   Last item agent was working: The user reported that while the display price correctly shows the ₦500 floor, the amount debited from their wallet is still the original, lower price.
+-   Status: USER VERIFICATION PENDING
+-   Agent Testing Done: Y (The agent inspected the code and existing database orders, concluding that the logic is correct for *new* purchases and the user was likely viewing old transaction data. However, a definitive end-to-end test purchase was not performed.)
+-   Which testing method agent to use? backend testing agent
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Fix active order display for Tiger SMS. (P0, HIGHEST)
--   **Issue 2:** Remove colored background from the bottom sheet modal cards. (P0)
--   **Issue 3:** The P0 task to verify the completely overhauled Travel Section (UI, dynamic search, pricing) has been pending. (P1)
--   **Issue 4:** Make Admin button is not working on the live server. (P1)
--   **Issue 5:** Reseller Portal UI has a horizontal scroll issue on mobile. (P2)
--   **Issue 6:** End-to-end user flow for virtual card creation is not fully tested. (P2)
--   **Issue 7:** Implemented KYC verification retry flow is untested. (P2)
--   **Issue 8:** Implemented Payscribe webhook fee handling is untested. (P2)
+-   **Issue 1:** Verify wallet debit logic for ₦500 minimum price floor. (P0, HIGHEST)
+-   **Issue 2:** Make Admin button is not working on the live server. (P1)
+-   **Issue 3:** Reseller Portal UI has a horizontal scroll issue on mobile. (P2)
+-   **Issue 4:** End-to-end user flow for virtual card creation is not fully tested. (P2)
+-   **Issue 5:** Implemented KYC verification retry flow is untested. (P2)
+-   **Issue 6:** Implemented Payscribe webhook fee handling is untested. (P2)
 
 **Issues Detail:**
--   **Issue 1: Fix active order display for Tiger SMS.**
-    -   **Attempted fixes:** None. The agent was investigating the code.
+-   **Issue 1: Verify wallet debit logic for ₦500 minimum price floor.**
+    -   **Attempted fixes:** The previous agent reviewed  and concluded the logic ( is modified before being used for ) is correct for new purchases.
     -   **Next debug checklist:**
-        1.  **Backend ():** Inspect the  function. The Tiger SMS API returns data as . The parsing logic seems to exist, but the way the result is stored in the  collection is likely incorrect. Trace the  value from API response to database storage and fix the data assignment.
-        2.  **Backend ():** Modify the main  function to explicitly save the provider name (e.g., 'tigersms') to a  or  field in the MongoDB  document upon creation.
-        3.  **Frontend ():** In the active orders rendering loop (around line 1840), add JSX to display the  field.
-        4.  **Frontend ():** Correct the display of  to ensure only the number is rendered once the backend storage is fixed.
-    -   **Why fix this issue and what will be achieved with the fix?** The current display is broken, making purchased numbers unusable and providing an incomplete user experience.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Both
--   **Issue 2: Remove colored background from bottom sheet modal cards.**
-    -   **Attempted fixes:** The agent has styled the modal multiple times. This is a new styling request.
-    -   **Next debug checklist:**
-        1.  In , locate the JSX for the individual provider/operator cards inside the bottom sheet modal (around line 2080).
-        2.  Remove the  and  classes from the card's main .
-    -   **Why fix this issue and what will be achieved with the fix?** To align the UI with the user's latest, specific design requirement for a cleaner look.
-    -   **Status:** NOT STARTED
+        1.  Create a new test user with a balance.
+        2.  Find and purchase a service where the original calculated price is less than ₦500 NGN.
+        3.  After purchase, query the  collection for the new order ID.
+        4.  Verify that the  field on the order document is exactly .
+        5.  Query the  collection and verify the user's  was debited by .
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical billing issue. The amount charged to the user must exactly match the final price displayed to them.
+    -   **Status:** USER VERIFICATION PENDING
     -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Should Test frontend/backend/both after fix?** Backend
 
 **In progress Task List**:
 -   None.
@@ -68,76 +57,73 @@ The agent has successfully implemented the complex SMS provider feature with a m
 -   **Upcoming Tasks:**
     -   **P0:** Secure all bill payments (Data, Airtime, TV, etc.) with a transaction PIN.
     -   **P1:** Refactor the monolithic  into a modular structure using FastAPI's .
-    -   **P2:** Break down large React components like  and .
 -   **Future Tasks:**
+    -   Break down large React components like  and .
     -   Add filtering by category/brand for the gift card store.
     -   Implement a GitHub Actions CI/CD workflow.
     -   Implement account lockout after a set number of failed login attempts.
 
 **Completed work in this session**
--   **SMS Provider Refactor (P0 from previous fork):**
-    -   Correctly integrated SMS Bower API using  and .
-    -   Fixed service name display for Tiger SMS by greatly expanding the backend  dictionary.
-    -   Resolved a frontend bug causing service dropdowns to be empty.
--   **Feature: Provider/Operator Selection Modal:**
-    -   Created a responsive, bottom-sheet modal for 5sim and SMS Bower.
-    -   The modal displays sub-providers with individual pricing, availability, and success rates.
-    -   Implemented backend endpoints to support fetching this data.
-    -   The purchase flow now uses the user's selected operator.
--   **Feature: Custom Order Timers:**
-    -   Implemented provider-specific timers for active orders (20 mins for 5sim, 25 for SMS Bower).
--   **UI/UX Overhaul (based on user feedback):**
-    -   Changed UI flow to show services without prices, then auto-open the modal on selection.
-    -   Redesigned the modal twice to match a user-provided screenshot and admin colors.
-    -   Refined the modal UI by removing borders and replacing icons.
-    -   Implemented sorting logic (lowest price for SMS Bower, highest success rate for 5sim).
-    -   Enforced a minimum price of ₦500 on all SMS services, rounding up any lower prices.
+-   **Critical Security Fix:** Fixed a double-encryption bug in the admin panel by correcting the masking logic in  and adding  prefix guards to the  save logic for all sensitive keys.
+-   **Provider Anonymization:** Renamed all service-related API endpoints (e.g.,  -> ) and updated the frontend to use these new, generic URLs. Sanitized the  endpoint to return server names instead of provider names.
+-   **Billing & Pricing Fixes:**
+    -   Fixed a price mismatch for Text Verified by ensuring the purchase endpoint fetches the price from the live API instead of using a hardcoded value.
+    -   Reinstated the ₦500 minimum price floor logic in both the  and  endpoints.
+    -   Fixed the promo code feature by adding the  to the purchase payload for the provider card flow.
+-   **OTP & Order Flow Fixes:**
+    -   Fixed OTP polling for Text Verified by updating the parsing logic to use  and  from the v2 API response.
+    -   Modified the  query to include  so users can see orders with received OTPs.
+-   **UI Fix:**
+    -   Corrected Text Verified phone number handling: the backend now stores the raw number, and the frontend uses separate formatters to display it with a  prefix () and copy it without ().
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1: Inconsistent Encryption for Amadeus Keys**
+    -   **Debug checklist:** In , the  function (around line 11231) shows that Amadeus keys are returned directly from the DB config. The  function (around line 11669) saves them without calling .
+    -   **Why to solve this issue and what will be achieved with this?** For security consistency, all external API keys should be encrypted at rest. This would prevent accidental exposure.
+    -   **Should Test frontend/backend/both after fix:** Backend
+    -   **Is recurring issue?** N
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Bottom-Sheet Modal:** A custom, responsive UI component was created from scratch to handle provider/operator selection, including animations and dynamic content.
--   **Conditional API Logic:** The backend now has specific endpoints and logic to handle the nested provider structures of 5sim and SMS Bower.
--   **Complex Frontend State Management:**  juggles state for service selection, modal visibility, fetching and displaying provider data, and managing the selected operator for purchases.
--   **Client-Side Business Logic:** Critical logic, such as sorting providers by price/success rate and enforcing a minimum price, is handled in the frontend component.
+-   **Fernet Encryption:** Used for securing provider API keys in the database. A critical bug involving double-encryption due to improper masking in the admin panel was found and resolved.
+-   **API Anonymization:** A core user requirement. Implemented by creating a mapping from provider names to generic server names (e.g.,  -> ) and using this mapping in all API responses and even in the API URL paths themselves.
+-   **State-Dependent Pricing & Billing:** The application has a multi-layered pricing system (API base cost -> markup -> promo code -> minimum price floor). Ensuring the final displayed price is identical to the final wallet debit has been a recurring and critical task.
 
 **key DB schema**
--   ** (collection):** This collection stores active number purchases. The  field for Tiger SMS orders is likely storing malformed data. It also needs a  field to store the provider name.
--   ** (collection):** This caches service and pricing data. It now supports the multi-provider structure for SMS Bower.
+-   ** (collection):** Stores records of number purchases. The  field is the subject of the current P0 issue. The  field is now queried for both  and  to ensure OTPs are visible.
+-   ** (collection):** A single document storing all admin settings, including encrypted API keys. The logic for reading from and writing to this document was significantly hardened to prevent key leakage and double-encryption.
 
 **All files of reference**
 -   
 -   
 -   
--   
 
 **Critical Info for New Agent**
--   **PRIORITY 1 (Current Task):** Fix the active order display for Tiger SMS. The phone number format is broken, and the server name is missing. Investigate  in  to fix how the order data is saved to MongoDB. Then, update the rendering logic in  to display the corrected data.
--   **PRIORITY 2:** Remove the colored background from the provider cards inside the bottom sheet modal. This is a simple CSS class removal in .
--   The user is very detail-oriented about the UI. Pay close attention to their feedback and screenshots. The modal design has been highly iterative.
--   Remember the provider-specific logic: 5sim and SMS Bower use the operator selection modal; others do not. Timers and sorting logic are also provider-specific.
+-   **IMMEDIATE P0 TASK:** The user claims the ₦500 minimum price floor is not being correctly debited from their wallet. The previous agent believes the code is correct for *new* orders. Your first action must be to perform an end-to-end test: purchase a number costing less than ₦500 and verify the  in the database is exactly . Do not proceed until this is definitively proven or fixed.
+-   **Security is paramount:** The user is very concerned about exposing provider information and ensuring API keys are secure. The double-encryption bug was a major issue. Be extra cautious when modifying any code related to API keys (, ) or admin panel configuration (, ).
+-   **Pricing is complex:** The price calculation flow is spread across service listing endpoints, a dedicated  endpoint, and the final  endpoint. Any change to pricing must be verified across all these paths to ensure consistency between what the user sees and what they are charged.
 
 **documents and test reports created in this job**
--    (Updated)
--    (Partially outdated due to new features)
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **(LATEST)** User reported issues with the Tiger SMS active order display: incorrect phone number format, missing server name, and unwanted colored background on modal cards.
-9.  Agent confirmed completion of the previous UI refinement task.
-8.  User requested multiple UI fixes for the modal: no border, add a cart icon, sort 5sim by success rate, and round all prices below ₦500 up to ₦500.
-7.  Agent confirmed completion of the modal redesign.
-6.  User provided a screenshot and requested a complete redesign of the bottom-sheet modal to match it, using admin colors.
-5.  Agent confirmed completion of the responsive, full-width modal.
-4.  User requested a new flow: show services without prices first, then automatically open a full-width, responsive bottom sheet modal upon service selection.
-3.  Agent confirmed the implementation of the provider selection modal and custom timers.
-2.  User requested the provider selection modal for 5sim/SMS Bower, with individual prices and delivery rates, and also requested custom timers for these providers.
-1.  Agent confirmed the fix for the initial P0 task from the previous fork (correcting service name display).
+10. **(LATEST)** User reported that the amount charged is still the original amount, not the ₦500 floor price, for numbers that should be rounded up.
+9.  Agent confirmed the Text Verified phone number display/copy fix.
+8.  User requested that for Text Verified numbers, the  prefix should be for display only, and copying the number should provide the raw number without the country code.
+7.  Agent confirmed fixing the OTP polling for a Signal number purchase.
+6.  User reported that an OTP code for a Signal purchase was sent but not appearing on the frontend.
+5.  Agent confirmed fixing the price mismatch and OTP visibility issues.
+4.  User reported a price mismatch (display vs. charge) for a ₦1500 number and that an OTP code was sent but not received on the frontend.
+3.  Agent confirmed renaming all API URL paths to hide provider names.
+2.  User provided a screenshot showing that the API URL paths themselves were exposing provider names (e.g., ).
+1.  Agent confirmed completion of multiple fixes, including provider name hiding and promo code logic.
 
 **Project Health Check:**
 -   **Broken:**
-    -   Active order display for Tiger SMS is broken (phone number format, missing server name).
-    -   The Make Admin button functionality is still broken.
+    -   Make Admin button functionality is reportedly broken on the live server.
 -   **Mocked:** None.
 
 **3rd Party Integrations**
@@ -146,15 +132,14 @@ The agent has successfully implemented the complex SMS provider feature with a m
 -   **SMS Providers:** 5sim, smspool, daisysms, Tiger SMS, SMS Bower, Text Verified.
 
 **Testing status**
--   Testing agent used after significant changes: Yes, but its report is now partially outdated. The agent has relied heavily on manual testing with curl and extensive screenshot verification for the latest UI-heavy features.
+-   Testing agent used after significant changes: YES. The  was used multiple times, with the last run showing a 100% pass rate on 10 targeted tests covering provider anonymization, pricing logic, and order filtering.
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
--   Known regressions: The phone number display for Tiger SMS purchases.
+-   Known regressions: The ₦500 minimum price debiting logic is contested by the user and is the current P0 issue.
 
 **Credentials to test flow:**
--   A new user can be registered for testing. Admin access is required to view provider settings. The agent has previously created admin users during testing.
+-   Register a new user for testing. Admin access (e.g., ) is needed to view the admin panel; credentials have been used in previous tests.
 
 **What agent forgot to execute**
--   The agent did not add the server name to the active order card when implementing the purchase flow.
--   The agent's parsing/storage logic for Tiger SMS phone numbers was flawed, leading to the current display bug.
--   The P0 task from the previous fork to verify the Travel Section remains unaddressed.</analysis>
+-   The agent did not perform a definitive end-to-end test purchase to confirm the ₦500 minimum price debiting logic was working correctly for new orders before finishing the task. This left the user's primary concern unverified.
+-   The agent noted that Amadeus API keys are stored unencrypted but did not create a task to address this security inconsistency.</analysis>

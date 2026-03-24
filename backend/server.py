@@ -1317,6 +1317,7 @@ class CalculatePriceRequest(BaseModel):
     promo_code: Optional[str] = None
     area_code: Optional[str] = None
     carrier: Optional[str] = None
+    provider: Optional[str] = None
 
 class ConversionRequest(BaseModel):
     amount_ngn: float
@@ -5759,7 +5760,14 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         server_map = {
             'us_server': 'daisysms',
             'server1': 'smspool',
-            'server2': '5sim'
+            'server2': '5sim',
+            'tigersms_us': 'tigersms',
+            'tigersms_global': 'tigersms',
+            'smsbower_us': 'smsbower',
+            'smsbower_global': 'smsbower',
+            'textverified_us': 'textverified',
+            '5sim_us': '5sim',
+            '5sim_global': '5sim',
         }
         
         provider = server_map.get(data.server)
@@ -5801,6 +5809,30 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
                 base_price_usd = base_price_usd * (1 + advanced_markup / 100)
             if data.carrier:
                 base_price_usd = base_price_usd * (1 + advanced_markup / 100)
+        elif provider == 'textverified':
+            # Text Verified uses live API pricing
+            base_price_usd = 0.50  # fallback
+            try:
+                token = await get_textverified_token()
+                if token:
+                    async with httpx.AsyncClient() as client:
+                        tv_resp = await client.get(
+                            'https://www.textverified.com/api/Targets',
+                            headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'},
+                            timeout=15.0
+                        )
+                        if tv_resp.status_code == 200:
+                            tv_data = tv_resp.json()
+                            targets = tv_data if isinstance(tv_data, list) else tv_data.get('targets', [])
+                            for t in targets:
+                                norm = t.get('normalizedName', t.get('name', '').lower().replace(' ', ''))
+                                if norm == data.service or t.get('name', '').lower() == data.service.lower():
+                                    api_cost = float(t.get('cost', 0) or 0)
+                                    if api_cost > 0:
+                                        base_price_usd = api_cost
+                                    break
+            except Exception as e:
+                logger.error(f"Text Verified price lookup error in calculate-price: {e}")
         else:
             # Get from cached services for other providers
             cached_service = await db.cached_services.find_one({
@@ -11389,7 +11421,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
-        "reseller_api_base_url": config.get("reseller_api_base_url", "https://tiger-sms-orders.preview.emergentagent.com"),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://pricing-fix-test-1.preview.emergentagent.com"),
         "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
         "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
         "support_email": config.get("support_email", "support@smsrelay.com"),

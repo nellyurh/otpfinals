@@ -1299,7 +1299,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               )}
 
               {/* Price Display */}
-              {estimatedPrice && estimatedPrice.price_ngn > 0 && (
+              {estimatedPrice && (estimatedPrice.price_ngn > 0 || estimatedPrice.promo) && (
                 <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-200 rounded-xl p-2.5">
                   <div className="flex items-center justify-between">
                     <div>
@@ -1311,6 +1311,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       </span>
                     </div>
                   </div>
+                  {estimatedPrice.promo && (
+                    <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-2 py-1 mt-1.5">
+                      <span className="text-[10px] font-semibold text-green-700">
+                        Promo &quot;{estimatedPrice.promo.code}&quot; applied!
+                      </span>
+                      <span className="text-[10px] font-bold text-green-700">
+                        -₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1360,6 +1370,86 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     >
                       Select Operator
                     </button>
+                  )}
+                </div>
+              )}
+
+              {/* Promo Code */}
+              {selectedService && (
+                <div>
+                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">Promo Code (optional)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter promo code"
+                      value={promoCode || ''}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value.toUpperCase());
+                        if (estimatedPrice?.promo) {
+                          setEstimatedPrice(prev => typeof prev === 'object' ? { ...prev, promo: null } : prev);
+                        }
+                      }}
+                      data-testid="provider-promo-input"
+                      className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-gray-900 ${
+                        estimatedPrice?.promo
+                          ? 'border-green-400 bg-green-50'
+                          : 'border-gray-200 focus:border-emerald-600'
+                      }`}
+                    />
+                    {promoCode && (
+                      <button
+                        onClick={async () => {
+                          if (!selectedService || !selectedProvider) {
+                            toast.error('Please select a service first');
+                            return;
+                          }
+                          try {
+                            const isUSMode = selectedServer?.value === 'us_numbers';
+                            const countryCode = isUSMode
+                              ? (selectedProvider.id === '5sim' ? 'usa' : selectedProvider.id === 'smsbower' ? '187' : '187')
+                              : selectedCountry?.value;
+                            const response = await axios.post(
+                              `${API}/api/orders/calculate-price`,
+                              {
+                                server: `${selectedProvider.id}_${isUSMode ? 'us' : 'global'}`,
+                                service: selectedService.value,
+                                country: countryCode,
+                                promo_code: promoCode,
+                              },
+                              axiosConfig
+                            );
+                            if (response.data.success && response.data.promo) {
+                              setEstimatedPrice({
+                                price_ngn: response.data.final_price_ngn,
+                                price_usd: response.data.final_price_usd,
+                                promo: response.data.promo,
+                              });
+                              toast.success(`Promo "${promoCode}" applied! You save ₦${response.data.promo.discount_ngn.toFixed(2)}`);
+                            } else if (response.data.success) {
+                              toast.error('Invalid or expired promo code');
+                            }
+                          } catch (error) {
+                            let errorMsg = 'Invalid promo code';
+                            const detail = error.response?.data?.detail;
+                            if (typeof detail === 'string') errorMsg = detail;
+                            else if (Array.isArray(detail) && detail.length > 0) errorMsg = detail[0]?.msg || 'Validation error';
+                            toast.error(errorMsg);
+                          }
+                        }}
+                        data-testid="provider-promo-apply-btn"
+                        className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors text-xs"
+                      >
+                        Apply
+                      </button>
+                    )}
+                  </div>
+                  {estimatedPrice?.promo && (
+                    <div className="mt-1.5 flex items-center gap-1.5 text-green-600 text-[10px]">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="font-medium">Promo &quot;{estimatedPrice.promo.code}&quot; applied! Saving ₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}</span>
+                    </div>
                   )}
                 </div>
               )}
