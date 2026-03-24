@@ -1,6 +1,13 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-03-24 (Session 18)**: Promo Code for New Providers + ₦500 Floor Verification
+  - **FIXED:** `calculate-price` endpoint now supports all new provider server names (tigersms_us, tigersms_global, smsbower_us, smsbower_global, textverified_us, 5sim_us, 5sim_global)
+  - **FIXED:** Promo code input added to US Numbers and Other Countries provider card UI (was completely missing)
+  - **VERIFIED:** ₦500 minimum floor works correctly in both calculate-price and purchase endpoints for all providers
+  - **VERIFIED:** Promo code discounts apply correctly on new provider modes via calculate-price API
+  - **NOTE:** Old orders in DB showing below-₦500 charged_amount were created before floor fix was deployed
+
 - **2026-03-24 (Session 17d)**: Provider Name Hiding + Pricing + Orders Fix
   - **FIXED:** Provider names hidden from ALL API responses. `/api/services/providers/status` now returns server names (Premium Server, Server 1, Budget Server, Fast Server) instead of real names (Tiger SMS, SMS Bower, etc.)
   - **FIXED:** `provider` and `server` fields removed from `/api/orders/list` and `/api/orders/{id}` responses. Only `server_name` is exposed.
