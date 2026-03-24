@@ -247,26 +247,41 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     return 10 * 60; // Default 10 minutes
   };
 
-  // Format phone number: clean up malformed data, add + prefix (except Premium Server)
-  const formatPhoneNumber = (phone, serverName) => {
+  // Format phone number for DISPLAY: clean up malformed data, add + prefix (except Premium Server shows +1 prefix)
+  const formatPhoneDisplay = (phone, serverName) => {
     if (!phone) return 'N/A';
-    // Clean up malformed Tiger SMS data like "'9999990009532496095', 'phone_number'"
     let cleaned = String(phone).replace(/['"]/g, '').trim();
-    // If contains comma or 'phone_number', extract just the numeric part
     if (cleaned.includes(',') || cleaned.includes('phone_number')) {
       const parts = cleaned.split(',');
       cleaned = parts[0].trim().replace(/[^0-9+]/g, '');
     }
-    // Remove any non-numeric chars except leading +
     cleaned = cleaned.replace(/[^0-9+]/g, '');
     if (!cleaned || cleaned === '0') return 'N/A';
-    // Premium Server (Text Verified): no + prefix
+    // Premium Server (Text Verified): show +1 area code prefix
     const isPremium = serverName && serverName.toLowerCase().includes('premium');
     if (isPremium) {
       cleaned = cleaned.replace(/^\+/, '');
-      return cleaned;
+      return '+1' + cleaned;
     }
-    // Add + prefix if not present and number is long enough
+    if (!cleaned.startsWith('+') && cleaned.length >= 10) {
+      cleaned = '+' + cleaned;
+    }
+    return cleaned;
+  };
+
+  // Format phone number for COPY: raw number only (no +1 for Premium Server)
+  const formatPhoneCopy = (phone, serverName) => {
+    if (!phone) return '';
+    let cleaned = String(phone).replace(/['"]/g, '').trim();
+    if (cleaned.includes(',') || cleaned.includes('phone_number')) {
+      const parts = cleaned.split(',');
+      cleaned = parts[0].trim().replace(/[^0-9+]/g, '');
+    }
+    cleaned = cleaned.replace(/[^0-9+]/g, '');
+    if (!cleaned || cleaned === '0') return '';
+    // Premium Server: copy raw number only (no country code)
+    const isPremium = serverName && serverName.toLowerCase().includes('premium');
+    if (isPremium) return cleaned.replace(/^\+/, '');
     if (!cleaned.startsWith('+') && cleaned.length >= 10) {
       cleaned = '+' + cleaned;
     }
@@ -1908,10 +1923,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] text-gray-500">Phone:</span>
                         <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number, order.server_name)}</span>
-                          {order.phone_number && formatPhoneNumber(order.phone_number, order.server_name) !== 'N/A' && (
+                          <span className="font-mono text-xs text-gray-800">{formatPhoneDisplay(order.phone_number, order.server_name)}</span>
+                          {order.phone_number && formatPhoneDisplay(order.phone_number, order.server_name) !== 'N/A' && (
                             <button
-                              onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number, order.server_name), 'Phone copied!')}
+                              onClick={() => copyToClipboard(formatPhoneCopy(order.phone_number, order.server_name), 'Phone copied!')}
                               className="p-0.5 hover:bg-gray-200 rounded"
                             >
                               <Copy className="w-3 h-3 text-gray-500" />
@@ -2011,10 +2026,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-1">
-                              <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number, order.server_name)}</span>
-                              {order.phone_number && formatPhoneNumber(order.phone_number, order.server_name) !== 'N/A' && (
+                              <span className="font-mono text-xs text-gray-800">{formatPhoneDisplay(order.phone_number, order.server_name)}</span>
+                              {order.phone_number && formatPhoneDisplay(order.phone_number, order.server_name) !== 'N/A' && (
                                 <button
-                                  onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number, order.server_name), 'Phone copied!')}
+                                  onClick={() => copyToClipboard(formatPhoneCopy(order.phone_number, order.server_name), 'Phone copied!')}
                                   className="p-0.5 hover:bg-gray-200 rounded"
                                 >
                                   <Copy className="w-3 h-3 text-gray-500" />

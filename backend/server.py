@@ -3037,9 +3037,6 @@ async def purchase_number_textverified(service: str) -> Optional[Dict]:
                     if details_resp.status_code == 200:
                         details = details_resp.json()
                         phone = str(details.get('number', ''))
-                        # Text Verified is US-only; ensure number has country code 1
-                        if phone and not phone.startswith('1'):
-                            phone = '1' + phone
                         return {
                             'success': True,
                             'verification_id': details.get('id', ''),
