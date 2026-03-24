@@ -5958,11 +5958,31 @@ async def purchase_number(
         # Get from cached services for tigersms, smsbower, smspool
         # Text Verified is US only and doesn't use country codes the same way
         if provider == 'textverified':
-            # Text Verified uses service name directly, doesn't use country codes
-            # Get base price from Text Verified API response
-            base_price_usd = 0.50  # Default Text Verified price
+            # Text Verified uses service name directly
+            # Get actual price from Text Verified API (same source as listing)
             markup_key = 'textverified_markup'
-            # Don't check cache for textverified - pricing comes from API
+            base_price_usd = 0.50  # fallback only
+            try:
+                token = await get_textverified_token()
+                if token:
+                    async with httpx.AsyncClient() as client:
+                        tv_resp = await client.get(
+                            'https://www.textverified.com/api/Targets',
+                            headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'},
+                            timeout=15.0
+                        )
+                        if tv_resp.status_code == 200:
+                            tv_data = tv_resp.json()
+                            targets = tv_data if isinstance(tv_data, list) else tv_data.get('targets', [])
+                            for t in targets:
+                                norm = t.get('normalizedName', t.get('name', '').lower().replace(' ', ''))
+                                if norm == data.service or t.get('name', '').lower() == data.service.lower():
+                                    api_cost = float(t.get('cost', 0) or 0)
+                                    if api_cost > 0:
+                                        base_price_usd = api_cost
+                                    break
+            except Exception as e:
+                logger.error(f"Text Verified price lookup error: {e}")
         elif provider == 'smsbower' and hasattr(data, 'provider_id') and data.provider_id:
             # Get price from the selected provider
             config = await db.pricing_config.find_one({}, {'_id': 0})
@@ -6317,7 +6337,7 @@ async def list_orders(user: dict = Depends(get_current_user)):
     }
     orders = (
         await db.sms_orders
-        .find({'user_id': user['id'], 'status': 'active'}, projection)
+        .find({'user_id': user['id'], 'status': {'$in': ['active', 'completed']}}, projection)
         .sort('created_at', -1)
         .to_list(100)
     )
