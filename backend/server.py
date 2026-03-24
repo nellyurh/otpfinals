@@ -4438,7 +4438,7 @@ async def get_smspool_services(user: dict = Depends(get_current_user), country: 
 
 
 
-@api_router.get("/services/5sim")
+@api_router.get("/services/server-1")
 async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(get_current_user)):
     """Get 5sim countries or services/operators for Global Server.
 
@@ -4555,7 +4555,7 @@ async def get_5sim_services(country: Optional[str] = None, user: dict = Depends(
         return {"success": False, "message": str(e)}
 
 
-@api_router.get("/services/5sim/operators")
+@api_router.get("/services/server-1/operators")
 async def get_5sim_operators(
     user: dict = Depends(get_current_user),
     country: str = "usa",
@@ -4681,7 +4681,7 @@ async def get_daisysms_services(user: dict = Depends(get_current_user)):
         logger.error(f"Error fetching DaisySMS services: {str(e)}")
         return {'success': False, 'message': str(e)}
 
-@api_router.get("/services/tigersms")
+@api_router.get("/services/fast-server")
 async def get_tigersms_services(user: dict = Depends(get_current_user), refresh: bool = False, country: Optional[str] = None):
     """Fetch available services and pricing from TigerSMS (RUB prices) with DB caching.
     
@@ -4825,7 +4825,7 @@ async def get_tigersms_services(user: dict = Depends(get_current_user), refresh:
         return {'success': False, 'message': str(e)}
 
 
-@api_router.get("/services/tigersms/countries")
+@api_router.get("/services/fast-server/countries")
 async def get_tigersms_countries(user: dict = Depends(get_current_user)):
     """Get list of available countries from Tiger SMS cached data."""
     try:
@@ -4918,7 +4918,7 @@ async def get_tigersms_countries(user: dict = Depends(get_current_user)):
 
 # ============ SMS Bower Service Endpoints ============
 
-@api_router.get("/services/smsbower")
+@api_router.get("/services/budget-server")
 async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user), country: Optional[str] = None, refresh: bool = False):
     """Get SMS Bower services with pricing using getServicesList for names and getPricesV3 for pricing."""
     try:
@@ -5126,7 +5126,7 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
         return {'success': False, 'message': str(e)}
 
 
-@api_router.get("/services/smsbower/countries")
+@api_router.get("/services/budget-server/countries")
 async def get_smsbower_countries(user: dict = Depends(get_current_user)):
     """Get list of available countries from SMS Bower."""
     try:
@@ -5168,7 +5168,7 @@ async def get_smsbower_countries(user: dict = Depends(get_current_user)):
         return {'success': False, 'message': str(e)}
 
 
-@api_router.get("/services/smsbower/providers")
+@api_router.get("/services/budget-server/providers")
 async def get_smsbower_providers(
     user: dict = Depends(get_current_user),
     country: str = "187",
@@ -5251,7 +5251,7 @@ async def get_smsbower_providers(
 
 # ============ Text Verified Service Endpoints ============
 
-@api_router.get("/services/textverified")
+@api_router.get("/services/premium-server")
 async def get_textverified_services_endpoint(user: dict = Depends(get_current_user)):
     """Get Text Verified services (US only)."""
     try:

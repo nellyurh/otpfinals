@@ -366,18 +366,18 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         // US Numbers mode
         switch (providerId) {
           case 'textverified':
-            endpoint = '/api/services/textverified';
+            endpoint = '/api/services/premium-server';
             break;
           case '5sim':
-            endpoint = '/api/services/5sim';
+            endpoint = '/api/services/server-1';
             params = { country: 'usa' };
             break;
           case 'smsbower':
-            endpoint = '/api/services/smsbower';
+            endpoint = '/api/services/budget-server';
             params = { country: '187' };  // 187 = USA for SMS Bower
             break;
           case 'tigersms':
-            endpoint = '/api/services/tigersms';
+            endpoint = '/api/services/fast-server';
             params = { country: '187' };  // 187 = USA for Tiger SMS
             break;
           default:
@@ -409,13 +409,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         // Other Countries mode - fetch countries first
         switch (providerId) {
           case '5sim':
-            endpoint = '/api/services/5sim';
+            endpoint = '/api/services/server-1';
             break;
           case 'smsbower':
-            endpoint = '/api/services/smsbower/countries';
+            endpoint = '/api/services/budget-server/countries';
             break;
           case 'tigersms':
-            endpoint = '/api/services/tigersms/countries';
+            endpoint = '/api/services/fast-server/countries';
             break;
           default:
             return;
@@ -456,13 +456,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       
       switch (providerId) {
         case '5sim':
-          endpoint = '/api/services/5sim';
+          endpoint = '/api/services/server-1';
           break;
         case 'smsbower':
-          endpoint = '/api/services/smsbower';
+          endpoint = '/api/services/budget-server';
           break;
         case 'tigersms':
-          endpoint = '/api/services/tigersms';
+          endpoint = '/api/services/fast-server';
           break;
         default:
           return;
@@ -497,11 +497,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
       if (providerId === '5sim') {
         // 5sim uses the prices endpoint with country and product
-        endpoint = '/api/services/5sim/operators';
+        endpoint = '/api/services/server-1/operators';
         params = { country: countryCode || 'usa', service: serviceCode };
       } else if (providerId === 'smsbower') {
         // SMS Bower uses getPricesV3 which returns providers per service
-        endpoint = '/api/services/smsbower/providers';
+        endpoint = '/api/services/budget-server/providers';
         params = { country: countryCode || '187', service: serviceCode };
       }
 
