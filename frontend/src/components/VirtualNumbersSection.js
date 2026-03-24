@@ -238,17 +238,17 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   };
 
   // Get timer duration based on provider (in seconds)
-  // 5sim: 20 minutes, smsbower: 25 minutes, others: 10 minutes
+  // Timer durations based on server name
   const getTimerDuration = (order) => {
-    const provider = order.provider || order.server || '';
-    if (provider.includes('5sim')) return 20 * 60; // 20 minutes
-    if (provider.includes('smsbower')) return 25 * 60; // 25 minutes
-    if (provider.includes('textverified')) return 5 * 60; // 5 minutes
+    const serverName = (order.server_name || '').toLowerCase();
+    if (serverName.includes('server 1')) return 20 * 60; // 20 minutes (5sim)
+    if (serverName.includes('budget')) return 25 * 60; // 25 minutes (smsbower)
+    if (serverName.includes('premium')) return 5 * 60; // 5 minutes (textverified)
     return 10 * 60; // Default 10 minutes
   };
 
-  // Format phone number: clean up malformed data, add + prefix
-  const formatPhoneNumber = (phone) => {
+  // Format phone number: clean up malformed data, add + prefix (except Premium Server)
+  const formatPhoneNumber = (phone, serverName) => {
     if (!phone) return 'N/A';
     // Clean up malformed Tiger SMS data like "'9999990009532496095', 'phone_number'"
     let cleaned = String(phone).replace(/['"]/g, '').trim();
@@ -260,6 +260,12 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     // Remove any non-numeric chars except leading +
     cleaned = cleaned.replace(/[^0-9+]/g, '');
     if (!cleaned || cleaned === '0') return 'N/A';
+    // Premium Server (Text Verified): no + prefix
+    const isPremium = serverName && serverName.toLowerCase().includes('premium');
+    if (isPremium) {
+      cleaned = cleaned.replace(/^\+/, '');
+      return cleaned;
+    }
     // Add + prefix if not present and number is long enough
     if (!cleaned.startsWith('+') && cleaned.length >= 10) {
       cleaned = '+' + cleaned;
@@ -583,7 +589,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         country: isUSMode 
           ? (selectedProvider.id === '5sim' ? 'usa' : '187')
           : selectedCountry?.value,
-        payment_currency: 'NGN'
+        payment_currency: 'NGN',
+        promo_code: promoCode || undefined
       };
 
       // Add operator for 5sim
@@ -1901,10 +1908,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] text-gray-500">Phone:</span>
                         <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number)}</span>
-                          {order.phone_number && formatPhoneNumber(order.phone_number) !== 'N/A' && (
+                          <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number, order.server_name)}</span>
+                          {order.phone_number && formatPhoneNumber(order.phone_number, order.server_name) !== 'N/A' && (
                             <button
-                              onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number), 'Phone copied!')}
+                              onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number, order.server_name), 'Phone copied!')}
                               className="p-0.5 hover:bg-gray-200 rounded"
                             >
                               <Copy className="w-3 h-3 text-gray-500" />
@@ -2004,10 +2011,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-1">
-                              <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number)}</span>
-                              {order.phone_number && formatPhoneNumber(order.phone_number) !== 'N/A' && (
+                              <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number, order.server_name)}</span>
+                              {order.phone_number && formatPhoneNumber(order.phone_number, order.server_name) !== 'N/A' && (
                                 <button
-                                  onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number), 'Phone copied!')}
+                                  onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number, order.server_name), 'Phone copied!')}
                                   className="p-0.5 hover:bg-gray-200 rounded"
                                 >
                                   <Copy className="w-3 h-3 text-gray-500" />

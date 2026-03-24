@@ -5339,37 +5339,37 @@ async def get_providers_status(user: dict = Depends(get_current_user)):
             'providers': {
                 'daisysms': {
                     'enabled': config.get('enable_provider_daisysms', False),
-                    'name': 'DaisySMS',
+                    'name': 'US Server',
                     'description': 'US Numbers (Legacy)',
                     'type': 'us'
                 },
                 'smspool': {
                     'enabled': config.get('enable_provider_smspool', True),
-                    'name': 'SMS Pool',
+                    'name': 'Server 2',
                     'description': 'International Numbers',
                     'type': 'global'
                 },
                 '5sim': {
                     'enabled': config.get('enable_provider_5sim', True),
-                    'name': '5sim',
+                    'name': 'Server 1',
                     'description': 'Global Numbers',
                     'type': 'global'
                 },
                 'tigersms': {
                     'enabled': config.get('enable_provider_tigersms', True),
-                    'name': 'Tiger SMS',
+                    'name': 'Fast Server',
                     'description': 'US & Global Numbers',
                     'type': 'both'
                 },
                 'smsbower': {
                     'enabled': config.get('enable_provider_smsbower', True),
-                    'name': 'SMS Bower',
+                    'name': 'Budget Server',
                     'description': 'US & Global Numbers',
                     'type': 'both'
                 },
                 'textverified': {
                     'enabled': config.get('enable_provider_textverified', True),
-                    'name': 'Text Verified',
+                    'name': 'Premium Server',
                     'description': 'US Numbers (Premium)',
                     'type': 'us'
                 }
@@ -5795,8 +5795,8 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
         final_price_ngn = final_price_usd * ngn_rate
         
-        # Enforce minimum price of ₦500
-        if final_price_ngn < 500:
+        # ₦500 minimum floor — round up cheap numbers, don't affect expensive ones
+        if final_price_ngn > 0 and final_price_ngn < 500:
             final_price_ngn = 500.0
             final_price_usd = final_price_ngn / ngn_rate
         
@@ -6017,8 +6017,8 @@ async def purchase_number(
     ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
     final_price_ngn = final_price_usd * ngn_rate
 
-    # Enforce minimum price of ₦500
-    if final_price_ngn < 500:
+    # ₦500 minimum floor — round up cheap numbers, don't affect expensive ones
+    if final_price_ngn > 0 and final_price_ngn < 500:
         final_price_ngn = 500.0
         final_price_usd = final_price_ngn / ngn_rate
 
@@ -6317,7 +6317,7 @@ async def list_orders(user: dict = Depends(get_current_user)):
     }
     orders = (
         await db.sms_orders
-        .find({'user_id': user['id']}, projection)
+        .find({'user_id': user['id'], 'status': 'active'}, projection)
         .sort('created_at', -1)
         .to_list(100)
     )
@@ -6344,6 +6344,9 @@ async def list_orders(user: dict = Depends(get_current_user)):
         if not name and provider:
             name = PROVIDER_TO_SERVER.get(provider)
         order['server_name'] = name or server.replace('_', ' ').title()
+        # Remove internal fields — don't expose provider names to frontend
+        order.pop('provider', None)
+        order.pop('server', None)
     return {'orders': orders}
 
 @api_router.get("/orders/{order_id}")
@@ -6351,6 +6354,22 @@ async def get_order(order_id: str, user: dict = Depends(get_current_user)):
     order = await db.sms_orders.find_one({'id': order_id, 'user_id': user['id']}, {'_id': 0})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+    # Map server name, then remove internal provider/server fields
+    server = order.get('server', '')
+    provider = order.get('provider', '')
+    server_names = {
+        'server1': 'Server 1', 'server2': 'Global Server', 'us_server': 'US Server',
+        'textverified_us': 'Premium Server', 'textverified_global': 'Premium Server',
+        '5sim_us': 'Server 1', '5sim_global': 'Server 1',
+        'smsbower_us': 'Budget Server', 'smsbower_global': 'Budget Server',
+        'tigersms_us': 'Fast Server', 'tigersms_global': 'Fast Server',
+    }
+    name = server_names.get(server)
+    if not name and provider:
+        name = PROVIDER_TO_SERVER.get(provider)
+    order['server_name'] = name or server.replace('_', ' ').title()
+    order.pop('provider', None)
+    order.pop('server', None)
     return order
 
 @api_router.post("/orders/{order_id}/cancel")

@@ -1,0 +1,109 @@
+{
+  "summary": "Iteration 23 testing complete. Verified all features: provider name hiding from API responses, active-only order filtering, ₦500 minimum floor, Text Verified no '+' prefix, promo code in provider card flow, and timer using server_name. All 10 backend tests passed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration23_provider_hiding.py",
+    "/app/test_reports/pytest/pytest_results_iter23.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration23_provider_hiding.py"
+  ],
+  "success_rate": {
+    "backend": "100% (10/10 tests passed)",
+    "frontend": "100% (Code verified)"
+  },
+  "test_credentials": {
+    "test_user": {
+      "email": "traveltest@test.com",
+      "password": "Test1234!"
+    }
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 23 fixes verified. Provider names (DaisySMS, Tiger SMS, SMS Bower, Text Verified, 5sim, SMS Pool) are NOT exposed in any API response. Server names (US Server, Server 1, Budget Server, Fast Server, Premium Server) are used instead. Orders list only returns active orders. ₦500 minimum floor applied in both calculate-price and purchase endpoints.",
+  "features_tested": {
+    "providers_status_server_names": {
+      "status": "PASS",
+      "details": "/api/services/providers/status returns server names (US Server, Server 1, Budget Server, Fast Server, Premium Server) NOT real provider names",
+      "code_location": "server.py lines 5329-5377"
+    },
+    "orders_list_active_only": {
+      "status": "PASS",
+      "details": "/api/orders/list only returns orders with status='active'",
+      "code_location": "server.py line 6320"
+    },
+    "orders_list_no_provider_field": {
+      "status": "PASS",
+      "details": "/api/orders/list response does NOT contain 'provider' or 'server' fields, only 'server_name'",
+      "code_location": "server.py lines 6347-6349"
+    },
+    "get_order_no_provider_field": {
+      "status": "PASS",
+      "details": "/api/orders/{id} response does NOT contain 'provider' or 'server' fields, has 'server_name'",
+      "code_location": "server.py lines 6371-6372"
+    },
+    "calculate_price_500_floor": {
+      "status": "PASS",
+      "details": "calculate-price endpoint applies ₦500 minimum floor (price < 500 → 500, price > 500 → unchanged)",
+      "code_location": "server.py lines 5798-5800"
+    },
+    "purchase_endpoint_500_floor": {
+      "status": "PASS",
+      "details": "purchase endpoint applies ₦500 minimum floor",
+      "code_location": "server.py lines 6020-6022"
+    },
+    "formatPhoneNumber_no_plus_premium": {
+      "status": "PASS",
+      "details": "formatPhoneNumber does NOT add '+' for Premium Server (Text Verified) numbers",
+      "code_location": "VirtualNumbersSection.js lines 264-267"
+    },
+    "formatPhoneNumber_plus_others": {
+      "status": "PASS",
+      "details": "formatPhoneNumber adds '+' for all other server numbers",
+      "code_location": "VirtualNumbersSection.js lines 269-271"
+    },
+    "getTimerDuration_server_name": {
+      "status": "PASS",
+      "details": "getTimerDuration uses server_name (Server 1→20min, Budget→25min, Premium→5min, default→10min)",
+      "code_location": "VirtualNumbersSection.js lines 242-248"
+    },
+    "provider_card_promo_code": {
+      "status": "PASS",
+      "details": "Provider card purchase payload includes promo_code field",
+      "code_location": "VirtualNumbersSection.js line 593"
+    },
+    "enforceMinPrice_frontend": {
+      "status": "PASS",
+      "details": "enforceMinPrice applied to all price displays (13+ usages)",
+      "code_location": "VirtualNumbersSection.js line 104"
+    }
+  },
+  "api_verification_summary": {
+    "GET /api/health": "PASS - Returns healthy status",
+    "POST /api/auth/login": "PASS - Returns token",
+    "GET /api/services/providers/status": "PASS - Returns server names, NOT provider names",
+    "GET /api/orders/list": "PASS - Returns only active orders, no provider/server fields"
+  },
+  "code_verification_summary": {
+    "providers_status_endpoint": "Returns server names: US Server, Server 2, Server 1, Fast Server, Budget Server, Premium Server",
+    "orders_list_filter": "Filters by status='active' at line 6320",
+    "orders_list_field_removal": "Removes 'provider' and 'server' fields at lines 6348-6349",
+    "get_order_field_removal": "Removes 'provider' and 'server' fields at lines 6371-6372",
+    "500_floor_calculate_price": "Applied at lines 5798-5800",
+    "500_floor_purchase": "Applied at lines 6020-6022",
+    "formatPhoneNumber_premium_check": "isPremium check at line 264, removes + at line 266",
+    "getTimerDuration_server_name": "Uses order.server_name at line 243",
+    "promo_code_in_payload": "Added at line 593 in handleProviderPurchase"
+  }
+}
