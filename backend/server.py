@@ -454,6 +454,7 @@ async def log_audit_event(user_id: str, action: str, details: dict):
 # List of sensitive fields that should be encrypted
 SENSITIVE_FIELDS = [
     'daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key',
+    'smsbower_api_key', 'textverified_api_key', 'textverified_email',
     'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
     'ercaspay_secret_key', 'ercaspay_api_key',
     'plisio_secret_key', 'plisio_webhook_secret',
