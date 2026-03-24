@@ -99,6 +99,14 @@ const getCountryFlagUrl = (countryValue) => {
   return `https://flagcdn.com/${iso2}.svg`;
 };
 
+// Minimum price enforcement - ₦500 for all services
+const MIN_PRICE_NGN = 500;
+const enforceMinPrice = (priceNgn) => {
+  if (!priceNgn || priceNgn <= 0) return 0;
+  return Math.max(MIN_PRICE_NGN, priceNgn);
+};
+
+
 // Shared Select styles to prevent blurry text and ensure dark, visible text
 const selectStyles = {
   control: (base) => ({
@@ -523,7 +531,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     } else {
       // For other providers, just select the service directly
       setSelectedService(service);
-      setEstimatedPrice(service.price_ngn);
+      setEstimatedPrice(enforceMinPrice(service.price_ngn));
     }
   };
 
@@ -533,7 +541,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     setShowProviderModal(false);
     // Update estimated price based on selected provider
     if (provider.price_ngn) {
-      setEstimatedPrice(provider.price_ngn);
+      setEstimatedPrice(enforceMinPrice(provider.price_ngn));
     }
   };
 
@@ -1259,7 +1267,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         {/* Show price only for non-5sim/smsbower providers */}
                         {!['5sim', 'smsbower'].includes(selectedProvider?.id) && option.price_ngn && (
                           <span className="text-emerald-600 font-semibold text-xs">
-                            ₦{option.price_ngn.toFixed(2)}
+                            ₦{enforceMinPrice(option.price_ngn).toFixed(2)}
                           </span>
                         )}
                       </div>
@@ -1277,7 +1285,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     </div>
                     <div className="text-right">
                       <span className="block text-lg font-bold text-emerald-700">
-                        ₦{estimatedPrice.price_ngn?.toFixed(2)}
+                        ₦{enforceMinPrice(estimatedPrice.price_ngn)?.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -1302,7 +1310,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         )}
                       </div>
                       <span className="text-emerald-700 font-bold text-sm">
-                        ₦{selectedServiceProvider.price_ngn?.toFixed(2)}
+                        ₦{enforceMinPrice(selectedServiceProvider.price_ngn)?.toFixed(2)}
                       </span>
                     </div>
                     <button
@@ -1493,8 +1501,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   onChange={(option) => setSelectedOperator(option)}
                   options={selectedService.operators.map((op) => ({
                     value: op.name,
-                    label: `${op.name} (₦${op.price_ngn.toFixed(2)})`,
-                    price_ngn: op.price_ngn
+                    label: `${op.name} (₦${enforceMinPrice(op.price_ngn).toFixed(2)})`,
+                    price_ngn: enforceMinPrice(op.price_ngn)
                   }))}
                   isDisabled={!selectedService}
                   placeholder="Choose operator (default is cheapest)"
@@ -1510,7 +1518,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         </div>
                         {option.price_ngn && (
                           <span className="text-gray-700 font-semibold text-xs">
-                            ₦{option.price_ngn.toFixed(2)}
+                            ₦{enforceMinPrice(option.price_ngn).toFixed(2)}
                           </span>
                         )}
                       </div>
@@ -1530,7 +1538,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         styles={selectStyles}
                         value={selectedPool && {
                           value: selectedPool.id,
-                          label: `${selectedPool.name} - ₦${selectedPool.price_ngn.toFixed(2)}`
+                          label: `${selectedPool.name} - ₦${enforceMinPrice(selectedPool.price_ngn).toFixed(2)}`
                         }}
                         onChange={(option) => {
                           if (!option) {
@@ -1544,7 +1552,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         }}
                         options={selectedService.pools.map((p) => ({
                           value: p.id,
-                          label: `${p.name} - ₦${p.price_ngn.toFixed(2)}`
+                          label: `${p.name} - ₦${enforceMinPrice(p.price_ngn).toFixed(2)}`
                         }))}
                         placeholder="Cheapest pool (default)"
                         className="react-select-container"
@@ -1783,7 +1791,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     <span>Pool:</span>
                     <span className="font-semibold">
                       {selectedPool
-                        ? `${selectedPool.name} (₦${selectedPool.price_ngn.toFixed(2)})`
+                        ? `${selectedPool.name} (₦${enforceMinPrice(selectedPool.price_ngn).toFixed(2)})`
                         : 'Cheapest available'}
                     </span>
                   </div>
@@ -2132,7 +2140,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   const hasDeliveryRate = provider.delivery_rate && provider.delivery_rate > 0;
                   
                   // Minimum price of ₦500
-                  const displayPriceNgn = Math.max(500, provider.price_ngn || 0);
+                  const displayPriceNgn = enforceMinPrice(provider.price_ngn || 0);
                   const displayPriceUsd = displayPriceNgn / 1500; // Convert back to USD for display
                   
                   return (

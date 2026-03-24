@@ -2775,7 +2775,7 @@ async def get_smsbower_services(country: Optional[str] = None) -> Optional[Dict]
     """Get SMS Bower services and pricing using getPricesV3 for detailed provider info."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return None
         
@@ -2807,7 +2807,7 @@ async def purchase_number_smsbower(service: str, country: str = '0', max_price: 
     """
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return None
         
@@ -2870,7 +2870,7 @@ async def poll_otp_smsbower(activation_id: str) -> Optional[str]:
     """Poll SMS Bower for OTP using activation ID."""
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return None
         
@@ -2899,7 +2899,7 @@ async def cancel_number_smsbower(activation_id: str) -> bool:
     """
     try:
         config = await db.pricing_config.find_one({}, {'_id': 0})
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return False
         
@@ -4922,7 +4922,7 @@ async def get_smsbower_services_endpoint(user: dict = Depends(get_current_user),
         if not config.get('enable_provider_smsbower', True):
             return {'success': False, 'message': 'SMS Bower is currently disabled'}
         
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return {'success': False, 'message': 'SMS Bower API key not configured'}
         
@@ -5129,7 +5129,7 @@ async def get_smsbower_countries(user: dict = Depends(get_current_user)):
         if not config.get('enable_provider_smsbower', True):
             return {'success': False, 'message': 'SMS Bower is currently disabled'}
         
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return {'success': False, 'message': 'SMS Bower API key not configured'}
         
@@ -5175,7 +5175,7 @@ async def get_smsbower_providers(
         if not config.get('enable_provider_smsbower', True):
             return {'success': False, 'message': 'SMS Bower is currently disabled'}
         
-        api_key = config.get('smsbower_api_key', '') if config else ''
+        api_key = get_api_key(config, 'smsbower_api_key', '')
         if not api_key:
             return {'success': False, 'message': 'SMS Bower API key not configured'}
         
@@ -5448,7 +5448,7 @@ async def admin_sync_sms_providers(user: dict = Depends(get_current_user), provi
         # Sync SMS Bower (using getPricesV3 and getServicesList)
         if not provider or provider == 'smsbower':
             if config.get('enable_provider_smsbower', True):
-                api_key = config.get('smsbower_api_key', '')
+                api_key = get_api_key(config, 'smsbower_api_key', '')
                 if api_key:
                     try:
                         # First get service names from getServicesList
@@ -5789,6 +5789,11 @@ async def calculate_price(data: CalculatePriceRequest, user: dict = Depends(get_
         ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
         final_price_ngn = final_price_usd * ngn_rate
         
+        # Enforce minimum price of ₦500
+        if final_price_ngn < 500:
+            final_price_ngn = 500.0
+            final_price_usd = final_price_ngn / ngn_rate
+        
         discount_ngn, discount_usd, promo = await _apply_promo_discount(
             promo_code=data.promo_code,
             user_id=user['id'],
@@ -5955,7 +5960,7 @@ async def purchase_number(
         elif provider == 'smsbower' and hasattr(data, 'provider_id') and data.provider_id:
             # Get price from the selected provider
             config = await db.pricing_config.find_one({}, {'_id': 0})
-            api_key = config.get('smsbower_api_key', '') if config else ''
+            api_key = get_api_key(config, 'smsbower_api_key', '')
             if api_key:
                 async with httpx.AsyncClient() as client:
                     response = await client.get(
@@ -6005,6 +6010,11 @@ async def purchase_number(
     # Convert to NGN if needed
     ngn_rate = config.get('ngn_to_usd_rate', 1500.0)
     final_price_ngn = final_price_usd * ngn_rate
+
+    # Enforce minimum price of ₦500
+    if final_price_ngn < 500:
+        final_price_ngn = 500.0
+        final_price_usd = final_price_ngn / ngn_rate
 
     # Apply promo code discount (case-insensitive)
     discount_ngn, discount_usd, promo = await _apply_promo_discount(
