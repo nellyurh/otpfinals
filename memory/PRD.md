@@ -2,51 +2,29 @@
 
 ## Changelog
 - **2026-03-24 (Session 17)**: P0 Bug Fixes + Travel Section Verification
-  - **FIXED:** Tiger SMS phone number parsing was broken - `purchase_number_tigersms` returns a parsed dict but the main purchase endpoint was doing `str(result).split(':')` producing garbage phone numbers. Now uses `result.get('activation_id')` and `result.get('phone_number')` directly.
-  - **FIXED:** Tiger SMS purchase condition check was using `'ACCESS_NUMBER' in str(result)` which is fragile. Now uses `result.get('success')`.
-  - **FIXED:** Server names not displayed on active order cards. Updated `list_orders` endpoint `server_names` mapping to include new provider-based server values: tigersms_us -> 'Fast Server', 5sim_us -> 'Server 1', smsbower_us -> 'Budget Server', textverified_us -> 'Premium Server'.
-  - **FIXED:** Added Server name display to both mobile card layout (next to service name) and desktop table layout (new Server column) in `VirtualNumbersSection.js`.
-  - **FIXED:** Removed colored background (bg-slate-100) from bottom sheet modal provider cards, replaced with bg-white hover:bg-gray-50 for a cleaner look.
-  - **FIXED:** Updated `PROVIDER_TO_SERVER` mapping to match frontend server names (5sim -> 'Server 1', smsbower -> 'Budget Server', textverified -> 'Premium Server', tigersms -> 'Fast Server').
-  - **VERIFIED:** Travel Section overhaul working correctly:
-    - Dynamic airport/city search with Amadeus API and static fallback
-    - Round trip, One way, Multi-city flight search options
-    - From/To fields with wide dropdown showing airports/cities with codes and country tags
-    - Multiple tabs: Flights, Stays, Car Rentals, Attractions
-    - Dynamic theme colors using app's primary color
-    - Travel feature visibility controlled by admin toggle
+  - **FIXED:** Tiger SMS phone number parsing — `str(result).split(':')` on a parsed dict produced garbage. Now uses `result.get('phone_number')` directly.
+  - **FIXED:** Tiger SMS purchase condition check — uses `result.get('success')` instead of fragile string check.
+  - **FIXED:** SMS Bower V2 API JSON parsing — `getNumberV2` returns JSON `{activationId, phoneNumber, ...}` but code only checked for `ACCESS_NUMBER:id:phone` text format. Now parses both JSON and legacy formats.
+  - **FIXED:** Error messages sanitized — no longer expose provider names (e.g., 'SMS Bower error', 'Tiger SMS error'). Now show generic messages like "No numbers available. Please try another server."
+  - **FIXED:** Text Verified timer changed from 10 min default to 5 min max.
+  - **FIXED:** Phone number formatting — added `formatPhoneNumber()` helper that cleans malformed data (e.g., `'999...', 'phone_number'`) and adds `+` prefix to all numbers.
+  - **FIXED:** Country display added — `getCountryName()` maps numeric/text codes to readable country names. Shown in both mobile cards and desktop table.
+  - **FIXED:** Server name column added to verification table — shows Server 1, Budget Server, Fast Server, Premium Server.
+  - **FIXED:** Country column added to desktop verification table.
+  - **FIXED:** Removed colored background from bottom sheet modal cards (bg-white instead of bg-slate-100).
+  - **FIXED:** Updated `PROVIDER_TO_SERVER` mapping and `list_orders` server_names to match frontend names.
+  - **VERIFIED:** Travel Section overhaul working correctly — dynamic search, multi-city, Flights/Stays/Car Rentals/Attractions tabs, theme colors.
   - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`
 
 - **2026-03-08 (Session 16b)**: Provider/Operator Selection Modal Implementation
-  - **NEW:** Bottom sheet modal for 5sim and SMS Bower operator/provider selection
-    - Shows all available operators with individual prices sorted cheapest first
-    - Displays delivery success rate percentage for 5sim operators
-    - "Cheapest" badge on the lowest-priced option
-    - Count of available numbers per operator
-    - Both NGN and USD prices displayed
-  - **NEW:** "Change" button to reopen operator selection modal after making a selection
-  - **NEW:** "Select Operator" prompt appears when service is selected but no operator chosen
-  - **FIXED:** Timers now provider-specific:
-    - 5sim: 20 minutes
-    - SMS Bower: 25 minutes  
-    - Other providers: 10 minutes (default)
-  - **NEW:** Backend endpoints:
-    - `GET /api/services/smsbower/providers?country=X&service=Y` - Returns all providers for a service with prices
-    - `GET /api/services/5sim/operators?country=X&service=Y` - Returns all operators with delivery rates
-  - **UPDATED:** Purchase flow now includes selected provider_id for SMS Bower and operator for 5sim
-  - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`, `/app/frontend/src/index.css`
+  - Bottom sheet modal for 5sim and SMS Bower operator/provider selection
+  - Timers: 5sim=20min, SMS Bower=25min, Text Verified=5min, default=10min
+  - Backend endpoints for operator/provider fetching
+  - Purchase flow includes selected operator
 
-- **2026-03-08 (Session 16)**: SMS Provider Service Names Rework (P0 Complete)
-  - **FIXED:** SMS Bower integration completely refactored to use correct API endpoints
-  - **FIXED:** Tiger SMS services now show full names instead of codes
-  - **FIXED:** SMS Bower countries show proper names not numeric codes
-  - **FIXED:** Frontend service dropdown was not displaying options
-  - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`
-
-- **2026-03-08 (Session 15)**: SMS Provider Database Caching Implementation
-  - **FIXED:** Tiger SMS and SMS Bower providers now functional with database caching
-  - **NEW:** Database caching for Tiger SMS - 20,960 services cached across 200 countries
-  - **NEW:** Admin endpoints for provider sync
+- **2026-03-08 (Session 16)**: SMS Provider Service Names Rework
+  - SMS Bower integration refactored to correct API endpoints
+  - Tiger SMS full service names (400+ mappings)
 
 ## Known Issues
 
@@ -60,7 +38,7 @@
 - KYC verification retry flow untested
 - Payscribe webhook fee handling untested
 - Refactor monolithic server.py into modular routers
-- Break down large NewDashboard.js into smaller components
+- Break down large React components
 
 ## Upcoming Tasks
 - **P0:** Secure all bill payments with a transaction PIN
@@ -81,9 +59,27 @@
 - **SMS Providers**: 5sim, smspool, daisysms, Tiger SMS, SMS Bower, Text Verified
 - **Travel**: Amadeus API
 
+## Timer Durations
+| Provider | Timer |
+|----------|-------|
+| 5sim | 20 minutes |
+| SMS Bower | 25 minutes |
+| Text Verified | 5 minutes |
+| Tiger SMS | 10 minutes (default) |
+| Others | 10 minutes (default) |
+
+## Server Name Mappings (User-Facing)
+| Provider | Server Name |
+|----------|-------------|
+| Text Verified | Premium Server |
+| 5sim | Server 1 |
+| SMS Bower | Budget Server |
+| Tiger SMS | Fast Server |
+| DaisySMS | US Server |
+| SMSPool | Server 1 |
+
 ## Files of Reference
-- /app/backend/server.py - Main backend (heavily modified)
-- /app/frontend/src/components/VirtualNumbersSection.js - Virtual numbers with provider modal
-- /app/frontend/src/components/TravelSection.js - Travel booking section
-- /app/frontend/src/pages/NewDashboard.js - Main dashboard
-- /app/frontend/src/index.css - Custom styles including bottom-sheet animation
+- /app/backend/server.py — Main backend
+- /app/frontend/src/components/VirtualNumbersSection.js — Virtual numbers with provider modal
+- /app/frontend/src/components/TravelSection.js — Travel booking section
+- /app/frontend/src/pages/NewDashboard.js — Main dashboard
