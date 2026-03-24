@@ -1,63 +1,47 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
-- **2026-03-24 (Session 17b)**: API Key Decryption + ₦500 Minimum Price Fix
-  - **FIXED:** SMS Bower API keys — All 10 occurrences of `config.get('smsbower_api_key')` changed to `get_api_key(config, 'smsbower_api_key', '')` which handles Fernet decryption. This was causing SMS Bower failures on the deployed Contabo server where keys are encrypted.
-  - **FIXED:** Tiger SMS API keys already used `get_api_key()` correctly (8 occurrences verified).
-  - **FIXED:** ₦500 minimum price enforced across ALL servers:
-    - Backend: `calculate-price` and `purchase` endpoints now enforce `final_price_ngn >= 500`
-    - Frontend: `enforceMinPrice()` helper applied to ALL 13+ price display points (service dropdowns, total cost, pool selection, operator selection, bottom sheet modal)
-  - **FIXED:** All error messages sanitized — zero provider names (SMS Bower, Tiger SMS, Text Verified, 5sim) exposed in user-facing errors. Generic messages like "No numbers available. Please try another server."
-  - **FIXED:** SMS Bower V2 API JSON parsing — `getNumberV2` returns JSON `{activationId, phoneNumber}`, now parsed correctly alongside legacy `ACCESS_NUMBER:id:phone` format.
-  - **FIXED:** Text Verified timer set to 5 minutes (was 10 min default).
-  - **FIXED:** Phone number formatting — `formatPhoneNumber()` cleans malformed data and adds `+` prefix.
-  - **FIXED:** Country display added to order cards (mobile + desktop).
-  - **FIXED:** Server name column in verification table.
-  - Files modified: `/app/backend/server.py`, `/app/frontend/src/components/VirtualNumbersSection.js`
+- **2026-03-24 (Session 17c)**: Critical Security Fix — Double Encryption Prevention
+  - **ROOT CAUSE:** `get_pricing_config` GET endpoint had a HARDCODED masking list missing `smsbower_api_key`, `textverified_api_key`, `textverified_email`, and `amadeus_*` keys. These encrypted (`ENC:gAAAAA...`) values were returned raw to the admin frontend. When admin saved settings, these values were re-encrypted, breaking the keys permanently.
+  - **FIX 1 (GET):** Replaced hardcoded masking list with `SENSITIVE_FIELDS` constant. Now ALL sensitive fields are masked to `********` when they contain `ENC:` prefix.
+  - **FIX 2 (PUT):** Added `not data.xxx.startswith('ENC:')` guard to ALL 20+ sensitive field save conditions. Prevents double-encryption even if encrypted values somehow reach the save endpoint.
+  - **FIX 3:** Added `smsbower_api_key`, `textverified_api_key`, `textverified_email`, `amadeus_api_key`, `amadeus_api_secret` to `SENSITIVE_FIELDS` constant.
+  - **VERIFIED:** `********` values → skipped (no overwrite). `ENC:` values → skipped (no re-encryption). Only raw plaintext → encrypted.
+
+- **2026-03-24 (Session 17b)**: API Key Decryption + ₦500 Minimum Price
+  - All 10 SMS Bower `config.get()` calls → `get_api_key()` for decryption
+  - ₦500 minimum price enforced in backend (calculate-price, purchase) and frontend (13+ display points)
+  - Error messages sanitized — no provider names exposed
+  - SMS Bower V2 JSON parsing fixed
+  - Text Verified timer → 5 min
 
 - **2026-03-24 (Session 17a)**: Tiger SMS Phone Parsing + Travel Verification
-  - Fixed Tiger SMS phone number parsing (str(dict).split(':') bug)
-  - Verified Travel Section overhaul working correctly
+  - Fixed Tiger SMS phone parsing, server names, country display, modal backgrounds
 
 ## Known Issues
+### P1
+- "Make Admin" button not working on live server
+- Bill Payments PIN not yet implemented
 
-### P1 (High Priority)
-- **"Make Admin" button** not working on live server
-- **Bill Payments PIN**: PIN protection not yet implemented
-
-### P2 (Medium Priority)
-- Reseller Portal horizontal scroll issue on mobile
-- End-to-end virtual card creation flow untested
-- KYC verification retry flow untested
+### P2
+- Reseller Portal horizontal scroll on mobile
+- Virtual card creation e2e untested
+- KYC retry flow untested
 - Payscribe webhook fee handling untested
-- Refactor monolithic server.py into modular routers
-- Break down large React components
 
-## Timer Durations
-| Provider | Timer |
-|----------|-------|
-| 5sim | 20 minutes |
-| SMS Bower | 25 minutes |
-| Text Verified | 5 minutes |
-| Tiger SMS | 10 minutes (default) |
-| Others | 10 minutes (default) |
+## Upcoming Tasks
+- P0: Secure bill payments with transaction PIN
+- P1: Refactor server.py into modular APIRouter
+- P2: Break down large React components
 
-## Server Name Mappings (User-Facing)
-| Provider | Server Name |
-|----------|-------------|
-| Text Verified | Premium Server |
-| 5sim | Server 1 |
-| SMS Bower | Budget Server |
-| Tiger SMS | Fast Server |
-| DaisySMS | US Server |
-| SMSPool | Server 1 |
-
-## Price Rules
-- **Minimum ₦500** enforced on ALL services across ALL servers
-- Applied at: Backend (calculate-price, purchase) + Frontend (all display points)
+## Security: Sensitive Fields
+All fields in `SENSITIVE_FIELDS` constant are:
+- Encrypted on save via `encrypt_secret()`
+- Masked to `********` in admin GET responses
+- Protected from double-encryption with `ENC:` guard on save
+- Decrypted on read via `get_api_key()`
 
 ## Files of Reference
-- /app/backend/server.py — Main backend
-- /app/frontend/src/components/VirtualNumbersSection.js — Virtual numbers
-- /app/frontend/src/components/TravelSection.js — Travel section
-- /app/frontend/src/pages/NewDashboard.js — Main dashboard
+- /app/backend/server.py
+- /app/frontend/src/components/VirtualNumbersSection.js
+- /app/frontend/src/components/TravelSection.js

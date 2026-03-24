@@ -460,7 +460,8 @@ SENSITIVE_FIELDS = [
     'plisio_secret_key', 'plisio_webhook_secret',
     'payscribe_api_key', 'payscribe_public_key', 'payscribe_webhook_secret',
     'reloadly_client_id', 'reloadly_client_secret',
-    'smtp_email', 'smtp_password'
+    'smtp_email', 'smtp_password',
+    'amadeus_api_key', 'amadeus_api_secret'
 ]
 
 # MongoDB connection with error handling
@@ -11239,19 +11240,11 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
 
     # Never expose raw provider API keys in admin GET (security)
     config_sanitized = dict(config)
-    for key in [
-        'daisysms_api_key', 'tigersms_api_key', 'smspool_api_key', 'fivesim_api_key',
-        'paymentpoint_api_key', 'paymentpoint_secret', 'paymentpoint_business_id',
-        'ercaspay_secret_key', 'ercaspay_api_key',
-        'plisio_secret_key', 'plisio_webhook_secret',
-        'payscribe_api_key', 'payscribe_public_key', 'payscribe_webhook_secret',
-        'reloadly_client_id', 'reloadly_client_secret',  # Mask Reloadly credentials
-        'smtp_email', 'smtp_password'  # Mask SMTP credentials
-    ]:
-        if key in config_sanitized and config_sanitized[key] and str(config_sanitized[key]).startswith('ENC:'):
-            config_sanitized[key] = '********'  # masked in GET; editable via PUT
-        elif key in config_sanitized and config_sanitized[key] and key in ['smtp_password', 'reloadly_client_secret']:
-            config_sanitized[key] = '********'  # Always mask passwords
+    for key in SENSITIVE_FIELDS:
+        if key in config_sanitized and config_sanitized[key]:
+            val = str(config_sanitized[key])
+            if val.startswith('ENC:') or key in ['smtp_password', 'reloadly_client_secret']:
+                config_sanitized[key] = '********'  # masked in GET; editable via PUT
 
     # Expose whether keys are configured (from DB or env)
     config_sanitized['paymentpoint_configured'] = bool(
@@ -11440,27 +11433,27 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['rub_to_usd_rate'] = data.rub_to_usd_rate
     
     # Sensitive fields - encrypt if master key is set
-    if data.daisysms_api_key is not None and data.daisysms_api_key != '********':
+    if data.daisysms_api_key is not None and data.daisysms_api_key != '********' and not data.daisysms_api_key.startswith('ENC:'):
         update_fields['daisysms_api_key'] = encrypt_secret(data.daisysms_api_key)
         updated_sensitive_keys.append('daisysms_api_key')
-    if data.smspool_api_key is not None and data.smspool_api_key != '********':
+    if data.smspool_api_key is not None and data.smspool_api_key != '********' and not data.smspool_api_key.startswith('ENC:'):
         update_fields['smspool_api_key'] = encrypt_secret(data.smspool_api_key)
         updated_sensitive_keys.append('smspool_api_key')
-    if data.fivesim_api_key is not None and data.fivesim_api_key != '********':
+    if data.fivesim_api_key is not None and data.fivesim_api_key != '********' and not data.fivesim_api_key.startswith('ENC:'):
         update_fields['fivesim_api_key'] = encrypt_secret(data.fivesim_api_key)
         updated_sensitive_keys.append('fivesim_api_key')
     
     # New SMS Provider Keys - Tiger SMS, SMS Bower, Text Verified
-    if data.tigersms_api_key is not None and data.tigersms_api_key != '********':
+    if data.tigersms_api_key is not None and data.tigersms_api_key != '********' and not data.tigersms_api_key.startswith('ENC:'):
         update_fields['tigersms_api_key'] = encrypt_secret(data.tigersms_api_key)
         updated_sensitive_keys.append('tigersms_api_key')
-    if data.smsbower_api_key is not None and data.smsbower_api_key != '********':
+    if data.smsbower_api_key is not None and data.smsbower_api_key != '********' and not data.smsbower_api_key.startswith('ENC:'):
         update_fields['smsbower_api_key'] = encrypt_secret(data.smsbower_api_key)
         updated_sensitive_keys.append('smsbower_api_key')
-    if data.textverified_api_key is not None and data.textverified_api_key != '********':
+    if data.textverified_api_key is not None and data.textverified_api_key != '********' and not data.textverified_api_key.startswith('ENC:'):
         update_fields['textverified_api_key'] = encrypt_secret(data.textverified_api_key)
         updated_sensitive_keys.append('textverified_api_key')
-    if data.textverified_email is not None and data.textverified_email != '********':
+    if data.textverified_email is not None and data.textverified_email != '********' and not data.textverified_email.startswith('ENC:'):
         update_fields['textverified_email'] = encrypt_secret(data.textverified_email)
         updated_sensitive_keys.append('textverified_email')
     
@@ -11476,34 +11469,34 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['daisysms_advanced_markup'] = data.daisysms_advanced_markup
 
     # Payment Gateway Keys - encrypt sensitive fields
-    if data.paymentpoint_api_key is not None and data.paymentpoint_api_key != '********':
+    if data.paymentpoint_api_key is not None and data.paymentpoint_api_key != '********' and not data.paymentpoint_api_key.startswith('ENC:'):
         update_fields['paymentpoint_api_key'] = encrypt_secret(data.paymentpoint_api_key)
         updated_sensitive_keys.append('paymentpoint_api_key')
-    if data.paymentpoint_secret is not None and data.paymentpoint_secret != '********':
+    if data.paymentpoint_secret is not None and data.paymentpoint_secret != '********' and not data.paymentpoint_secret.startswith('ENC:'):
         update_fields['paymentpoint_secret'] = encrypt_secret(data.paymentpoint_secret)
         updated_sensitive_keys.append('paymentpoint_secret')
-    if data.paymentpoint_business_id is not None and data.paymentpoint_business_id != '********':
+    if data.paymentpoint_business_id is not None and data.paymentpoint_business_id != '********' and not data.paymentpoint_business_id.startswith('ENC:'):
         update_fields['paymentpoint_business_id'] = encrypt_secret(data.paymentpoint_business_id)
         updated_sensitive_keys.append('paymentpoint_business_id')
-    if data.ercaspay_secret_key is not None and data.ercaspay_secret_key != '********':
+    if data.ercaspay_secret_key is not None and data.ercaspay_secret_key != '********' and not data.ercaspay_secret_key.startswith('ENC:'):
         update_fields['ercaspay_secret_key'] = encrypt_secret(data.ercaspay_secret_key)
         updated_sensitive_keys.append('ercaspay_secret_key')
-    if data.ercaspay_api_key is not None and data.ercaspay_api_key != '********':
+    if data.ercaspay_api_key is not None and data.ercaspay_api_key != '********' and not data.ercaspay_api_key.startswith('ENC:'):
         update_fields['ercaspay_api_key'] = encrypt_secret(data.ercaspay_api_key)
         updated_sensitive_keys.append('ercaspay_api_key')
-    if data.plisio_secret_key is not None and data.plisio_secret_key != '********':
+    if data.plisio_secret_key is not None and data.plisio_secret_key != '********' and not data.plisio_secret_key.startswith('ENC:'):
         update_fields['plisio_secret_key'] = encrypt_secret(data.plisio_secret_key)
         updated_sensitive_keys.append('plisio_secret_key')
-    if data.plisio_webhook_secret is not None and data.plisio_webhook_secret != '********':
+    if data.plisio_webhook_secret is not None and data.plisio_webhook_secret != '********' and not data.plisio_webhook_secret.startswith('ENC:'):
         update_fields['plisio_webhook_secret'] = encrypt_secret(data.plisio_webhook_secret)
         updated_sensitive_keys.append('plisio_webhook_secret')
-    if data.payscribe_api_key is not None and data.payscribe_api_key != '********':
+    if data.payscribe_api_key is not None and data.payscribe_api_key != '********' and not data.payscribe_api_key.startswith('ENC:'):
         update_fields['payscribe_api_key'] = encrypt_secret(data.payscribe_api_key)
         updated_sensitive_keys.append('payscribe_api_key')
-    if data.payscribe_public_key is not None and data.payscribe_public_key != '********':
+    if data.payscribe_public_key is not None and data.payscribe_public_key != '********' and not data.payscribe_public_key.startswith('ENC:'):
         update_fields['payscribe_public_key'] = encrypt_secret(data.payscribe_public_key)
         updated_sensitive_keys.append('payscribe_public_key')
-    if data.payscribe_webhook_secret is not None and data.payscribe_webhook_secret != '********':
+    if data.payscribe_webhook_secret is not None and data.payscribe_webhook_secret != '********' and not data.payscribe_webhook_secret.startswith('ENC:'):
         update_fields['payscribe_webhook_secret'] = encrypt_secret(data.payscribe_webhook_secret)
         updated_sensitive_keys.append('payscribe_webhook_secret')
 
@@ -11572,10 +11565,10 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
         update_fields['support_email'] = data.support_email
 
     # Gift Cards Provider settings - encrypt sensitive fields
-    if data.reloadly_client_id is not None and data.reloadly_client_id != '********':
+    if data.reloadly_client_id is not None and data.reloadly_client_id != '********' and not data.reloadly_client_id.startswith('ENC:'):
         update_fields['reloadly_client_id'] = encrypt_secret(data.reloadly_client_id)
         updated_sensitive_keys.append('reloadly_client_id')
-    if data.reloadly_client_secret is not None and data.reloadly_client_secret != '********':
+    if data.reloadly_client_secret is not None and data.reloadly_client_secret != '********' and not data.reloadly_client_secret.startswith('ENC:'):
         update_fields['reloadly_client_secret'] = encrypt_secret(data.reloadly_client_secret)
         updated_sensitive_keys.append('reloadly_client_secret')
     if data.giftcard_markup_percent is not None:
@@ -11666,20 +11659,20 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
             update_fields[key] = val
     
     # Handle SMTP credentials (encrypt sensitive fields)
-    if data.smtp_email is not None and data.smtp_email != '********':
+    if data.smtp_email is not None and data.smtp_email != '********' and not data.smtp_email.startswith('ENC:'):
         update_fields['smtp_email'] = encrypt_secret(data.smtp_email)
         updated_sensitive_keys.append('smtp_email')
-    if data.smtp_password is not None and data.smtp_password != '********':
+    if data.smtp_password is not None and data.smtp_password != '********' and not data.smtp_password.startswith('ENC:'):
         update_fields['smtp_password'] = encrypt_secret(data.smtp_password)
         updated_sensitive_keys.append('smtp_password')
     
     # Amadeus Travel API Settings
-    if data.amadeus_api_key is not None and data.amadeus_api_key != '********':
+    if data.amadeus_api_key is not None and data.amadeus_api_key != '********' and not data.amadeus_api_key.startswith('ENC:'):
         update_fields['amadeus_api_key'] = encrypt_secret(data.amadeus_api_key)
         updated_sensitive_keys.append('amadeus_api_key')
         # Invalidate token when API key changes
         amadeus_token_manager.invalidate_token()
-    if data.amadeus_api_secret is not None and data.amadeus_api_secret != '********':
+    if data.amadeus_api_secret is not None and data.amadeus_api_secret != '********' and not data.amadeus_api_secret.startswith('ENC:'):
         update_fields['amadeus_api_secret'] = encrypt_secret(data.amadeus_api_secret)
         updated_sensitive_keys.append('amadeus_api_secret')
         amadeus_token_manager.invalidate_token()
