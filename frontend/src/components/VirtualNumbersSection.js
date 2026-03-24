@@ -2015,108 +2015,151 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/30"
             onClick={() => setShowProviderModal(false)}
           />
           
-          {/* Modal Content - Full width, 70% height from bottom, responsive */}
+          {/* Modal Content - Full width, 70% height from bottom */}
           <div className="relative w-full bg-white rounded-t-3xl shadow-2xl h-[70vh] flex flex-col animate-slide-up">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
             </div>
             
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-6 pb-3 border-b">
+            <div className="flex items-center justify-between px-5 sm:px-6 pb-4 border-b border-gray-200">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Select Operator</h3>
-                <p className="text-xs sm:text-sm text-gray-500">
-                  {selectedService?.label || selectedService?.name} • {serviceProviders.length} operators available
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Select operator</h3>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                  Choose the rate plan for this service
                 </p>
               </div>
               <button 
                 onClick={() => setShowProviderModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="text-2xl text-gray-400 hover:text-gray-600 font-light"
               >
-                <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
+                ×
               </button>
             </div>
             
             {/* Provider List */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-2 sm:space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
               {providersLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" />
                   <span className="ml-2 text-gray-500">Loading operators...</span>
                 </div>
               ) : serviceProviders.length === 0 ? (
-                <div className="text-center py-8 sm:py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500">
                   <p className="text-sm sm:text-base">No operators available for this service</p>
                 </div>
               ) : (
-                serviceProviders.map((provider, index) => (
-                  <button
-                    key={provider.provider_id || provider.operator || index}
-                    onClick={() => handleProviderSelection(provider)}
-                    className={`w-full p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
-                      selectedServiceProvider?.provider_id === provider.provider_id || 
-                      selectedServiceProvider?.operator === provider.operator
-                        ? 'border-emerald-500 bg-emerald-50'
-                        : 'border-gray-200 hover:border-emerald-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                // Sort by delivery rate (highest first) for 5sim, by price for others
+                [...serviceProviders]
+                  .sort((a, b) => {
+                    // For 5sim, sort by delivery rate (highest first)
+                    if (selectedProvider?.id === '5sim') {
+                      return (b.delivery_rate || 0) - (a.delivery_rate || 0);
+                    }
+                    // For others, sort by price (lowest first)
+                    return (a.price_ngn || 0) - (b.price_ngn || 0);
+                  })
+                  .map((provider, index) => {
+                  const isSelected = selectedServiceProvider?.provider_id === provider.provider_id || 
+                                     selectedServiceProvider?.operator === provider.operator;
+                  const isOutOfStock = (provider.count || 0) === 0;
+                  const hasDeliveryRate = provider.delivery_rate && provider.delivery_rate > 0;
+                  
+                  // Minimum price of ₦500
+                  const displayPriceNgn = Math.max(500, provider.price_ngn || 0);
+                  const displayPriceUsd = displayPriceNgn / 1500; // Convert back to USD for display
+                  
+                  return (
+                    <button
+                      key={provider.provider_id || provider.operator || index}
+                      onClick={() => !isOutOfStock && handleProviderSelection({
+                        ...provider,
+                        price_ngn: displayPriceNgn,
+                        price_usd: displayPriceUsd
+                      })}
+                      disabled={isOutOfStock}
+                      className={`relative w-full p-4 sm:p-5 rounded-2xl transition-all text-left ${
+                        isSelected
+                          ? 'bg-emerald-50'
+                          : 'bg-slate-100 hover:bg-slate-200'
+                      } ${isOutOfStock ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    >
+                      {/* Recommended Badge - Only for first item with stock */}
+                      {index === 0 && !isOutOfStock && (
+                        <div className="absolute -top-2 left-4">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white text-[10px] sm:text-xs font-semibold rounded-full shadow-sm">
+                            <Zap className="w-3 h-3" />
+                            RECOMMENDED
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-start justify-between gap-4 mt-2">
+                        {/* Left Side - Operator Info */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-base sm:text-lg font-bold text-gray-900">
                             {provider.name || provider.operator || `Provider ${provider.provider_id}`}
-                          </span>
-                          {provider.delivery_rate > 0 && (
-                            <span className={`flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap ${
-                              provider.delivery_rate >= 70 ? 'bg-green-100 text-green-700' :
-                              provider.delivery_rate >= 40 ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
+                          </h4>
+                          
+                          {/* Success Rate & SMS Info */}
+                          <div className="flex items-center gap-2 mt-1.5">
+                            {hasDeliveryRate && (
+                              <span className="flex items-center gap-1 text-xs sm:text-sm text-gray-700 bg-white px-2 py-0.5 rounded">
+                                <TrendingUp className="w-3 h-3" />
+                                {provider.delivery_rate.toFixed(0)}%
+                              </span>
+                            )}
+                            <span className="text-xs sm:text-sm text-gray-600 bg-white px-2 py-0.5 rounded">
+                              {'>'}1 SMS
+                            </span>
+                          </div>
+                          
+                          {/* Success Rate Note */}
+                          <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                            <span className="text-amber-500">⚡</span>
+                            Success Rate: {hasDeliveryRate ? `${provider.delivery_rate.toFixed(0)}%` : 'Varies'}
+                          </p>
+                        </div>
+                        
+                        {/* Right Side - Price, Stock & Cart */}
+                        <div className="text-right flex-shrink-0">
+                          {/* Price and Cart on same line */}
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="text-base sm:text-lg font-bold text-gray-900">
+                              ${displayPriceUsd.toFixed(4)} <span className="text-gray-500">(₦{displayPriceNgn.toFixed(0)})</span>
+                            </div>
+                            {/* Cart Icon */}
+                            <div className={`inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${
+                              isSelected ? 'bg-emerald-600' : 'bg-emerald-500'
                             }`}>
-                              <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                              {provider.delivery_rate.toFixed(1)}%
-                            </span>
-                          )}
-                          {index === 0 && (
-                            <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs bg-blue-100 text-blue-700 px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap">
-                              <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                              Cheapest
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] sm:text-xs text-gray-500">
-                            {provider.count || 0} available
-                          </span>
+                              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                            </div>
+                          </div>
+                          {/* Stock count */}
+                          <p className={`text-xs sm:text-sm mt-1 ${isOutOfStock ? 'text-red-500' : 'text-emerald-600'}`}>
+                            {isOutOfStock ? 'Out of stock' : `${provider.count?.toLocaleString()} numbers`}
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-base sm:text-xl font-bold text-emerald-600">
-                          ₦{provider.price_ngn?.toFixed(2)}
-                        </span>
-                        <span className="block text-[9px] sm:text-[10px] text-gray-400">
-                          ${provider.price_usd?.toFixed(3)}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                ))
+                    </button>
+                  );
+                })
               )}
             </div>
             
-            {/* Footer */}
-            <div className="p-4 sm:p-6 border-t bg-gray-50">
-              <button
-                onClick={() => setShowProviderModal(false)}
-                disabled={!selectedServiceProvider}
-                className="w-full py-3 sm:py-4 bg-emerald-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-emerald-700 transition-colors disabled:bg-gray-400"
-              >
-                {selectedServiceProvider ? 'Confirm Selection' : 'Select an Operator'}
-              </button>
+            {/* Footer Note */}
+            <div className="px-4 sm:px-6 py-4 bg-slate-50 border-t border-gray-200">
+              <div className="flex items-start gap-2 text-xs sm:text-sm text-gray-500">
+                <span className="text-gray-400 mt-0.5">ⓘ</span>
+                <p>You will be issued one of the virtual numbers available in stock. Please note that the prices may vary</p>
+              </div>
             </div>
           </div>
         </div>
