@@ -1826,9 +1826,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   return (
                     <div key={order.id} className={`rounded-xl p-3 border ${hasOTP ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-100'}`}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold text-gray-800">
-                          {order.service_name || getServiceName(order.service)}
-                        </span>
+                        <div>
+                          <span className="text-xs font-semibold text-gray-800">
+                            {order.service_name || getServiceName(order.service)}
+                          </span>
+                          {order.server_name && (
+                            <span className="ml-1.5 text-[10px] text-gray-400 font-medium">{order.server_name}</span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1">
                           <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${hasOTP ? 'bg-emerald-500 text-white' : 'bg-green-100 text-green-700'}`}>
                             {hasOTP ? '✓ Code Received' : 'Waiting...'}
@@ -1897,6 +1902,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Service</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Server</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Phone</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Code</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Status</th>
@@ -1931,6 +1937,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           <td className="py-3 px-3">
                             <span className="text-xs font-medium text-gray-800">
                               {order.service_name || getServiceName(order.service)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="text-xs text-gray-500">
+                              {order.server_name || '—'}
                             </span>
                           </td>
                           <td className="py-3 px-3">
@@ -2086,7 +2097,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       className={`relative w-full p-4 sm:p-5 rounded-2xl transition-all text-left ${
                         isSelected
                           ? 'bg-emerald-50'
-                          : 'bg-slate-100 hover:bg-slate-200'
+                          : 'bg-white hover:bg-gray-50'
                       } ${isOutOfStock ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                       {/* Recommended Badge - Only for first item with stock */}

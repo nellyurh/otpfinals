@@ -737,8 +737,10 @@ FIVESIM_API_KEY = os.environ.get('FIVESIM_API_KEY')
 PROVIDER_TO_SERVER = {
     'daisysms': 'US Server',
     'smspool': 'Server 1',
-    '5sim': 'Server 2',
-    'tigersms': 'Server 3'
+    '5sim': 'Server 1',
+    'tigersms': 'Fast Server',
+    'smsbower': 'Budget Server',
+    'textverified': 'Premium Server'
 }
 
 def get_server_name(provider: str) -> str:
@@ -6030,7 +6032,7 @@ async def purchase_number(
             actual_price = result.get('actual_price', base_price_usd)
     elif provider == 'tigersms':
         result = await purchase_number_tigersms(data.service, data.country)
-        if result and 'ACCESS_NUMBER' in str(result):
+        if result and result.get('success'):
             actual_price = base_price_usd
     elif provider == 'smsbower':
         # SMS Bower purchase - pass provider_id if selected
@@ -6129,13 +6131,14 @@ async def purchase_number(
             else:
                 error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
                 raise HTTPException(status_code=400, detail=f"Text Verified error: {error_msg}")
-        else:  # tigersms
-            response_text = str(result)
-            if 'ACCESS_NUMBER' in response_text:
-                parts = response_text.split(':')
-                if len(parts) >= 3:
-                    activation_id = parts[1].strip()
-                    phone_number = parts[2].strip()
+        elif provider == 'tigersms':
+            # Tiger SMS returns a parsed dict with 'activation_id' and 'phone_number'
+            if result and result.get('success'):
+                activation_id = str(result.get('activation_id', ''))
+                phone_number = str(result.get('phone_number', ''))
+            else:
+                error_text = result.get('error', 'Unknown error') if result else 'Unknown error'
+                raise HTTPException(status_code=400, detail=f"Tiger SMS error: {error_text}")
     
     if not activation_id or not phone_number:
         raise HTTPException(status_code=400, detail="Failed to get phone number from provider")
@@ -6281,7 +6284,16 @@ async def list_orders(user: dict = Depends(get_current_user)):
     server_names = {
         'server1': 'Server 1',
         'server2': 'Global Server', 
-        'us_server': 'US Server'
+        'us_server': 'US Server',
+        # New provider-based server values
+        'textverified_us': 'Premium Server',
+        'textverified_global': 'Premium Server',
+        '5sim_us': 'Server 1',
+        '5sim_global': 'Server 1',
+        'smsbower_us': 'Budget Server',
+        'smsbower_global': 'Budget Server',
+        'tigersms_us': 'Fast Server',
+        'tigersms_global': 'Fast Server',
     }
     for order in orders:
         server = order.get('server', '')
@@ -11268,7 +11280,7 @@ async def get_public_branding():
             "Buy Premium Quality OTP in Cheapest Price and stay safe from unwanted promotional sms and calls and also prevent your identity from fraudsters",
         ),
         "banner_images": config.get("banner_images", []),
-        "reseller_api_base_url": config.get("reseller_api_base_url", "https://billhub-payments.preview.emergentagent.com"),
+        "reseller_api_base_url": config.get("reseller_api_base_url", "https://tiger-sms-orders.preview.emergentagent.com"),
         "whatsapp_support_url": config.get("whatsapp_support_url", "https://wa.me/2348000000000"),
         "telegram_support_url": config.get("telegram_support_url", "https://t.me/yoursupport"),
         "support_email": config.get("support_email", "support@smsrelay.com"),

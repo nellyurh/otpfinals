@@ -1,78 +1,68 @@
 <analysis>**original_problem_statement:**
-The user is building BillHub, a comprehensive financial services application. The high-priority task is a major rework of the SMS provider services. The user wants to keep the existing  page but add two new options, US Numbers and Other Countries, to the server dropdown. These options should display a grid of provider cards with generic names (e.g., Premium Server) instead of the actual provider names (Text Verified, 5sim, SMS Bower, Tiger SMS).
+The user is building BillHub, a comprehensive financial services application. The initial task was a major rework of the SMS provider services, which has now evolved into a series of detailed UI/UX enhancements for the Virtual Numbers feature.
 
-A critical requirement is that the backend must fetch and cache available countries and services from the provider APIs (specifically Tiger SMS and SMS Bower) for the integration to work. Throughout the session, the user has provided feedback and updated API documentation to correct the implementation, including fixing service name displays (codes vs. full names), implementing balance lookups, fixing the purchase/cancellation flow, and correcting the API key saving mechanism. The latest request from the user involves a complete refactor of the SMS Bower integration based on new API documentation they provided.
+The latest user requests are:
+1.  A bottom-sheet modal for selecting sub-providers (operators) for 5sim and SMS Bower, showing individual prices and delivery rates.
+2.  Adjust timers for active orders: 20 minutes for 5sim and 25 minutes for SMS Bower.
+3.  Change the UI flow to first show services without prices, and then open the provider selection modal automatically when a service is selected.
+4.  Style the modal to be responsive, full-width, and match a user-provided reference image, using admin-defined colors.
+5.  Implement specific business logic: sort 5sim operators by the highest success rate, sort SMS Bower providers by the lowest price, and enforce a minimum price of ₦500 for all services.
+6.  Fix bugs in the active order display for Tiger SMS purchases: the phone number format is incorrect, the server name is missing, and the background color of the modal cards needs to be removed.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has implemented a complex SMS provider feature. The frontend () dynamically renders provider cards based on a dropdown selection. The backend () has been extensively modified with new endpoints, caching logic, and integration functions for three new providers: Tiger SMS, SMS Bower, and Text Verified. The admin panel () now includes configuration fields, balance lookups, and a manual data sync trigger for these providers.
-
-Key functionalities completed include:
--   Database caching for provider services and countries.
--   Fixing a critical bug preventing API keys from being saved to the database.
--   Implementing balance lookups for all new providers.
--   Implementing and testing the purchase/cancellation flow.
--   Correcting the Text Verified authentication to use a bearer token.
--   Adding a backend mapping to show user-friendly service names instead of codes.
-
-However, the implementation for SMS Bower is based on outdated API information and needs to be refactored as per the user's latest instructions.
+The agent has successfully implemented the complex SMS provider feature with a multi-provider selection flow.
+-   The frontend () features a dynamic UI that shows services, opens a responsive bottom-sheet modal for operator selection (for 5sim & SMS Bower), and displays active orders with custom timers.
+-   The modal has been styled multiple times to meet user specifications, including using admin-defined colors and a layout from a reference image.
+-   The backend () has new endpoints to fetch operators/providers for specific services and has updated purchase logic to handle the operator selection.
+-   Business logic for sorting providers/operators and enforcing a ₦500 minimum price is implemented on the frontend.
 
 **Last working item**:
--   Last item agent was working: The user provided new, correct API documentation for SMS Bower, detailing the  endpoint for service names and the  endpoint for pricing. The user also reiterated that Tiger SMS service names are still showing as codes. The agent was acknowledging this and preparing to refactor the SMS Bower integration and fix the service name display.
+-   Last item agent was working: The user reported three issues with the active order display for Tiger SMS purchases:
+    1.  The phone number is displayed incorrectly (e.g., ).
+    2.  The name of the server the number was purchased from (e.g., Tiger SMS) is not being displayed on the order card.
+    3.  The cards within the bottom-sheet selection modal have a colored background that should be removed.
+    The agent had begun investigating the cause, identifying that the phone number format issue likely stems from how the Tiger SMS API response is parsed and stored in the backend  function.
 -   Status: IN PROGRESS
 -   Agent Testing Done: N
 -   Which testing method agent to use? both
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** SMS Bower integration is incorrect and needs a complete rework to use the  and  endpoints as per the user's latest documentation. (P0, HIGHEST)
--   **Issue 2:** Tiger SMS and SMS Bower services still show short codes (e.g., 'wa') instead of full names (e.g., 'WhatsApp') in the UI dropdown. (P0)
--   **Issue 3:** UI glitch in Other Countries mode where raw numeric codes appear in the country dropdown before the names are loaded. (P1)
--   **Issue 4:** The P0 task to verify the completely overhauled Travel Section (UI, dynamic search, pricing) has been pending. (P1)
--   **Issue 5:** Make Admin button is not working on the live server. (P1)
--   **Issue 6:** Reseller Portal UI has a horizontal scroll issue on mobile. (P2)
--   **Issue 7:** End-to-end user flow for virtual card creation is not fully tested. (P2)
--   **Issue 8:** Implemented KYC verification retry flow is untested. (P2)
--   **Issue 9:** Implemented Payscribe webhook fee handling is untested. (P2)
+-   **Issue 1:** Fix active order display for Tiger SMS. (P0, HIGHEST)
+-   **Issue 2:** Remove colored background from the bottom sheet modal cards. (P0)
+-   **Issue 3:** The P0 task to verify the completely overhauled Travel Section (UI, dynamic search, pricing) has been pending. (P1)
+-   **Issue 4:** Make Admin button is not working on the live server. (P1)
+-   **Issue 5:** Reseller Portal UI has a horizontal scroll issue on mobile. (P2)
+-   **Issue 6:** End-to-end user flow for virtual card creation is not fully tested. (P2)
+-   **Issue 7:** Implemented KYC verification retry flow is untested. (P2)
+-   **Issue 8:** Implemented Payscribe webhook fee handling is untested. (P2)
 
 **Issues Detail:**
--   **Issue 1: Rework SMS Bower integration.**
-    -   **Attempted fixes:** The agent built the integration using older  and  endpoints, which is now confirmed to be incorrect.
+-   **Issue 1: Fix active order display for Tiger SMS.**
+    -   **Attempted fixes:** None. The agent was investigating the code.
     -   **Next debug checklist:**
-        1.  In , modify  to call the  endpoint (as per user message #514) to fetch the full list of services and their proper names. Cache this response.
-        2.  Update the  function and associated frontend logic to use the new  endpoint structure. This is crucial as pricing is now nested and dependent on an internal . The backend will need to intelligently select a sub-provider (e.g., the cheapest) from the response.
-    -   **Why fix this issue and what will be achieved with the fix?** The current SMS Bower integration is functionally broken. This fix will align it with the correct API, enabling proper service listing and pricing.
+        1.  **Backend ():** Inspect the  function. The Tiger SMS API returns data as . The parsing logic seems to exist, but the way the result is stored in the  collection is likely incorrect. Trace the  value from API response to database storage and fix the data assignment.
+        2.  **Backend ():** Modify the main  function to explicitly save the provider name (e.g., 'tigersms') to a  or  field in the MongoDB  document upon creation.
+        3.  **Frontend ():** In the active orders rendering loop (around line 1840), add JSX to display the  field.
+        4.  **Frontend ():** Correct the display of  to ensure only the number is rendered once the backend storage is fixed.
+    -   **Why fix this issue and what will be achieved with the fix?** The current display is broken, making purchased numbers unusable and providing an incomplete user experience.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Both
+-   **Issue 2: Remove colored background from bottom sheet modal cards.**
+    -   **Attempted fixes:** The agent has styled the modal multiple times. This is a new styling request.
+    -   **Next debug checklist:**
+        1.  In , locate the JSX for the individual provider/operator cards inside the bottom sheet modal (around line 2080).
+        2.  Remove the  and  classes from the card's main .
+    -   **Why fix this issue and what will be achieved with the fix?** To align the UI with the user's latest, specific design requirement for a cleaner look.
     -   **Status:** NOT STARTED
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both
--   **Issue 2: Incorrect service names for Tiger SMS and SMS Bower.**
-    -   **Attempted fixes:** The agent created a static service name dictionary on the backend, but it's incomplete.
-    -   **Next debug checklist:**
-        1.  **For SMS Bower:** Use the  endpoint, which provides both the code and the full name for each service. This will completely solve the issue for SMS Bower.
-        2.  **For Tiger SMS:** The provider does not seem to have a similar endpoint. The next step is to significantly expand the static  dictionary in  to be as comprehensive as possible.
-    -   **Why fix this issue and what will be achieved with the fix?** To provide a good user experience by showing clear, understandable service names instead of cryptic codes.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both
--   **Issue 3: UI glitch with country dropdown loading.**
-    -   **Attempted fixes:** Agent's previous fixes were partial. The root cause is the UI rendering the dropdown before the asynchronous data fetch (which maps codes to names) is complete.
-    -   **Next debug checklist:**
-        1.  In , introduce a loading state (e.g., ).
-        2.  Set this state to  before fetching countries and  after the data is processed.
-        3.  While  is , disable the country  component and show a Loading countries... placeholder.
-    -   **Why fix this issue and what will be achieved with the fix?** This will fix a visual bug and improve the perceived quality and stability of the UI.
-    -   **Status:** IN PROGRESS
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Frontend
 
 **In progress Task List**:
--   **Task 1: Finalize New SMS Provider Integration**
-    -   **Where to resume:** Start by refactoring the SMS Bower integration in  based on the new API documentation in user message #514.
-    -   **What will be achieved with this?** A fully functional and correct SMS provider system that meets all user requirements, including accurate service names, correct pricing, and a polished UI.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on something:** None
+-   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
@@ -85,84 +75,86 @@ However, the implementation for SMS Bower is based on outdated API information a
     -   Implement account lockout after a set number of failed login attempts.
 
 **Completed work in this session**
--   Implemented and fixed DB caching for Tiger SMS and SMS Bower services/countries.
--   Added admin-side UI and endpoints for manually syncing provider data.
--   Fixed a critical bug preventing new provider API keys from being saved from the Admin Panel.
--   Implemented and tested balance lookup functionality for all three new providers.
--   Corrected the Text Verified integration to use the proper bearer token authentication flow.
--   Implemented and tested the full purchase and cancellation flow for the new providers.
--   Implemented a backend service name mapping to translate service codes to full names.
--   Fixed a frontend bug where the service selection dropdown would not render options.
-
-**Earlier issues found/mentioned but not fixed**
--   A user concern about their deployment process was noted in the previous fork but not investigated.
-
-**Known issue recurrence from previous fork**
--   The implementation of the SMS feature has been highly iterative, requiring multiple major corrections based on user feedback and documentation. This highlights a recurring difficulty in understanding complex requirements upfront.
+-   **SMS Provider Refactor (P0 from previous fork):**
+    -   Correctly integrated SMS Bower API using  and .
+    -   Fixed service name display for Tiger SMS by greatly expanding the backend  dictionary.
+    -   Resolved a frontend bug causing service dropdowns to be empty.
+-   **Feature: Provider/Operator Selection Modal:**
+    -   Created a responsive, bottom-sheet modal for 5sim and SMS Bower.
+    -   The modal displays sub-providers with individual pricing, availability, and success rates.
+    -   Implemented backend endpoints to support fetching this data.
+    -   The purchase flow now uses the user's selected operator.
+-   **Feature: Custom Order Timers:**
+    -   Implemented provider-specific timers for active orders (20 mins for 5sim, 25 for SMS Bower).
+-   **UI/UX Overhaul (based on user feedback):**
+    -   Changed UI flow to show services without prices, then auto-open the modal on selection.
+    -   Redesigned the modal twice to match a user-provided screenshot and admin colors.
+    -   Refined the modal UI by removing borders and replacing icons.
+    -   Implemented sorting logic (lowest price for SMS Bower, highest success rate for 5sim).
+    -   Enforced a minimum price of ₦500 on all SMS services, rounding up any lower prices.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **API Integration & Refactoring:** Extensive work was done to integrate and repeatedly refactor three distinct third-party SMS APIs (Tiger SMS, SMS Bower, Text Verified), handling different authentication mechanisms and data formats.
--   **Database Caching:** A system was implemented to fetch and cache provider data (services, countries) in MongoDB, including admin-initiated syncs to keep data fresh.
--   **Complex Frontend State:** The frontend manages a complex state for a multi-step process involving dynamic fetching and display of countries and services based on user selections.
+-   **Bottom-Sheet Modal:** A custom, responsive UI component was created from scratch to handle provider/operator selection, including animations and dynamic content.
+-   **Conditional API Logic:** The backend now has specific endpoints and logic to handle the nested provider structures of 5sim and SMS Bower.
+-   **Complex Frontend State Management:**  juggles state for service selection, modal visibility, fetching and displaying provider data, and managing the selected operator for purchases.
+-   **Client-Side Business Logic:** Critical logic, such as sorting providers by price/success rate and enforcing a minimum price, is handled in the frontend component.
 
 **key DB schema**
--   ** (collection):** Stores service lists for providers. Fields include , , , , .
--   ** (collection):** Fixed to correctly save provider keys: , , , , and  flags.
+-   ** (collection):** This collection stores active number purchases. The  field for Tiger SMS orders is likely storing malformed data. It also needs a  field to store the provider name.
+-   ** (collection):** This caches service and pricing data. It now supports the multi-provider structure for SMS Bower.
 
 **All files of reference**
 -   
 -   
 -   
--   User message #514 (contains the latest, correct API documentation for SMS Bower)
+-   
 
 **Critical Info for New Agent**
--   **PRIORITY 1:** The SMS Bower integration is based on outdated information. You MUST refactor it using the new API documentation provided by the user in message #514. This involves changing how services and prices are fetched.
--   **PRIORITY 2:** The user is insistent on seeing proper service names (e.g., WhatsApp) instead of codes (wa). For SMS Bower, use the new  endpoint. For Tiger SMS, you must find a way to map the codes to names, likely by expanding the existing  dictionary.
--   **PRIORITY 3:** Fix the UI bug where raw numbers or codes are briefly visible in dropdowns before the proper names load. This requires implementing a proper loading state in the frontend.
+-   **PRIORITY 1 (Current Task):** Fix the active order display for Tiger SMS. The phone number format is broken, and the server name is missing. Investigate  in  to fix how the order data is saved to MongoDB. Then, update the rendering logic in  to display the corrected data.
+-   **PRIORITY 2:** Remove the colored background from the provider cards inside the bottom sheet modal. This is a simple CSS class removal in .
+-   The user is very detail-oriented about the UI. Pay close attention to their feedback and screenshots. The modal design has been highly iterative.
+-   Remember the provider-specific logic: 5sim and SMS Bower use the operator selection modal; others do not. Timers and sorting logic are also provider-specific.
 
 **documents and test reports created in this job**
 -    (Updated)
--    (Partially obsolete due to API changes)
+-    (Partially outdated due to new features)
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **(LATEST)** User provided new, detailed API documentation for SMS Bower (, ) and confirmed that Tiger SMS still needs service names fixed.
-9.  User reported several UI issues: service codes showing instead of names for Tiger SMS and SMS Bower, and a bug where numbers appear in the country dropdown before names load.
-8.  User requested a full end-to-end test of the purchase, cancel, and refund flow for the new providers.
-7.  User provided the correct authentication flow for Text Verified (using a bearer token).
-6.  User requested the implementation of balance lookups for all new providers to confirm keys are working.
-5.  User reported that SMS Bower and Text Verified were still not working after they configured the keys in the database.
-4.  User reported that services for Text Verified and SMS Bower weren't loading, and Tiger SMS services were showing codes instead of names.
-3.  Agent confirms a fix for a previous issue.
-2.  User acknowledges a previous fix.
-1.  Agent provides a summary of completed work.
+10. **(LATEST)** User reported issues with the Tiger SMS active order display: incorrect phone number format, missing server name, and unwanted colored background on modal cards.
+9.  Agent confirmed completion of the previous UI refinement task.
+8.  User requested multiple UI fixes for the modal: no border, add a cart icon, sort 5sim by success rate, and round all prices below ₦500 up to ₦500.
+7.  Agent confirmed completion of the modal redesign.
+6.  User provided a screenshot and requested a complete redesign of the bottom-sheet modal to match it, using admin colors.
+5.  Agent confirmed completion of the responsive, full-width modal.
+4.  User requested a new flow: show services without prices first, then automatically open a full-width, responsive bottom sheet modal upon service selection.
+3.  Agent confirmed the implementation of the provider selection modal and custom timers.
+2.  User requested the provider selection modal for 5sim/SMS Bower, with individual prices and delivery rates, and also requested custom timers for these providers.
+1.  Agent confirmed the fix for the initial P0 task from the previous fork (correcting service name display).
 
 **Project Health Check:**
 -   **Broken:**
-    -   The SMS Bower integration is functionally incorrect and needs a refactor based on new API docs.
-    -   Service name display for Tiger SMS and SMS Bower is incomplete/incorrect.
-    -   UI loading for country/service dropdowns is buggy.
+    -   Active order display for Tiger SMS is broken (phone number format, missing server name).
     -   The Make Admin button functionality is still broken.
 -   **Mocked:** None.
 
 **3rd Party Integrations**
 -   **Payscribe:** Payments, KYC, virtual cards.
 -   **Amadeus:** Travel platform.
--   **Existing SMS:** 5sim, smspool, daisysms.
--   **In-progress SMS:** Tiger SMS, SMS Bower, Text Verified (all have initial implementations but require the fixes outlined above).
+-   **SMS Providers:** 5sim, smspool, daisysms, Tiger SMS, SMS Bower, Text Verified.
 
 **Testing status**
--   Testing agent used after significant changes: YES, but the report is now partially outdated due to the user providing new API specifications for SMS Bower.
+-   Testing agent used after significant changes: Yes, but its report is now partially outdated. The agent has relied heavily on manual testing with curl and extensive screenshot verification for the latest UI-heavy features.
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: []
--   Known regressions: The SMS Bower integration is now known to be incorrect.
+-   Known regressions: The phone number display for Tiger SMS purchases.
 
 **Credentials to test flow:**
--   A new user can be registered for testing. Admin access will be needed to view provider settings and balances in the Admin Panel. The agent has previously created admin users during testing.
+-   A new user can be registered for testing. Admin access is required to view provider settings. The agent has previously created admin users during testing.
 
 **What agent forgot to execute**
--   The agent did not use the correct API for SMS Bower initially, requiring multiple corrections from the user.
--   The agent's static mapping for service names was an incomplete solution that needs to be expanded.
+-   The agent did not add the server name to the active order card when implementing the purchase flow.
+-   The agent's parsing/storage logic for Tiger SMS phone numbers was flawed, leading to the current display bug.
 -   The P0 task from the previous fork to verify the Travel Section remains unaddressed.</analysis>
