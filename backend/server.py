@@ -3060,18 +3060,14 @@ async def purchase_number_textverified(service: str) -> Optional[Dict]:
         return {'success': False, 'error': str(e)}
 
 async def poll_otp_textverified(verification_id: str) -> Optional[str]:
-    """Poll Text Verified for OTP.
-    
-    Args:
-        verification_id: The verification ID (e.g., 'lr_01KK72SSD1HWPBMWJXATF16M5T')
-    """
+    """Poll Text Verified for OTP."""
     try:
         token = await get_textverified_token()
         if not token:
             return None
         
         async with httpx.AsyncClient() as client:
-            # First get verification details to get the SMS href
+            # First get verification details
             verification_url = f'https://www.textverified.com/api/pub/v2/verifications/{verification_id}'
             resp = await client.get(
                 verification_url,
@@ -3081,32 +3077,69 @@ async def poll_otp_textverified(verification_id: str) -> Optional[str]:
             
             if resp.status_code == 200:
                 data = resp.json()
-                sms_href = data.get('sms', {}).get('href', '')
+                logger.info(f"TV verification response keys: {list(data.keys()) if isinstance(data, dict) else type(data)}")
                 
-                if sms_href:
-                    # Get SMS messages
-                    sms_resp = await client.get(
-                        sms_href,
-                        headers={'Authorization': f'Bearer {token}'},
-                        timeout=10.0
-                    )
+                # Check for SMS directly in verification response
+                sms_data_direct = data.get('sms')
+                if isinstance(sms_data_direct, str) and sms_data_direct:
+                    # SMS text directly in the verification response
+                    import re
+                    match = re.search(r'\b(\d{4,8})\b', sms_data_direct)
+                    if match:
+                        return match.group(1)
+                    return sms_data_direct[:50]
+                
+                # Try following sms href link
+                sms_href = ''
+                if isinstance(sms_data_direct, dict):
+                    sms_href = sms_data_direct.get('href', '')
+                
+                # Also try the /sms endpoint directly
+                if not sms_href:
+                    sms_href = f'https://www.textverified.com/api/pub/v2/sms?ReservationId={verification_id}'
+                
+                sms_resp = await client.get(
+                    sms_href,
+                    headers={'Authorization': f'Bearer {token}'},
+                    timeout=10.0
+                )
+                
+                if sms_resp.status_code == 200:
+                    sms_data = sms_resp.json()
+                    logger.info(f"TV SMS response type: {type(sms_data)}, content: {str(sms_data)[:200]}")
                     
-                    if sms_resp.status_code == 200:
-                        sms_data = sms_resp.json()
-                        messages = sms_data.get('data', []) if isinstance(sms_data, dict) else sms_data
+                    messages = []
+                    if isinstance(sms_data, list):
+                        messages = sms_data
+                    elif isinstance(sms_data, dict):
+                        messages = sms_data.get('data', []) or sms_data.get('messages', []) or sms_data.get('items', [])
+                        # Check if response itself is a single message
+                        if not messages and ('text' in sms_data or 'message' in sms_data or 'body' in sms_data or 'smsContent' in sms_data):
+                            messages = [sms_data]
+                    
+                    if messages and len(messages) > 0:
+                        latest_sms = messages[-1] if isinstance(messages, list) else messages
                         
-                        if messages and len(messages) > 0:
-                            # Get the latest message
-                            latest_sms = messages[-1] if isinstance(messages, list) else messages
-                            sms_text = latest_sms.get('text', '') or latest_sms.get('message', '') or latest_sms.get('body', '')
-                            
-                            if sms_text:
-                                # Try to extract numeric code
-                                import re
-                                match = re.search(r'\b(\d{4,8})\b', sms_text)
-                                if match:
-                                    return match.group(1)
-                                return sms_text[:50]  # Return first 50 chars if no code found
+                        # Text Verified v2 API uses 'parsedCode' for the extracted code
+                        parsed_code = latest_sms.get('parsedCode', '')
+                        if parsed_code:
+                            return str(parsed_code)
+                        
+                        sms_text = (
+                            latest_sms.get('smsContent', '') or
+                            latest_sms.get('text', '') or 
+                            latest_sms.get('message', '') or 
+                            latest_sms.get('body', '') or 
+                            latest_sms.get('content', '') or
+                            str(latest_sms)
+                        )
+                        
+                        if sms_text:
+                            import re
+                            match = re.search(r'\b(\d{4,8})\b', sms_text)
+                            if match:
+                                return match.group(1)
+                            return sms_text[:50]
             return None
     except Exception as e:
         logger.error(f"Text Verified OTP poll error: {str(e)}")
@@ -3489,9 +3522,11 @@ async def otp_polling_task(order_id: str):
                 otp = await poll_otp_textverified(order['activation_id'])
 
             if otp:
+                update_fields = {'otp': otp, 'otp_code': otp, 'status': 'completed', 'can_cancel': False}
+                # Store SMS text if available from the poll
                 await db.sms_orders.update_one(
                     {'id': order_id},
-                    {'$set': {'otp': otp, 'status': 'completed', 'can_cancel': False}}
+                    {'$set': update_fields}
                 )
                 logger.info(f"OTP received for order {order_id}")
                 break
