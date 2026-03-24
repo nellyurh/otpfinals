@@ -1,0 +1,114 @@
+{
+  "summary": "Tested iteration 21 bug fixes for BillHub: SMS Bower V2 JSON parsing, error message sanitization, timer durations, phone formatting, and country/server display. All backend tests pass (14/14). Frontend UI verified provider cards have white background and all 4 providers display correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration21_bug_fixes.py",
+    "/app/test_reports/pytest/pytest_results_iter21.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration21_bug_fixes.py"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 tests passed)",
+    "frontend": "100% (All UI elements verified)"
+  },
+  "test_credentials": {
+    "test_user": {
+      "email": "traveltest@test.com",
+      "password": "Test1234!"
+    },
+    "admin_user": {
+      "email": "admin@smsrelay.com",
+      "password": "admin123"
+    }
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 21 bug fixes verified. SMS Bower V2 JSON parsing works (activationId, phoneNumber). Error messages sanitized. Timer durations: textverified=5min, 5sim=20min, smsbower=25min. Provider cards have white background. Server/Country columns in desktop table at lines 1949-1950.",
+  "features_tested": {
+    "sms_bower_v2_json_parsing": {
+      "status": "PASS",
+      "details": "purchase_number_smsbower at lines 2835-2849 parses JSON format {activationId, phoneNumber} from V2 API",
+      "code_location": "server.py lines 2835-2849"
+    },
+    "sms_bower_legacy_format_support": {
+      "status": "PASS",
+      "details": "Legacy ACCESS_NUMBER:id:phone format still supported at lines 2851-2860",
+      "code_location": "server.py lines 2851-2860"
+    },
+    "error_message_sanitization": {
+      "status": "PASS",
+      "details": "Error messages at lines 6146-6165 use generic messages like 'No numbers available. Please try another server.' without exposing provider names",
+      "code_location": "server.py lines 6146-6165"
+    },
+    "timer_durations": {
+      "status": "PASS",
+      "details": "getTimerDuration() at lines 234-239: textverified=5min (300s), 5sim=20min (1200s), smsbower=25min (1500s), default=10min (600s)",
+      "code_location": "VirtualNumbersSection.js lines 234-239"
+    },
+    "phone_number_formatting": {
+      "status": "PASS",
+      "details": "formatPhoneNumber() at lines 243-259 cleans malformed data and adds + prefix",
+      "code_location": "VirtualNumbersSection.js lines 243-259"
+    },
+    "country_name_mapping": {
+      "status": "PASS",
+      "details": "getCountryName() at lines 263-277 maps country codes to readable names",
+      "code_location": "VirtualNumbersSection.js lines 263-277"
+    },
+    "list_orders_provider_field": {
+      "status": "PASS",
+      "details": "list_orders projection at lines 6283-6301 includes 'provider' field for timer function",
+      "code_location": "server.py lines 6283-6301"
+    },
+    "server_name_mapping": {
+      "status": "PASS",
+      "details": "server_names dict at lines 6309-6322 maps provider-based servers to user-friendly names",
+      "code_location": "server.py lines 6309-6322"
+    },
+    "desktop_table_server_column": {
+      "status": "PASS",
+      "details": "Server column header at line 1949, cell at line 1989",
+      "code_location": "VirtualNumbersSection.js lines 1949, 1989"
+    },
+    "desktop_table_country_column": {
+      "status": "PASS",
+      "details": "Country column header at line 1950, cell at line 1994",
+      "code_location": "VirtualNumbersSection.js lines 1950, 1994"
+    },
+    "mobile_card_server_country": {
+      "status": "PASS",
+      "details": "Mobile cards show server_name at line 1875 and country at line 1878",
+      "code_location": "VirtualNumbersSection.js lines 1874-1878"
+    },
+    "provider_cards_white_background": {
+      "status": "PASS",
+      "details": "All 4 provider cards have 'bg-white' class, not 'bg-slate'",
+      "ui_verified": true,
+      "cards_verified": [
+        "provider-card-textverified: Premium Server - bg-white",
+        "provider-card-5sim: Server 1 - bg-white",
+        "provider-card-smsbower: Budget Server - bg-white",
+        "provider-card-tigersms: Fast Server - bg-white"
+      ]
+    }
+  },
+  "api_verification_summary": {
+    "POST /api/auth/login": "PASS - Returns token",
+    "GET /api/orders/list": "PASS - Returns orders with server_name and provider fields",
+    "GET /api/services/providers/status": "PASS - Returns all providers (tigersms, 5sim, smsbower, textverified)",
+    "GET /api/services/smsbower?country=187": "PASS - Returns services",
+    "GET /api/health": "PASS - Returns healthy status"
+  }
+}

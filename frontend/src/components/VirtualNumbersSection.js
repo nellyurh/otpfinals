@@ -235,8 +235,49 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
     const provider = order.provider || order.server || '';
     if (provider.includes('5sim')) return 20 * 60; // 20 minutes
     if (provider.includes('smsbower')) return 25 * 60; // 25 minutes
+    if (provider.includes('textverified')) return 5 * 60; // 5 minutes
     return 10 * 60; // Default 10 minutes
   };
+
+  // Format phone number: clean up malformed data, add + prefix
+  const formatPhoneNumber = (phone) => {
+    if (!phone) return 'N/A';
+    // Clean up malformed Tiger SMS data like "'9999990009532496095', 'phone_number'"
+    let cleaned = String(phone).replace(/['"]/g, '').trim();
+    // If contains comma or 'phone_number', extract just the numeric part
+    if (cleaned.includes(',') || cleaned.includes('phone_number')) {
+      const parts = cleaned.split(',');
+      cleaned = parts[0].trim().replace(/[^0-9+]/g, '');
+    }
+    // Remove any non-numeric chars except leading +
+    cleaned = cleaned.replace(/[^0-9+]/g, '');
+    if (!cleaned || cleaned === '0') return 'N/A';
+    // Add + prefix if not present and number is long enough
+    if (!cleaned.startsWith('+') && cleaned.length >= 10) {
+      cleaned = '+' + cleaned;
+    }
+    return cleaned;
+  };
+
+  // Map country code to readable name
+  const getCountryName = (code) => {
+    if (!code) return '';
+    const map = {
+      '187': 'US', 'usa': 'US', 'us': 'US',
+      '0': 'RU', 'russia': 'RU',
+      '86': 'NG', 'nigeria': 'NG',
+      '16': 'GB', 'unitedkingdom': 'GB', 'england': 'GB',
+      '36': 'CA', 'canada': 'CA',
+      '22': 'IN', 'india': 'IN',
+      '175': 'DE', 'germany': 'DE',
+      '117': 'FR', 'france': 'FR',
+      '76': 'BR', 'brazil': 'BR',
+    };
+    const key = String(code).toLowerCase().trim();
+    return map[key] || key.toUpperCase();
+  };
+
+
 
   const getCountryFlagUrl = (countryValue) => {
     if (!countryValue) return null;
@@ -1833,6 +1874,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           {order.server_name && (
                             <span className="ml-1.5 text-[10px] text-gray-400 font-medium">{order.server_name}</span>
                           )}
+                          {order.country && (
+                            <span className="ml-1 text-[10px] text-gray-400">({getCountryName(order.country)})</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-1">
                           <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${hasOTP ? 'bg-emerald-500 text-white' : 'bg-green-100 text-green-700'}`}>
@@ -1849,10 +1893,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] text-gray-500">Phone:</span>
                         <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-gray-800">{order.phone_number || 'N/A'}</span>
-                          {order.phone_number && (
+                          <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number)}</span>
+                          {order.phone_number && formatPhoneNumber(order.phone_number) !== 'N/A' && (
                             <button
-                              onClick={() => copyToClipboard(order.phone_number, 'Phone copied!')}
+                              onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number), 'Phone copied!')}
                               className="p-0.5 hover:bg-gray-200 rounded"
                             >
                               <Copy className="w-3 h-3 text-gray-500" />
@@ -1903,6 +1947,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   <tr className="border-b">
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Service</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Server</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Country</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Phone</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Code</th>
                     <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Status</th>
@@ -1945,11 +1990,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             </span>
                           </td>
                           <td className="py-3 px-3">
+                            <span className="text-xs text-gray-500">
+                              {order.country ? getCountryName(order.country) : '—'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3">
                             <div className="flex items-center gap-1">
-                              <span className="font-mono text-xs text-gray-800">{order.phone_number || 'N/A'}</span>
-                              {order.phone_number && (
+                              <span className="font-mono text-xs text-gray-800">{formatPhoneNumber(order.phone_number)}</span>
+                              {order.phone_number && formatPhoneNumber(order.phone_number) !== 'N/A' && (
                                 <button
-                                  onClick={() => copyToClipboard(order.phone_number, 'Phone copied!')}
+                                  onClick={() => copyToClipboard(formatPhoneNumber(order.phone_number), 'Phone copied!')}
                                   className="p-0.5 hover:bg-gray-200 rounded"
                                 >
                                   <Copy className="w-3 h-3 text-gray-500" />

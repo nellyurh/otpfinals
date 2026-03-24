@@ -2829,9 +2829,27 @@ async def purchase_number_smsbower(service: str, country: str = '0', max_price: 
                 timeout=15.0
             )
             if response.status_code == 200:
-                text = response.text
+                text = response.text.strip()
+                
+                # V2 API may return JSON format
+                if text.startswith('{'):
+                    try:
+                        data = json.loads(text)
+                        activation_id = str(data.get('activationId', ''))
+                        phone_number = str(data.get('phoneNumber', ''))
+                        if activation_id and phone_number:
+                            return {
+                                'success': True,
+                                'activation_id': activation_id,
+                                'phone_number': phone_number,
+                                'text': text
+                            }
+                        return {'success': False, 'text': text}
+                    except json.JSONDecodeError:
+                        pass
+                
+                # Legacy format: ACCESS_NUMBER:activation_id:phone_number
                 if 'ACCESS_NUMBER' in text:
-                    # Format: ACCESS_NUMBER:activation_id:phone_number
                     parts = text.split(':')
                     if len(parts) >= 3:
                         return {
@@ -2840,6 +2858,8 @@ async def purchase_number_smsbower(service: str, country: str = '0', max_price: 
                             'phone_number': parts[2].strip(),
                             'text': text
                         }
+                
+                # Error responses
                 return {'success': False, 'text': text}
             return None
     except Exception as e:
@@ -6113,7 +6133,7 @@ async def purchase_number(
             elif 'NO_MONEY' in response_text:
                 raise HTTPException(status_code=400, detail="Insufficient provider balance.")
             else:
-                raise HTTPException(status_code=400, detail=f"Provider error: {response_text}")
+                raise HTTPException(status_code=400, detail=f"No numbers available. Please try again.")
     else:  # tigersms, smsbower, textverified
         if provider == 'smsbower':
             # SMS Bower returns {success: True, activation_id: X, phone_number: Y}
@@ -6122,23 +6142,27 @@ async def purchase_number(
                 phone_number = str(result.get('phone_number', ''))
             else:
                 error_text = result.get('text', '') if result else 'Unknown error'
-                raise HTTPException(status_code=400, detail=f"SMS Bower error: {error_text}")
+                # Don't expose provider name to user
+                if 'NO_NUMBERS' in error_text or 'NO_BALANCE' in error_text:
+                    raise HTTPException(status_code=400, detail="No numbers available for this service.")
+                elif 'NO_MONEY' in error_text:
+                    raise HTTPException(status_code=400, detail="Server temporarily unavailable. Please try another server.")
+                else:
+                    raise HTTPException(status_code=400, detail="No numbers available. Please try another server.")
         elif provider == 'textverified':
             # Text Verified returns {success: True, verification_id: X, phone_number: Y}
             if result and result.get('success'):
                 activation_id = str(result.get('verification_id', ''))
                 phone_number = str(result.get('phone_number', ''))
             else:
-                error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
-                raise HTTPException(status_code=400, detail=f"Text Verified error: {error_msg}")
+                raise HTTPException(status_code=400, detail="No numbers available. Please try another server.")
         elif provider == 'tigersms':
             # Tiger SMS returns a parsed dict with 'activation_id' and 'phone_number'
             if result and result.get('success'):
                 activation_id = str(result.get('activation_id', ''))
                 phone_number = str(result.get('phone_number', ''))
             else:
-                error_text = result.get('error', 'Unknown error') if result else 'Unknown error'
-                raise HTTPException(status_code=400, detail=f"Tiger SMS error: {error_text}")
+                raise HTTPException(status_code=400, detail="No numbers available. Please try another server.")
     
     if not activation_id or not phone_number:
         raise HTTPException(status_code=400, detail="Failed to get phone number from provider")
@@ -6259,6 +6283,7 @@ async def list_orders(user: dict = Depends(get_current_user)):
         'user_id': 1,
         'activation_id': 1,
         'server': 1,
+        'provider': 1,
         'service': 1,
         'country': 1,
         'phone_number': 1,
@@ -6297,7 +6322,12 @@ async def list_orders(user: dict = Depends(get_current_user)):
     }
     for order in orders:
         server = order.get('server', '')
-        order['server_name'] = server_names.get(server, server.replace('_', ' ').title())
+        provider = order.get('provider', '')
+        # Try server field first, then fall back to provider mapping
+        name = server_names.get(server)
+        if not name and provider:
+            name = PROVIDER_TO_SERVER.get(provider)
+        order['server_name'] = name or server.replace('_', ' ').title()
     return {'orders': orders}
 
 @api_router.get("/orders/{order_id}")
