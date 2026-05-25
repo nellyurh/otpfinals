@@ -706,8 +706,8 @@ async def verify_payscribe_webhook_signature(payload_body: bytes, signature: str
     webhook_secret = await get_payscribe_webhook_secret()
     
     if not webhook_secret:
-        logger.warning("Payscribe webhook secret not configured - skipping signature verification")
-        return True  # Skip verification if secret not configured
+        logger.error("SECURITY: Payscribe webhook secret not configured - REJECTING webhook")
+        return False  # REJECT webhooks when secret is not configured
     
     if not signature:
         logger.warning("No signature provided in webhook request")
@@ -7845,6 +7845,18 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     amount = payload.amount
     if amount < 100:
         raise HTTPException(status_code=400, detail="Minimum deposit amount is ₦100")
+    if amount > 5000000:
+        raise HTTPException(status_code=400, detail="Maximum deposit amount is ₦5,000,000")
+    
+    # Rate limit: max 5 pending accounts per user per hour
+    one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+    recent_count = await db.payscribe_temp_accounts.count_documents({
+        'user_id': user['id'],
+        'status': 'pending',
+        'created_at': {'$gte': one_hour_ago}
+    })
+    if recent_count >= 5:
+        raise HTTPException(status_code=429, detail="Too many pending payment requests. Please wait or complete existing ones.")
     
     # Generate unique reference
     ref = f"PSC-{user['id'][:8]}-{str(uuid.uuid4())[:8]}".upper()
@@ -8080,8 +8092,23 @@ async def payscribe_webhook(request: Request):
     if new_status == 'paid':
         user = await db.users.find_one({'id': payment['user_id']}, {'_id': 0})
         if user:
-            # Use the amount from webhook (actual payment) or fallback to stored amount
-            gross_amount = amount if amount > 0 else float(payment.get('amount', 0))
+            # SECURITY: Use the STORED expected amount, NOT the webhook amount
+            # The webhook amount could be forged. We only trust our own records.
+            expected_amount = float(payment.get('amount', 0))
+            webhook_amount = amount  # amount from webhook payload
+            
+            # Validate webhook amount matches expected amount (allow 1% tolerance for bank rounding)
+            if webhook_amount > 0 and expected_amount > 0:
+                tolerance = expected_amount * 0.01  # 1% tolerance
+                if abs(webhook_amount - expected_amount) > tolerance:
+                    logger.error(
+                        f"SECURITY: Payscribe webhook amount mismatch for {ref}! "
+                        f"Expected=₦{expected_amount}, Webhook=₦{webhook_amount}. REJECTING."
+                    )
+                    return {'status': 'error', 'message': 'Amount mismatch'}
+            
+            # Use the expected amount from our records (trusted source)
+            gross_amount = expected_amount
             
             if gross_amount <= 0:
                 logger.error(f"Payscribe webhook: Invalid credit amount {gross_amount} for payment {ref}")
