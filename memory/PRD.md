@@ -1,6 +1,14 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-03-24 (Session 18b)**: Critical Payscribe Security Fix + Fresh Server Deployment Prep
+  - **CRITICAL FIX:** Webhook now REJECTS requests when webhook secret is not configured (was accepting all)
+  - **CRITICAL FIX:** Webhook amount validation — uses stored expected amount, not webhook payload amount (prevents forged amount credits)
+  - **SECURITY:** Added ₦5M max deposit limit + rate limit (5 pending accounts/hour/user)
+  - **DEPLOYMENT:** Updated all deployment files for new servers (31.220.90.92 = getucloudy.com, 158.220.101.16 = socialsmsworld.com)
+  - **DEPLOYMENT:** Switched from Cloudflare origin certs to Let's Encrypt SSL with auto-renewal
+  - **DEPLOYMENT:** Created HTTP-only nginx configs for initial SSL setup phase
+
 - **2026-03-24 (Session 18)**: Promo Code for New Providers + ₦500 Floor Verification
   - **FIXED:** `calculate-price` endpoint now supports all new provider server names (tigersms_us, tigersms_global, smsbower_us, smsbower_global, textverified_us, 5sim_us, 5sim_global)
   - **FIXED:** Promo code input added to US Numbers and Other Countries provider card UI (was completely missing)
