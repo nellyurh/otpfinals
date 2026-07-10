@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, RefreshCw, Wallet, Receipt, Copy, Check, ChevronDown, Building2 } from 'lucide-react';
+import { CreditCard, RefreshCw, Wallet, Receipt, Copy, Check, ChevronDown, Building2, Landmark } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -33,6 +33,57 @@ export function FundWalletSection({
   // Plisio state
   const [plisioAmount, setPlisioAmount] = useState('');
   const [plisioLoading, setPlisioLoading] = useState(false);
+
+  // TransactPay state
+  const [tpLoading, setTpLoading] = useState(false);
+  const [tpAccount, setTpAccount] = useState(null);
+  const [tpShowDetails, setTpShowDetails] = useState(false);
+  const [tpCopied, setTpCopied] = useState(false);
+
+  useEffect(() => {
+    if (pageToggles?.enable_transactpay) {
+      axios.get(`${API}/api/transactpay/account`, axiosConfig)
+        .then(res => {
+          if (res.data.success && res.data.has_account) {
+            setTpAccount({
+              account_number: res.data.account_number,
+              account_name: res.data.account_name,
+              bank_name: res.data.bank_name,
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [pageToggles?.enable_transactpay]);
+
+  const handleTransactPayCreate = async () => {
+    setTpLoading(true);
+    try {
+      const resp = await axios.post(`${API}/api/transactpay/create-account`, {}, axiosConfig);
+      if (resp.data.success) {
+        setTpAccount({
+          account_number: resp.data.account_number,
+          account_name: resp.data.account_name,
+          bank_name: resp.data.bank_name,
+        });
+        setTpShowDetails(true);
+        toast.success(resp.data.existing ? 'Account details loaded!' : 'Virtual account created!');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to create account');
+    } finally {
+      setTpLoading(false);
+    }
+  };
+
+  const tpCopy = async (text) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setTpCopied(true);
+      setTimeout(() => setTpCopied(false), 2000);
+    } catch { toast.error('Unable to copy'); }
+  };
 
   const copyToClipboard = async (text) => {
     if (!text) return;
@@ -205,6 +256,82 @@ export function FundWalletSection({
 
           <p className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-gray-500 text-center">
             Powered by Payscribe. Instant confirmation via webhook.
+          </p>
+        </div>
+      )}
+
+      {/* TransactPay Reserved Virtual Account */}
+      {pageToggles?.enable_transactpay && (
+        <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-violet-200 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-violet-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+              <Landmark className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-bold text-gray-900 text-sm sm:text-base">Dedicated Bank Account</h3>
+              <p className="text-[10px] sm:text-xs text-gray-600">Get a permanent virtual account • Transfer any amount anytime</p>
+            </div>
+          </div>
+
+          {tpAccount ? (
+            <div className="space-y-2 sm:space-y-3">
+              <button
+                onClick={() => setTpShowDetails(!tpShowDetails)}
+                data-testid="tp-toggle-details"
+                className="w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-violet-200 rounded-lg sm:rounded-xl hover:bg-violet-50 transition-colors"
+              >
+                <span className="font-semibold text-gray-900 text-sm">View Account Details</span>
+                <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-500 transition-transform flex-shrink-0 ${tpShowDetails ? 'rotate-180' : ''}`} />
+              </button>
+
+              {tpShowDetails && (
+                <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-violet-200 space-y-2 sm:space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="text-xs sm:text-sm text-gray-600">Account Number</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-gray-900 text-sm sm:text-base" data-testid="tp-account-number">{tpAccount.account_number}</span>
+                      <button
+                        onClick={() => tpCopy(tpAccount.account_number)}
+                        className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                        data-testid="tp-copy-btn"
+                      >
+                        {tpCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-400" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="text-xs sm:text-sm text-gray-600">Account Name</span>
+                    <span className="font-semibold text-gray-900 text-xs sm:text-sm truncate" data-testid="tp-account-name">{tpAccount.account_name}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="text-xs sm:text-sm text-gray-600">Bank</span>
+                    <span className="font-semibold text-gray-900 text-sm" data-testid="tp-bank-name">{tpAccount.bank_name}</span>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-[10px] sm:text-xs text-violet-700 bg-violet-100 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg">
+                Transfers to this account will automatically credit your wallet
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={handleTransactPayCreate}
+              disabled={tpLoading}
+              data-testid="tp-create-btn"
+              className="w-full flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 bg-violet-600 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm hover:bg-violet-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {tpLoading ? (
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+              ) : (
+                <Landmark className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              )}
+              <span>{tpLoading ? 'Creating Account...' : 'Generate Dedicated Account'}</span>
+            </button>
+          )}
+
+          <p className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-gray-500 text-center">
+            Powered by TransactPay. No expiry — transfer anytime.
           </p>
         </div>
       )}

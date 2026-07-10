@@ -15,6 +15,7 @@ ecdsa==0.19.1
 email-validator==2.3.0
 fastapi==0.110.1
 flake8==7.3.0
+gunicorn==25.0.1
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
@@ -42,6 +43,7 @@ pluggy==1.6.0
 pyasn1==0.6.1
 pycodestyle==2.14.0
 pycparser==2.23
+pycryptodome==3.23.0
 pydantic==2.12.4
 pydantic_core==2.41.5
 pyflakes==3.4.0
@@ -74,4 +76,3 @@ urllib3==2.5.0
 uvicorn==0.25.0
 watchfiles==1.1.1
 wrapt==2.1.1
-gunicorn==25.0.1

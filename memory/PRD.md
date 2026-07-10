@@ -1,6 +1,15 @@
 # UltraCloud SMS - Product Requirements Document
 
 ## Changelog
+- **2026-03-24 (Session 18c)**: TransactPay Payment Gateway Integration
+  - **NEW:** Full TransactPay virtual account integration — RSA-encrypted account creation, webhook handler, admin panel config
+  - **Endpoints:** `POST /api/transactpay/create-account`, `GET /api/transactpay/account`, `POST /api/webhooks/transactpay`, `GET /api/admin/transactpay/accounts`
+  - **Frontend:** Added "Dedicated Bank Account" section to Fund Wallet with persistent account display
+  - **Admin:** TransactPay API keys (public, secret, encryption) in Payment Gateways section with enable/disable toggle
+  - **Security:** Idempotent webhook processing (keyed on paymentReference), gross credit + fee deduction pattern
+  - **Nginx:** All configs updated to exclude TransactPay webhook from rate limiting
+  - **Dependency:** Added `pycryptodome` for RSA PKCS#1 v1.5 encryption
+
 - **2026-03-24 (Session 18b)**: Critical Payscribe Security Fix + Fresh Server Deployment Prep
   - **CRITICAL FIX:** Webhook now REJECTS requests when webhook secret is not configured (was accepting all)
   - **CRITICAL FIX:** Webhook amount validation — uses stored expected amount, not webhook payload amount (prevents forged amount credits)

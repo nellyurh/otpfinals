@@ -188,7 +188,7 @@ http {
         add_header X-XSS-Protection "1; mode=block" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-        location ~ ^/api/(ercaspay|payscribe|plisio|paymentpoint)/webhook {
+        location ~ ^/api/(ercaspay|payscribe|plisio|paymentpoint|transactpay)/webhook {
             proxy_pass http://backend;
             proxy_http_version 1.1;
             proxy_set_header Host $host;

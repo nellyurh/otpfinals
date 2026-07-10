@@ -459,6 +459,7 @@ SENSITIVE_FIELDS = [
     'ercaspay_secret_key', 'ercaspay_api_key',
     'plisio_secret_key', 'plisio_webhook_secret',
     'payscribe_api_key', 'payscribe_public_key', 'payscribe_webhook_secret',
+    'transactpay_api_key', 'transactpay_secret_key', 'transactpay_encryption_key',
     'reloadly_client_id', 'reloadly_client_secret',
     'smtp_email', 'smtp_password',
     'amadeus_api_key', 'amadeus_api_secret'
@@ -578,6 +579,7 @@ async def seed_database(request: Request):
                 'enable_paymentpoint': True,
                 'enable_ercaspay': True,
                 'enable_payscribe': True,
+                'enable_transactpay': True,
                 'enable_crypto': True,
                 'enable_reseller': True,
                 'enable_airtime': True,
@@ -1170,6 +1172,7 @@ class PricingConfig(BaseModel):
     enable_plisio: bool = True
     enable_ercaspay: bool = True
     enable_payscribe: bool = True
+    enable_transactpay: bool = True
 
     # Support channel URLs (admin editable)
     whatsapp_support_url: str = "https://wa.me/2348000000000"
@@ -1357,6 +1360,10 @@ class UpdatePricingRequest(BaseModel):
     payscribe_api_key: Optional[str] = None
     payscribe_public_key: Optional[str] = None
     payscribe_webhook_secret: Optional[str] = None
+    # TransactPay Payment Gateway
+    transactpay_api_key: Optional[str] = None
+    transactpay_secret_key: Optional[str] = None
+    transactpay_encryption_key: Optional[str] = None
     
     # DaisySMS advanced options markup
     daisysms_advanced_markup: Optional[float] = None
@@ -1465,6 +1472,7 @@ class UpdatePricingRequest(BaseModel):
     enable_plisio: Optional[bool] = None
     enable_ercaspay: Optional[bool] = None
     enable_payscribe: Optional[bool] = None
+    enable_transactpay: Optional[bool] = None
 
     # Amadeus Travel API Settings
     amadeus_api_key: Optional[str] = None
@@ -8256,6 +8264,269 @@ async def admin_list_payscribe_temp_accounts(admin: dict = Depends(require_admin
     return {'accounts': accounts}
 
 
+# ============ TransactPay Virtual Account Integration ============
+
+def transactpay_rsa_encrypt(payload_dict: dict, encryption_key_b64: str) -> str:
+    """RSA-encrypt a JSON payload using TransactPay's custom key format.
+    Key format: base64 → "4096!<RSAKeyValue><Modulus>...</Modulus><Exponent>...</Exponent></RSAKeyValue>"
+    """
+    import base64
+    import re
+    import json
+    from Crypto.PublicKey import RSA
+    from Crypto.Cipher import PKCS1_v1_5
+
+    decoded = base64.b64decode(encryption_key_b64).decode('utf-8')
+    # Strip the "4096!" prefix
+    xml_part = decoded[decoded.index('!') + 1:]
+    modulus_b64 = re.search(r'<Modulus>(.*?)</Modulus>', xml_part, re.S).group(1).strip()
+    exponent_b64 = re.search(r'<Exponent>(.*?)</Exponent>', xml_part, re.S).group(1).strip()
+
+    n = int.from_bytes(base64.b64decode(modulus_b64), byteorder='big')
+    e = int.from_bytes(base64.b64decode(exponent_b64), byteorder='big')
+
+    rsa_key = RSA.construct((n, e))
+    cipher = PKCS1_v1_5.new(rsa_key)
+    plaintext = json.dumps(payload_dict).encode('utf-8')
+    ciphertext = cipher.encrypt(plaintext)
+    return base64.b64encode(ciphertext).decode('utf-8')
+
+
+class TransactPayCreateRequest(BaseModel):
+    pass  # No body needed; we use the user's ID as Alias
+
+
+@api_router.post('/transactpay/create-account')
+async def transactpay_create_account(user: dict = Depends(get_current_user)):
+    """Create a reserved TransactPay virtual account for the user."""
+    # Check if user already has a transactpay account
+    existing = await db.transactpay_accounts.find_one(
+        {'user_id': user['id'], 'active': True}, {'_id': 0}
+    )
+    if existing:
+        return {
+            'success': True,
+            'existing': True,
+            'account_number': existing['account_number'],
+            'account_name': existing['account_name'],
+            'bank_name': existing['bank_name'],
+        }
+
+    config = await db.pricing_config.find_one({}, {'_id': 0})
+    api_key = get_api_key(config, 'transactpay_api_key', '')
+    encryption_key = get_api_key(config, 'transactpay_encryption_key', '')
+
+    if not api_key or not encryption_key:
+        raise HTTPException(status_code=503, detail="TransactPay is not configured")
+
+    # Use a stable alias per user (short unique ID)
+    alias = user['id'][:8].upper().replace('-', '')
+
+    try:
+        payload = {"Alias": alias, "Reference": alias}
+        encrypted = transactpay_rsa_encrypt(payload, encryption_key)
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                'https://payment-api-service.transactpay.ai/payment/virtual-account/generate',
+                json={"data": encrypted},
+                headers={
+                    'api-key': api_key,
+                    'encryption': 'RSA',
+                    'Content-Type': 'application/json',
+                },
+                timeout=30.0
+            )
+            logger.info(f"TransactPay create-account response: {resp.status_code}")
+
+        result = resp.json()
+        if resp.status_code != 200 or result.get('status') != 'success':
+            logger.error(f"TransactPay error: {result}")
+            raise HTTPException(status_code=502, detail=result.get('message', 'Failed to create account'))
+
+        account_data = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'gateway': 'transactpay',
+            'alias': alias,
+            'account_number': result.get('accountNumber', ''),
+            'account_name': result.get('accountName', ''),
+            'bank_name': result.get('bank', ''),
+            'bank_code': result.get('bankCode', ''),
+            'active': True,
+            'created_at': datetime.now(timezone.utc).isoformat(),
+        }
+        await db.transactpay_accounts.insert_one(account_data)
+
+        return {
+            'success': True,
+            'existing': False,
+            'account_number': account_data['account_number'],
+            'account_name': account_data['account_name'],
+            'bank_name': account_data['bank_name'],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"TransactPay create-account error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create virtual account")
+
+
+@api_router.get('/transactpay/account')
+async def transactpay_get_account(user: dict = Depends(get_current_user)):
+    """Get user's existing TransactPay virtual account."""
+    account = await db.transactpay_accounts.find_one(
+        {'user_id': user['id'], 'active': True}, {'_id': 0}
+    )
+    if not account:
+        return {'success': True, 'has_account': False}
+    return {
+        'success': True,
+        'has_account': True,
+        'account_number': account['account_number'],
+        'account_name': account['account_name'],
+        'bank_name': account['bank_name'],
+    }
+
+
+@api_router.post('/webhooks/transactpay')
+async def transactpay_webhook(request: Request):
+    """Handle TransactPay funding webhook — credits user wallet."""
+    try:
+        body = await request.body()
+        payload = json.loads(body)
+        logger.info(f"TransactPay webhook received: status={payload.get('status')}")
+    except Exception as e:
+        logger.error(f"TransactPay webhook parse error: {e}")
+        return {'status': 'error', 'message': 'Invalid payload'}
+
+    status = payload.get('status', '')
+    status_code = payload.get('statusCode', '')
+
+    if status != 'Success' or status_code != '00':
+        logger.warning(f"TransactPay webhook non-success: status={status}, code={status_code}")
+        return {'status': 'ok', 'message': 'Non-success status, ignored'}
+
+    payment_ref = payload.get('paymentReference', '')
+    account_ref = payload.get('accountReference', '')  # = our alias
+    amount = float(payload.get('totalAmountCharged', 0))
+    fee = float(payload.get('fee', 0))
+    sender_name = payload.get('sourceAccountName', 'Unknown')
+
+    # Get account number from orderPayments
+    order_payments = payload.get('orderPayments', [])
+    acct_number = order_payments[0].get('orderPaymentInstrument', '') if order_payments else ''
+
+    if amount <= 0:
+        return {'status': 'error', 'message': 'Invalid amount'}
+
+    # Find the virtual account — by alias first, then by account number
+    va = await db.transactpay_accounts.find_one(
+        {'alias': account_ref, 'active': True}, {'_id': 0}
+    )
+    if not va and acct_number:
+        va = await db.transactpay_accounts.find_one(
+            {'account_number': acct_number, 'active': True}, {'_id': 0}
+        )
+    if not va:
+        logger.error(f"TransactPay webhook: no account found for alias={account_ref}, acct={acct_number}")
+        return {'status': 'error', 'message': 'Account not found'}
+
+    user = await db.users.find_one({'id': va['user_id']}, {'_id': 0})
+    if not user:
+        logger.error(f"TransactPay webhook: user not found for account {va['user_id']}")
+        return {'status': 'error', 'message': 'User not found'}
+
+    # Idempotency check — keyed on paymentReference
+    existing_txn = await db.transactions.find_one(
+        {'reference': payment_ref, 'type': 'deposit_ngn', 'status': 'completed'}
+    )
+    if existing_txn:
+        logger.info(f"TransactPay webhook: duplicate for ref={payment_ref}, skipping")
+        return {'status': 'ok', 'message': 'Already processed'}
+
+    # Credit the GROSS amount
+    gross_amount = amount
+    await db.users.update_one(
+        {'id': user['id']},
+        {'$inc': {'ngn_balance': gross_amount}}
+    )
+
+    # Create deposit transaction
+    deposit_txn = {
+        'id': str(uuid.uuid4()),
+        'user_id': user['id'],
+        'type': 'deposit_ngn',
+        'amount': gross_amount,
+        'currency': 'NGN',
+        'status': 'completed',
+        'reference': payment_ref,
+        'description': f'Wallet funding via TransactPay from {sender_name}',
+        'metadata': {
+            'gateway': 'transactpay',
+            'gross_amount': gross_amount,
+            'fee': fee,
+            'sender_name': sender_name,
+            'account_reference': account_ref,
+            'payment_reference': payment_ref,
+        },
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    }
+    await db.transactions.insert_one(deposit_txn)
+
+    # Deduct fee if present
+    if fee > 0:
+        await db.users.update_one(
+            {'id': user['id']},
+            {'$inc': {'ngn_balance': -fee}}
+        )
+        fee_txn = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'type': 'deposit_fee',
+            'amount': fee,
+            'currency': 'NGN',
+            'status': 'completed',
+            'reference': f'FEE-{payment_ref}',
+            'description': f'TransactPay deposit fee',
+            'metadata': {'gateway': 'transactpay', 'parent_reference': payment_ref},
+            'created_at': datetime.now(timezone.utc).isoformat(),
+        }
+        await db.transactions.insert_one(fee_txn)
+
+    net_amount = gross_amount - fee
+    logger.info(f"TransactPay: Credited ₦{gross_amount} to user {user['id']}, fee ₦{fee}, net ₦{net_amount}")
+
+    # Send notification
+    try:
+        notif = {
+            'id': str(uuid.uuid4()),
+            'user_id': user['id'],
+            'type': 'deposit',
+            'title': 'Deposit Received',
+            'message': f'₦{gross_amount:,.2f} received via Bank Transfer from {sender_name}. Fee: ₦{fee:,.2f}. Net credit: ₦{net_amount:,.2f}',
+            'read': False,
+            'created_at': datetime.now(timezone.utc).isoformat(),
+        }
+        await db.notifications.insert_one(notif)
+    except Exception:
+        pass
+
+    return {'status': 'ok', 'message': 'Payment processed'}
+
+
+@api_router.get('/admin/transactpay/accounts')
+async def admin_list_transactpay_accounts(admin: dict = Depends(require_admin)):
+    """List all TransactPay virtual accounts for admin."""
+    accounts = await db.transactpay_accounts.find({}, {'_id': 0}).sort('created_at', -1).to_list(500)
+    for acc in accounts:
+        user = await db.users.find_one({'id': acc.get('user_id')}, {'_id': 0, 'email': 1, 'full_name': 1})
+        if user:
+            acc['user_email'] = user.get('email')
+            acc['user_name'] = user.get('full_name')
+    return {'accounts': accounts}
+
+
 @api_router.post('/admin/purge')
 async def admin_purge(payload: dict, admin: dict = Depends(require_admin)):
     """Dangerous: purge user data (users/orders/transactions) as requested."""
@@ -11391,6 +11662,9 @@ async def get_pricing_config(admin: dict = Depends(require_admin)):
     )
     config_sanitized['plisio_configured'] = bool(config.get('plisio_secret_key') or PLISIO_SECRET_KEY)
     config_sanitized['ercaspay_configured'] = bool(config.get('ercaspay_secret_key') or ERCASPAY_SECRET_KEY)
+    config_sanitized['transactpay_configured'] = bool(
+        config.get('transactpay_api_key') and config.get('transactpay_encryption_key')
+    )
     
     # Expose Reloadly configuration status (from DB or env)
     config_sanitized['reloadly_configured'] = bool(
@@ -11512,6 +11786,7 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
             'enable_plisio': True,
             'enable_ercaspay': True,
             'enable_payscribe': True,
+            'enable_transactpay': True,
         }
     return {
         'enable_dashboard': config.get('enable_dashboard', True),
@@ -11548,6 +11823,7 @@ async def get_page_toggles(user: dict = Depends(get_current_user)):
         'enable_plisio': config.get('enable_plisio', True),
         'enable_ercaspay': config.get('enable_ercaspay', True),
         'enable_payscribe': config.get('enable_payscribe', True),
+        'enable_transactpay': config.get('enable_transactpay', True),
     }
 
 @api_router.put("/admin/pricing")
@@ -11633,6 +11909,16 @@ async def update_pricing_config(data: UpdatePricingRequest, request: Request, ad
     if data.payscribe_webhook_secret is not None and data.payscribe_webhook_secret != '********' and not data.payscribe_webhook_secret.startswith('ENC:'):
         update_fields['payscribe_webhook_secret'] = encrypt_secret(data.payscribe_webhook_secret)
         updated_sensitive_keys.append('payscribe_webhook_secret')
+    # TransactPay keys
+    if data.transactpay_api_key is not None and data.transactpay_api_key != '********' and not data.transactpay_api_key.startswith('ENC:'):
+        update_fields['transactpay_api_key'] = encrypt_secret(data.transactpay_api_key)
+        updated_sensitive_keys.append('transactpay_api_key')
+    if data.transactpay_secret_key is not None and data.transactpay_secret_key != '********' and not data.transactpay_secret_key.startswith('ENC:'):
+        update_fields['transactpay_secret_key'] = encrypt_secret(data.transactpay_secret_key)
+        updated_sensitive_keys.append('transactpay_secret_key')
+    if data.transactpay_encryption_key is not None and data.transactpay_encryption_key != '********' and not data.transactpay_encryption_key.startswith('ENC:'):
+        update_fields['transactpay_encryption_key'] = encrypt_secret(data.transactpay_encryption_key)
+        updated_sensitive_keys.append('transactpay_encryption_key')
 
     # Branding
     if data.brand_name is not None:

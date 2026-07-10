@@ -1936,6 +1936,9 @@ const AdminPanel = ({ user, setUser }) => {
       // Don't send masked Payscribe credentials
       if (!body.payscribe_api_key || body.payscribe_api_key === '********') delete body.payscribe_api_key;
       if (!body.payscribe_public_key || body.payscribe_public_key === '********') delete body.payscribe_public_key;
+      if (!body.transactpay_api_key || body.transactpay_api_key === '********') delete body.transactpay_api_key;
+      if (!body.transactpay_secret_key || body.transactpay_secret_key === '********') delete body.transactpay_secret_key;
+      if (!body.transactpay_encryption_key || body.transactpay_encryption_key === '********') delete body.transactpay_encryption_key;
       // Don't send masked Ercaspay credentials
       if (!body.ercaspay_api_key || body.ercaspay_api_key === '********') delete body.ercaspay_api_key;
       // Don't send masked Plisio credentials
@@ -4527,6 +4530,61 @@ const AdminPanel = ({ user, setUser }) => {
                           Get keys from your Payscribe dashboard. Remember to whitelist your server IP.
                         </p>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* TransactPay */}
+                <Card className="border border-slate-200 shadow-sm bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      TransactPay
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${pricing.transactpay_configured ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {pricing.transactpay_configured ? 'Configured' : 'Not Configured'}
+                      </span>
+                    </CardTitle>
+                    <CardDescription className="text-xs">Virtual bank accounts for wallet funding (reserved/permanent accounts)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Label className="text-xs font-semibold whitespace-nowrap">Enable TransactPay</Label>
+                        <input type="checkbox" checked={pricing.enable_transactpay ?? true} onChange={(e) => setPricing({ ...pricing, enable_transactpay: e.target.checked })} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-700">Public Key (PGW-PUBLICKEY-...)</label>
+                        <Input
+                          type="password"
+                          placeholder="Enter TransactPay Public Key"
+                          value={pricing.transactpay_api_key || ''}
+                          onChange={(e) => setPricing({ ...pricing, transactpay_api_key: e.target.value })}
+                          className="mt-1 h-9 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-700">Secret Key (PGW-SECRETKEY-...)</label>
+                        <Input
+                          type="password"
+                          placeholder="Enter TransactPay Secret Key"
+                          value={pricing.transactpay_secret_key || ''}
+                          onChange={(e) => setPricing({ ...pricing, transactpay_secret_key: e.target.value })}
+                          className="mt-1 h-9 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-700">Encryption Key (base64 RSA key)</label>
+                        <Input
+                          type="password"
+                          placeholder="Enter TransactPay Encryption Key"
+                          value={pricing.transactpay_encryption_key || ''}
+                          onChange={(e) => setPricing({ ...pricing, transactpay_encryption_key: e.target.value })}
+                          className="mt-1 h-9 text-xs"
+                        />
+                        <p className="text-[10px] text-purple-600 mt-1">The RSA encryption key from your TransactPay dashboard.</p>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Set webhook URL in TransactPay dashboard: <code className="bg-slate-100 px-1 rounded">https://yourdomain.com/api/webhooks/transactpay</code>
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

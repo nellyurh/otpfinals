@@ -77,7 +77,8 @@ const NewDashboard = () => {
     // Payment gateway toggles
     enable_paymentpoint: true,
     enable_plisio: true,
-    enable_ercaspay: true
+    enable_ercaspay: true,
+    enable_transactpay: true
   });
   
   // Notifications state
