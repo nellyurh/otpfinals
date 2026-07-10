@@ -7907,8 +7907,15 @@ async def payscribe_create_temp_account(payload: PayscribeCreateAccountRequest, 
     result = await payscribe_request('collections/virtual-accounts/create', 'POST', request_data, use_public_key=True)
     
     if not result or not result.get('status'):
-        logger.error(f"Payscribe create temp account failed: {result}")
-        raise HTTPException(status_code=500, detail="Failed to create temporary account. Please try again.")
+        error_code = result.get('error_code', '') if result else ''
+        if error_code == 'NOT_CONFIGURED':
+            raise HTTPException(status_code=503, detail="Bank Transfer is not configured yet. Admin needs to set Payscribe API keys.")
+        elif error_code == 'INVALID_API_KEY':
+            raise HTTPException(status_code=503, detail="Bank Transfer authentication failed. Admin needs to update Payscribe API keys.")
+        else:
+            payscribe_msg = result.get('message', 'Unknown error') if result else 'No response'
+            logger.error(f"Payscribe create temp account failed: {result}")
+            raise HTTPException(status_code=500, detail=f"Failed to create temporary account: {payscribe_msg}")
     
     # Extract account details from response
     # Response structure: { status, description, message: { details: { customer, account: [...], expiry, expiry_date, status } } }
