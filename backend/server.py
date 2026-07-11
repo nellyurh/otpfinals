@@ -8347,7 +8347,7 @@ async def transactpay_create_account(user: dict = Depends(get_current_user)):
             logger.info(f"TransactPay create-account response: {resp.status_code}")
 
         result = resp.json()
-        if resp.status_code != 200 or result.get('status') != 'success':
+        if resp.status_code != 200 or not result.get('status'):
             logger.error(f"TransactPay error: {result}")
             raise HTTPException(status_code=502, detail=result.get('message', 'Failed to create account'))
 
