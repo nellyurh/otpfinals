@@ -1,0 +1,111 @@
+{
+  "project_name": "SocialSMS World Redesign",
+  "theme": "Monochrome / High-Contrast Black & White",
+  "overview": "Redesign of the SocialSMS World dashboard and all feature sections (virtual numbers, airtime, data, TV, fund wallet, history, profile, etc.) into a modern, sleek black-and-white (monochrome dark-first) color scheme while preserving the exact layout structure, navigation items, cards, and functionality.",
+  "colors": {
+    "palette": {
+      "background_primary": "#000000",
+      "background_secondary": "#0A0A0A",
+      "background_card": "#121212",
+      "background_card_hover": "#1E1E1E",
+      "border_subtle": "#262626",
+      "border_strong": "#404040",
+      "border_focus": "#FFFFFF",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#A1A1AA",
+      "text_muted": "#71717A",
+      "accent_white": "#FFFFFF",
+      "accent_black": "#000000",
+      "badge_bg": "#1F1F23",
+      "badge_text": "#FAFAFA",
+      "badge_border": "#3F3F46",
+      "status_success": "#FFFFFF",
+      "status_warning": "#A1A1AA",
+      "status_danger": "#EF4444"
+    },
+    "rules": [
+      "No colored accents (green, emerald, purple) in main UI cards, buttons, or background gradients.",
+      "Strict monochrome palette: Pure black (#000000), deep zinc/obsidian (#0A0A0A, #121212), dark zinc borders (#262626), clean white typography (#FFFFFF), and zinc grays (#A1A1AA) for secondary text.",
+      "Primary actions (e.g., Fund Wallet, Buy Number, Submit) use solid white background with black text (`bg-white text-black hover:bg-zinc-200`) or stark outline borders.",
+      "Hover states must always explicitly set text color (e.g., `hover:bg-zinc-800 hover:text-white`).",
+      "NO transparent backgrounds on dropdowns, modals, floating headers, or popovers—use solid dark backgrounds with 1px zinc borders (`bg-zinc-900/95 backdrop-blur-md border border-zinc-800`)."
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Cabinet Grotesk, Outfit, or system-ui sans-serif",
+      "body": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      "mono": "JetBrains Mono, Source Code Pro, monospace for transaction IDs, phone numbers, and API keys"
+    },
+    "scale": {
+      "h1": "text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white",
+      "h2": "text-2xl sm:text-3xl font-semibold tracking-tight text-white",
+      "h3": "text-xl sm:text-2xl font-semibold text-white",
+      "h4": "text-lg font-medium text-white",
+      "body": "text-sm sm:text-base text-zinc-300",
+      "small": "text-xs sm:text-sm text-zinc-400",
+      "label": "text-xs uppercase tracking-widest text-zinc-500 font-mono"
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid #262626 (zinc-800) with rounded-xl or rounded-2xl radii for modern tactile feel",
+    "shadows": "Subtle dark ambient shadows (`shadow-2xl shadow-black/80`) and high-contrast 1px inner glows (`border border-white/10`)",
+    "cards": "Dark obsidian surface (`bg-zinc-900` / `bg-black`) with subtle 1px border (`border-zinc-800`), sleek hover transition with border light-up (`hover:border-zinc-600`)",
+    "glassmorphism": "Used for floating top header and sticky top bar: `bg-black/80 backdrop-blur-xl border-b border-zinc-800`"
+  },
+  "layout_and_structure": {
+    "sidebar": {
+      "background": "bg-black border-r border-zinc-800",
+      "sections": [
+        "MAIN (Dashboard, Admin, Fund Wallet)",
+        "BUY NUMBERS (Usa Numbers, Other Usa Numbers, All Country Numbers, More Country Numbers)",
+        "ACCOUNT (FAQs)",
+        "HISTORY (Numbers History, Transaction History)",
+        "RESELLER (Reseller Hub, API Docs)",
+        "BOTTOM NAVIGATION (My Profile, Site Tour, Logout)"
+      ],
+      "active_item_style": "bg-white text-black font-semibold rounded-lg shadow-sm",
+      "inactive_item_style": "text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition-colors"
+    },
+    "header": {
+      "background": "bg-black/90 backdrop-blur-md border-b border-zinc-800 z-40 sticky top-0",
+      "components": [
+        "Sidebar Toggle Button",
+        "Brand Logo / Title (SocialSMS World)",
+        "Wallet Balance Pill (`bg-zinc-900 border border-zinc-700 text-white font-mono px-3 py-1.5 rounded-full`)",
+        "Notification Bell Dropdown with Dark Theme Popover",
+        "User Profile Avatar Menu"
+      ]
+    },
+    "grid_modes": {
+      "quick_actions": "grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4",
+      "dashboard_cards": "grid-cols-1 md:grid-cols-3 gap-6",
+      "server_cards": "grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4",
+      "data_panels": "grid-cols-1 lg:grid-cols-2 gap-6"
+    }
+  },
+  "component_path": "/app/frontend/src/pages/NewDashboard.js",
+  "instructions_to_main_agent": [
+    "Re-skin all dashboard views, server selection cards, bill payment forms, virtual cards, travel, and fund wallet components to adhere to the strict Black and White color system.",
+    "Replace all existing emerald, green, purple, and color gradient classes (e.g. `bg-emerald-500`, `text-purple-600`, `from-emerald-600 to-teal-700`) with high-contrast monochrome classes (`bg-white`, `text-white`, `bg-zinc-900`, `border-zinc-800`, `bg-black`).",
+    "Ensure every interactive button, input field, table row, tab button, dropdown item, and card has explicit `data-testid` attributes.",
+    "Maintain all existing API calls, wallet balance logic, SSE real-time updates, SMS verification triggers, and form state logic.",
+    "All dropdowns and dialog popovers MUST have opaque dark backgrounds (`bg-zinc-950 border border-zinc-800 text-white`) and never transparent backgrounds.",
+    "Update `src/index.css` CSS variables or theme classes so dark mode is forced or default with pure black `#000000` background."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Ensure text visibility meets APCA contrast standards. High contrast black & white is essential.",
+    "Do NOT use transparent backgrounds in popovers, dropdowns, headers, or overlays.",
+    "All interactive and key informational elements MUST include `data-testid` attribute using kebab-case role-based naming.",
+    "Always explicitly define text color on hover and focus states.",
+    "Rotate through clean, distinct font choices without defaulting to Inter for headings.",
+    "Use 2-3x generous spacing with Tailwind padding and gaps.",
+    "All React code uses `.js` or `.jsx` file extension in this repository."
+  ],
+  "image_urls": {
+    "brand_logo": "/backend/uploads/branding/logo_30a557df.png",
+    "avatars": [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+    ]
+  }
+}

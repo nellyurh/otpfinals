@@ -13,7 +13,7 @@ const US_PROVIDERS = [
     name: 'Premium Server',
     description: 'High success rate US numbers',
     icon: '🔐',
-    color: 'from-blue-500 to-blue-600',
+    color: 'from-zinc-600 to-zinc-700',
     badge: 'Premium',
     features: ['High Success Rate', 'Fast Delivery']
   },
@@ -22,7 +22,7 @@ const US_PROVIDERS = [
     name: 'Server 1',
     description: 'Reliable US number support',
     icon: '🌐',
-    color: 'from-purple-500 to-purple-600',
+    color: 'from-zinc-500 to-zinc-600',
     badge: 'Popular',
     features: ['Wide Service Range', 'Reliable']
   },
@@ -31,7 +31,7 @@ const US_PROVIDERS = [
     name: 'Budget Server',
     description: 'Affordable US numbers',
     icon: '📱',
-    color: 'from-green-500 to-green-600',
+    color: 'from-zinc-600 to-zinc-700',
     badge: 'Budget',
     features: ['Low Prices', 'Good Availability']
   },
@@ -40,7 +40,7 @@ const US_PROVIDERS = [
     name: 'Fast Server',
     description: 'Quick US verifications',
     icon: '🐯',
-    color: 'from-orange-500 to-orange-600',
+    color: 'from-zinc-500 to-zinc-600',
     badge: 'Fast',
     features: ['Quick Delivery', 'Many Services']
   }
@@ -53,7 +53,7 @@ const OTHER_COUNTRIES_PROVIDERS = [
     name: 'Server 1',
     description: 'Extensive global coverage',
     icon: '🌐',
-    color: 'from-purple-500 to-purple-600',
+    color: 'from-zinc-500 to-zinc-600',
     badge: 'Reliable',
     features: ['Worldwide', 'Many Services']
   },
@@ -62,7 +62,7 @@ const OTHER_COUNTRIES_PROVIDERS = [
     name: 'Budget Server',
     description: 'Affordable international numbers',
     icon: '📱',
-    color: 'from-green-500 to-green-600',
+    color: 'from-zinc-600 to-zinc-700',
     badge: 'Budget',
     features: ['Low Prices', 'Good Coverage']
   },
@@ -71,7 +71,7 @@ const OTHER_COUNTRIES_PROVIDERS = [
     name: 'Fast Server',
     description: 'Quick global verifications',
     icon: '🐯',
-    color: 'from-orange-500 to-orange-600',
+    color: 'from-zinc-500 to-zinc-600',
     badge: 'Fast',
     features: ['Quick Delivery', 'Many Countries']
   }
@@ -119,19 +119,19 @@ const selectStyles = {
   }),
   placeholder: (base) => ({
     ...base,
-    color: '#9ca3af',
+    color: '#71717a',
     fontSize: '0.8rem',
     fontWeight: 500
   }),
   singleValue: (base) => ({
     ...base,
-    color: '#1f2937',
+    color: '#ffffff',
     fontWeight: 600,
     fontSize: '0.85rem'
   }),
   input: (base) => ({
     ...base,
-    color: '#1f2937'
+    color: '#ffffff'
   }),
   menuPortal: (base) => ({
     ...base,
@@ -139,7 +139,7 @@ const selectStyles = {
   }),
   option: (base, state) => ({
     ...base,
-    backgroundColor: state.isFocused ? '#f9fafb' : state.isSelected ? '#e5f9f0' : 'white',
+    backgroundColor: state.isFocused ? '#27272a' : state.isSelected ? '#3f3f46' : '#18181b',
     color: '#111827',
     cursor: 'pointer',
     fontWeight: state.isSelected ? 700 : 500,
@@ -984,14 +984,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="text-center mb-3 sm:mb-4">
-        <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-0.5">Buy Numbers</h1>
-        <p className="text-[10px] sm:text-xs text-gray-500">Get premium virtual numbers for verification</p>
+        <h1 className="text-base sm:text-lg md:text-xl font-bold text-white mb-0.5">Buy Numbers</h1>
+        <p className="text-[10px] sm:text-xs text-zinc-400">Get premium virtual numbers for verification</p>
       </div>
 
       {/* Collapsible Tips Sections */}
       <div className="space-y-2">
         {/* Issues Tips */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+        <div className="bg-zinc-900 border border-amber-200 rounded-xl overflow-hidden">
           <button
             onClick={() => setIssuesTipOpen(!issuesTipOpen)}
             className="w-full flex items-center justify-between p-3 text-left"
@@ -1012,27 +1012,27 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
         </div>
 
         {/* Buy Tips */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
+        <div className="bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden">
           <button
             onClick={() => setBuyTipsOpen(!buyTipsOpen)}
             className="w-full flex items-center justify-between p-3 text-left"
           >
             <div className="flex items-center gap-2">
-              <span className="text-blue-600 text-lg">💡</span>
-              <span className="font-semibold text-blue-800 text-xs sm:text-sm">Read Before You Buy Numbers</span>
+              <span className="text-white text-lg">💡</span>
+              <span className="font-semibold text-zinc-200 text-xs sm:text-sm">Read Before You Buy Numbers</span>
             </div>
-            <ChevronDown className={`w-4 h-4 text-blue-600 transition-transform ${buyTipsOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-white transition-transform ${buyTipsOpen ? 'rotate-180' : ''}`} />
           </button>
           {buyTipsOpen && (
-            <div className="px-3 pb-3 text-xs text-blue-900 space-y-3">
+            <div className="px-3 pb-3 text-xs text-white space-y-3">
               <div>
-                <p className="font-semibold text-blue-800 mb-1">📱 Telegram Tips:</p>
+                <p className="font-semibold text-zinc-200 mb-1">📱 Telegram Tips:</p>
                 <p>• Telegram numbers have only 45% percent rate to receive code.</p>
                 <p>• 50/50 to receive code on telegram numbers.</p>
                 <p>• Add Two 2FA authentication after purchasing.</p>
               </div>
               <div>
-                <p className="font-semibold text-blue-800 mb-1">💬 WhatsApp Tips:</p>
+                <p className="font-semibold text-zinc-200 mb-1">💬 WhatsApp Tips:</p>
                 <p>• 50/50 chance for using WhatsApp Business.</p>
                 <p>• Don't text immediately with WhatsApp after purchasing.</p>
                 <p>• Add Two 2FA authentication after purchasing.</p>
@@ -1044,8 +1044,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       </div>
 
       {/* Server Selection */}
-      <div className="bg-white rounded-xl p-3 sm:p-4 border shadow-sm">
-        <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Select Server</label>
+      <div className="bg-zinc-900 rounded-xl p-3 sm:p-4 border shadow-none">
+        <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">Select Server</label>
         <Select
           menuPortalTarget={document.body}
           styles={{
@@ -1061,13 +1061,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             }),
             placeholder: (base) => ({
               ...base,
-              color: '#9ca3af',
+              color: '#71717a',
               fontSize: '0.7rem',
               fontWeight: 500
             }),
             singleValue: (base) => ({
               ...base,
-              color: '#1f2937',
+              color: '#ffffff',
               fontWeight: 600,
               fontSize: '0.75rem'
             }),
@@ -1103,7 +1103,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             <div className="flex items-center justify-between w-full">
               <span>{option.label}</span>
               {option.badge && (
-                <span className="ml-2 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded">
+                <span className="ml-2 px-1.5 py-0.5 bg-zinc-800 text-zinc-200 text-[9px] font-bold rounded">
                   {option.badge}
                 </span>
               )}
@@ -1134,10 +1134,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   disabled={!isEnabled}
                   className={`relative p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
                     !isEnabled 
-                      ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
+                      ? 'bg-zinc-800 border-zinc-700 cursor-not-allowed opacity-60'
                       : isSelected
-                        ? 'border-emerald-500 bg-emerald-50 shadow-lg'
-                        : 'border-gray-200 bg-white hover:border-emerald-300 hover:shadow-md'
+                        ? 'border-white bg-zinc-900 shadow-none'
+                        : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600 hover:shadow-none'
                   }`}
                 >
                   {/* Badge */}
@@ -1151,13 +1151,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   <div className="flex items-start gap-2">
                     <span className="text-2xl">{provider.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-sm">{provider.name}</h3>
-                      <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1">{provider.description}</p>
+                      <h3 className="font-bold text-white text-sm">{provider.name}</h3>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-1">{provider.description}</p>
                       
                       {/* Features */}
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {provider.features.slice(0, 2).map((feature, idx) => (
-                          <span key={idx} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[9px] rounded-full">
+                          <span key={idx} className="px-1.5 py-0.5 bg-zinc-800 text-zinc-300 text-[9px] rounded-full">
                             {feature}
                           </span>
                         ))}
@@ -1168,14 +1168,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   {/* Selected indicator */}
                   {isSelected && (
                     <div className="absolute bottom-2 right-2">
-                      <Check className="w-4 h-4 text-emerald-600" />
+                      <Check className="w-4 h-4 text-white" />
                     </div>
                   )}
 
                   {/* Disabled overlay */}
                   {!isEnabled && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 rounded-xl">
-                      <span className="text-[10px] font-semibold text-gray-500">Unavailable</span>
+                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-800/80 rounded-xl">
+                      <span className="text-[10px] font-semibold text-zinc-400">Unavailable</span>
                     </div>
                   )}
                 </button>
@@ -1185,16 +1185,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
           {/* Service Selection for Provider Cards */}
           {selectedProvider && (
-            <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 space-y-3">
+            <div className="bg-zinc-900 rounded-xl border shadow-none p-3 sm:p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xl">{selectedProvider.icon}</span>
-                <h3 className="font-semibold text-gray-900 text-sm">{selectedProvider.name}</h3>
+                <h3 className="font-semibold text-white text-sm">{selectedProvider.name}</h3>
               </div>
 
               {/* Country Dropdown - Only for Other Countries mode */}
               {selectedServer.value === 'other_countries' && (
                 <div>
-                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                  <label className="block text-[10px] font-semibold text-zinc-300 mb-1">
                     Select Country
                   </label>
                   <Select
@@ -1227,7 +1227,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             <img
                               src={flagUrl}
                               alt={option.label}
-                              className="w-5 h-4 rounded border border-gray-200 object-cover"
+                              className="w-5 h-4 rounded border border-zinc-700 object-cover"
                             />
                           )}
                           <span className="text-xs">{option.label || option.name}</span>
@@ -1241,7 +1241,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               {/* Service Selection */}
               {(selectedServer.value === 'us_numbers' || selectedCountry) && (
                 <div>
-                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                  <label className="block text-[10px] font-semibold text-zinc-300 mb-1">
                     Select Service
                   </label>
                   <Select
@@ -1288,7 +1288,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         <span className="text-xs font-medium">{option.label || option.name || getServiceName(option.value)}</span>
                         {/* Show price only for non-5sim/smsbower providers */}
                         {!['5sim', 'smsbower'].includes(selectedProvider?.id) && option.price_ngn && (
-                          <span className="text-emerald-600 font-semibold text-xs">
+                          <span className="text-white font-semibold text-xs">
                             ₦{enforceMinPrice(option.price_ngn).toFixed(2)}
                           </span>
                         )}
@@ -1300,23 +1300,23 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
               {/* Price Display */}
               {estimatedPrice && (estimatedPrice.price_ngn > 0 || estimatedPrice.promo) && (
-                <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-200 rounded-xl p-2.5">
+                <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-2.5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="block text-[10px] font-semibold text-emerald-700 uppercase">Total Cost</span>
+                      <span className="block text-[10px] font-semibold text-zinc-200 uppercase">Total Cost</span>
                     </div>
                     <div className="text-right">
-                      <span className="block text-lg font-bold text-emerald-700">
+                      <span className="block text-lg font-bold text-zinc-200">
                         ₦{enforceMinPrice(estimatedPrice.price_ngn)?.toFixed(2)}
                       </span>
                     </div>
                   </div>
                   {estimatedPrice.promo && (
-                    <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-2 py-1 mt-1.5">
-                      <span className="text-[10px] font-semibold text-green-700">
+                    <div className="flex items-center justify-between bg-zinc-800 border border-green-300 rounded-lg px-2 py-1 mt-1.5">
+                      <span className="text-[10px] font-semibold text-zinc-200">
                         Promo &quot;{estimatedPrice.promo.code}&quot; applied!
                       </span>
-                      <span className="text-[10px] font-bold text-green-700">
+                      <span className="text-[10px] font-bold text-zinc-200">
                         -₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}
                       </span>
                     </div>
@@ -1326,28 +1326,28 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
               {/* Selected Provider/Operator Display (for 5sim and smsbower) */}
               {['5sim', 'smsbower'].includes(selectedProvider?.id) && selectedService && selectedServiceProvider && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-semibold text-blue-700 uppercase block mb-1">Selected Operator</span>
+                      <span className="text-[10px] font-semibold text-zinc-200 uppercase block mb-1">Selected Operator</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-blue-900 text-sm">
+                        <span className="font-semibold text-white text-sm">
                           {selectedServiceProvider.name || selectedServiceProvider.operator || `Provider ${selectedServiceProvider.provider_id}`}
                         </span>
                         {selectedServiceProvider.delivery_rate > 0 && (
-                          <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                          <span className="flex items-center gap-1 text-xs bg-zinc-800 text-zinc-200 px-1.5 py-0.5 rounded">
                             <TrendingUp className="w-3 h-3" />
                             {selectedServiceProvider.delivery_rate}%
                           </span>
                         )}
                       </div>
-                      <span className="text-emerald-700 font-bold text-sm">
+                      <span className="text-zinc-200 font-bold text-sm">
                         ₦{enforceMinPrice(selectedServiceProvider.price_ngn)?.toFixed(2)}
                       </span>
                     </div>
                     <button
                       onClick={() => setShowProviderModal(true)}
-                      className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                      className="px-3 py-1.5 bg-zinc-900 text-white text-xs font-semibold rounded-lg hover:bg-zinc-700 transition-colors"
                     >
                       Change
                     </button>
@@ -1357,16 +1357,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
               {/* Prompt to select operator for 5sim/smsbower - now shows loading or re-open modal */}
               {['5sim', 'smsbower'].includes(selectedProvider?.id) && selectedService && !selectedServiceProvider && (
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+                <div className="bg-zinc-950 border border-zinc-700 rounded-xl p-3 text-center">
                   {providersLoading ? (
                     <div className="flex items-center justify-center gap-2">
-                      <RefreshCw className="w-4 h-4 text-gray-400 animate-spin" />
-                      <span className="text-gray-600 text-xs">Loading operators...</span>
+                      <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />
+                      <span className="text-zinc-300 text-xs">Loading operators...</span>
                     </div>
                   ) : (
                     <button
                       onClick={() => setShowProviderModal(true)}
-                      className="px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
+                      className="px-4 py-2 bg-zinc-900 text-white text-xs font-semibold rounded-lg hover:bg-zinc-700 transition-colors"
                     >
                       Select Operator
                     </button>
@@ -1377,7 +1377,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               {/* Promo Code */}
               {selectedService && (
                 <div>
-                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">Promo Code (optional)</label>
+                  <label className="block text-[10px] font-semibold text-zinc-300 mb-1">Promo Code (optional)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
@@ -1390,10 +1390,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         }
                       }}
                       data-testid="provider-promo-input"
-                      className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-gray-900 ${
+                      className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-white ${
                         estimatedPrice?.promo
-                          ? 'border-green-400 bg-green-50'
-                          : 'border-gray-200 focus:border-emerald-600'
+                          ? 'border-green-400 bg-zinc-900'
+                          : 'border-zinc-700 focus:border-emerald-600'
                       }`}
                     />
                     {promoCode && (
@@ -1437,14 +1437,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           }
                         }}
                         data-testid="provider-promo-apply-btn"
-                        className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors text-xs"
+                        className="px-3 py-2 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-700 transition-colors text-xs"
                       >
                         Apply
                       </button>
                     )}
                   </div>
                   {estimatedPrice?.promo && (
-                    <div className="mt-1.5 flex items-center gap-1.5 text-green-600 text-[10px]">
+                    <div className="mt-1.5 flex items-center gap-1.5 text-white text-[10px]">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -1459,7 +1459,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 onClick={handleProviderPurchase}
                 disabled={!selectedService || purchasing || (['5sim', 'smsbower'].includes(selectedProvider?.id) && !selectedServiceProvider)}
                 data-testid="purchase-provider-btn"
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full py-2.5 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Phone className="w-4 h-4" />
                 {purchasing ? 'Purchasing...' : 'Purchase Number'}
@@ -1469,8 +1469,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
           {/* Empty State */}
           {!selectedProvider && (
-            <div className="text-center py-6 text-gray-500 bg-white rounded-xl border">
-              <Phone className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+            <div className="text-center py-6 text-zinc-400 bg-zinc-900 rounded-xl border">
+              <Phone className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
               <p className="text-xs">Select a provider to get started</p>
             </div>
           )}
@@ -1479,21 +1479,21 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
       {/* Purchase New Number - Only for original servers */}
       {selectedServer && !['us_numbers', 'other_countries'].includes(selectedServer.value) && (
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+      <div className="bg-zinc-900 rounded-xl border shadow-none overflow-hidden">
         <button
           onClick={() => setPurchaseExpanded(!purchaseExpanded)}
-          className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-zinc-900 transition-colors"
         >
           <div className="flex items-center gap-2">
             <Plus
-              className={`w-3 h-3 sm:w-4 sm:h-4 text-emerald-600 transition-transform ${
+              className={`w-3 h-3 sm:w-4 sm:h-4 text-white transition-transform ${
                 purchaseExpanded ? 'rotate-45' : ''
               }`}
             />
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Purchase Number</h3>
+            <h3 className="text-xs sm:text-sm font-semibold text-white">Purchase Number</h3>
           </div>
           <ChevronDown
-            className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform ${
+            className={`w-3 h-3 sm:w-4 sm:h-4 text-zinc-400 transition-transform ${
               purchaseExpanded ? 'rotate-180' : ''
             }`}
           />
@@ -1505,7 +1505,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             {selectedServer &&
               (selectedServer.value === 'server1' || selectedServer.value === 'server2') && (
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                  <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
                     Select Country
                   </label>
                   <Select
@@ -1525,10 +1525,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             <img
                               src={flagUrl}
                               alt={option.label}
-                              className="w-5 h-5 rounded-full border border-gray-200 object-cover"
+                              className="w-5 h-5 rounded-full border border-zinc-700 object-cover"
                             />
                           )}
-                          <span className="text-xs font-semibold text-gray-800">{option.label}</span>
+                          <span className="text-xs font-semibold text-zinc-100">{option.label}</span>
                         </div>
                       );
                     }}
@@ -1547,7 +1547,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             {selectedServer && ((selectedServer.value === 'us_server') || selectedCountry) && (
               <div className="space-y-2">
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                  <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
                     Search Service
                   </label>
                   <Select
@@ -1593,17 +1593,17 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         <div className="flex flex-col">
                           <span className="text-[11px] sm:text-xs">{option.label || option.name}</span>
                           {option.pools && option.pools.length > 0 && (
-                            <span className="text-[9px] text-gray-400">
+                            <span className="text-[9px] text-zinc-500">
                               {option.pools.length} pool{option.pools.length > 1 ? 's' : ''}
                             </span>
                           )}
                           {option.operators && option.operators.length > 0 && (
-                            <span className="text-[9px] text-gray-400">
+                            <span className="text-[9px] text-zinc-500">
                               {option.operators.length} operator{option.operators.length > 1 ? 's' : ''}
             {/* 5sim Operator selection (similar to pools) */}
             {selectedServer?.value === 'server2' && selectedService?.operators && selectedService.operators.length > 0 && (
               <div>
-                <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
                   Select Operator
                 </label>
                 <Select
@@ -1629,7 +1629,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           )}
                         </div>
                         {option.price_ngn && (
-                          <span className="text-gray-700 font-semibold text-xs">
+                          <span className="text-zinc-200 font-semibold text-xs">
                             ₦{enforceMinPrice(option.price_ngn).toFixed(2)}
                           </span>
                         )}
@@ -1642,7 +1642,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 {selectedServer.value === 'server1' && selectedService && selectedService.pools &&
                   selectedService.pools.length > 0 && (
                     <div>
-                      <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
+                      <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
                         Select Pool (optional)
                       </label>
                       <Select
@@ -1682,23 +1682,23 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 <button
                   type="button"
                   onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
                 >
-                  <span className="text-[10px] sm:text-xs font-semibold text-blue-900">
+                  <span className="text-[10px] sm:text-xs font-semibold text-white">
                     {showAdvancedOptions ? '▼' : '▶'} Advanced Options
                   </span>
-                  <span className="text-[9px] sm:text-[10px] text-blue-600">+35% each</span>
+                  <span className="text-[9px] sm:text-[10px] text-white">+35% each</span>
                 </button>
               </div>
             )}
 
             {/* Advanced Options Fields */}
             {showAdvancedOptions && selectedServer && selectedServer.value === 'us_server' && (
-              <div className="bg-blue-50 rounded-xl p-3 space-y-3 border border-blue-200">
+              <div className="bg-zinc-900 rounded-xl p-3 space-y-3 border border-zinc-700">
                 {/* Carrier Selection */}
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
-                    Carrier <span className="text-blue-600">+35%</span>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
+                    Carrier <span className="text-white">+35%</span>
                   </label>
                   <Select
                     menuPortalTarget={document.body}
@@ -1719,8 +1719,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Area Codes */}
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
-                    Area Codes <span className="text-blue-600">+35%</span>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
+                    Area Codes <span className="text-white">+35%</span>
                   </label>
                   <Select
                     menuPortalTarget={document.body}
@@ -1749,8 +1749,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Preferred Number */}
                 <div>
-                  <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">
-                    Preferred Number <span className="text-blue-600">+35%</span>
+                  <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">
+                    Preferred Number <span className="text-white">+35%</span>
                   </label>
                   <input
                     type="text"
@@ -1760,16 +1760,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       setPreferredNumber(e.target.value.replace(/\D/g, '').slice(0, 11))
                     }
                     maxLength={11}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-emerald-600 focus:outline-none text-xs text-gray-900"
+                    className="w-full px-3 py-2 border border-zinc-700 rounded-lg focus:border-emerald-600 focus:outline-none text-xs text-white"
                   />
-                  <p className="text-[9px] text-gray-400 mt-0.5">Enter full number without +1</p>
+                  <p className="text-[9px] text-zinc-500 mt-0.5">Enter full number without +1</p>
                 </div>
               </div>
             )}
 
             {/* Promo Code with Validation */}
             <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-gray-600 mb-1.5">Promo Code (optional)</label>
+              <label className="block text-[10px] sm:text-xs font-semibold text-zinc-300 mb-1.5">Promo Code (optional)</label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
@@ -1782,10 +1782,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       setEstimatedPrice(prev => ({ ...prev, promo: null }));
                     }
                   }}
-                  className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-gray-900 ${
+                  className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none text-xs text-white ${
                     estimatedPrice?.promo 
-                      ? 'border-green-400 bg-green-50' 
-                      : 'border-gray-200 focus:border-emerald-600'
+                      ? 'border-green-400 bg-zinc-900' 
+                      : 'border-zinc-700 focus:border-emerald-600'
                   }`}
                 />
                 {promoCode && (
@@ -1840,14 +1840,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         toast.error(errorMsg);
                       }
                     }}
-                    className="px-3 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors text-xs"
+                    className="px-3 py-2 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-700 transition-colors text-xs"
                   >
                     Apply
                   </button>
                 )}
               </div>
               {estimatedPrice?.promo && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-green-600 text-[10px]">
+                <div className="mt-1.5 flex items-center gap-1.5 text-white text-[10px]">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -1858,22 +1858,22 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
             {/* Price Display */}
             {estimatedPrice && (
-              <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-white border border-green-200 rounded-xl p-3 space-y-2 shadow-sm">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-3 space-y-2 shadow-none">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="block text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">
+                    <span className="block text-[10px] font-semibold text-zinc-200 uppercase tracking-wide">
                       Total Cost
                     </span>
-                    <span className="block text-[9px] text-gray-400">
+                    <span className="block text-[9px] text-zinc-500">
                       Includes all fees
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="block text-lg sm:text-xl font-extrabold text-emerald-700 leading-tight">
+                    <span className="block text-lg sm:text-xl font-extrabold text-zinc-200 leading-tight">
                       ₦{estimatedPrice.final_ngn?.toFixed(2)}
                     </span>
                     {estimatedPrice.final_usd && (
-                      <span className="block text-[10px] text-gray-400">
+                      <span className="block text-[10px] text-zinc-500">
                         ≈ ${estimatedPrice.final_usd.toFixed(2)} USD
                       </span>
                     )}
@@ -1882,16 +1882,16 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Promo Applied Badge */}
                 {estimatedPrice.promo && (
-                  <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded-lg px-2 py-1.5">
+                  <div className="flex items-center justify-between bg-zinc-800 border border-green-300 rounded-lg px-2 py-1.5">
                     <div className="flex items-center gap-1">
-                      <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="text-[10px] font-semibold text-green-700">
+                      <span className="text-[10px] font-semibold text-zinc-200">
                         Promo &quot;{estimatedPrice.promo.code}&quot; applied!
                       </span>
                     </div>
-                    <span className="text-[10px] font-bold text-green-700">
+                    <span className="text-[10px] font-bold text-zinc-200">
                       -₦{estimatedPrice.promo.discount_ngn?.toFixed(2)}
                     </span>
                   </div>
@@ -1899,7 +1899,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
 
                 {/* Show selected pool for SMS-pool when chosen */}
                 {selectedServer?.value === 'server1' && selectedService && selectedService.pools && (
-                  <div className="flex items-center justify-between text-[10px] text-gray-500">
+                  <div className="flex items-center justify-between text-[10px] text-zinc-400">
                     <span>Pool:</span>
                     <span className="font-semibold">
                       {selectedPool
@@ -1910,13 +1910,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                 )}
 
                 {estimatedPrice.breakdown && estimatedPrice.breakdown.length > 0 && (
-                  <div className="pt-1.5 border-t border-green-200">
-                    <p className="text-[9px] text-gray-500 font-semibold mb-0.5">Price breakdown</p>
+                  <div className="pt-1.5 border-t border-zinc-700">
+                    <p className="text-[9px] text-zinc-400 font-semibold mb-0.5">Price breakdown</p>
                     <div className="space-y-0.5">
                       {estimatedPrice.breakdown.map((item, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between text-[9px] text-gray-500"
+                          className="flex items-center justify-between text-[9px] text-zinc-400"
                         >
                           <span className="truncate max-w-[70%]">• {item}</span>
                         </div>
@@ -1924,7 +1924,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                     </div>
                   </div>
                 )}
-                <p className="text-[9px] text-gray-400">
+                <p className="text-[9px] text-zinc-500">
                   💡 Paid from NGN balance only. Convert USD to NGN if needed.
                 </p>
               </div>
@@ -1934,7 +1934,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             <button
               onClick={handlePurchaseNumber}
               disabled={!selectedService || !estimatedPrice || purchasing}
-              className="w-full py-2.5 bg-emerald-600 text-white rounded-full font-semibold text-xs hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-zinc-900 text-white rounded-full font-semibold text-xs hover:bg-zinc-700 transition-colors flex items-center justify-center gap-1.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               <Phone className="w-3.5 h-3.5" />
               {purchasing ? 'Purchasing...' : 'Purchase Number'}
@@ -1945,8 +1945,8 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
       )}
 
       {/* Your Verifications - Mobile-first responsive design */}
-      <div className="bg-white rounded-xl border shadow-sm p-3 sm:p-4 md:p-6">
-        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Your Verifications</h3>
+      <div className="bg-zinc-900 rounded-xl border shadow-none p-3 sm:p-4 md:p-6">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-3 sm:mb-4">Your Verifications</h3>
 
         {orders.filter((o) => {
           // Show active orders OR completed orders with OTP (within last 10 minutes)
@@ -1985,25 +1985,25 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                   const canCancel = !hasOTP && remainingSeconds > 0;
 
                   return (
-                    <div key={order.id} className={`rounded-xl p-3 border ${hasOTP ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-100'}`}>
+                    <div key={order.id} className={`rounded-xl p-3 border ${hasOTP ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-950 border-zinc-800'}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <span className="text-xs font-semibold text-gray-800">
+                          <span className="text-xs font-semibold text-zinc-100">
                             {order.service_name || getServiceName(order.service)}
                           </span>
                           {order.server_name && (
-                            <span className="ml-1.5 text-[10px] text-gray-400 font-medium">{order.server_name}</span>
+                            <span className="ml-1.5 text-[10px] text-zinc-500 font-medium">{order.server_name}</span>
                           )}
                           {order.country && (
-                            <span className="ml-1 text-[10px] text-gray-400">({getCountryName(order.country)})</span>
+                            <span className="ml-1 text-[10px] text-zinc-500">({getCountryName(order.country)})</span>
                           )}
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${hasOTP ? 'bg-emerald-500 text-white' : 'bg-green-100 text-green-700'}`}>
+                          <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${hasOTP ? 'bg-zinc-900 text-white' : 'bg-zinc-800 text-zinc-200'}`}>
                             {hasOTP ? '✓ Code Received' : 'Waiting...'}
                           </span>
                           {!hasOTP && (
-                            <span className="text-[10px] text-gray-500 font-mono">
+                            <span className="text-[10px] text-zinc-400 font-mono">
                               {minutes}:{seconds.toString().padStart(2, '0')}
                             </span>
                           )}
@@ -2011,36 +2011,36 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       </div>
                       
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] text-gray-500">Phone:</span>
+                        <span className="text-[10px] text-zinc-400">Phone:</span>
                         <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-gray-800">{formatPhoneDisplay(order.phone_number, order.server_name)}</span>
+                          <span className="font-mono text-xs text-zinc-100">{formatPhoneDisplay(order.phone_number, order.server_name)}</span>
                           {order.phone_number && formatPhoneDisplay(order.phone_number, order.server_name) !== 'N/A' && (
                             <button
                               onClick={() => copyToClipboard(formatPhoneCopy(order.phone_number, order.server_name), 'Phone copied!')}
-                              className="p-0.5 hover:bg-gray-200 rounded"
+                              className="p-0.5 hover:bg-zinc-700 rounded"
                             >
-                              <Copy className="w-3 h-3 text-gray-500" />
+                              <Copy className="w-3 h-3 text-zinc-400" />
                             </button>
                           )}
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-gray-500">OTP:</span>
+                        <span className="text-[10px] text-zinc-400">OTP:</span>
                         {hasOTP ? (
                           <div className="flex items-center gap-1">
-                            <span className="font-mono text-lg font-bold text-emerald-600 bg-white px-2 py-0.5 rounded">
+                            <span className="font-mono text-lg font-bold text-white bg-zinc-900 px-2 py-0.5 rounded">
                               {order.otp || order.otp_code}
                             </span>
                             <button
                               onClick={() => copyOTP(order.otp || order.otp_code)}
-                              className="p-1 bg-emerald-100 hover:bg-emerald-200 rounded"
+                              className="p-1 bg-zinc-800 hover:bg-emerald-200 rounded"
                             >
-                              <Copy className="w-3 h-3 text-emerald-600" />
+                              <Copy className="w-3 h-3 text-white" />
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                          <span className="text-[10px] text-zinc-500 flex items-center gap-1">
                             <RefreshCw className="w-3 h-3 animate-spin" />
                             Waiting...
                           </span>
@@ -2065,13 +2065,13 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
               <table className="w-full text-black">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Service</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Server</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Country</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Phone</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Code</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Status</th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-600">Action</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Service</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Server</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Country</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Phone</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Code</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Status</th>
+                    <th className="text-left py-2 px-3 text-xs font-semibold text-zinc-300">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2098,31 +2098,31 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       const canCancel = !hasOTP && remainingSeconds > 0;
 
                       return (
-                        <tr key={order.id} className={`border-b ${hasOTP ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}>
+                        <tr key={order.id} className={`border-b ${hasOTP ? 'bg-zinc-900' : 'hover:bg-zinc-900'}`}>
                           <td className="py-3 px-3">
-                            <span className="text-xs font-medium text-gray-800">
+                            <span className="text-xs font-medium text-zinc-100">
                               {order.service_name || getServiceName(order.service)}
                             </span>
                           </td>
                           <td className="py-3 px-3">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-zinc-400">
                               {order.server_name || '—'}
                             </span>
                           </td>
                           <td className="py-3 px-3">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-zinc-400">
                               {order.country ? getCountryName(order.country) : '—'}
                             </span>
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-1">
-                              <span className="font-mono text-xs text-gray-800">{formatPhoneDisplay(order.phone_number, order.server_name)}</span>
+                              <span className="font-mono text-xs text-zinc-100">{formatPhoneDisplay(order.phone_number, order.server_name)}</span>
                               {order.phone_number && formatPhoneDisplay(order.phone_number, order.server_name) !== 'N/A' && (
                                 <button
                                   onClick={() => copyToClipboard(formatPhoneCopy(order.phone_number, order.server_name), 'Phone copied!')}
-                                  className="p-0.5 hover:bg-gray-200 rounded"
+                                  className="p-0.5 hover:bg-zinc-700 rounded"
                                 >
-                                  <Copy className="w-3 h-3 text-gray-500" />
+                                  <Copy className="w-3 h-3 text-zinc-400" />
                                 </button>
                               )}
                             </div>
@@ -2130,18 +2130,18 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           <td className="py-3 px-3">
                             {hasOTP ? (
                               <div className="flex items-center gap-1">
-                                <span className="font-mono text-lg font-bold text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                                <span className="font-mono text-lg font-bold text-white bg-zinc-900 px-2 py-0.5 rounded border border-zinc-700">
                                   {order.otp || order.otp_code}
                                 </span>
                                 <button
                                   onClick={() => copyOTP(order.otp || order.otp_code)}
-                                  className="p-1 bg-emerald-100 hover:bg-emerald-200 rounded"
+                                  className="p-1 bg-zinc-800 hover:bg-emerald-200 rounded"
                                 >
-                                  <Copy className="w-3 h-3 text-emerald-600" />
+                                  <Copy className="w-3 h-3 text-white" />
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-400 flex items-center gap-1">
+                              <span className="text-xs text-zinc-500 flex items-center gap-1">
                                 <RefreshCw className="w-3 h-3 animate-spin" />
                                 Waiting...
                               </span>
@@ -2149,11 +2149,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                           </td>
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-0.5">
-                              <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full text-center w-fit ${hasOTP ? 'bg-emerald-500 text-white' : 'bg-green-100 text-green-700'}`}>
+                              <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full text-center w-fit ${hasOTP ? 'bg-zinc-900 text-white' : 'bg-zinc-800 text-zinc-200'}`}>
                                 {hasOTP ? '✓ Received' : 'Waiting'}
                               </span>
                               {!hasOTP && (
-                                <span className="text-[10px] text-gray-500 font-mono">
+                                <span className="text-[10px] text-zinc-400 font-mono">
                                   {minutes}:{seconds.toString().padStart(2, '0')}
                                 </span>
                               )}
@@ -2169,10 +2169,10 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                               </button>
                             )}
                             {!hasOTP && !canCancel && (
-                              <span className="text-[10px] text-gray-500">Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
+                              <span className="text-[10px] text-zinc-400">Wait {Math.max(0, 180 - elapsedSeconds)}s</span>
                             )}
                             {hasOTP && (
-                              <span className="text-xs text-emerald-600 font-semibold">✓ Complete</span>
+                              <span className="text-xs text-white font-semibold">✓ Complete</span>
                             )}
                           </td>
                         </tr>
@@ -2184,9 +2184,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           </>
         ) : (
           <div className="text-center py-8 sm:py-12">
-            <Phone className="w-10 h-10 sm:w-16 sm:h-16 mx-auto text-gray-300 mb-3" />
-            <p className="text-xs sm:text-sm text-gray-500">No active verifications</p>
-            <p className="text-[10px] sm:text-xs text-gray-400 mt-1">Purchase a number to get started</p>
+            <Phone className="w-10 h-10 sm:w-16 sm:h-16 mx-auto text-zinc-600 mb-3" />
+            <p className="text-xs sm:text-sm text-zinc-400">No active verifications</p>
+            <p className="text-[10px] sm:text-xs text-zinc-500 mt-1">Purchase a number to get started</p>
           </div>
         )}
       </div>
@@ -2201,23 +2201,23 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
           />
           
           {/* Modal Content - Full width, 70% height from bottom */}
-          <div className="relative w-full bg-white rounded-t-3xl shadow-2xl h-[70vh] flex flex-col animate-slide-up">
+          <div className="relative w-full bg-zinc-900 rounded-t-3xl shadow-2xl h-[70vh] flex flex-col animate-slide-up">
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 bg-gray-300 rounded-full" />
             </div>
             
             {/* Header */}
-            <div className="flex items-center justify-between px-5 sm:px-6 pb-4 border-b border-gray-200">
+            <div className="flex items-center justify-between px-5 sm:px-6 pb-4 border-b border-zinc-700">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Select operator</h3>
-                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                <h3 className="text-lg sm:text-xl font-bold text-white">Select operator</h3>
+                <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
                   Choose the rate plan for this service
                 </p>
               </div>
               <button 
                 onClick={() => setShowProviderModal(false)}
-                className="text-2xl text-gray-400 hover:text-gray-600 font-light"
+                className="text-2xl text-zinc-500 hover:text-zinc-300 font-light"
               >
                 ×
               </button>
@@ -2227,11 +2227,11 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
               {providersLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-6 h-6 text-emerald-500 animate-spin" />
-                  <span className="ml-2 text-gray-500">Loading operators...</span>
+                  <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                  <span className="ml-2 text-zinc-400">Loading operators...</span>
                 </div>
               ) : serviceProviders.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-zinc-400">
                   <p className="text-sm sm:text-base">No operators available for this service</p>
                 </div>
               ) : (
@@ -2266,14 +2266,14 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       disabled={isOutOfStock}
                       className={`relative w-full p-4 sm:p-5 rounded-2xl transition-all text-left ${
                         isSelected
-                          ? 'bg-emerald-50'
-                          : 'bg-white hover:bg-gray-50'
+                          ? 'bg-zinc-900'
+                          : 'bg-zinc-900 hover:bg-zinc-900'
                       } ${isOutOfStock ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                       {/* Recommended Badge - Only for first item with stock */}
                       {index === 0 && !isOutOfStock && (
                         <div className="absolute -top-2 left-4">
-                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white text-[10px] sm:text-xs font-semibold rounded-full shadow-sm">
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-zinc-900 text-white text-[10px] sm:text-xs font-semibold rounded-full shadow-none">
                             <Zap className="w-3 h-3" />
                             RECOMMENDED
                           </span>
@@ -2283,19 +2283,19 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                       <div className="flex items-start justify-between gap-4 mt-2">
                         {/* Left Side - Operator Info */}
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-base sm:text-lg font-bold text-gray-900">
+                          <h4 className="text-base sm:text-lg font-bold text-white">
                             {provider.name || provider.operator || `Provider ${provider.provider_id}`}
                           </h4>
                           
                           {/* Success Rate & SMS Info */}
                           <div className="flex items-center gap-2 mt-1.5">
                             {hasDeliveryRate && (
-                              <span className="flex items-center gap-1 text-xs sm:text-sm text-gray-700 bg-white px-2 py-0.5 rounded">
+                              <span className="flex items-center gap-1 text-xs sm:text-sm text-zinc-200 bg-zinc-900 px-2 py-0.5 rounded">
                                 <TrendingUp className="w-3 h-3" />
                                 {provider.delivery_rate.toFixed(0)}%
                               </span>
                             )}
-                            <span className="text-xs sm:text-sm text-gray-600 bg-white px-2 py-0.5 rounded">
+                            <span className="text-xs sm:text-sm text-zinc-300 bg-zinc-900 px-2 py-0.5 rounded">
                               {'>'}1 SMS
                             </span>
                           </div>
@@ -2311,12 +2311,12 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                         <div className="text-right flex-shrink-0">
                           {/* Price and Cart on same line */}
                           <div className="flex items-center justify-end gap-2">
-                            <div className="text-base sm:text-lg font-bold text-gray-900">
-                              ${displayPriceUsd.toFixed(4)} <span className="text-gray-500">(₦{displayPriceNgn.toFixed(0)})</span>
+                            <div className="text-base sm:text-lg font-bold text-white">
+                              ${displayPriceUsd.toFixed(4)} <span className="text-zinc-400">(₦{displayPriceNgn.toFixed(0)})</span>
                             </div>
                             {/* Cart Icon */}
                             <div className={`inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${
-                              isSelected ? 'bg-emerald-600' : 'bg-emerald-500'
+                              isSelected ? 'bg-zinc-900' : 'bg-zinc-900'
                             }`}>
                               <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -2324,7 +2324,7 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
                             </div>
                           </div>
                           {/* Stock count */}
-                          <p className={`text-xs sm:text-sm mt-1 ${isOutOfStock ? 'text-red-500' : 'text-emerald-600'}`}>
+                          <p className={`text-xs sm:text-sm mt-1 ${isOutOfStock ? 'text-red-500' : 'text-white'}`}>
                             {isOutOfStock ? 'Out of stock' : `${provider.count?.toLocaleString()} numbers`}
                           </p>
                         </div>
@@ -2336,9 +2336,9 @@ export function VirtualNumbersSection({ user, orders, axiosConfig, fetchOrders, 
             </div>
             
             {/* Footer Note */}
-            <div className="px-4 sm:px-6 py-4 bg-slate-50 border-t border-gray-200">
-              <div className="flex items-start gap-2 text-xs sm:text-sm text-gray-500">
-                <span className="text-gray-400 mt-0.5">ⓘ</span>
+            <div className="px-4 sm:px-6 py-4 bg-slate-50 border-t border-zinc-700">
+              <div className="flex items-start gap-2 text-xs sm:text-sm text-zinc-400">
+                <span className="text-zinc-500 mt-0.5">ⓘ</span>
                 <p>You will be issued one of the virtual numbers available in stock. Please note that the prices may vary</p>
               </div>
             </div>

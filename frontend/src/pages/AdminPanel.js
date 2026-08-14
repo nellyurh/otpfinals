@@ -120,11 +120,11 @@ const PremiumFeatureToggle = ({ feature, label, description, checked, onToggle, 
 
   return (
     <>
-      <div className="flex items-center justify-between rounded-xl border border-blue-200 px-4 py-3 bg-white hover:bg-blue-50 transition-colors">
+      <div className="flex items-center justify-between rounded-xl border border-blue-200 px-4 py-3 bg-zinc-900 hover:bg-zinc-900 transition-colors">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-slate-800 font-medium">{label}</span>
-            <Lock className="w-3 h-3 text-blue-500" />
+            <Lock className="w-3 h-3 text-white" />
           </div>
           <p className="text-[10px] text-slate-400 mt-0.5">{description}</p>
         </div>
@@ -137,27 +137,27 @@ const PremiumFeatureToggle = ({ feature, label, description, checked, onToggle, 
       {/* PIN Modal */}
       {showPinModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
+          <div className="bg-zinc-900 rounded-2xl max-w-sm w-full p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-blue-600" />
+                  <Lock className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Feature Unlock PIN</h3>
-                  <p className="text-xs text-gray-500">Enter PIN to {pendingState ? 'enable' : 'disable'} this feature</p>
+                  <h3 className="text-lg font-semibold text-white">Feature Unlock PIN</h3>
+                  <p className="text-xs text-zinc-400">Enter PIN to {pendingState ? 'enable' : 'disable'} this feature</p>
                 </div>
               </div>
               <button 
                 onClick={() => { setShowPinModal(false); setPin(''); }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-zinc-500 hover:text-zinc-300"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-zinc-300 mb-3">
                 <strong>{label}</strong> will be {pendingState ? 'enabled' : 'disabled'} for this site.
               </p>
               <input
@@ -174,14 +174,14 @@ const PremiumFeatureToggle = ({ feature, label, description, checked, onToggle, 
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowPinModal(false); setPin(''); }}
-                className="flex-1 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+                className="flex-1 py-2.5 border-2 border-zinc-600 text-zinc-200 rounded-xl font-medium hover:bg-zinc-900"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitPin}
                 disabled={pin.length < 4 || loading}
-                className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-zinc-900 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -257,7 +257,7 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
       {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-zinc-900 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white rounded-t-xl">
               <h3 className="font-bold text-lg">{selectedOrder.product_name}</h3>
               <p className="text-purple-200 text-sm">{selectedOrder.brand_name}</p>
@@ -269,10 +269,10 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
                   <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
                 </div>
               ) : orderCards && orderCards.length > 0 ? (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                <div className="bg-zinc-900 border border-purple-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-purple-700 mb-2">Redeem Code(s)</p>
                   {orderCards.map((card, idx) => (
-                    <div key={idx} className="bg-white rounded p-2 mb-1 font-mono text-sm">
+                    <div key={idx} className="bg-zinc-900 rounded p-2 mb-1 font-mono text-sm">
                       {card.cardNumber && <p>Code: <span className="font-bold">{card.cardNumber}</span></p>}
                       {card.pinCode && <p>PIN: <span className="font-bold">{card.pinCode}</span></p>}
                     </div>
@@ -298,7 +298,7 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
                 </div>
                 <div className="bg-slate-50 p-2 rounded">
                   <p className="text-slate-500 text-xs">Amount Paid</p>
-                  <p className="font-semibold text-emerald-600">₦{selectedOrder.total_ngn?.toLocaleString()}</p>
+                  <p className="font-semibold text-white">₦{selectedOrder.total_ngn?.toLocaleString()}</p>
                 </div>
                 <div className="bg-slate-50 p-2 rounded">
                   <p className="text-slate-500 text-xs">Card Value</p>
@@ -333,7 +333,7 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
       )}
 
       {/* Orders Table */}
-      <Card className="border border-slate-200 shadow-sm bg-white">
+      <Card className="border border-slate-200 shadow-none bg-zinc-900">
         <CardContent className="p-0">
           {loading ? (
             <div className="text-center py-8">
@@ -369,7 +369,7 @@ const GiftCardOrdersSection = ({ API, axiosConfig }) => {
                         <p className="text-xs text-slate-500">{order.user_email}</p>
                       </td>
                       <td className="p-3">
-                        <p className="font-semibold text-emerald-600">₦{order.total_ngn?.toLocaleString()}</p>
+                        <p className="font-semibold text-white">₦{order.total_ngn?.toLocaleString()}</p>
                         <p className="text-xs text-slate-400">${order.total_usd?.toFixed(2)}</p>
                       </td>
                       <td className="p-3">
@@ -518,7 +518,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
   return (
     <section className="space-y-6 mt-4">
       {/* SMTP Settings Card */}
-      <Card className="border border-slate-200 shadow-sm bg-white">
+      <Card className="border border-slate-200 shadow-none bg-zinc-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Mail className="w-4 h-4" /> SMTP Email Settings
@@ -604,7 +604,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
           </div>
           
           <div className="flex items-center gap-3 pt-2">
-            <Button onClick={saveEmailSettings} disabled={saving} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={saveEmailSettings} disabled={saving} size="sm" className="bg-zinc-900 hover:bg-zinc-700">
               <Save className="w-3 h-3 mr-1" /> {saving ? 'Saving...' : 'Save Settings'}
             </Button>
             <div className="flex-1 flex items-center gap-2">
@@ -624,7 +624,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
       </Card>
 
       {/* Bulk Email Card */}
-      <Card className="border border-slate-200 shadow-sm bg-white">
+      <Card className="border border-slate-200 shadow-none bg-zinc-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Send className="w-4 h-4" /> Send Bulk Email
@@ -635,15 +635,15 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
           {emailStats && (
             <div className="flex gap-4 mb-4">
               <div className="bg-slate-50 rounded-lg px-4 py-2 text-center">
-                <p className="text-lg font-bold text-emerald-600">{emailStats.user_counts?.total || 0}</p>
+                <p className="text-lg font-bold text-white">{emailStats.user_counts?.total || 0}</p>
                 <p className="text-[10px] text-slate-500">Total Users</p>
               </div>
               <div className="bg-slate-50 rounded-lg px-4 py-2 text-center">
-                <p className="text-lg font-bold text-blue-600">{emailStats.user_counts?.active || 0}</p>
+                <p className="text-lg font-bold text-white">{emailStats.user_counts?.active || 0}</p>
                 <p className="text-[10px] text-slate-500">Active Users</p>
               </div>
               <div className="bg-slate-50 rounded-lg px-4 py-2 text-center">
-                <p className="text-lg font-bold text-purple-600">{emailStats.user_counts?.verified || 0}</p>
+                <p className="text-lg font-bold text-white">{emailStats.user_counts?.verified || 0}</p>
                 <p className="text-[10px] text-slate-500">Verified Users</p>
               </div>
             </div>
@@ -674,7 +674,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
                 value={bulkEmail.message}
                 onChange={(e) => setBulkEmail({ ...bulkEmail, message: e.target.value })}
                 placeholder="<p>Hello!</p><p>We have an exciting offer for you...</p>"
-                className="w-full text-xs p-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[120px]"
+                className="w-full text-xs p-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-white min-h-[120px]"
               />
             </div>
             <div>
@@ -700,7 +700,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
               <select
                 value={bulkEmail.send_to}
                 onChange={(e) => setBulkEmail({ ...bulkEmail, send_to: e.target.value })}
-                className="w-full text-xs h-9 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full text-xs h-9 px-3 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-white"
               >
                 <option value="all">All Users</option>
                 <option value="active">Active Users Only</option>
@@ -712,7 +712,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
           <Button 
             onClick={sendBulkEmail} 
             disabled={sendingBulk} 
-            className="bg-emerald-600 hover:bg-emerald-700 mt-2"
+            className="bg-zinc-900 hover:bg-zinc-700 mt-2"
           >
             <Send className="w-4 h-4 mr-2" />
             {sendingBulk ? 'Sending...' : 'Send Bulk Email'}
@@ -737,7 +737,7 @@ const EmailSettingsSection = ({ API, axiosConfig, config, setConfig }) => {
                       <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="px-2 py-1 whitespace-nowrap">{new Date(campaign.timestamp).toLocaleDateString()}</td>
                         <td className="px-2 py-1">{campaign.details?.subject || 'N/A'}</td>
-                        <td className="px-2 py-1 text-emerald-600">{campaign.details?.success || 0}</td>
+                        <td className="px-2 py-1 text-white">{campaign.details?.success || 0}</td>
                         <td className="px-2 py-1 text-red-600">{campaign.details?.failed || 0}</td>
                       </tr>
                     ))}
@@ -2016,7 +2016,7 @@ const AdminPanel = ({ user, setUser }) => {
         <aside className={`
           fixed lg:sticky top-0 left-0 h-screen z-50
           ${adminSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          w-56 lg:w-60 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300
+          w-56 lg:w-60 bg-zinc-900 border-r border-slate-200 flex flex-col transition-transform duration-300
         `}>
           <div className="flex items-center justify-between h-14 px-4 border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center">
@@ -2033,9 +2033,9 @@ const AdminPanel = ({ user, setUser }) => {
             </div>
             <button 
               onClick={() => setAdminSidebarOpen(false)}
-              className="lg:hidden p-1.5 hover:bg-gray-100 rounded"
+              className="lg:hidden p-1.5 hover:bg-zinc-800 rounded"
             >
-              <X className="w-4 h-4 text-gray-600" />
+              <X className="w-4 h-4 text-zinc-300" />
             </button>
           </div>
 
@@ -2204,14 +2204,14 @@ const AdminPanel = ({ user, setUser }) => {
         {/* Main content */}
         <div className="flex-1 flex flex-col lg:ml-0">
           {/* Top bar - responsive */}
-          <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-slate-200 bg-white/80 backdrop-blur sticky top-0 z-30">
+          <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-slate-200 bg-zinc-900/80 backdrop-blur sticky top-0 z-30">
             <div className="flex items-center gap-2">
               {/* Hamburger for mobile */}
               <button
                 onClick={() => setAdminSidebarOpen(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+                className="lg:hidden p-2 hover:bg-zinc-800 rounded-lg"
               >
-                <Menu className="w-5 h-5 text-gray-600" />
+                <Menu className="w-5 h-5 text-zinc-300" />
               </button>
               <Button
                 variant="ghost"
@@ -2236,7 +2236,7 @@ const AdminPanel = ({ user, setUser }) => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-xs text-slate-600">
                 <span className="hidden sm:inline">Period:</span>
-                <div className="flex rounded-full border border-slate-200 bg-white p-0.5 text-[11px]">
+                <div className="flex rounded-full border border-slate-200 bg-zinc-900 p-0.5 text-[11px]">
                   {[
                     { id: '1d', label: 'Today' },
                     { id: '7d', label: 'Last 7 days' },
@@ -2249,7 +2249,7 @@ const AdminPanel = ({ user, setUser }) => {
                       onClick={() => setPeriodPreset(p.id)}
                       className={`px-2.5 py-0.5 rounded-full font-medium ${
                         periodPreset === p.id
-                          ? 'bg-emerald-600 text-white'
+                          ? 'bg-zinc-900 text-white'
                           : 'text-slate-700 hover:bg-slate-100'
                       }`}
                     >
@@ -2260,7 +2260,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                 {periodPreset === 'custom' && (
                   <div className="hidden lg:flex items-center gap-2 ml-2">
-                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-3 py-1">
+                    <div className="flex items-center gap-2 bg-zinc-900 border border-slate-200 rounded-full px-3 py-1">
                       <span className="text-[11px] text-slate-500">From</span>
                       <input
                         type="date"
@@ -2282,7 +2282,7 @@ const AdminPanel = ({ user, setUser }) => {
             {false && activeSection === 'deposits' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 shadow-none p-4 overflow-x-auto">
                   {adminDeposits?.length ? (
                     <table className="w-full text-sm">
                       <thead>
@@ -2310,7 +2310,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <td className="py-2 px-2 text-xs">
                               <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
                                 d.status === 'paid'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  ? 'bg-zinc-900 text-zinc-200 border border-zinc-700'
                                   : d.status === 'cancelled' || d.status === 'expired'
                                   ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                   : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -2327,7 +2327,7 @@ const AdminPanel = ({ user, setUser }) => {
                                   href={d.invoice_url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="text-emerald-600 hover:underline"
+                                  className="text-white hover:underline"
                                 >
                                   Open
                                 </a>
@@ -2347,7 +2347,7 @@ const AdminPanel = ({ user, setUser }) => {
             {false && activeSection === 'bank-accounts' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Bank Accounts (PaymentPoint Virtual Accounts)</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 shadow-none p-4 overflow-x-auto">
                   {adminVirtualAccounts?.length ? (
                     <table className="w-full text-sm">
                       <thead>
@@ -2398,7 +2398,7 @@ const AdminPanel = ({ user, setUser }) => {
             {false && activeSection === 'transactions' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">All User Transactions</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 shadow-none p-4 overflow-x-auto">
                   {adminTransactions?.length ? (
                     <table className="w-full text-sm">
                       <thead>
@@ -2445,7 +2445,7 @@ const AdminPanel = ({ user, setUser }) => {
             )}
 
               </div>
-              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px] px-2.5 py-1 rounded-full">
+              <Badge className="bg-zinc-900 text-zinc-200 border-zinc-700 text-[11px] px-2.5 py-1 rounded-full">
                 Admin
               </Badge>
             </div>
@@ -2457,7 +2457,7 @@ const AdminPanel = ({ user, setUser }) => {
               <>
                 {/* Greeting + summary cards */}
             <section className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-              <Card className="col-span-1 lg:col-span-2 border-none shadow-sm bg-gradient-to-br from-emerald-600 to-emerald-500 text-white">
+              <Card className="col-span-1 lg:col-span-2 border-none shadow-none bg-gradient-to-br from-emerald-600 to-emerald-500 text-white">
                 <CardContent className="pt-4 pb-5 px-5 flex flex-col justify-between h-full">
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-wide text-emerald-100 mb-1">
@@ -2495,7 +2495,7 @@ const AdminPanel = ({ user, setUser }) => {
                 title="Total Orders"
                 value={stats?.total_orders || 0}
                 icon={TrendingUp}
-                accent="text-emerald-600 bg-emerald-50"
+                accent="text-white bg-zinc-900"
               />
               <KpiCard
                 title="NGN to USD"
@@ -2516,7 +2516,7 @@ const AdminPanel = ({ user, setUser }) => {
                         : '₦0'
                     }
                     icon={Wallet}
-                    accent="text-emerald-700 bg-emerald-50"
+                    accent="text-zinc-200 bg-zinc-900"
                   />
                   <KpiCard
                     title="Total Sales (OTP spend)"
@@ -2539,7 +2539,7 @@ const AdminPanel = ({ user, setUser }) => {
                     }
                     subtitle={stats?.money_flow?.cancelled_orders ? `${stats.money_flow.cancelled_orders} cancelled` : undefined}
                     icon={RefreshCw}
-                    accent="text-orange-700 bg-orange-50"
+                    accent="text-orange-700 bg-zinc-900"
                   />
                   <KpiCard
                     title="Net Sales (Sales - Refunds)"
@@ -2549,7 +2549,7 @@ const AdminPanel = ({ user, setUser }) => {
                         : '₦0'
                     }
                     icon={TrendingUp}
-                    accent="text-emerald-700 bg-emerald-50"
+                    accent="text-zinc-200 bg-zinc-900"
                   />
                   <KpiCard
                     title="Gross Profit (Sales – API)"
@@ -2573,7 +2573,7 @@ const AdminPanel = ({ user, setUser }) => {
                         : '₦0'
                     }
                     icon={Wallet}
-                    accent="text-indigo-700 bg-indigo-50"
+                    accent="text-indigo-700 bg-zinc-900"
                   />
                   <KpiCard
                     title="Net Profit (est.)"
@@ -2596,7 +2596,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                 {/* Ads performance inputs - compact metric cards */}
                 <section className="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                  <Card className="border border-slate-200 shadow-none bg-zinc-900 h-full">
                     <CardHeader className="pb-1">
                       <CardTitle className="text-xs font-semibold">Ads Spend (₦)</CardTitle>
                     </CardHeader>
@@ -2611,7 +2611,7 @@ const AdminPanel = ({ user, setUser }) => {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                  <Card className="border border-slate-200 shadow-none bg-zinc-900 h-full">
                     <CardHeader className="pb-1">
                       <CardTitle className="text-xs font-semibold">Float Added (info)</CardTitle>
                     </CardHeader>
@@ -2621,7 +2621,7 @@ const AdminPanel = ({ user, setUser }) => {
                     </CardContent>
                   </Card>
 
-                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                  <Card className="border border-slate-200 shadow-none bg-zinc-900 h-full">
                     <CardHeader className="pb-1">
                       <CardTitle className="text-xs font-semibold">Decision Notes</CardTitle>
                     </CardHeader>
@@ -2634,7 +2634,7 @@ const AdminPanel = ({ user, setUser }) => {
                   </Card>
 
                   {/* Fourth card placeholder for future metrics */}
-                  <Card className="border border-slate-200 shadow-sm bg-white h-full">
+                  <Card className="border border-slate-200 shadow-none bg-zinc-900 h-full">
                     <CardHeader className="pb-1">
                       <CardTitle className="text-xs font-semibold">CAC Estimate</CardTitle>
                     </CardHeader>
@@ -2662,7 +2662,7 @@ const AdminPanel = ({ user, setUser }) => {
                       title="New Depositors"
                       value={stats.ads_and_conversion.new_depositors_count || 0}
                       icon={Users}
-                      accent="text-emerald-700 bg-emerald-50"
+                      accent="text-zinc-200 bg-zinc-900"
                     />
                     <KpiCard
                       title="Deposit Conversion Rate"
@@ -2674,7 +2674,7 @@ const AdminPanel = ({ user, setUser }) => {
                       title="Deposit→Buy Conversion"
                       value={`${(stats.ads_and_conversion.deposit_to_buy_conversion || 0).toFixed(1)}%`}
                       icon={TrendingUp}
-                      accent="text-indigo-700 bg-indigo-50"
+                      accent="text-indigo-700 bg-zinc-900"
                     />
                   </section>
                 )}
@@ -2688,7 +2688,7 @@ const AdminPanel = ({ user, setUser }) => {
                         stats.user_behavior.new_user_deposits_ngn || 0,
                       ).toLocaleString()})`}
                       icon={Users}
-                      accent="text-emerald-700 bg-emerald-50"
+                      accent="text-zinc-200 bg-zinc-900"
                     />
                     <KpiCard
                       title="Old User Depositors"
@@ -2710,7 +2710,7 @@ const AdminPanel = ({ user, setUser }) => {
                       title="Repeat Buyer Rate"
                       value={`${(stats.user_behavior.repeat_buyer_rate || 0).toFixed(1)}%`}
                       icon={TrendingUp}
-                      accent="text-emerald-700 bg-emerald-50"
+                      accent="text-zinc-200 bg-zinc-900"
                     />
                   </section>
                 )}
@@ -2722,7 +2722,7 @@ const AdminPanel = ({ user, setUser }) => {
                       title="WhatsApp Share of Revenue"
                       value={`${(stats.pricing_risk.whatsapp_share_pct || 0).toFixed(1)}%`}
                       icon={TrendingUp}
-                      accent="text-emerald-700 bg-emerald-50"
+                      accent="text-zinc-200 bg-zinc-900"
                     />
                     <KpiCard
                       title="Signal Share of Revenue"
@@ -2764,7 +2764,7 @@ const AdminPanel = ({ user, setUser }) => {
                         stats.system_health.available_liquidity_ngn || 0,
                       ).toLocaleString()}`}
                       icon={Wallet}
-                      accent="text-emerald-700 bg-emerald-50"
+                      accent="text-zinc-200 bg-zinc-900"
                     />
                   </section>
                 )}
@@ -2776,41 +2776,41 @@ const AdminPanel = ({ user, setUser }) => {
                     <p className="text-[10px] text-slate-500">Based on selected time period</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border border-purple-200 shadow-sm bg-gradient-to-br from-purple-50 to-white">
+                    <Card className="border border-purple-200 shadow-none bg-gradient-to-br from-purple-50 to-white">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <Gift className="w-4 h-4 text-purple-600" />
+                          <Gift className="w-4 h-4 text-white" />
                           <span className="text-xs font-semibold text-purple-700">Gift Card Sales</span>
                         </div>
                         <p className="text-xl font-bold text-purple-900">
                           ₦{Math.round(serviceStats.gift_cards?.total_revenue_ngn || 0).toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-purple-600 mt-1">
+                        <p className="text-[10px] text-white mt-1">
                           {serviceStats.gift_cards?.total_orders || 0} orders | ${(serviceStats.gift_cards?.total_value_usd || 0).toFixed(2)} value
                         </p>
                       </CardContent>
                     </Card>
                     
-                    <Card className="border border-blue-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                    <Card className="border border-blue-200 shadow-none bg-gradient-to-br from-blue-50 to-white">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <RefreshCw className="w-4 h-4 text-blue-600" />
-                          <span className="text-xs font-semibold text-blue-700">Currency Conversions</span>
+                          <RefreshCw className="w-4 h-4 text-white" />
+                          <span className="text-xs font-semibold text-zinc-200">Currency Conversions</span>
                         </div>
                         <p className="text-xl font-bold text-blue-900">
                           ₦{Math.round(serviceStats.currency_conversions?.total_ngn_received || 0).toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-blue-600 mt-1">
+                        <p className="text-[10px] text-white mt-1">
                           {serviceStats.currency_conversions?.total_conversions || 0} conversions | ${(serviceStats.currency_conversions?.total_usd_converted || 0).toFixed(2)} USD
                         </p>
                       </CardContent>
                     </Card>
                     
-                    <Card className="border border-emerald-200 shadow-sm bg-gradient-to-br from-emerald-50 to-white">
+                    <Card className="border border-zinc-700 shadow-none bg-gradient-to-br from-emerald-50 to-white">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <Wallet className="w-4 h-4 text-emerald-600" />
-                          <span className="text-xs font-semibold text-emerald-700">Total Other Revenue</span>
+                          <Wallet className="w-4 h-4 text-white" />
+                          <span className="text-xs font-semibold text-zinc-200">Total Other Revenue</span>
                         </div>
                         <p className="text-xl font-bold text-emerald-900">
                           ₦{Math.round(
@@ -2818,13 +2818,13 @@ const AdminPanel = ({ user, setUser }) => {
                             (serviceStats.currency_conversions?.total_ngn_received || 0)
                           ).toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-emerald-600 mt-1">
+                        <p className="text-[10px] text-white mt-1">
                           Gift Cards + Conversions
                         </p>
                       </CardContent>
                     </Card>
 
-                    <Card className="border border-amber-200 shadow-sm bg-gradient-to-br from-amber-50 to-white">
+                    <Card className="border border-amber-200 shadow-none bg-gradient-to-br from-amber-50 to-white">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-2">
                           <TrendingUp className="w-4 h-4 text-amber-600" />
@@ -2847,7 +2847,7 @@ const AdminPanel = ({ user, setUser }) => {
 
             {/* Simple activity snapshot (placeholder instead of real chart) */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-              <Card className="border border-slate-200 shadow-sm bg-white">
+              <Card className="border border-slate-200 shadow-none bg-zinc-900">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold">Recent Activity</CardTitle>
                   <CardDescription className="text-xs">
@@ -2877,7 +2877,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </CardContent>
               </Card>
 
-              <Card className="border border-slate-200 shadow-sm bg-white">
+              <Card className="border border-slate-200 shadow-none bg-zinc-900">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold">Environment</CardTitle>
                   <CardDescription className="text-xs">
@@ -2887,7 +2887,7 @@ const AdminPanel = ({ user, setUser }) => {
                 <CardContent className="space-y-3 text-xs">
                   <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg">
                     <span className="text-slate-600">PaymentPoint (NGN)</span>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">
+                    <Badge className="bg-zinc-900 text-zinc-200 border-zinc-700 text-[11px]">
                       Active
                     </Badge>
                   </div>
@@ -2899,7 +2899,7 @@ const AdminPanel = ({ user, setUser }) => {
                   </div>
                   <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg">
                     <span className="text-slate-600">OTP Polling</span>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[11px]">
+                    <Badge className="bg-zinc-900 text-zinc-200 border-zinc-700 text-[11px]">
                       Active
                     </Badge>
                   </div>
@@ -2911,7 +2911,7 @@ const AdminPanel = ({ user, setUser }) => {
             {activeSection === 'deposits' && (
               <section className="space-y-4">
                 <h2 className="text-base font-semibold text-slate-900">Crypto Deposits (Plisio)</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 shadow-none p-4 overflow-x-auto">
                   {adminDeposits?.length ? (
                     <table className="w-full text-xs">
                       <thead>
@@ -2938,7 +2938,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <td className="py-2 px-2">
                               <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
                                 d.status === 'paid'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  ? 'bg-zinc-900 text-zinc-200 border border-zinc-700'
                                   : d.status === 'cancelled' || d.status === 'expired'
                                   ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                   : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -2949,7 +2949,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <td className="py-2 px-2">
                               <button
                                 onClick={() => { setSelectedTransaction(d); setShowTransactionModal(true); }}
-                                className="text-emerald-600 hover:underline text-[10px] font-medium"
+                                className="text-white hover:underline text-[10px] font-medium"
                               >
                                 View
                               </button>
@@ -2968,7 +2968,7 @@ const AdminPanel = ({ user, setUser }) => {
             {activeSection === 'bank-accounts' && (
               <section className="space-y-4">
                 <h2 className="text-lg font-semibold text-slate-900">Bank Accounts (PaymentPoint Virtual Accounts)</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 overflow-x-auto">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 shadow-none p-4 overflow-x-auto">
                   {adminVirtualAccounts?.length ? (
                     <table className="w-full text-sm">
                       <thead>
@@ -2994,7 +2994,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <td className="py-2 px-2">
                               <button
                                 onClick={() => { setSelectedTransaction(acc); setShowTransactionModal(true); }}
-                                className="text-emerald-600 hover:underline text-[10px] font-medium"
+                                className="text-white hover:underline text-[10px] font-medium"
                               >
                                 View
                               </button>
@@ -3013,7 +3013,7 @@ const AdminPanel = ({ user, setUser }) => {
             {activeSection === 'transactions' && (
               <section className="space-y-4">
                 <h2 className="text-base font-semibold text-slate-900">All User Transactions</h2>
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 overflow-x-auto">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 shadow-none p-3 overflow-x-auto">
                   {adminTransactions?.length ? (
                     <table className="w-full text-[10px]">
                       <thead>
@@ -3048,7 +3048,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <td className="py-2 px-2">
                               <button
                                 onClick={() => { setSelectedTransaction(t); setShowTransactionModal(true); }}
-                                className="text-emerald-600 hover:underline text-[10px] font-medium"
+                                className="text-white hover:underline text-[10px] font-medium"
                               >
                                 View
                               </button>
@@ -3083,7 +3083,7 @@ const AdminPanel = ({ user, setUser }) => {
                   </Button>
                 </div>
 
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 overflow-hidden">
                   <div className="p-3 border-b border-slate-200 bg-slate-50">
                     <h3 className="text-xs font-semibold text-slate-800">Payment History</h3>
                   </div>
@@ -3108,7 +3108,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <td className="py-2 px-2 text-slate-800 font-medium truncate max-w-[80px]">
                                 {p.user_id?.slice(0, 8)}...
                               </td>
-                              <td className="py-2 px-2 font-semibold text-emerald-600">
+                              <td className="py-2 px-2 font-semibold text-white">
                                 ₦{(p.amount || 0).toLocaleString()}
                               </td>
                               <td className="py-2 px-2">
@@ -3125,7 +3125,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <td className="py-2 px-2">
                                 <button
                                   onClick={() => { setSelectedTransaction(p); setShowTransactionModal(true); }}
-                                  className="text-emerald-600 hover:underline text-[10px] font-medium"
+                                  className="text-white hover:underline text-[10px] font-medium"
                                 >
                                   View
                                 </button>
@@ -3163,31 +3163,31 @@ const AdminPanel = ({ user, setUser }) => {
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Total Accounts</p>
                     <p className="text-lg font-bold text-slate-900">{payscribeTempAccounts?.length || 0}</p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Paid</p>
                     <p className="text-lg font-bold text-green-600">
                       {payscribeTempAccounts?.filter(a => a.status === 'paid').length || 0}
                     </p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Pending</p>
                     <p className="text-lg font-bold text-yellow-600">
                       {payscribeTempAccounts?.filter(a => a.status === 'pending').length || 0}
                     </p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Total Volume</p>
-                    <p className="text-lg font-bold text-purple-600">
+                    <p className="text-lg font-bold text-white">
                       ₦{payscribeTempAccounts?.filter(a => a.status === 'paid').reduce((sum, a) => sum + (a.amount || 0), 0).toLocaleString() || 0}
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 overflow-hidden">
                   <div className="p-3 border-b border-slate-200 bg-slate-50">
                     <h3 className="text-xs font-semibold text-slate-800">Account History</h3>
                   </div>
@@ -3217,7 +3217,7 @@ const AdminPanel = ({ user, setUser }) => {
                                   {acc.user_email || acc.user_id?.slice(0, 8) + '...'}
                                 </div>
                               </td>
-                              <td className="py-2 px-2 font-semibold text-purple-600">
+                              <td className="py-2 px-2 font-semibold text-white">
                                 ₦{(acc.amount || 0).toLocaleString()}
                               </td>
                               <td className="py-2 px-2 font-mono text-slate-700">
@@ -3233,7 +3233,7 @@ const AdminPanel = ({ user, setUser }) => {
                                     : acc.status === 'failed'
                                     ? 'bg-red-100 text-red-700'
                                     : acc.status === 'expired'
-                                    ? 'bg-gray-100 text-gray-700'
+                                    ? 'bg-zinc-800 text-zinc-200'
                                     : 'bg-yellow-100 text-yellow-700'
                                 }`}>
                                   {acc.status}
@@ -3245,7 +3245,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <td className="py-2 px-2">
                                 <button
                                   onClick={() => setSelectedPayscribeAccount(acc)}
-                                  className="px-2 py-1 text-[9px] font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded transition-colors"
+                                  className="px-2 py-1 text-[9px] font-medium text-white bg-zinc-900 hover:bg-zinc-800 rounded transition-colors"
                                 >
                                   View
                                 </button>
@@ -3262,7 +3262,7 @@ const AdminPanel = ({ user, setUser }) => {
                   {/* Payscribe Account Detail Modal */}
                   {selectedPayscribeAccount && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedPayscribeAccount(null)}>
-                      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                      <div className="bg-zinc-900 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                           <h3 className="font-semibold text-slate-900">Transaction Details</h3>
                           <button onClick={() => setSelectedPayscribeAccount(null)} className="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
@@ -3278,7 +3278,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                                 selectedPayscribeAccount.status === 'paid' ? 'bg-green-100 text-green-700' :
                                 selectedPayscribeAccount.status === 'failed' ? 'bg-red-100 text-red-700' :
-                                selectedPayscribeAccount.status === 'expired' ? 'bg-gray-100 text-gray-700' :
+                                selectedPayscribeAccount.status === 'expired' ? 'bg-zinc-800 text-zinc-200' :
                                 'bg-yellow-100 text-yellow-700'
                               }`}>
                                 {selectedPayscribeAccount.status?.toUpperCase()}
@@ -3286,7 +3286,7 @@ const AdminPanel = ({ user, setUser }) => {
                             </div>
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="text-[10px] text-slate-500">Amount</p>
-                              <p className="text-sm font-bold text-emerald-600">₦{(selectedPayscribeAccount.amount || 0).toLocaleString()}</p>
+                              <p className="text-sm font-bold text-white">₦{(selectedPayscribeAccount.amount || 0).toLocaleString()}</p>
                             </div>
                             <div className="bg-slate-50 rounded-lg p-3">
                               <p className="text-[10px] text-slate-500">Created At</p>
@@ -3379,38 +3379,38 @@ const AdminPanel = ({ user, setUser }) => {
 
                 {/* Payout Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Total Payouts</p>
                     <p className="text-lg font-bold text-slate-900">{bankPayouts.length}</p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Completed</p>
                     <p className="text-lg font-bold text-green-600">
                       {bankPayouts.filter(p => p.status === 'completed').length}
                     </p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Pending</p>
                     <p className="text-lg font-bold text-yellow-600">
                       {bankPayouts.filter(p => p.status === 'pending' || p.status === 'processing').length}
                     </p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Failed/Refunded</p>
                     <p className="text-lg font-bold text-red-600">
                       {bankPayouts.filter(p => p.status === 'failed' || p.status === 'refunded').length}
                     </p>
                   </div>
-                  <div className="bg-white rounded-xl border border-slate-200 p-3">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-3">
                     <p className="text-[10px] text-slate-500">Total Volume</p>
-                    <p className="text-lg font-bold text-purple-600">
+                    <p className="text-lg font-bold text-white">
                       ₦{bankPayouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
 
                 {/* Payouts Table */}
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 overflow-hidden">
                   <div className="p-3 border-b border-slate-200 bg-slate-50">
                     <h3 className="text-xs font-semibold text-slate-800">Payout History</h3>
                   </div>
@@ -3461,7 +3461,7 @@ const AdminPanel = ({ user, setUser }) => {
                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
                                   payout.status === 'completed' ? 'bg-green-100 text-green-700' :
                                   payout.status === 'pending' || payout.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
-                                  payout.status === 'refunded' ? 'bg-blue-100 text-blue-700' :
+                                  payout.status === 'refunded' ? 'bg-blue-100 text-zinc-200' :
                                   'bg-red-100 text-red-700'
                                 }`}>
                                   {payout.status}
@@ -3471,7 +3471,7 @@ const AdminPanel = ({ user, setUser }) => {
                                 <div className="flex gap-1">
                                   <button
                                     onClick={() => setSelectedPayout(payout)}
-                                    className="text-blue-600 hover:text-blue-800 p-1"
+                                    className="text-white hover:text-blue-800 p-1"
                                     title="View Details"
                                   >
                                     <Eye className="w-3 h-3" />
@@ -3480,7 +3480,7 @@ const AdminPanel = ({ user, setUser }) => {
                                     <>
                                       <button
                                         onClick={() => verifyPayout(payout.reference)}
-                                        className="text-purple-600 hover:text-purple-800 p-1"
+                                        className="text-white hover:text-purple-800 p-1"
                                         title="Verify with Payscribe"
                                       >
                                         <RefreshCw className="w-3 h-3" />
@@ -3518,7 +3518,7 @@ const AdminPanel = ({ user, setUser }) => {
                 {/* Payout Detail Modal */}
                 {selectedPayout && (
                   <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
+                    <div className="bg-zinc-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
                       <div className="p-4 border-b border-slate-200 flex items-center justify-between">
                         <h3 className="font-semibold text-slate-900">Payout Details</h3>
                         <button onClick={() => setSelectedPayout(null)} className="text-slate-400 hover:text-slate-600">
@@ -3536,7 +3536,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-medium ${
                               selectedPayout.status === 'completed' ? 'bg-green-100 text-green-700' :
                               selectedPayout.status === 'pending' || selectedPayout.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
-                              selectedPayout.status === 'refunded' ? 'bg-blue-100 text-blue-700' :
+                              selectedPayout.status === 'refunded' ? 'bg-blue-100 text-zinc-200' :
                               'bg-red-100 text-red-700'
                             }`}>
                               {selectedPayout.status}
@@ -3623,7 +3623,7 @@ const AdminPanel = ({ user, setUser }) => {
                       size="sm"
                       onClick={saveCardFees}
                       disabled={savingCardFees}
-                      className="text-[10px] h-7 bg-emerald-600 hover:bg-emerald-700"
+                      className="text-[10px] h-7 bg-zinc-900 hover:bg-zinc-700"
                     >
                       <Save className="w-3 h-3 mr-1" />
                       {savingCardFees ? 'Saving...' : 'Save Fees'}
@@ -3633,7 +3633,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Card Creation Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">First Card Fee ($)</label>
                     <input
                       type="number"
@@ -3641,13 +3641,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_creation_fee}
                       onChange={(e) => setCardFees({...cardFees, card_creation_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Fee for first card creation</p>
                   </div>
 
                   {/* Additional Card Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Additional Card Fee ($)</label>
                     <input
                       type="number"
@@ -3655,13 +3655,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_additional_card_fee}
                       onChange={(e) => setCardFees({...cardFees, card_additional_card_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Fee for 2nd, 3rd card etc.</p>
                   </div>
 
                   {/* Funding Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Funding Fee ($)</label>
                     <input
                       type="number"
@@ -3669,13 +3669,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_funding_fee}
                       onChange={(e) => setCardFees({...cardFees, card_funding_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Fee per funding operation</p>
                   </div>
 
                   {/* Transaction Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Transaction Fee ($)</label>
                     <input
                       type="number"
@@ -3683,13 +3683,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_transaction_fee}
                       onChange={(e) => setCardFees({...cardFees, card_transaction_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Fee per successful transaction</p>
                   </div>
 
                   {/* Declined Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Declined Fee ($)</label>
                     <input
                       type="number"
@@ -3697,13 +3697,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_declined_fee}
                       onChange={(e) => setCardFees({...cardFees, card_declined_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Fee when transaction is declined</p>
                   </div>
 
                   {/* Monthly Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Monthly Fee ($)</label>
                     <input
                       type="number"
@@ -3711,13 +3711,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_monthly_fee}
                       onChange={(e) => setCardFees({...cardFees, card_monthly_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Monthly maintenance fee</p>
                   </div>
 
                   {/* Withdrawal Fee */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Withdrawal Fee ($)</label>
                     <input
                       type="number"
@@ -3725,13 +3725,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_withdrawal_fee}
                       onChange={(e) => setCardFees({...cardFees, card_withdrawal_fee: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Fee to withdraw from card</p>
                   </div>
 
                   {/* Min Funding */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Min Funding Amount ($)</label>
                     <input
                       type="number"
@@ -3739,13 +3739,13 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_min_funding_amount}
                       onChange={(e) => setCardFees({...cardFees, card_min_funding_amount: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Minimum amount to fund</p>
                   </div>
 
                   {/* Max Funding */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="bg-zinc-900 rounded-xl border border-slate-200 p-4">
                     <label className="block text-[10px] text-slate-500 mb-1">Max Funding Amount ($)</label>
                     <input
                       type="number"
@@ -3753,16 +3753,16 @@ const AdminPanel = ({ user, setUser }) => {
                       min="0"
                       value={cardFees.card_max_funding_amount}
                       onChange={(e) => setCardFees({...cardFees, card_max_funding_amount: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-white"
                     />
                     <p className="text-[9px] text-slate-400 mt-1">Maximum amount to fund</p>
                   </div>
                 </div>
 
                 {/* Fee Summary */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="bg-zinc-900 border border-blue-200 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-blue-900 mb-2">Fee Summary</h3>
-                  <p className="text-xs text-blue-700">
+                  <p className="text-xs text-zinc-200">
                     Creating a card with $10 initial balance costs user: 
                     <strong> ${(cardFees.card_creation_fee + 10 + cardFees.card_funding_fee).toFixed(2)}</strong> 
                     (${cardFees.card_creation_fee} creation + $10 funding + ${cardFees.card_funding_fee} funding fee)
@@ -3798,7 +3798,7 @@ const AdminPanel = ({ user, setUser }) => {
                       });
                       setShowNotifModal(true);
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                    className="bg-zinc-900 hover:bg-zinc-700 text-white text-xs"
                   >
                     <Plus className="w-3 h-3 mr-1" />
                     Create Notification
@@ -3806,7 +3806,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
 
                 {/* Notification List */}
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-zinc-900 rounded-xl border border-slate-200 overflow-hidden">
                   <div className="p-4 border-b border-slate-200 bg-slate-50">
                     <h3 className="text-sm font-semibold text-slate-800">All Notifications</h3>
                   </div>
@@ -3819,22 +3819,22 @@ const AdminPanel = ({ user, setUser }) => {
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="text-sm font-semibold text-slate-800">{notif.title}</h4>
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                  notif.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                                  notif.active ? 'bg-green-100 text-green-700' : 'bg-zinc-800 text-zinc-300'
                                 }`}>
                                   {notif.active ? 'Active' : 'Inactive'}
                                 </span>
                                 {notif.show_on_login && (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-zinc-200">
                                     Login Popup
                                   </span>
                                 )}
                                 {notif.popup_type && (
                                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                                     notif.popup_type === 'promo' ? 'bg-green-100 text-green-700' :
-                                    notif.popup_type === 'support' ? 'bg-blue-100 text-blue-700' :
+                                    notif.popup_type === 'support' ? 'bg-blue-100 text-zinc-200' :
                                     notif.popup_type === 'deposit_bonus' ? 'bg-purple-100 text-purple-700' :
                                     notif.popup_type === 'downtime' ? 'bg-red-100 text-red-700' :
-                                    'bg-gray-100 text-gray-600'
+                                    'bg-zinc-800 text-zinc-300'
                                   }`}>
                                     {notif.popup_type}
                                   </span>
@@ -3842,7 +3842,7 @@ const AdminPanel = ({ user, setUser }) => {
                               </div>
                               <p className="text-xs text-slate-600 line-clamp-2">{notif.message}</p>
                               {notif.action_url && (
-                                <p className="text-[10px] text-blue-600 mt-1 truncate">
+                                <p className="text-[10px] text-white mt-1 truncate">
                                   Link: {notif.action_url}
                                 </p>
                               )}
@@ -3897,7 +3897,7 @@ const AdminPanel = ({ user, setUser }) => {
                 {/* Create/Edit Modal */}
                 {showNotifModal && (
                   <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-zinc-900 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
                       <div className="p-4 border-b border-slate-200">
                         <h3 className="text-lg font-semibold text-slate-800">
                           {editingNotif ? 'Edit Notification' : 'Create Notification'}
@@ -3921,7 +3921,7 @@ const AdminPanel = ({ user, setUser }) => {
                             onChange={(e) => setNotifForm({...notifForm, message: e.target.value})}
                             placeholder="Enter your notification message..."
                             rows={4}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white"
                           />
                         </div>
 
@@ -4018,7 +4018,7 @@ const AdminPanel = ({ user, setUser }) => {
                         </Button>
                         <Button
                           onClick={handleCreateNotification}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                          className="bg-zinc-900 hover:bg-zinc-700 text-white text-xs"
                         >
                           {editingNotif ? 'Update' : 'Create'}
                         </Button>
@@ -4038,14 +4038,14 @@ const AdminPanel = ({ user, setUser }) => {
                     <h2 className="text-lg font-semibold text-slate-900">Page Toggles</h2>
                     <p className="text-xs text-slate-500 mt-1">Control which pages are visible to users on the dashboard</p>
                   </div>
-                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
                 </div>
 
                 {/* Master Bill Payment Toggle */}
-                <Card className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-white shadow-sm">
+                <Card className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-white shadow-none">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -4071,16 +4071,16 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Disable Bank Transfer Toggle */}
-                <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white shadow-sm">
+                <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white shadow-none">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                          <Building2 className="w-6 h-6 text-orange-600" />
+                          <Building2 className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <CardTitle className="text-sm font-semibold text-orange-900">Disable Bank Transfer</CardTitle>
-                          <p className="text-xs text-orange-600 mt-0.5">Prevents ALL users from withdrawing to bank accounts</p>
+                          <p className="text-xs text-white mt-0.5">Prevents ALL users from withdrawing to bank accounts</p>
                         </div>
                       </div>
                       <Switch
@@ -4097,13 +4097,13 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Individual Bill Payment Toggles */}
-                <Card className="border border-blue-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                <Card className="border border-blue-200 shadow-none bg-gradient-to-br from-blue-50 to-white">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2 text-blue-900">
-                      <Receipt className="w-4 h-4 text-blue-600" />
+                      <Receipt className="w-4 h-4 text-white" />
                       Individual Bill Payment Controls
                     </CardTitle>
-                    <CardDescription className="text-xs text-blue-600">
+                    <CardDescription className="text-xs text-white">
                       Disable specific bill payment services while keeping others active
                     </CardDescription>
                   </CardHeader>
@@ -4117,7 +4117,7 @@ const AdminPanel = ({ user, setUser }) => {
                         ['disable_betting', 'Betting', 'Fund betting wallets', '🎮'],
                         ['disable_wallet_transfer', 'Send Money', 'Wallet-to-wallet transfer', '💸'],
                       ].map(([key, label, desc, icon]) => (
-                        <div key={key} className="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-100">
+                        <div key={key} className="flex items-center justify-between p-3 bg-zinc-900 rounded-xl border border-blue-100">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{icon}</span>
                             <div>
@@ -4137,14 +4137,14 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                       ))}
                     </div>
-                    <p className="text-[10px] text-blue-500 mt-3 text-center">
+                    <p className="text-[10px] text-white mt-3 text-center">
                       💡 When a service is HIDDEN, it will be removed from the dashboard and bill payment pages completely
                     </p>
                   </CardContent>
                 </Card>
 
                 {/* Bill Payment Markups - Hidden from users */}
-                <Card className="border border-amber-200 shadow-sm bg-gradient-to-br from-amber-50 to-orange-50">
+                <Card className="border border-amber-200 shadow-none bg-gradient-to-br from-amber-50 to-orange-50">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-amber-600" />
@@ -4163,7 +4163,7 @@ const AdminPanel = ({ user, setUser }) => {
                         ['electricity_markup_percent', 'Electricity', '⚡', 'Power bill markup'],
                         ['betting_markup_percent', 'Betting', '🎮', 'Betting funding markup'],
                       ].map(([key, label, icon, desc]) => (
-                        <div key={key} className="bg-white rounded-xl p-3 border border-amber-200">
+                        <div key={key} className="bg-zinc-900 rounded-xl p-3 border border-amber-200">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">{icon}</span>
                             <div>
@@ -4192,10 +4192,10 @@ const AdminPanel = ({ user, setUser }) => {
                   </CardContent>
                 </Card>
                 
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <ToggleLeft className="w-4 h-4 text-emerald-600" />
+                      <ToggleLeft className="w-4 h-4 text-white" />
                       Dashboard Pages
                     </CardTitle>
                     <CardDescription className="text-xs">
@@ -4225,7 +4225,7 @@ const AdminPanel = ({ user, setUser }) => {
                         ['enable_profile', 'Profile Settings', 'User profile'],
                         ['enable_support', 'Support', 'Help & support'],
                       ].map(([key, label, desc]) => (
-                        <div key={key} className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 bg-white hover:bg-slate-50 transition-colors">
+                        <div key={key} className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 bg-zinc-900 hover:bg-slate-50 transition-colors">
                           <div>
                             <span className="text-slate-800 font-medium">{label}</span>
                             <p className="text-[10px] text-slate-400 mt-0.5">{desc}</p>
@@ -4244,7 +4244,7 @@ const AdminPanel = ({ user, setUser }) => {
                 <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-2">
-                      <Plane className="w-5 h-5 text-blue-600" />
+                      <Plane className="w-5 h-5 text-white" />
                       <CardTitle className="text-sm font-semibold text-slate-900">Site-Specific Features</CardTitle>
                     </div>
                     <CardDescription className="text-xs text-slate-500">
@@ -4274,7 +4274,7 @@ const AdminPanel = ({ user, setUser }) => {
                     <h2 className="text-lg font-semibold text-slate-900">Payment Gateways</h2>
                     <p className="text-xs text-slate-500 mt-1">Enable or disable payment methods for all users</p>
                   </div>
-                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
@@ -4287,11 +4287,11 @@ const AdminPanel = ({ user, setUser }) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                            <CreditCard className="w-5 h-5 text-orange-600" />
+                            <CreditCard className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <CardTitle className="text-sm font-semibold text-orange-900">Ercaspay</CardTitle>
-                            <p className="text-[10px] text-orange-600">Card & Bank Payments</p>
+                            <p className="text-[10px] text-white">Card & Bank Payments</p>
                           </div>
                         </div>
                         <Switch
@@ -4309,16 +4309,16 @@ const AdminPanel = ({ user, setUser }) => {
                   </Card>
 
                   {/* PaymentPoint */}
-                  <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+                  <Card className="border-2 border-zinc-700 bg-gradient-to-br from-emerald-50 to-white">
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                            <Wallet className="w-5 h-5 text-emerald-600" />
+                          <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">
+                            <Wallet className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <CardTitle className="text-sm font-semibold text-emerald-900">PaymentPoint</CardTitle>
-                            <p className="text-[10px] text-emerald-600">NGN Virtual Accounts</p>
+                            <p className="text-[10px] text-white">NGN Virtual Accounts</p>
                           </div>
                         </div>
                         <Switch
@@ -4327,7 +4327,7 @@ const AdminPanel = ({ user, setUser }) => {
                         />
                       </div>
                     </CardHeader>
-                    <CardContent className="text-xs text-emerald-700">
+                    <CardContent className="text-xs text-zinc-200">
                       <p>Generate virtual bank accounts for deposits</p>
                       <div className={`mt-3 px-3 py-1.5 rounded-full text-center font-semibold ${pageToggles.enable_paymentpoint ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {pageToggles.enable_paymentpoint ? 'ENABLED' : 'DISABLED'}
@@ -4341,11 +4341,11 @@ const AdminPanel = ({ user, setUser }) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                            <DollarSign className="w-5 h-5 text-blue-600" />
+                            <DollarSign className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <CardTitle className="text-sm font-semibold text-blue-900">Plisio</CardTitle>
-                            <p className="text-[10px] text-blue-600">Cryptocurrency</p>
+                            <p className="text-[10px] text-white">Cryptocurrency</p>
                           </div>
                         </div>
                         <Switch
@@ -4354,7 +4354,7 @@ const AdminPanel = ({ user, setUser }) => {
                         />
                       </div>
                     </CardHeader>
-                    <CardContent className="text-xs text-blue-700">
+                    <CardContent className="text-xs text-zinc-200">
                       <p>Accept BTC, ETH, USDT and other cryptos</p>
                       <div className={`mt-3 px-3 py-1.5 rounded-full text-center font-semibold ${pageToggles.enable_plisio ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {pageToggles.enable_plisio ? 'ENABLED' : 'DISABLED'}
@@ -4368,11 +4368,11 @@ const AdminPanel = ({ user, setUser }) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <Building2 className="w-5 h-5 text-purple-600" />
+                            <Building2 className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <CardTitle className="text-sm font-semibold text-purple-900">Payscribe</CardTitle>
-                            <p className="text-[10px] text-purple-600">Bank Transfer (Instant)</p>
+                            <p className="text-[10px] text-white">Bank Transfer (Instant)</p>
                           </div>
                         </div>
                         <Switch
@@ -4391,14 +4391,14 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
 
                 {/* Payment Gateway API Keys */}
-                <Card className="border border-slate-200 shadow-sm bg-white mt-4">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900 mt-4">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Payment Gateway API Keys</CardTitle>
                     <p className="text-xs text-slate-500">Enter your API keys for each payment gateway. Keys are stored securely.</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Ercaspay */}
-                    <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
+                    <div className="p-4 rounded-lg bg-zinc-900 border border-orange-200">
                       <h4 className="font-semibold text-sm text-orange-900 mb-3">Ercaspay</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
@@ -4425,7 +4425,7 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
 
                     {/* PaymentPoint */}
-                    <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+                    <div className="p-4 rounded-lg bg-zinc-900 border border-zinc-700">
                       <h4 className="font-semibold text-sm text-emerald-900 mb-3">PaymentPoint</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
@@ -4462,7 +4462,7 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
 
                     {/* Plisio */}
-                    <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="p-4 rounded-lg bg-zinc-900 border border-blue-200">
                       <h4 className="font-semibold text-sm text-blue-900 mb-3">Plisio (Crypto)</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
@@ -4489,7 +4489,7 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
 
                     {/* Payscribe */}
-                    <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
+                    <div className="p-4 rounded-lg bg-zinc-900 border border-purple-200">
                       <h4 className="font-semibold text-sm text-purple-900 mb-3">Payscribe (Bank Transfer / Collections)</h4>
                       <div className="space-y-3">
                         <div>
@@ -4521,7 +4521,7 @@ const AdminPanel = ({ user, setUser }) => {
                             onChange={(e) => setPricing({ ...pricing, payscribe_webhook_secret: e.target.value })}
                             className="mt-1 h-9 text-xs"
                           />
-                          <p className="text-[10px] text-purple-600 mt-1">Used to verify webhook signatures. Get this from Payscribe dashboard → Webhooks.</p>
+                          <p className="text-[10px] text-white mt-1">Used to verify webhook signatures. Get this from Payscribe dashboard → Webhooks.</p>
                         </div>
                         <p className="text-[10px] text-slate-500">
                           Get keys from your Payscribe dashboard. Remember to whitelist your server IP.
@@ -4532,7 +4532,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Crypto Rates */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Crypto USD Rates (Manual)</CardTitle>
                     <CardDescription className="text-xs">Used for auto-crediting volatile coin deposits</CardDescription>
@@ -4573,7 +4573,7 @@ const AdminPanel = ({ user, setUser }) => {
                     <h2 className="text-lg font-semibold text-slate-900">Gift Cards Provider</h2>
                     <p className="text-xs text-slate-500 mt-1">Configure Reloadly API credentials and markup rates</p>
                   </div>
-                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
@@ -4585,11 +4585,11 @@ const AdminPanel = ({ user, setUser }) => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                          <Gift className="w-6 h-6 text-purple-600" />
+                          <Gift className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <CardTitle className="text-base font-semibold text-purple-900">Reloadly</CardTitle>
-                          <p className="text-xs text-purple-600">Gift Cards API Provider</p>
+                          <p className="text-xs text-white">Gift Cards API Provider</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -4616,10 +4616,10 @@ const AdminPanel = ({ user, setUser }) => {
                           ) : reloadlyBalance.balance !== null ? (
                             <p className="text-2xl font-bold text-purple-900 mt-1">
                               ${reloadlyBalance.balance?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              <span className="text-sm font-normal text-purple-600 ml-2">{reloadlyBalance.currency_code}</span>
+                              <span className="text-sm font-normal text-white ml-2">{reloadlyBalance.currency_code}</span>
                             </p>
                           ) : (
-                            <p className="text-sm text-purple-600 mt-1">Click refresh to check balance</p>
+                            <p className="text-sm text-white mt-1">Click refresh to check balance</p>
                           )}
                           {reloadlyBalance.is_sandbox && reloadlyBalance.balance !== null && (
                             <p className="text-[10px] text-yellow-700 mt-1">⚠️ Sandbox mode - test balance only</p>
@@ -4630,7 +4630,7 @@ const AdminPanel = ({ user, setUser }) => {
                           size="sm"
                           onClick={fetchReloadlyBalance}
                           disabled={reloadlyBalance.loading}
-                          className="h-8 px-3 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
+                          className="h-8 px-3 text-xs border-purple-300 text-purple-700 hover:bg-zinc-900"
                         >
                           <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${reloadlyBalance.loading ? 'animate-spin' : ''}`} />
                           {reloadlyBalance.loading ? 'Checking...' : 'Refresh'}
@@ -4639,9 +4639,9 @@ const AdminPanel = ({ user, setUser }) => {
                     </div>
 
                     {giftcardsConfig.reloadly_from_env && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-                        <span className="text-blue-600 text-xs">ℹ️</span>
-                        <p className="text-xs text-blue-700">Reloadly credentials are loaded from server environment variables. You can override them by entering new values below.</p>
+                      <div className="bg-zinc-900 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+                        <span className="text-white text-xs">ℹ️</span>
+                        <p className="text-xs text-zinc-200">Reloadly credentials are loaded from server environment variables. You can override them by entering new values below.</p>
                       </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -4689,7 +4689,7 @@ const AdminPanel = ({ user, setUser }) => {
                               name="giftcard_env"
                               checked={giftcardsConfig.giftcard_is_sandbox}
                               onChange={() => setGiftcardsConfig({ ...giftcardsConfig, giftcard_is_sandbox: true })}
-                              className="w-4 h-4 text-purple-600"
+                              className="w-4 h-4 text-white"
                             />
                             <span className="text-sm text-slate-700">Sandbox (Testing)</span>
                           </label>
@@ -4699,7 +4699,7 @@ const AdminPanel = ({ user, setUser }) => {
                               name="giftcard_env"
                               checked={!giftcardsConfig.giftcard_is_sandbox}
                               onChange={() => setGiftcardsConfig({ ...giftcardsConfig, giftcard_is_sandbox: false })}
-                              className="w-4 h-4 text-purple-600"
+                              className="w-4 h-4 text-white"
                             />
                             <span className="text-sm text-slate-700">Live (Production)</span>
                           </label>
@@ -4707,7 +4707,7 @@ const AdminPanel = ({ user, setUser }) => {
                       </div>
                     </div>
 
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-4">
+                    <div className="bg-zinc-900 border border-purple-200 rounded-lg p-4 mt-4">
                       <h4 className="font-semibold text-purple-900 text-sm mb-2">About Reloadly Gift Cards</h4>
                       <ul className="text-xs text-purple-700 space-y-1">
                         <li>• Access to 2,900+ gift cards from 169 countries</li>
@@ -4720,7 +4720,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Exchange Rates Card */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Exchange Rates (USD to NGN)</CardTitle>
                     <CardDescription className="text-xs">Separate rates for wallet conversion and gift cards</CardDescription>
@@ -4738,19 +4738,19 @@ const AdminPanel = ({ user, setUser }) => {
                         />
                         <p className="text-[10px] text-slate-400">Base rate for USD gift cards (before markup)</p>
                       </div>
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                        <p className="text-xs text-emerald-700">Preview: $10 gift card = ₦{((pricing.giftcard_usd_to_ngn_rate || 1650) * 10 * (1 + (giftcardsConfig.giftcard_markup_percent || 0) / 100)).toLocaleString()}</p>
-                        <p className="text-[10px] text-emerald-600 mt-1">(with {giftcardsConfig.giftcard_markup_percent || 0}% markup)</p>
+                      <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4">
+                        <p className="text-xs text-zinc-200">Preview: $10 gift card = ₦{((pricing.giftcard_usd_to_ngn_rate || 1650) * 10 * (1 + (giftcardsConfig.giftcard_markup_percent || 0) / 100)).toLocaleString()}</p>
+                        <p className="text-[10px] text-white mt-1">(with {giftcardsConfig.giftcard_markup_percent || 0}% markup)</p>
                       </div>
                     </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-xs text-blue-700"><strong>Note:</strong> For non-USD currencies (EUR, GBP, CAD, etc.), live exchange rates are automatically fetched and applied.</p>
+                    <div className="bg-zinc-900 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-zinc-200"><strong>Note:</strong> For non-USD currencies (EUR, GBP, CAD, etc.), live exchange rates are automatically fetched and applied.</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Wallet Conversion Rate Card */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Wallet Conversion Rate</CardTitle>
                     <CardDescription className="text-xs">Rate for user USD to NGN wallet conversion</CardDescription>
@@ -4779,7 +4779,7 @@ const AdminPanel = ({ user, setUser }) => {
                           className="h-9 text-sm bg-slate-50 border-slate-200"
                         />
                         <p className="text-[10px] text-slate-400">Rate users get when converting NGN to USD</p>
-                        <p className="text-xs text-emerald-700 mt-1">Preview: ₦{(pricing.ngn_to_usd_rate || 1500).toLocaleString()} → $1</p>
+                        <p className="text-xs text-zinc-200 mt-1">Preview: ₦{(pricing.ngn_to_usd_rate || 1500).toLocaleString()} → $1</p>
                       </div>
                     </div>
                   </CardContent>
@@ -4800,7 +4800,7 @@ const AdminPanel = ({ user, setUser }) => {
                     <h2 className="text-lg font-semibold text-slate-900">Travel Booking (Amadeus)</h2>
                     <p className="text-xs text-slate-500 mt-1">Configure Amadeus API for flights, hotels, transfers, and experiences</p>
                   </div>
-                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
@@ -4811,12 +4811,12 @@ const AdminPanel = ({ user, setUser }) => {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center">
                           <Plane className="w-5 h-5 text-white" />
                         </div>
                         <div>
                           <CardTitle className="text-sm font-semibold text-blue-900">Amadeus API</CardTitle>
-                          <CardDescription className="text-xs text-blue-600">Travel booking provider</CardDescription>
+                          <CardDescription className="text-xs text-white">Travel booking provider</CardDescription>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -4891,7 +4891,7 @@ const AdminPanel = ({ user, setUser }) => {
                           <option value="https://test.api.amadeus.com">Test (Sandbox)</option>
                           <option value="https://api.amadeus.com">Production (Live)</option>
                         </select>
-                        <p className="text-[10px] text-blue-600">Use Test URL for development, Production for live bookings</p>
+                        <p className="text-[10px] text-white">Use Test URL for development, Production for live bookings</p>
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">Markup Percentage (%)</Label>
@@ -4908,8 +4908,8 @@ const AdminPanel = ({ user, setUser }) => {
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-xs text-blue-700">
+                    <div className="bg-zinc-900 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-zinc-200">
                         <strong>Get your API keys:</strong> Visit{' '}
                         <a href="https://developers.amadeus.com" target="_blank" rel="noopener noreferrer" className="underline">
                           developers.amadeus.com
@@ -4933,10 +4933,10 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
 
                 {/* Create New Promo */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Plus className="w-4 h-4 text-emerald-600" />
+                      <Plus className="w-4 h-4 text-white" />
                       Create New Promo Code
                     </CardTitle>
                   </CardHeader>
@@ -5015,7 +5015,7 @@ const AdminPanel = ({ user, setUser }) => {
                         <span className="text-xs text-slate-700">One-time per user</span>
                       </div>
                       <div className="flex items-center pt-5">
-                        <Button onClick={handleCreatePromo} className="h-9 px-6 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 w-full">
+                        <Button onClick={handleCreatePromo} className="h-9 px-6 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700 w-full">
                           <Plus className="w-3.5 h-3.5 mr-1.5" />
                           Create Promo
                         </Button>
@@ -5025,10 +5025,10 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Existing Promo Codes */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-purple-600" />
+                      <Tag className="w-4 h-4 text-white" />
                       Active Promo Codes
                     </CardTitle>
                     <CardDescription className="text-xs">Manage existing promotional codes</CardDescription>
@@ -5060,7 +5060,7 @@ const AdminPanel = ({ user, setUser }) => {
                             {promoCodes.map((p) => (
                               <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
                                 <td className="px-3 py-2.5">
-                                  <span className="font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{p.code}</span>
+                                  <span className="font-mono font-bold text-purple-700 bg-zinc-900 px-2 py-0.5 rounded">{p.code}</span>
                                 </td>
                                 <td className="px-3 py-2.5 text-slate-600">{p.description || '-'}</td>
                                 <td className="px-3 py-2.5">
@@ -5068,7 +5068,7 @@ const AdminPanel = ({ user, setUser }) => {
                                     {p.discount_type === 'percent' ? 'Percent' : p.discount_type === 'fixed_ngn' ? 'Fixed ₦' : 'Fixed $'}
                                   </span>
                                 </td>
-                                <td className="px-3 py-2.5 font-semibold text-emerald-700">
+                                <td className="px-3 py-2.5 font-semibold text-zinc-200">
                                   {p.discount_type === 'percent' ? `${p.discount_value}%` : p.discount_type === 'fixed_ngn' ? `₦${p.discount_value}` : `$${p.discount_value}`}
                                 </td>
                                 <td className="px-3 py-2.5 text-slate-600">{p.max_total_uses ?? '∞'}</td>
@@ -5103,17 +5103,17 @@ const AdminPanel = ({ user, setUser }) => {
                     <h2 className="text-lg font-semibold text-slate-900">Branding & Banners</h2>
                     <p className="text-xs text-slate-500 mt-1">Customize your site&apos;s appearance and landing page</p>
                   </div>
-                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
                 </div>
 
                 {/* Homepage Template Selection */}
-                <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white shadow-sm">
+                <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white shadow-none">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-indigo-600" />
+                      <Globe className="w-4 h-4 text-white" />
                       Homepage Template
                     </CardTitle>
                     <CardDescription className="text-xs">Choose which homepage design to display to visitors</CardDescription>
@@ -5124,13 +5124,13 @@ const AdminPanel = ({ user, setUser }) => {
                         onClick={() => setBranding({ ...branding, homepage_template: 'default' })}
                         className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
                           (branding.homepage_template || 'default') === 'default' 
-                            ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' 
-                            : 'border-slate-200 bg-white hover:border-slate-300'
+                            ? 'border-indigo-500 bg-zinc-900 ring-2 ring-indigo-200' 
+                            : 'border-slate-200 bg-zinc-900 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center gap-3 mb-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            (branding.homepage_template || 'default') === 'default' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'
+                            (branding.homepage_template || 'default') === 'default' ? 'bg-zinc-900 text-white' : 'bg-slate-100 text-slate-600'
                           }`}>
                             <CreditCard className="w-5 h-5" />
                           </div>
@@ -5145,13 +5145,13 @@ const AdminPanel = ({ user, setUser }) => {
                         onClick={() => setBranding({ ...branding, homepage_template: 'socialsms' })}
                         className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
                           branding.homepage_template === 'socialsms' 
-                            ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' 
-                            : 'border-slate-200 bg-white hover:border-slate-300'
+                            ? 'border-indigo-500 bg-zinc-900 ring-2 ring-indigo-200' 
+                            : 'border-slate-200 bg-zinc-900 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex items-center gap-3 mb-3">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            branding.homepage_template === 'socialsms' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'
+                            branding.homepage_template === 'socialsms' ? 'bg-zinc-900 text-white' : 'bg-slate-100 text-slate-600'
                           }`}>
                             <MessageSquare className="w-5 h-5" />
                           </div>
@@ -5163,19 +5163,19 @@ const AdminPanel = ({ user, setUser }) => {
                         <p className="text-xs text-slate-600">Light background, typing animation, service mockups, testimonials grid.</p>
                       </div>
                     </div>
-                    <p className="text-xs text-indigo-600 mt-3">Currently using: <strong>{(branding.homepage_template || 'default') === 'default' ? 'Default (BillHub)' : 'SocialSMS Style'}</strong></p>
+                    <p className="text-xs text-white mt-3">Currently using: <strong>{(branding.homepage_template || 'default') === 'default' ? 'Default (BillHub)' : 'SocialSMS Style'}</strong></p>
                   </CardContent>
                 </Card>
 
                 {/* Homepage 2 (SocialSMS) Settings - Only visible when SocialSMS is selected */}
                 {branding.homepage_template === 'socialsms' && (
-                  <Card className="border border-purple-200 shadow-sm bg-gradient-to-br from-purple-50 to-slate-50">
+                  <Card className="border border-purple-200 shadow-none bg-gradient-to-br from-purple-50 to-slate-50">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-semibold flex items-center gap-2 text-purple-900">
-                        <Palette className="w-4 h-4 text-purple-600" />
+                        <Palette className="w-4 h-4 text-white" />
                         Homepage 2 (SocialSMS) Customization
                       </CardTitle>
-                      <CardDescription className="text-xs text-purple-600">
+                      <CardDescription className="text-xs text-white">
                         These settings only affect the SocialSMS style homepage
                       </CardDescription>
                     </CardHeader>
@@ -5194,7 +5194,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <Input
                               value={branding.hp2_bg_color || '#0f172a'}
                               onChange={(e) => setBranding({ ...branding, hp2_bg_color: e.target.value })}
-                              className="h-9 text-xs bg-white flex-1 font-mono"
+                              className="h-9 text-xs bg-zinc-900 flex-1 font-mono"
                             />
                           </div>
                         </div>
@@ -5210,7 +5210,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <Input
                               value={branding.hp2_accent_color || '#8b5cf6'}
                               onChange={(e) => setBranding({ ...branding, hp2_accent_color: e.target.value })}
-                              className="h-9 text-xs bg-white flex-1 font-mono"
+                              className="h-9 text-xs bg-zinc-900 flex-1 font-mono"
                             />
                           </div>
                         </div>
@@ -5226,7 +5226,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <Input
                               value={branding.hp2_accent_gradient_end || '#8b5cf6'}
                               onChange={(e) => setBranding({ ...branding, hp2_accent_gradient_end: e.target.value })}
-                              className="h-9 text-xs bg-white flex-1 font-mono"
+                              className="h-9 text-xs bg-zinc-900 flex-1 font-mono"
                             />
                           </div>
                         </div>
@@ -5234,7 +5234,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                       {/* Effects Toggles */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-purple-100">
+                        <div className="flex items-center justify-between p-3 bg-zinc-900 rounded-xl border border-purple-100">
                           <div>
                             <p className="font-medium text-sm text-slate-800">Glassmorphism Effects</p>
                             <p className="text-[10px] text-slate-500">Frosted glass effect on cards</p>
@@ -5244,7 +5244,7 @@ const AdminPanel = ({ user, setUser }) => {
                             onCheckedChange={(val) => setBranding({ ...branding, hp2_enable_glassmorphism: val })}
                           />
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-purple-100">
+                        <div className="flex items-center justify-between p-3 bg-zinc-900 rounded-xl border border-purple-100">
                           <div>
                             <p className="font-medium text-sm text-slate-800">Animated Background</p>
                             <p className="text-[10px] text-slate-500">Gradient blur animations</p>
@@ -5258,7 +5258,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                       {/* Badge Settings */}
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-purple-100">
+                        <div className="flex items-center justify-between p-3 bg-zinc-900 rounded-xl border border-purple-100">
                           <div>
                             <p className="font-medium text-sm text-slate-800">Show Hero Badge</p>
                             <p className="text-[10px] text-slate-500">Display trust badge above title</p>
@@ -5275,7 +5275,7 @@ const AdminPanel = ({ user, setUser }) => {
                               value={branding.hp2_badge_text || '🚀 Trusted by 50,000+ Users'}
                               onChange={(e) => setBranding({ ...branding, hp2_badge_text: e.target.value })}
                               placeholder="🚀 Trusted by 50,000+ Users"
-                              className="h-9 text-sm bg-white"
+                              className="h-9 text-sm bg-zinc-900"
                             />
                           </div>
                         )}
@@ -5290,7 +5290,7 @@ const AdminPanel = ({ user, setUser }) => {
                             onClick={() => setBranding({ ...branding, hp2_nav_style: 'bordered' })}
                             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
                               (branding.hp2_nav_style || 'bordered') === 'bordered'
-                                ? 'bg-purple-500 text-white shadow-sm'
+                                ? 'bg-zinc-900 text-white shadow-none'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
@@ -5301,7 +5301,7 @@ const AdminPanel = ({ user, setUser }) => {
                             onClick={() => setBranding({ ...branding, hp2_nav_style: 'solid' })}
                             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
                               branding.hp2_nav_style === 'solid'
-                                ? 'bg-purple-500 text-white shadow-sm'
+                                ? 'bg-zinc-900 text-white shadow-none'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
@@ -5318,19 +5318,19 @@ const AdminPanel = ({ user, setUser }) => {
                             value={branding.hp2_hero_title_1 || 'Buy Numbers for'}
                             onChange={(e) => setBranding({ ...branding, hp2_hero_title_1: e.target.value })}
                             placeholder="Phrase 1"
-                            className="h-9 text-sm bg-white"
+                            className="h-9 text-sm bg-zinc-900"
                           />
                           <Input
                             value={branding.hp2_hero_title_2 || 'SMS Verifications'}
                             onChange={(e) => setBranding({ ...branding, hp2_hero_title_2: e.target.value })}
                             placeholder="Phrase 2"
-                            className="h-9 text-sm bg-white"
+                            className="h-9 text-sm bg-zinc-900"
                           />
                           <Input
                             value={branding.hp2_hero_title_3 || 'Buy Data, Airtime'}
                             onChange={(e) => setBranding({ ...branding, hp2_hero_title_3: e.target.value })}
                             placeholder="Phrase 3"
-                            className="h-9 text-sm bg-white"
+                            className="h-9 text-sm bg-zinc-900"
                           />
                         </div>
                         <div className="space-y-1.5">
@@ -5338,7 +5338,7 @@ const AdminPanel = ({ user, setUser }) => {
                           <textarea
                             value={branding.hp2_hero_subtitle || "Don't feel comfortable giving out your phone number? Protect your online identity by using our one-time-use non-VoIP phone numbers."}
                             onChange={(e) => setBranding({ ...branding, hp2_hero_subtitle: e.target.value })}
-                            className="w-full h-20 p-3 text-sm bg-white rounded-lg border border-slate-200 resize-none"
+                            className="w-full h-20 p-3 text-sm bg-zinc-900 rounded-lg border border-slate-200 resize-none"
                             placeholder="Hero subtitle text..."
                           />
                         </div>
@@ -5366,7 +5366,7 @@ const AdminPanel = ({ user, setUser }) => {
                 )}
 
                 {/* Brand Identity */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Palette className="w-4 h-4 text-pink-600" />
@@ -5517,7 +5517,7 @@ const AdminPanel = ({ user, setUser }) => {
                               src={branding.brand_logo_url} 
                               alt="Header Logo Preview" 
                               style={{ width: branding.logo_width, height: branding.logo_height }} 
-                              className="object-contain border border-slate-200 rounded bg-white p-1" 
+                              className="object-contain border border-slate-200 rounded bg-zinc-900 p-1" 
                               onError={(e) => e.target.style.display = 'none'} 
                             />
                           </div>
@@ -5527,7 +5527,7 @@ const AdminPanel = ({ user, setUser }) => {
                               src={branding.brand_logo_url} 
                               alt="Card Logo Preview" 
                               style={{ width: branding.card_logo_width, height: branding.card_logo_height }} 
-                              className="object-contain border border-slate-200 rounded bg-white p-1" 
+                              className="object-contain border border-slate-200 rounded bg-zinc-900 p-1" 
                               onError={(e) => e.target.style.display = 'none'} 
                             />
                           </div>
@@ -5538,7 +5538,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Theme Colors */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Theme Colors</CardTitle>
                     <CardDescription className="text-xs">Customize colors across landing page and dashboard</CardDescription>
@@ -5669,7 +5669,7 @@ const AdminPanel = ({ user, setUser }) => {
                       <p className="text-[10px] text-slate-500 mb-3 font-semibold">Live Preview:</p>
                       <div className="flex items-center gap-3 flex-wrap">
                         <div 
-                          className="px-4 py-2 rounded-full text-white text-xs font-semibold shadow-md"
+                          className="px-4 py-2 rounded-full text-white text-xs font-semibold shadow-none"
                           style={{ backgroundColor: branding.button_color_hex || '#7c3aed' }}
                         >
                           Sign Up Button
@@ -5692,7 +5692,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Landing Page Content */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Landing Page Content</CardTitle>
                   </CardHeader>
@@ -5711,17 +5711,17 @@ const AdminPanel = ({ user, setUser }) => {
                         value={branding.landing_hero_subtitle}
                         onChange={(e) => setBranding({ ...branding, landing_hero_subtitle: e.target.value })}
                         rows={3}
-                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
                       />
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* SEO Settings */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-blue-600" />
+                      <Globe className="w-4 h-4 text-white" />
                       SEO Settings
                     </CardTitle>
                     <CardDescription className="text-xs">Optimize your site for search engines (Google, Bing, etc.)</CardDescription>
@@ -5744,7 +5744,7 @@ const AdminPanel = ({ user, setUser }) => {
                         onChange={(e) => setBranding({ ...branding, seo_meta_description: e.target.value })}
                         placeholder="Describe your site in 1-2 sentences..."
                         rows={3}
-                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
                       />
                       <p className="text-[10px] text-slate-400">Shows in search results. Keep under 160 characters for best results.</p>
                     </div>
@@ -5793,8 +5793,8 @@ const AdminPanel = ({ user, setUser }) => {
                     {/* SEO Preview */}
                     <div className="mt-4 p-4 bg-slate-100 rounded-xl">
                       <p className="text-[10px] text-slate-500 mb-2 font-semibold">Google Search Preview:</p>
-                      <div className="bg-white p-3 rounded-lg border border-slate-200">
-                        <p className="text-blue-700 text-sm font-medium truncate">{branding.seo_site_title || 'Your Site Title'}</p>
+                      <div className="bg-zinc-900 p-3 rounded-lg border border-slate-200">
+                        <p className="text-zinc-200 text-sm font-medium truncate">{branding.seo_site_title || 'Your Site Title'}</p>
                         <p className="text-green-700 text-xs truncate">{branding.seo_canonical_url || 'https://yoursite.com'}</p>
                         <p className="text-slate-600 text-xs line-clamp-2 mt-1">{branding.seo_meta_description || 'Your meta description will appear here...'}</p>
                       </div>
@@ -5803,7 +5803,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Support Channel URLs */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Support Channel URLs</CardTitle>
                     <CardDescription className="text-xs">Configure the support links shown to users in the Support section</CardDescription>
@@ -5844,12 +5844,12 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Dashboard Banners */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                          <Image className="w-4 h-4 text-blue-600" />
+                          <Image className="w-4 h-4 text-white" />
                           Dashboard Banners
                         </CardTitle>
                         <CardDescription className="text-xs">Carousel images shown on the user dashboard</CardDescription>
@@ -5902,7 +5902,7 @@ const AdminPanel = ({ user, setUser }) => {
                                       setBranding({ ...branding, banner_images: updated });
                                     }}
                                     placeholder="https://..."
-                                    className="h-8 text-xs bg-white flex-1"
+                                    className="h-8 text-xs bg-zinc-900 flex-1"
                                   />
                                   <input
                                     type="file"
@@ -5937,7 +5937,7 @@ const AdminPanel = ({ user, setUser }) => {
                                     setBranding({ ...branding, banner_images: updated });
                                   }}
                                   placeholder="https://..."
-                                  className="h-8 text-xs bg-white"
+                                  className="h-8 text-xs bg-zinc-900"
                                 />
                               </div>
                             </div>
@@ -5979,17 +5979,17 @@ const AdminPanel = ({ user, setUser }) => {
                     <h2 className="text-lg font-semibold text-slate-900">SMS Providers</h2>
                     <p className="text-xs text-slate-500 mt-1">Configure API keys, markup rates, and enable/disable providers</p>
                   </div>
-                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleUpdatePricing} disabled={loading} className="h-9 px-4 text-xs font-semibold bg-zinc-900 hover:bg-zinc-700">
                     <Save className="w-3.5 h-3.5 mr-1.5" />
                     {loading ? 'Saving…' : 'Save Changes'}
                   </Button>
                 </div>
 
                 {/* Provider Enable/Disable Toggles */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-emerald-600" />
+                      <Settings className="w-4 h-4 text-white" />
                       Provider Availability
                     </CardTitle>
                     <CardDescription className="text-xs">Enable or disable SMS providers for users</CardDescription>
@@ -5997,7 +5997,7 @@ const AdminPanel = ({ user, setUser }) => {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {/* DaisySMS - Deprecated */}
-                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_daisysms ? 'border-emerald-200 bg-emerald-50' : 'border-red-200 bg-red-50'}`}>
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_daisysms ? 'border-zinc-700 bg-zinc-900' : 'border-red-200 bg-red-50'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">🌼</span>
@@ -6010,14 +6010,14 @@ const AdminPanel = ({ user, setUser }) => {
                               onChange={(e) => setPricing({ ...pricing, enable_provider_daisysms: e.target.checked })}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-zinc-900 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
                           </label>
                         </div>
                         <p className="text-[10px] text-slate-500">US Numbers (Being Deprecated)</p>
                       </div>
 
                       {/* SMS Pool */}
-                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_smspool ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_smspool ? 'border-zinc-700 bg-zinc-900' : 'border-slate-200 bg-slate-50'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">🌍</span>
@@ -6030,14 +6030,14 @@ const AdminPanel = ({ user, setUser }) => {
                               onChange={(e) => setPricing({ ...pricing, enable_provider_smspool: e.target.checked })}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-zinc-900 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
                           </label>
                         </div>
                         <p className="text-[10px] text-slate-500">Global Numbers - Server 1</p>
                       </div>
 
                       {/* 5sim */}
-                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_5sim ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_5sim ? 'border-zinc-700 bg-zinc-900' : 'border-slate-200 bg-slate-50'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">🌐</span>
@@ -6050,14 +6050,14 @@ const AdminPanel = ({ user, setUser }) => {
                               onChange={(e) => setPricing({ ...pricing, enable_provider_5sim: e.target.checked })}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-zinc-900 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
                           </label>
                         </div>
                         <p className="text-[10px] text-slate-500">Global Numbers</p>
                       </div>
 
                       {/* Tiger SMS */}
-                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_tigersms ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_tigersms ? 'border-zinc-700 bg-zinc-900' : 'border-slate-200 bg-slate-50'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">🐯</span>
@@ -6070,19 +6070,19 @@ const AdminPanel = ({ user, setUser }) => {
                               onChange={(e) => setPricing({ ...pricing, enable_provider_tigersms: e.target.checked })}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-zinc-900 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
                           </label>
                         </div>
                         <p className="text-[10px] text-slate-500">US & Global Numbers</p>
                       </div>
 
                       {/* SMS Bower */}
-                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_smsbower ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_smsbower ? 'border-zinc-700 bg-zinc-900' : 'border-slate-200 bg-slate-50'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">📱</span>
                             <span className="font-semibold text-slate-800 text-sm">SMS Bower</span>
-                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[9px] font-semibold rounded">NEW</span>
+                            <span className="px-1.5 py-0.5 bg-blue-100 text-white text-[9px] font-semibold rounded">NEW</span>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -6091,19 +6091,19 @@ const AdminPanel = ({ user, setUser }) => {
                               onChange={(e) => setPricing({ ...pricing, enable_provider_smsbower: e.target.checked })}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-zinc-900 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
                           </label>
                         </div>
                         <p className="text-[10px] text-slate-500">US & Global Numbers (Budget)</p>
                       </div>
 
                       {/* Text Verified */}
-                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_textverified ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`p-4 rounded-xl border ${pricing.enable_provider_textverified ? 'border-zinc-700 bg-zinc-900' : 'border-slate-200 bg-slate-50'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">🔐</span>
                             <span className="font-semibold text-slate-800 text-sm">Text Verified</span>
-                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[9px] font-semibold rounded">NEW</span>
+                            <span className="px-1.5 py-0.5 bg-blue-100 text-white text-[9px] font-semibold rounded">NEW</span>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -6112,7 +6112,7 @@ const AdminPanel = ({ user, setUser }) => {
                               onChange={(e) => setPricing({ ...pricing, enable_provider_textverified: e.target.checked })}
                               className="sr-only peer"
                             />
-                            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                            <div className="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-zinc-900 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
                           </label>
                         </div>
                         <p className="text-[10px] text-slate-500">US Numbers (Premium)</p>
@@ -6122,7 +6122,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Provider Balances */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -6174,7 +6174,7 @@ const AdminPanel = ({ user, setUser }) => {
                         </div>
                         {/* SMS Bower */}
                         <div className="p-3 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-                          <div className="text-[10px] text-blue-700 mb-1 flex items-center gap-1">
+                          <div className="text-[10px] text-zinc-200 mb-1 flex items-center gap-1">
                             <span>📱</span> SMS Bower
                           </div>
                           <div className="text-lg font-bold text-slate-900">
@@ -6200,19 +6200,19 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Sync Provider Services */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                          <RefreshCw className="w-4 h-4 text-blue-600" />
+                          <RefreshCw className="w-4 h-4 text-white" />
                           Sync Provider Services
                         </CardTitle>
                         <CardDescription className="text-xs">Sync country and service data from SMS providers to database cache</CardDescription>
                       </div>
                       <Button 
                         variant="default" 
-                        className="h-8 px-4 text-xs bg-blue-600 hover:bg-blue-700"
+                        className="h-8 px-4 text-xs bg-zinc-900 hover:bg-blue-700"
                         onClick={() => syncProviderServices()}
                         disabled={syncingProviders}
                       >
@@ -6313,7 +6313,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Markup & Exchange Rates */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Percent className="w-4 h-4 text-amber-600" />
@@ -6413,7 +6413,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* API Keys */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Settings className="w-4 h-4 text-slate-600" />
@@ -6492,7 +6492,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Top Services */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Top OTP Services (Period)</CardTitle>
                     <CardDescription className="text-xs">Most popular services by revenue</CardDescription>
@@ -6514,7 +6514,7 @@ const AdminPanel = ({ user, setUser }) => {
                             {topServices.map((s, idx) => (
                               <tr key={`${s.service}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
                                 <td className="px-3 py-2">{getServiceName(s.service)}</td>
-                                <td className="px-3 py-2 font-semibold text-emerald-700">₦{Math.round(s.total_amount).toLocaleString()}</td>
+                                <td className="px-3 py-2 font-semibold text-zinc-200">₦{Math.round(s.total_amount).toLocaleString()}</td>
                                 <td className="px-3 py-2">{s.count}</td>
                               </tr>
                             ))}
@@ -6529,7 +6529,7 @@ const AdminPanel = ({ user, setUser }) => {
 
             {activeSection === 'providers' && (
               <section className="grid grid-cols-1 gap-6 mt-4">
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold">Top OTP Services (period)</CardTitle>
                     <CardDescription className="text-xs">Sorted by total sales amount for the selected date range.</CardDescription>
@@ -6572,7 +6572,7 @@ const AdminPanel = ({ user, setUser }) => {
             {/* KYC Settings Section */}
             {activeSection === 'kyc-settings' && (
               <section className="grid grid-cols-1 gap-6 mt-4">
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Shield className="h-4 w-4" />
@@ -6619,7 +6619,7 @@ const AdminPanel = ({ user, setUser }) => {
                     {/* Tier 2 */}
                     <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
                       <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
-                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">Tier 2</span>
+                        <span className="bg-blue-100 text-zinc-200 px-2 py-0.5 rounded text-xs font-semibold">Tier 2</span>
                         Standard Verification
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -6694,7 +6694,7 @@ const AdminPanel = ({ user, setUser }) => {
 
             {activeSection === 'users' && (
               <section className="grid grid-cols-1 gap-6 mt-4">
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-2">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
@@ -6707,7 +6707,7 @@ const AdminPanel = ({ user, setUser }) => {
                           placeholder="Search by email, name, phone..."
                           value={userSearchQuery}
                           onChange={(e) => setUserSearchQuery(e.target.value)}
-                          className="w-full px-3 py-2 pl-9 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          className="w-full px-3 py-2 pl-9 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
                         />
                         <svg className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -6764,9 +6764,9 @@ const AdminPanel = ({ user, setUser }) => {
                                 <td className="px-2 py-1 whitespace-nowrap">{u.last_name || '-'}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">
                                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                                    u.tier === 3 ? 'bg-emerald-100 text-emerald-700' :
-                                    u.tier === 2 ? 'bg-blue-100 text-blue-700' :
-                                    'bg-gray-100 text-gray-600'
+                                    u.tier === 3 ? 'bg-zinc-800 text-zinc-200' :
+                                    u.tier === 2 ? 'bg-blue-100 text-zinc-200' :
+                                    'bg-zinc-800 text-zinc-300'
                                   }`}>
                                     Tier {u.tier || 1}
                                   </span>
@@ -6781,7 +6781,7 @@ const AdminPanel = ({ user, setUser }) => {
                                   ) : u.is_suspended ? (
                                     <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-[10px]">Suspended</Badge>
                                   ) : (
-                                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">Active</Badge>
+                                    <Badge className="bg-zinc-900 text-zinc-200 border-zinc-700 text-[10px]">Active</Badge>
                                   )}
                                 </td>
                                 <td className="px-2 py-1 whitespace-nowrap">
@@ -6838,7 +6838,7 @@ const AdminPanel = ({ user, setUser }) => {
                                               <select
                                                 value={editUser?.tier ?? u.tier ?? 1}
                                                 onChange={(e) => setEditUser({ ...editUser, tier: parseInt(e.target.value) })}
-                                                className="w-full h-9 px-3 text-sm rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                                className="w-full h-9 px-3 text-sm rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-white"
                                               >
                                                 <option value={1}>Tier 1 (₦10,000)</option>
                                                 <option value={2}>Tier 2 (₦100,000)</option>
@@ -6872,14 +6872,14 @@ const AdminPanel = ({ user, setUser }) => {
                                                   <div>
                                                     <span className="text-slate-500">BVN:</span>{' '}
                                                     <span className="font-medium">{u.bvn.slice(0, 4)}****{u.bvn.slice(-3)}</span>
-                                                    {u.bvn_verified && <span className="ml-1 text-emerald-600">✓</span>}
+                                                    {u.bvn_verified && <span className="ml-1 text-white">✓</span>}
                                                   </div>
                                                 )}
                                                 {u.nin && (
                                                   <div>
                                                     <span className="text-slate-500">NIN:</span>{' '}
                                                     <span className="font-medium">{u.nin.slice(0, 4)}****{u.nin.slice(-3)}</span>
-                                                    {u.nin_verified && <span className="ml-1 text-emerald-600">✓</span>}
+                                                    {u.nin_verified && <span className="ml-1 text-white">✓</span>}
                                                   </div>
                                                 )}
                                                 {u.address && (
@@ -6892,10 +6892,10 @@ const AdminPanel = ({ user, setUser }) => {
                                               {(u.selfie_url || u.id_document_url) && (
                                                 <div className="flex gap-2 mt-2">
                                                   {u.selfie_url && (
-                                                    <a href={u.selfie_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View Selfie</a>
+                                                    <a href={u.selfie_url} target="_blank" rel="noopener noreferrer" className="text-xs text-white hover:underline">View Selfie</a>
                                                   )}
                                                   {u.id_document_url && (
-                                                    <a href={u.id_document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View ID</a>
+                                                    <a href={u.id_document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-white hover:underline">View ID</a>
                                                   )}
                                                 </div>
                                               )}
@@ -6904,10 +6904,10 @@ const AdminPanel = ({ user, setUser }) => {
 
                                           {/* Payscribe Customer ID */}
                                           {u.payscribe_customer_id && (
-                                            <div className="bg-blue-50 rounded-lg p-3">
-                                              <Label className="text-xs font-semibold text-blue-700">Payscribe Customer ID</Label>
+                                            <div className="bg-zinc-900 rounded-lg p-3">
+                                              <Label className="text-xs font-semibold text-zinc-200">Payscribe Customer ID</Label>
                                               <div className="flex items-center gap-2 mt-1">
-                                                <code className="text-xs font-mono bg-white px-2 py-1 rounded border border-blue-200 flex-1">{u.payscribe_customer_id}</code>
+                                                <code className="text-xs font-mono bg-zinc-900 px-2 py-1 rounded border border-blue-200 flex-1">{u.payscribe_customer_id}</code>
                                                 <button
                                                   type="button"
                                                   onClick={() => {
@@ -6917,10 +6917,10 @@ const AdminPanel = ({ user, setUser }) => {
                                                   className="p-1.5 hover:bg-blue-100 rounded transition-colors"
                                                   title="Copy ID"
                                                 >
-                                                  <Copy className="w-3 h-3 text-blue-600" />
+                                                  <Copy className="w-3 h-3 text-white" />
                                                 </button>
                                               </div>
-                                              <p className="text-[10px] text-blue-500 mt-1">Used for virtual card services</p>
+                                              <p className="text-[10px] text-white mt-1">Used for virtual card services</p>
                                             </div>
                                           )}
 
@@ -7036,7 +7036,7 @@ const AdminPanel = ({ user, setUser }) => {
                                           <AlertDialogCancel onClick={() => { setSelectedUser(null); setEditUser(null); }}>Cancel</AlertDialogCancel>
                                           <AlertDialogAction
                                             onClick={() => saveUserEdits(u.id)}
-                                            className="bg-emerald-600 hover:bg-emerald-700"
+                                            className="bg-zinc-900 hover:bg-zinc-700"
                                           >
                                             Save
                                           </AlertDialogAction>
@@ -7067,7 +7067,7 @@ const AdminPanel = ({ user, setUser }) => {
                                     {u.tier >= 3 && !u.payscribe_customer_id && (
                                       <button
                                         type="button"
-                                        className="text-[11px] text-blue-700 hover:underline"
+                                        className="text-[11px] text-zinc-200 hover:underline"
                                         onClick={async () => {
                                           try {
                                             const resp = await axios.post(`${API}/admin/users/${u.id}/link-card-services`, {}, axiosConfig);
@@ -7114,7 +7114,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
 
                 {/* Reseller API Settings */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">API Documentation Settings</CardTitle>
                     <CardDescription className="text-xs">Configure the base URL shown in reseller API documentation</CardDescription>
@@ -7140,7 +7140,7 @@ const AdminPanel = ({ user, setUser }) => {
                             toast.error('Failed to update API URL');
                           }
                         }}
-                        className="h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-700"
+                        className="h-9 px-4 text-xs bg-zinc-900 hover:bg-zinc-700"
                       >
                         Save URL
                       </Button>
@@ -7149,7 +7149,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Plans Management */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Subscription Plans</CardTitle>
                     <CardDescription className="text-xs">Edit pricing and markup discounts for each plan</CardDescription>
@@ -7162,7 +7162,7 @@ const AdminPanel = ({ user, setUser }) => {
                             <h4 className="font-semibold text-slate-900">{plan.name}</h4>
                             <button
                               onClick={() => setEditingPlan(editingPlan?.id === plan.id ? null : plan)}
-                              className="text-xs text-purple-600 hover:text-purple-700 font-semibold"
+                              className="text-xs text-white hover:text-purple-700 font-semibold"
                             >
                               {editingPlan?.id === plan.id ? 'Cancel' : 'Edit'}
                             </button>
@@ -7202,7 +7202,7 @@ const AdminPanel = ({ user, setUser }) => {
                               </div>
                               <Button
                                 onClick={() => handleUpdateResellerPlan(editingPlan)}
-                                className="w-full h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+                                className="w-full h-8 text-xs bg-zinc-900 hover:bg-zinc-700"
                               >
                                 Save Plan
                               </Button>
@@ -7213,7 +7213,7 @@ const AdminPanel = ({ user, setUser }) => {
                               <p className="text-xs text-slate-500 mt-1">{plan.description}</p>
                               <div className="mt-2 text-xs">
                                 <span className="text-slate-600">Markup: </span>
-                                <span className="font-semibold text-purple-600">{Math.round((1 - plan.markup_multiplier) * 100)}% off</span>
+                                <span className="font-semibold text-white">{Math.round((1 - plan.markup_multiplier) * 100)}% off</span>
                               </div>
                             </>
                           )}
@@ -7224,7 +7224,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </Card>
 
                 {/* Resellers List */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">All Resellers</CardTitle>
                     <CardDescription className="text-xs">View and manage individual reseller accounts</CardDescription>
@@ -7282,7 +7282,7 @@ const AdminPanel = ({ user, setUser }) => {
                                     </span>
                                   )}
                                 </td>
-                                <td className="px-3 py-2.5 text-emerald-600 font-semibold">₦{(r.user_balance_ngn || 0).toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-white font-semibold">₦{(r.user_balance_ngn || 0).toLocaleString()}</td>
                                 <td className="px-3 py-2.5 text-slate-700">{r.total_orders || 0}</td>
                                 <td className="px-3 py-2.5 text-slate-700">₦{(r.total_revenue_ngn || 0).toLocaleString()}</td>
                                 <td className="px-3 py-2.5">
@@ -7315,7 +7315,7 @@ const AdminPanel = ({ user, setUser }) => {
                                           custom_markup_multiplier: editingReseller.custom_markup_multiplier,
                                           status: editingReseller.status
                                         })}
-                                        className="h-6 px-2 text-[10px] bg-emerald-600 hover:bg-emerald-700"
+                                        className="h-6 px-2 text-[10px] bg-zinc-900 hover:bg-zinc-700"
                                       >
                                         Save
                                       </Button>
@@ -7331,7 +7331,7 @@ const AdminPanel = ({ user, setUser }) => {
                                   ) : (
                                     <button
                                       onClick={() => setEditingReseller({...r})}
-                                      className="text-[10px] text-purple-600 hover:text-purple-700 font-semibold"
+                                      className="text-[10px] text-white hover:text-purple-700 font-semibold"
                                     >
                                       Edit
                                     </button>
@@ -7365,21 +7365,21 @@ const AdminPanel = ({ user, setUser }) => {
                 {/* Stats Cards */}
                 {otpStats && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200">
+                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-zinc-700">
                       <CardContent className="p-4">
-                        <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Total Orders</p>
-                        <p className="text-2xl font-bold text-emerald-700 mt-1">{otpStats.total_orders?.toLocaleString()}</p>
+                        <p className="text-[10px] font-semibold text-white uppercase tracking-wide">Total Orders</p>
+                        <p className="text-2xl font-bold text-zinc-200 mt-1">{otpStats.total_orders?.toLocaleString()}</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
                       <CardContent className="p-4">
-                        <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Total Revenue</p>
-                        <p className="text-2xl font-bold text-blue-700 mt-1">₦{otpStats.total_revenue_ngn?.toLocaleString()}</p>
+                        <p className="text-[10px] font-semibold text-white uppercase tracking-wide">Total Revenue</p>
+                        <p className="text-2xl font-bold text-zinc-200 mt-1">₦{otpStats.total_revenue_ngn?.toLocaleString()}</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
                       <CardContent className="p-4">
-                        <p className="text-[10px] font-semibold text-purple-600 uppercase tracking-wide">Today&apos;s Orders</p>
+                        <p className="text-[10px] font-semibold text-white uppercase tracking-wide">Today&apos;s Orders</p>
                         <p className="text-2xl font-bold text-purple-700 mt-1">{otpStats.today_orders?.toLocaleString()}</p>
                       </CardContent>
                     </Card>
@@ -7394,7 +7394,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                 {/* Status Breakdown */}
                 {otpStats?.status_breakdown && (
-                  <Card className="border border-slate-200 shadow-sm bg-white">
+                  <Card className="border border-slate-200 shadow-none bg-zinc-900">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-semibold">Order Status Breakdown</CardTitle>
                     </CardHeader>
@@ -7404,9 +7404,9 @@ const AdminPanel = ({ user, setUser }) => {
                           <div key={status} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg">
                             <span className={`w-2 h-2 rounded-full ${
                               status === 'completed' ? 'bg-green-500' :
-                              status === 'active' ? 'bg-blue-500' :
+                              status === 'active' ? 'bg-zinc-900' :
                               status === 'cancelled' ? 'bg-red-500' :
-                              status === 'refunded' ? 'bg-orange-500' :
+                              status === 'refunded' ? 'bg-zinc-9000' :
                               'bg-slate-400'
                             }`} />
                             <span className="text-xs font-medium text-slate-700 capitalize">{status}</span>
@@ -7419,7 +7419,7 @@ const AdminPanel = ({ user, setUser }) => {
                 )}
 
                 {/* Orders Table */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -7479,7 +7479,7 @@ const AdminPanel = ({ user, setUser }) => {
                                 </td>
                                 <td className="px-3 py-2.5">
                                   {order.otp_code ? (
-                                    <span className="font-mono font-bold text-emerald-600">{order.otp_code}</span>
+                                    <span className="font-mono font-bold text-white">{order.otp_code}</span>
                                   ) : (
                                     <span className="text-slate-400">—</span>
                                   )}
@@ -7493,7 +7493,7 @@ const AdminPanel = ({ user, setUser }) => {
                                 <td className="px-3 py-2.5">
                                   <Badge className={`text-[10px] ${
                                     order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                    order.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                    order.status === 'active' ? 'bg-blue-100 text-zinc-200' :
                                     order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                                     order.status === 'refunded' ? 'bg-orange-100 text-orange-700' :
                                     'bg-slate-100 text-slate-700'
@@ -7543,21 +7543,21 @@ const AdminPanel = ({ user, setUser }) => {
                 {/* Stats Cards */}
                 {resellerSalesStats && (
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200">
+                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-zinc-700">
                       <CardContent className="p-4">
-                        <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Total Orders</p>
-                        <p className="text-2xl font-bold text-emerald-700 mt-1">{resellerSalesStats.total_orders?.toLocaleString()}</p>
+                        <p className="text-[10px] font-semibold text-white uppercase tracking-wide">Total Orders</p>
+                        <p className="text-2xl font-bold text-zinc-200 mt-1">{resellerSalesStats.total_orders?.toLocaleString()}</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
                       <CardContent className="p-4">
-                        <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Total Revenue</p>
-                        <p className="text-2xl font-bold text-blue-700 mt-1">₦{resellerSalesStats.total_revenue_ngn?.toLocaleString()}</p>
+                        <p className="text-[10px] font-semibold text-white uppercase tracking-wide">Total Revenue</p>
+                        <p className="text-2xl font-bold text-zinc-200 mt-1">₦{resellerSalesStats.total_revenue_ngn?.toLocaleString()}</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
                       <CardContent className="p-4">
-                        <p className="text-[10px] font-semibold text-purple-600 uppercase tracking-wide">Today&apos;s Orders</p>
+                        <p className="text-[10px] font-semibold text-white uppercase tracking-wide">Today&apos;s Orders</p>
                         <p className="text-2xl font-bold text-purple-700 mt-1">{resellerSalesStats.today_orders?.toLocaleString()}</p>
                       </CardContent>
                     </Card>
@@ -7578,7 +7578,7 @@ const AdminPanel = ({ user, setUser }) => {
 
                 {/* Status Breakdown */}
                 {resellerSalesStats?.status_breakdown && (
-                  <Card className="border border-slate-200 shadow-sm bg-white">
+                  <Card className="border border-slate-200 shadow-none bg-zinc-900">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-semibold">Order Status Breakdown</CardTitle>
                     </CardHeader>
@@ -7588,9 +7588,9 @@ const AdminPanel = ({ user, setUser }) => {
                           <div key={status} className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg">
                             <span className={`w-2 h-2 rounded-full ${
                               status === 'completed' ? 'bg-green-500' :
-                              status === 'active' ? 'bg-blue-500' :
+                              status === 'active' ? 'bg-zinc-900' :
                               status === 'cancelled' ? 'bg-red-500' :
-                              status === 'refunded' ? 'bg-orange-500' :
+                              status === 'refunded' ? 'bg-zinc-9000' :
                               'bg-slate-400'
                             }`} />
                             <span className="text-xs font-medium text-slate-700 capitalize">{status}</span>
@@ -7603,7 +7603,7 @@ const AdminPanel = ({ user, setUser }) => {
                 )}
 
                 {/* Orders Table */}
-                <Card className="border border-slate-200 shadow-sm bg-white">
+                <Card className="border border-slate-200 shadow-none bg-zinc-900">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -7663,7 +7663,7 @@ const AdminPanel = ({ user, setUser }) => {
                                 </td>
                                 <td className="px-3 py-2.5">
                                   {order.otp_code ? (
-                                    <span className="font-mono font-bold text-emerald-600">{order.otp_code}</span>
+                                    <span className="font-mono font-bold text-white">{order.otp_code}</span>
                                   ) : (
                                     <span className="text-slate-400">—</span>
                                   )}
@@ -7677,7 +7677,7 @@ const AdminPanel = ({ user, setUser }) => {
                                 <td className="px-3 py-2.5">
                                   <Badge className={`text-[10px] ${
                                     order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                    order.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                    order.status === 'active' ? 'bg-blue-100 text-zinc-200' :
                                     order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                                     order.status === 'refunded' ? 'bg-orange-100 text-orange-700' :
                                     'bg-slate-100 text-slate-700'
@@ -7717,7 +7717,7 @@ const AdminPanel = ({ user, setUser }) => {
       {/* Transaction Detail Modal */}
       {showTransactionModal && selectedTransaction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowTransactionModal(false)}>
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-zinc-900 rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900">Transaction Details</h3>
               <button
@@ -7743,7 +7743,7 @@ const AdminPanel = ({ user, setUser }) => {
             <div className="p-4 border-t border-slate-200 bg-slate-50">
               <button
                 onClick={() => setShowTransactionModal(false)}
-                className="w-full py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors"
+                className="w-full py-2 bg-zinc-900 text-white rounded-lg font-semibold text-sm hover:bg-zinc-700 transition-colors"
               >
                 Close
               </button>
@@ -7755,7 +7755,7 @@ const AdminPanel = ({ user, setUser }) => {
       {/* OTP Order Detail Modal */}
       {selectedOtpOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedOtpOrder(null)}>
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-zinc-900 rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900">OTP Order Details</h3>
               <button onClick={() => setSelectedOtpOrder(null)} className="text-slate-400 hover:text-slate-700">
@@ -7772,7 +7772,7 @@ const AdminPanel = ({ user, setUser }) => {
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Status</p>
                   <Badge className={`text-xs ${
                     selectedOtpOrder.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    selectedOtpOrder.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                    selectedOtpOrder.status === 'active' ? 'bg-blue-100 text-zinc-200' :
                     selectedOtpOrder.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                     'bg-slate-100 text-slate-700'
                   }`}>
@@ -7802,7 +7802,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">OTP Code</p>
-                  <p className="text-lg font-mono font-bold text-emerald-600">{selectedOtpOrder.otp_code || '—'}</p>
+                  <p className="text-lg font-mono font-bold text-white">{selectedOtpOrder.otp_code || '—'}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Price (NGN)</p>
@@ -7831,7 +7831,7 @@ const AdminPanel = ({ user, setUser }) => {
             <div className="p-4 border-t border-slate-200 bg-slate-50">
               <button
                 onClick={() => setSelectedOtpOrder(null)}
-                className="w-full py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors"
+                className="w-full py-2 bg-zinc-900 text-white rounded-lg font-semibold text-sm hover:bg-zinc-700 transition-colors"
               >
                 Close
               </button>
@@ -7843,7 +7843,7 @@ const AdminPanel = ({ user, setUser }) => {
       {/* Reseller Order Detail Modal */}
       {selectedResellerOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedResellerOrder(null)}>
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-zinc-900 rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900">Reseller Order Details</h3>
               <button onClick={() => setSelectedResellerOrder(null)} className="text-slate-400 hover:text-slate-700">
@@ -7860,7 +7860,7 @@ const AdminPanel = ({ user, setUser }) => {
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Status</p>
                   <Badge className={`text-xs ${
                     selectedResellerOrder.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    selectedResellerOrder.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                    selectedResellerOrder.status === 'active' ? 'bg-blue-100 text-zinc-200' :
                     selectedResellerOrder.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                     'bg-slate-100 text-slate-700'
                   }`}>
@@ -7890,7 +7890,7 @@ const AdminPanel = ({ user, setUser }) => {
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">OTP Code</p>
-                  <p className="text-lg font-mono font-bold text-emerald-600">{selectedResellerOrder.otp_code || '—'}</p>
+                  <p className="text-lg font-mono font-bold text-white">{selectedResellerOrder.otp_code || '—'}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold">Cost (NGN)</p>
@@ -7919,7 +7919,7 @@ const AdminPanel = ({ user, setUser }) => {
             <div className="p-4 border-t border-slate-200 bg-slate-50">
               <button
                 onClick={() => setSelectedResellerOrder(null)}
-                className="w-full py-2 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition-colors"
+                className="w-full py-2 bg-zinc-900 text-white rounded-lg font-semibold text-sm hover:bg-zinc-700 transition-colors"
               >
                 Close
               </button>
@@ -7937,7 +7937,7 @@ const SidebarItem = ({ icon: Icon, label, active, disabled, onClick }) => (
     disabled={disabled}
     onClick={onClick}
     className={`w-full flex items-center gap-2 px-3 py-2 rounded-full text-left text-xs font-medium transition 
-      ${disabled ? 'text-slate-300 cursor-not-allowed' : active ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-100'}`}
+      ${disabled ? 'text-slate-300 cursor-not-allowed' : active ? 'bg-zinc-900 text-zinc-200' : 'text-slate-600 hover:bg-slate-100'}`}
   >
     <Icon className="w-4 h-4" />
     <span>{label}</span>
@@ -7945,7 +7945,7 @@ const SidebarItem = ({ icon: Icon, label, active, disabled, onClick }) => (
 );
 
 const KpiCard = ({ title, value, subtitle, icon: Icon, accent }) => (
-  <Card className="border border-slate-200 shadow-sm bg-white">
+  <Card className="border border-slate-200 shadow-none bg-zinc-900">
     <CardHeader className="flex flex-row items-center justify-between pb-2">
       <CardTitle className="text-xs font-medium text-slate-500">{title}</CardTitle>
       <div className={`p-1.5 rounded-full ${accent}`}>
