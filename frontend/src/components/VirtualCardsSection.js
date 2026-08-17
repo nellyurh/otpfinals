@@ -7,13 +7,13 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 // Card design templates
 const CARD_DESIGNS = [
-  { id: 'classic', name: 'Classic White', gradient: 'bg-zinc-900', textColor: 'text-zinc-100', accentColor: '#3B82F6', borderClass: 'border border-zinc-700' },
-  { id: 'ocean', name: 'Ocean Blue', gradient: 'bg-zinc-900', textColor: 'text-white', accentColor: '#fff' },
-  { id: 'sunset', name: 'Sunset', gradient: 'bg-zinc-900', textColor: 'text-white', accentColor: '#fff' },
-  { id: 'neon', name: 'Neon Waves', gradient: 'bg-zinc-900', textColor: 'text-white', accentColor: '#10B981', hasWaves: true },
-  { id: 'coral', name: 'Coral Gradient', gradient: 'bg-zinc-900', textColor: 'text-white', accentColor: '#fff' },
-  { id: 'aurora', name: 'Aurora', gradient: 'bg-zinc-900', textColor: 'text-white', accentColor: '#fff' },
-  { id: 'raenest', name: 'Raenest Purple', gradient: 'bg-zinc-900', textColor: 'text-white', accentColor: '#fff' },
+  { id: 'classic', name: 'Classic White', gradient: 'bg-white', textColor: 'text-gray-800', accentColor: '#3B82F6', borderClass: 'border border-gray-200' },
+  { id: 'ocean', name: 'Ocean Blue', gradient: 'bg-gradient-to-br from-blue-500 to-blue-700', textColor: 'text-white', accentColor: '#fff' },
+  { id: 'sunset', name: 'Sunset', gradient: 'bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-400', textColor: 'text-white', accentColor: '#fff' },
+  { id: 'neon', name: 'Neon Waves', gradient: 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900', textColor: 'text-white', accentColor: '#10B981', hasWaves: true },
+  { id: 'coral', name: 'Coral Gradient', gradient: 'bg-gradient-to-br from-orange-400 via-pink-500 to-pink-600', textColor: 'text-white', accentColor: '#fff' },
+  { id: 'aurora', name: 'Aurora', gradient: 'bg-gradient-to-br from-blue-600 via-purple-500 to-pink-400', textColor: 'text-white', accentColor: '#fff' },
+  { id: 'raenest', name: 'Raenest Purple', gradient: 'bg-gradient-to-br from-indigo-600 via-purple-600 to-purple-700', textColor: 'text-white', accentColor: '#fff' },
 ];
 
 // Virtual Card Component Display - uses user's selected design
@@ -54,12 +54,12 @@ function VirtualCardDisplay({ card, design, showNumber = false, showCVV = false,
         <div className="flex items-center gap-2">
           {showStatusBadge && card?.status && (
             <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
-              card.status === 'active' ? 'bg-zinc-900 text-white' : 
-              card.status === 'frozen' ? 'bg-zinc-900 text-white' : 'bg-zinc-900 text-zinc-300'
+              card.status === 'active' ? 'bg-white text-indigo-600' : 
+              card.status === 'frozen' ? 'bg-white text-blue-600' : 'bg-white text-gray-600'
             }`}>
               <span className={`w-2 h-2 rounded-full ${
-                card.status === 'active' ? 'bg-zinc-900' : 
-                card.status === 'frozen' ? 'bg-zinc-900' : 'bg-zinc-9500'
+                card.status === 'active' ? 'bg-indigo-500' : 
+                card.status === 'frozen' ? 'bg-blue-500' : 'bg-gray-500'
               }`}></span>
               {card.status === 'active' ? 'Active' : card.status === 'frozen' ? 'Frozen' : card.status}
             </div>
@@ -116,7 +116,7 @@ const copyToClipboard = (text, label) => {
 };
 
 // Main Virtual Cards Section Component
-export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#059669', branding = {}, onNavigateToKYC }) {
+export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryColor = '#5B5FC7', branding = {}, onNavigateToKYC }) {
   const [cards, setCards] = useState([]);
   const [fees, setFees] = useState({
     creation_fee: 2.50,
@@ -366,10 +366,10 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   if (userTier < 3) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Virtual Cards</h2>
-        <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-700">
+        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
               <Shield className="w-6 h-6 text-amber-600" />
             </div>
             <div className="flex-1">
@@ -387,7 +387,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 <button
                   onClick={onNavigateToKYC}
                   className="w-full sm:w-auto px-6 py-3 text-white font-semibold rounded-xl transition-all hover:opacity-90"
-                  style={{ backgroundColor: '#18181b' }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   Complete KYC Verification →
                 </button>
@@ -403,11 +403,11 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   if (!user?.payscribe_customer_id) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Virtual Cards</h2>
-        <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-700">
+        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Lock className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Lock className="w-6 h-6 text-blue-600" />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-slate-900 mb-1">Card Services Not Linked</h3>
@@ -416,7 +416,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </p>
               <div className="flex items-center gap-2 text-sm mb-4">
                 <span className="text-slate-500">Current status:</span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-800 text-zinc-200">
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                   Tier {userTier} - Pending Card Link
                 </span>
               </div>
@@ -424,7 +424,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 <button
                   onClick={onNavigateToKYC}
                   className="w-full sm:w-auto px-6 py-3 text-white font-semibold rounded-xl transition-all hover:opacity-90"
-                  style={{ backgroundColor: '#18181b' }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   Complete Express KYC →
                 </button>
@@ -439,7 +439,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   if (loading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Virtual Cards</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
         <div className="flex items-center justify-center py-12">
           <RefreshCw className="w-8 h-8 animate-spin" style={{ color: primaryColor }} />
         </div>
@@ -453,7 +453,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       <div className="max-w-lg mx-auto">
         <button 
           onClick={resetCreateWizard}
-          className="mb-4 flex items-center gap-2 text-zinc-300 hover:text-white"
+          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back</span>
@@ -463,8 +463,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         {createStep === 0 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-white mb-2">Choose Your Card Design</h2>
-              <p className="text-zinc-400">Select a design that matches your style</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Choose Your Card Design</h2>
+              <p className="text-gray-500">Select a design that matches your style</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -485,11 +485,11 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     compact 
                   />
                   {selectedDesign === design.id && (
-                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: '#18181b' }}>
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
                       <Check className="w-4 h-4" />
                     </div>
                   )}
-                  <p className="text-center text-sm font-medium text-zinc-200 mt-2">{design.name}</p>
+                  <p className="text-center text-sm font-medium text-gray-700 mt-2">{design.name}</p>
                 </button>
               ))}
             </div>
@@ -497,7 +497,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             <button
               onClick={() => setCreateStep(1)}
               className="w-full py-3 text-white rounded-xl font-semibold"
-              style={{ backgroundColor: '#18181b' }}
+              style={{ backgroundColor: primaryColor }}
             >
               Continue
             </button>
@@ -508,8 +508,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         {createStep === 1 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-white mb-2">Card Fees</h2>
-              <p className="text-zinc-400">Here&apos;s what you need to know about fees</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Card Fees</h2>
+              <p className="text-gray-500">Here&apos;s what you need to know about fees</p>
             </div>
 
             <div className="max-w-xs mx-auto">
@@ -522,39 +522,39 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               />
             </div>
 
-            <div className="bg-zinc-950 rounded-xl p-4 space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-zinc-700">
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <div>
-                  <p className="font-medium text-white">{cards.length === 0 ? 'Card Creation Fee' : 'Additional Card Fee'}</p>
-                  <p className="text-xs text-zinc-400">{cards.length === 0 ? 'One-time fee to create your card' : 'Fee for additional card'}</p>
+                  <p className="font-medium text-gray-900">{cards.length === 0 ? 'Card Creation Fee' : 'Additional Card Fee'}</p>
+                  <p className="text-xs text-gray-500">{cards.length === 0 ? 'One-time fee to create your card' : 'Fee for additional card'}</p>
                 </div>
-                <span className="font-bold text-white">${getCardCreationFee().toFixed(2)}</span>
+                <span className="font-bold text-gray-900">${getCardCreationFee().toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-zinc-700">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <div>
-                  <p className="font-medium text-white">Funding Fee</p>
-                  <p className="text-xs text-zinc-400">Per funding transaction</p>
+                  <p className="font-medium text-gray-900">Funding Fee</p>
+                  <p className="text-xs text-gray-500">Per funding transaction</p>
                 </div>
-                <span className="font-bold text-white">${(fees.funding_fee || 0.30).toFixed(2)}</span>
+                <span className="font-bold text-gray-900">${(fees.funding_fee || 0.30).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-zinc-700">
+              <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <div>
-                  <p className="font-medium text-white">Transaction Fee</p>
-                  <p className="text-xs text-zinc-400">Per card purchase</p>
+                  <p className="font-medium text-gray-900">Transaction Fee</p>
+                  <p className="text-xs text-gray-500">Per card purchase</p>
                 </div>
-                <span className="font-bold text-white">${(fees.transaction_fee || 0.15).toFixed(2)}</span>
+                <span className="font-bold text-gray-900">${(fees.transaction_fee || 0.15).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <div>
-                  <p className="font-medium text-white">Monthly Maintenance</p>
-                  <p className="text-xs text-zinc-400">Charged monthly</p>
+                  <p className="font-medium text-gray-900">Monthly Maintenance</p>
+                  <p className="text-xs text-gray-500">Charged monthly</p>
                 </div>
-                <span className="font-bold text-white">${(fees.monthly_fee || 0.50).toFixed(2)}</span>
+                <span className="font-bold text-gray-900">${(fees.monthly_fee || 0.50).toFixed(2)}</span>
               </div>
             </div>
 
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
-              <p className="text-sm text-zinc-200">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-blue-700">
                 <strong>Minimum funding:</strong> ${fees.min_funding || 5} USD
               </p>
             </div>
@@ -562,14 +562,14 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             <div className="flex gap-3">
               <button
                 onClick={() => setCreateStep(0)}
-                className="flex-1 py-3 border-2 border-zinc-600 text-zinc-200 rounded-xl font-medium hover:bg-zinc-900"
+                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
               >
                 Back
               </button>
               <button
                 onClick={() => setCreateStep(2)}
                 className="flex-1 py-3 text-white rounded-xl font-semibold"
-                style={{ backgroundColor: '#18181b' }}
+                style={{ backgroundColor: primaryColor }}
               >
                 Continue
               </button>
@@ -581,8 +581,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         {createStep === 2 && (
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-white mb-2">Almost There!</h2>
-              <p className="text-zinc-400">Name your card and add initial funds</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Almost There!</h2>
+              <p className="text-gray-500">Name your card and add initial funds</p>
             </div>
 
             <div className="max-w-xs mx-auto">
@@ -596,7 +596,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-200 mb-2">Card Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Card Name</label>
               <input
                 type="text"
                 value={cardAlias}
@@ -609,7 +609,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-200 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Initial Funding (Available: ${usdBalance.toFixed(2)})
               </label>
               <input
@@ -627,7 +627,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     key={amt}
                     onClick={() => setInitialAmount(String(amt))}
                     className={`flex-1 py-2 border rounded-lg text-sm transition-colors ${
-                      initialAmount === String(amt) ? 'text-white' : 'hover:bg-zinc-900'
+                      initialAmount === String(amt) ? 'text-white' : 'hover:bg-gray-50'
                     }`}
                     style={{ 
                       backgroundColor: initialAmount === String(amt) ? primaryColor : 'transparent',
@@ -640,22 +640,22 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
             </div>
 
-            <div className="bg-zinc-950 rounded-xl p-4 space-y-2">
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">Initial Amount</span>
+                <span className="text-gray-500">Initial Amount</span>
                 <span className="font-medium">${parseFloat(initialAmount || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">{cards.length === 0 ? 'Creation Fee' : 'Additional Card Fee'}</span>
+                <span className="text-gray-500">{cards.length === 0 ? 'Creation Fee' : 'Additional Card Fee'}</span>
                 <span className="font-medium">${getCardCreationFee().toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">Funding Fee</span>
+                <span className="text-gray-500">Funding Fee</span>
                 <span className="font-medium">${(fees.funding_fee || 0.30).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-zinc-700">
-                <span className="font-semibold text-white">Total</span>
-                <span className="font-bold text-white">
+              <div className="flex justify-between pt-2 border-t border-gray-200">
+                <span className="font-semibold text-gray-900">Total</span>
+                <span className="font-bold text-gray-900">
                   ${(parseFloat(initialAmount || 0) + getCardCreationFee() + (fees.funding_fee || 0.30)).toFixed(2)}
                 </span>
               </div>
@@ -664,7 +664,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             <div className="flex gap-3">
               <button
                 onClick={() => setCreateStep(1)}
-                className="flex-1 py-3 border-2 border-zinc-600 text-zinc-200 rounded-xl font-medium hover:bg-zinc-900"
+                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
               >
                 Back
               </button>
@@ -672,7 +672,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 onClick={handleCreateCard}
                 disabled={creating || !cardAlias.trim() || parseFloat(initialAmount) < (fees.min_funding || 5)}
                 className="flex-1 py-3 text-white rounded-xl font-semibold disabled:opacity-50"
-                style={{ backgroundColor: '#18181b' }}
+                style={{ backgroundColor: primaryColor }}
               >
                 {creating ? 'Creating...' : 'Create Card'}
               </button>
@@ -683,13 +683,13 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         {/* Step 3: Success */}
         {createStep === 3 && (
           <div className="text-center space-y-6 py-8">
-            <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-white" style={{ backgroundColor: '#18181b' }}>
+            <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
               <Check className="w-10 h-10" />
             </div>
             
-            <h2 className="text-2xl font-bold text-white">Card Created!</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Card Created!</h2>
             
-            <p className="text-zinc-400">
+            <p className="text-gray-500">
               Your virtual card is ready to use. You can start making online purchases right away.
             </p>
 
@@ -707,7 +707,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             <button
               onClick={resetCreateWizard}
               className="px-8 py-3 text-white rounded-xl font-semibold"
-              style={{ backgroundColor: '#18181b' }}
+              style={{ backgroundColor: primaryColor }}
             >
               Done
             </button>
@@ -721,8 +721,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
   if (cards.length === 0) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Virtual Cards</h2>
-        <div className="bg-zinc-950 rounded-2xl p-8 text-center">
+        <h2 className="text-2xl font-bold text-gray-900">Virtual Cards</h2>
+        <div className="bg-gray-50 rounded-2xl p-8 text-center">
           <div className="max-w-sm mx-auto mb-6">
             <VirtualCardDisplay 
               card={{ last_four: '5678', name: 'YOUR NAME', expiry: '12/28', alias: brandName }} 
@@ -732,38 +732,38 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
             />
           </div>
           
-          <h3 className="text-xl font-semibold text-white mb-2">The all new {brandName} prepaid virtual debit card</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">The all new {brandName} prepaid virtual debit card</h3>
           
           <div className="space-y-3 mb-6 text-left max-w-md mx-auto">
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#18181b' }}>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-zinc-200">Use it anywhere in the world that accept Visa or Mastercard online</span>
+              <span className="text-gray-700">Use it anywhere in the world that accept Visa or Mastercard online</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#18181b' }}>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-zinc-200">No hidden charges and low transaction fees</span>
+              <span className="text-gray-700">No hidden charges and low transaction fees</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#18181b' }}>
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-zinc-200">Simple, transparent and secure</span>
+              <span className="text-gray-700">Simple, transparent and secure</span>
             </div>
           </div>
           
           <button
             onClick={() => setShowCreateWizard(true)}
             className="px-8 py-3 text-white rounded-xl font-semibold transition-colors"
-            style={{ backgroundColor: '#18181b' }}
+            style={{ backgroundColor: primaryColor }}
           >
             Get a Card
           </button>
           
-          <p className="mt-4 text-sm text-zinc-400">Starting from ${(fees.creation_fee || 2.50) + (fees.min_funding || 5)} (includes ${fees.min_funding || 5} initial funding)</p>
+          <p className="mt-4 text-sm text-gray-500">Starting from ${(fees.creation_fee || 2.50) + (fees.min_funding || 5)} (includes ${fees.min_funding || 5} initial funding)</p>
         </div>
       </div>
     );
@@ -774,23 +774,23 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
     <div className="space-y-6">
       {/* Stats Section - Real data from API */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-center">
-          <p className="text-xl sm:text-2xl font-bold text-white">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-gray-900">
             $ {cardStats.balance.toFixed(2)}
           </p>
-          <p className="text-sm text-zinc-400">Balance</p>
+          <p className="text-sm text-gray-500">Balance</p>
         </div>
-        <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-center">
-          <p className="text-xl sm:text-2xl font-bold text-white">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <p className="text-xl sm:text-2xl font-bold text-indigo-600">
             +$ {cardStats.cashback.toFixed(2)}
           </p>
-          <p className="text-sm text-zinc-400">Cashback</p>
+          <p className="text-sm text-gray-500">Cashback</p>
         </div>
-        <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 text-center">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
           <p className="text-xl sm:text-2xl font-bold text-red-600">
             -$ {cardStats.spent_this_month.toFixed(2)}
           </p>
-          <p className="text-sm text-zinc-400">Spent This Month</p>
+          <p className="text-sm text-gray-500">Spent This Month</p>
         </div>
       </div>
 
@@ -814,7 +814,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               {/* View Details Button */}
               <button
                 onClick={() => setShowCardDetails(true)}
-                className="absolute top-4 right-4 px-4 py-1.5 bg-zinc-900 hover:bg-zinc-900 text-white text-sm font-medium rounded-full transition-colors"
+                className="absolute top-4 right-4 px-4 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-full transition-colors"
                 data-testid="view-details-btn"
               >
                 View details
@@ -828,7 +828,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       <div className="flex gap-3">
         <button
           onClick={() => setShowFundModal(true)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 rounded-xl font-medium transition-colors hover:bg-zinc-900"
+          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 rounded-xl font-medium transition-colors hover:bg-gray-50"
           style={{ borderColor: primaryColor, color: primaryColor }}
           data-testid="fund-card-btn"
         >
@@ -837,7 +837,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         </button>
         <button
           onClick={handleFreezeUnfreeze}
-          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-zinc-600 rounded-xl font-medium text-zinc-200 hover:bg-zinc-900 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           data-testid="freeze-card-btn"
         >
           {selectedCard?.status === 'frozen' ? (
@@ -857,7 +857,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         <div className="relative">
           <button
             onClick={() => setShowMoreMenu(!showMoreMenu)}
-            className="flex items-center gap-2 py-3 px-4 border-2 border-zinc-600 rounded-xl font-medium text-zinc-200 hover:bg-zinc-900 transition-colors"
+            className="flex items-center gap-2 py-3 px-4 border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             data-testid="more-menu-btn"
           >
             More
@@ -867,31 +867,31 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
           {showMoreMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)}></div>
-              <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-900 rounded-xl shadow-none border border-zinc-700 py-2 z-50">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                 <button
                   onClick={() => { setShowMoreMenu(false); toast.info('Change Alias feature coming soon'); }}
-                  className="w-full px-4 py-2.5 text-left text-zinc-200 hover:bg-zinc-900 transition-colors"
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   data-testid="change-alias-btn"
                 >
                   Change Alias
                 </button>
                 <button
                   onClick={() => { setShowMoreMenu(false); toast.info(`Card Limit: $${(selectedCard?.limit || 10000).toLocaleString()}`); }}
-                  className="w-full px-4 py-2.5 text-left text-zinc-200 hover:bg-zinc-900 transition-colors"
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   data-testid="view-limit-btn"
                 >
                   View Card Limit
                 </button>
                 <button
                   onClick={() => { setShowMoreMenu(false); toast.info('Withdraw Funds feature coming soon'); }}
-                  className="w-full px-4 py-2.5 text-left text-zinc-200 hover:bg-zinc-900 transition-colors"
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   data-testid="withdraw-btn"
                 >
                   Withdraw Funds
                 </button>
                 <button
                   onClick={() => { setShowMoreMenu(false); toast.info('Download Statement feature coming soon'); }}
-                  className="w-full px-4 py-2.5 text-left text-zinc-200 hover:bg-zinc-900 transition-colors"
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                   data-testid="download-statement-btn"
                 >
                   Download statement
@@ -904,9 +904,9 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
 
       {/* Billing Address Section - Real data from API */}
       {selectedCard?.billing_address && (
-        <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-white">Billing Address</h3>
+            <h3 className="font-semibold text-gray-900">Billing Address</h3>
             <button
               onClick={() => setShowCardDetails(true)}
               className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
@@ -916,7 +916,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-zinc-300 text-sm">
+          <p className="text-gray-600 text-sm">
             {selectedCard.billing_address.street || 'N/A'},<br />
             {selectedCard.billing_address.city || 'N/A'}, {selectedCard.billing_address.state || 'N/A'},<br />
             {selectedCard.billing_address.postal_code || 'N/A'}, {selectedCard.billing_address.country || 'N/A'}
@@ -925,9 +925,9 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       )}
 
       {/* Transactions Section - Real data from API */}
-      <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-white">Transactions</h3>
+          <h3 className="font-semibold text-gray-900">Transactions</h3>
           <button
             onClick={() => fetchCardTransactions(selectedCard?.id)}
             className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
@@ -940,26 +940,26 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
         
         {loadingTxns ? (
           <div className="flex justify-center py-8">
-            <RefreshCw className="w-6 h-6 animate-spin text-zinc-500" />
+            <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
           </div>
         ) : cardTransactions.length === 0 ? (
-          <div className="text-center py-8 text-zinc-400">
-            <History className="w-12 h-12 mx-auto text-zinc-600 mb-2" />
+          <div className="text-center py-8 text-gray-500">
+            <History className="w-12 h-12 mx-auto text-gray-300 mb-2" />
             <p>No transactions yet</p>
           </div>
         ) : (
           <div className="space-y-3">
             {cardTransactions.slice(0, 5).map((txn, idx) => (
-              <div key={idx} className="flex items-center justify-between py-2 border-b border-zinc-800 last:border-0">
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                 <div className="flex items-center gap-3">
-                  <div className="text-sm text-zinc-400">
+                  <div className="text-sm text-gray-500">
                     {new Date(txn.date || txn.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
                   <div>
-                    <p className="font-medium text-white">{txn.description || txn.type || 'Transaction'}</p>
+                    <p className="font-medium text-gray-900">{txn.description || txn.type || 'Transaction'}</p>
                   </div>
                 </div>
-                <span className={`font-semibold ${txn.amount > 0 ? 'text-white' : 'text-white'}`}>
+                <span className={`font-semibold ${txn.amount > 0 ? 'text-indigo-600' : 'text-gray-900'}`}>
                   {txn.amount > 0 ? '+' : '-'}${Math.abs(txn.amount).toFixed(2)}
                 </span>
               </div>
@@ -977,22 +977,22 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               onClick={() => selectCard(card)}
               className={`flex-shrink-0 px-4 py-2 rounded-xl border-2 transition-all ${
                 selectedCard?.id === card.id
-                  ? 'border-white bg-zinc-900'
-                  : 'border-zinc-700 hover:border-zinc-600'
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <span className="text-sm font-medium text-zinc-200">{card.alias || 'Card'}</span>
-              <span className="text-xs text-zinc-400 ml-2">•••• {card.last_four}</span>
+              <span className="text-sm font-medium text-gray-700">{card.alias || 'Card'}</span>
+              <span className="text-xs text-gray-500 ml-2">•••• {card.last_four}</span>
             </button>
           ))}
           
           {/* Add Another Card */}
           <button
             onClick={() => setShowCreateWizard(true)}
-            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border-2 border-dashed border-zinc-600 rounded-xl hover:border-gray-400 transition-colors"
+            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl hover:border-gray-400 transition-colors"
           >
-            <Plus className="w-4 h-4 text-zinc-500" />
-            <span className="text-sm text-zinc-400">Add Card</span>
+            <Plus className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-500">Add Card</span>
           </button>
         </div>
       )}
@@ -1000,30 +1000,30 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       {/* View Card Details Modal - Shows REAL data from API */}
       {showCardDetails && selectedCard && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center">
-          <div className="bg-zinc-900 w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-700 sticky top-0 bg-zinc-900">
-              <h3 className="text-lg font-semibold text-white">Card Details</h3>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-lg font-semibold text-gray-900">Card Details</h3>
               <button 
                 onClick={() => setShowCardDetails(false)} 
-                className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-zinc-400" />
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
             
             <div className="p-4 space-y-4">
               {/* Card Number - Real from Payscribe */}
-              <div className="flex items-center justify-between py-3 border-b border-zinc-800">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
                 <div>
-                  <p className="text-sm text-zinc-400">Card Number</p>
-                  <p className="font-mono text-white">
+                  <p className="text-sm text-gray-500">Card Number</p>
+                  <p className="font-mono text-gray-900">
                     {selectedCard.card_number || selectedCard.pan || 'Loading...'}
                   </p>
                 </div>
                 <button
                   onClick={() => copyToClipboard(selectedCard.card_number || selectedCard.pan, 'Card number')}
-                  className="flex items-center gap-1 px-3 py-1.5 text-zinc-300 hover:bg-zinc-800 rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                   Copy
@@ -1031,14 +1031,14 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
               
               {/* CVV - Real from Payscribe */}
-              <div className="flex items-center justify-between py-3 border-b border-zinc-800">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
                 <div>
-                  <p className="text-sm text-zinc-400">CVV (Security Code)</p>
-                  <p className="font-mono text-white">{selectedCard.cvv || 'Loading...'}</p>
+                  <p className="text-sm text-gray-500">CVV (Security Code)</p>
+                  <p className="font-mono text-gray-900">{selectedCard.cvv || 'Loading...'}</p>
                 </div>
                 <button
                   onClick={() => copyToClipboard(selectedCard.cvv, 'CVV')}
-                  className="flex items-center gap-1 px-3 py-1.5 text-zinc-300 hover:bg-zinc-800 rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                   Copy
@@ -1046,14 +1046,14 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               </div>
               
               {/* Expiry Date - Real from Payscribe */}
-              <div className="flex items-center justify-between py-3 border-b border-zinc-800">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
                 <div>
-                  <p className="text-sm text-zinc-400">Expiry Date</p>
-                  <p className="font-mono text-white">{selectedCard.expiry || 'Loading...'}</p>
+                  <p className="text-sm text-gray-500">Expiry Date</p>
+                  <p className="font-mono text-gray-900">{selectedCard.expiry || 'Loading...'}</p>
                 </div>
                 <button
                   onClick={() => copyToClipboard(selectedCard.expiry, 'Expiry date')}
-                  className="flex items-center gap-1 px-3 py-1.5 text-zinc-300 hover:bg-zinc-800 rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                   Copy
@@ -1063,7 +1063,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               {/* Billing Address - Real from Payscribe */}
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-zinc-400">Billing Address</p>
+                  <p className="text-sm text-gray-500">Billing Address</p>
                   <button
                     onClick={() => setShowCardDetails(false)}
                     className="text-sm font-medium flex items-center gap-1 hover:opacity-80 transition-opacity"
@@ -1075,13 +1075,13 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 </div>
                 
                 {/* Address Tabs */}
-                <div className="bg-zinc-800 rounded-xl p-1 flex mb-4">
+                <div className="bg-gray-100 rounded-xl p-1 flex mb-4">
                   <button
                     onClick={() => setAddressTab('us')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                       addressTab === 'us' 
-                        ? 'bg-zinc-900 text-white shadow-none' 
-                        : 'text-zinc-400 hover:text-zinc-200'
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     US Address
@@ -1090,8 +1090,8 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     onClick={() => setAddressTab('nigeria')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                       addressTab === 'nigeria' 
-                        ? 'bg-zinc-900 text-white shadow-none' 
-                        : 'text-zinc-400 hover:text-zinc-200'
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     Nigeria Address
@@ -1100,15 +1100,15 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 
                 {/* Address Content - US is static (for international purchases), Nigeria is from API */}
                 {addressTab === 'us' ? (
-                  <div className="bg-zinc-950 rounded-xl p-4 space-y-3">
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">Street Address</p>
-                        <p className="text-white">580 California Street</p>
+                        <p className="text-xs text-gray-500">Street Address</p>
+                        <p className="text-gray-900">580 California Street</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard('580 California Street', 'Street address')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1116,12 +1116,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">City</p>
-                        <p className="text-white">San Francisco</p>
+                        <p className="text-xs text-gray-500">City</p>
+                        <p className="text-gray-900">San Francisco</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard('San Francisco', 'City')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1129,12 +1129,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">State</p>
-                        <p className="text-white">CA</p>
+                        <p className="text-xs text-gray-500">State</p>
+                        <p className="text-gray-900">CA</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard('CA', 'State')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1142,12 +1142,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">Country</p>
-                        <p className="text-white">United States</p>
+                        <p className="text-xs text-gray-500">Country</p>
+                        <p className="text-gray-900">United States</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard('United States', 'Country')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1155,12 +1155,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">Zip Code</p>
-                        <p className="text-white">94104</p>
+                        <p className="text-xs text-gray-500">Zip Code</p>
+                        <p className="text-gray-900">94104</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard('94104', 'Zip code')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1169,15 +1169,15 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                   </div>
                 ) : (
                   // Nigeria Address - Real data from Payscribe API
-                  <div className="bg-zinc-950 rounded-xl p-4 space-y-3">
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">Street Address</p>
-                        <p className="text-white">{selectedCard.billing_address?.street || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">Street Address</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.street || 'N/A'}</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedCard.billing_address?.street, 'Street address')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1185,12 +1185,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">City</p>
-                        <p className="text-white">{selectedCard.billing_address?.city || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">City</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.city || 'N/A'}</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedCard.billing_address?.city, 'City')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1198,12 +1198,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">State</p>
-                        <p className="text-white">{selectedCard.billing_address?.state || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">State</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.state || 'N/A'}</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedCard.billing_address?.state, 'State')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1211,12 +1211,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">Country</p>
-                        <p className="text-white">{selectedCard.billing_address?.country || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">Country</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.country || 'N/A'}</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedCard.billing_address?.country, 'Country')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1224,12 +1224,12 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-zinc-400">Postal Code</p>
-                        <p className="text-white">{selectedCard.billing_address?.postal_code || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">Postal Code</p>
+                        <p className="text-gray-900">{selectedCard.billing_address?.postal_code || 'N/A'}</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedCard.billing_address?.postal_code, 'Postal code')}
-                        className="flex items-center gap-1 px-2 py-1 text-zinc-300 hover:bg-zinc-700 rounded transition-colors text-sm"
+                        className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:bg-gray-200 rounded transition-colors text-sm"
                       >
                         <Copy className="w-3 h-3" />
                         Copy
@@ -1246,15 +1246,15 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
       {/* Fund Card Modal */}
       {showFundModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 rounded-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Add Money to Card</h3>
-              <button onClick={() => setShowFundModal(false)} className="text-zinc-400 hover:text-zinc-200">
+              <button onClick={() => setShowFundModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <p className="text-sm text-zinc-400 mb-4">Available: ${usdBalance.toFixed(2)} USD</p>
+            <p className="text-sm text-gray-500 mb-4">Available: ${usdBalance.toFixed(2)} USD</p>
             
             <input
               type="number"
@@ -1271,7 +1271,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
                 <button
                   key={amt}
                   onClick={() => setFundAmount(String(amt))}
-                  className="flex-1 py-2 border rounded-lg hover:bg-zinc-900 text-sm"
+                  className="flex-1 py-2 border rounded-lg hover:bg-gray-50 text-sm"
                 >
                   ${amt}
                 </button>
@@ -1282,7 +1282,7 @@ export function VirtualCardsSection({ axiosConfig, fetchProfile, user, primaryCo
               onClick={handleFundCard}
               disabled={funding}
               className="w-full py-3 text-white rounded-xl font-semibold disabled:opacity-50"
-              style={{ backgroundColor: '#18181b' }}
+              style={{ backgroundColor: primaryColor }}
             >
               {funding ? 'Processing...' : `Fund $${fundAmount || '0'}`}
             </button>

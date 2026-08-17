@@ -171,12 +171,12 @@ const LandingSocialSMS = ({
                 </div>
                 
                 <div style={{ marginBottom: '20px' }}>
-                  <h4 style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '15px', fontWeight: 600 }}>Select your service</h4>
+                  <h4 style={{ fontSize: '14px', color: '#6b7280', marginBottom: '15px', fontWeight: 600 }}>Select your service</h4>
                   {[
                     { name: 'Discord', icon: '💬', color: themeColor },
                     { name: 'Twitch', icon: '🎮', color: '#9146FF' }
                   ].map((service, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '12px', borderRadius: '10px', marginBottom: '10px', background: '#0a0a0a' }}>
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', padding: '12px', borderRadius: '10px', marginBottom: '10px', background: '#f8f9fb' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: service.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '12px', fontSize: '20px' }}>{service.icon}</div>
                       <strong style={{ fontSize: '14px' }}>{service.name}</strong>
                     </div>
@@ -184,25 +184,25 @@ const LandingSocialSMS = ({
                 </div>
 
                 <div>
-                  <h4 style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '15px', fontWeight: 600 }}>Incoming SMS notifications</h4>
-                  <div style={{ background: '#18181b', borderLeft: `3px solid ${themeColor}`, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+                  <h4 style={{ fontSize: '14px', color: '#6b7280', marginBottom: '15px', fontWeight: 600 }}>Incoming SMS notifications</h4>
+                  <div style={{ background: '#f0f9ff', borderLeft: `3px solid ${themeColor}`, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span style={{ fontSize: '20px', marginRight: '10px' }}>🔍</span>
                         <div>
-                          <div style={{ fontSize: '12px', color: '#a1a1aa' }}>Google</div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>Google</div>
                           <div style={{ fontWeight: 600, fontSize: '14px' }}>Code: <span style={{ color: themeColor }}>849204</span></div>
                         </div>
                       </div>
-                      <span style={{ background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>NEW</span>
+                      <span style={{ background: '#6E72D9', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>NEW</span>
                     </div>
                   </div>
-                  <div style={{ background: '#18181b', borderLeft: '3px solid #10b981', padding: '12px', borderRadius: '8px' }}>
+                  <div style={{ background: '#f0f9ff', borderLeft: '3px solid #6E72D9', padding: '12px', borderRadius: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <span style={{ fontSize: '20px', marginRight: '10px' }}>💬</span>
                       <div>
-                        <div style={{ fontSize: '12px', color: '#a1a1aa' }}>Discord</div>
-                        <div style={{ fontWeight: 600, fontSize: '14px' }}>Code: <span style={{ color: '#10b981' }}>557395</span></div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Discord</div>
+                        <div style={{ fontWeight: 600, fontSize: '14px' }}>Code: <span style={{ color: '#6E72D9' }}>557395</span></div>
                       </div>
                     </div>
                   </div>
@@ -272,8 +272,8 @@ const LandingSocialSMS = ({
                 <div key={idx} style={{ display: 'flex', gap: '20px' }}>
                   <div style={{ width: '48px', height: '48px', background: themeColor, color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>{benefit.icon}</div>
                   <div>
-                    <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>{benefit.title}</h4>
-                    <p style={{ color: '#a1a1aa', lineHeight: 1.6, margin: 0 }}>{benefit.desc}</p>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '8px' }}>{benefit.title}</h4>
+                    <p style={{ color: '#6b7280', lineHeight: 1.6, margin: 0 }}>{benefit.desc}</p>
                   </div>
                 </div>
               ))}
@@ -283,12 +283,12 @@ const LandingSocialSMS = ({
       </section>
 
       {/* Stats Banner */}
-      <section style={{ background: '#0a0a0a', padding: '60px 0', textAlign: 'center' }}>
+      <section style={{ background: 'white', padding: '60px 0', textAlign: 'center' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
               {['💼', '🎮', '📸', '🎵', '📌', '📷', '🇹🇷', '🇺🇸', '🇷🇴', '🇬🇧', '🇩🇪'].map((icon, idx) => (
-                <div key={idx} style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#18181b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>{icon}</div>
+                <div key={idx} style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>{icon}</div>
               ))}
             </div>
             <div>
@@ -300,10 +300,10 @@ const LandingSocialSMS = ({
       </section>
 
       {/* Features Section */}
-      <section style={{ background: '#0a0a0a', padding: '80px 0' }}>
+      <section style={{ background: '#f9fafb', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#ffffff' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a' }}>
               <span style={{ color: themeColor }}>Features</span> of {brandName}
             </h2>
           </div>
@@ -322,8 +322,8 @@ const LandingSocialSMS = ({
                 <div key={idx} style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
                   <div style={{ width: '60px', height: '60px', background: themeColor, color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0 }}>{feature.icon}</div>
                   <div>
-                    <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#ffffff', marginBottom: '10px' }}>{feature.title}</h3>
-                    <p style={{ color: '#a1a1aa', lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
+                    <h3 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '10px' }}>{feature.title}</h3>
+                    <p style={{ color: '#6b7280', lineHeight: 1.7, margin: 0 }}>{feature.desc}</p>
                   </div>
                 </div>
               ))}
@@ -333,19 +333,19 @@ const LandingSocialSMS = ({
             <div style={{ textAlign: 'center' }}>
               <div style={{ maxWidth: '400px', margin: '0 auto', background: '#2d3748', borderRadius: '30px', padding: '20px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)' }}>
                 <div style={{ background: '#1a202c', borderRadius: '20px', padding: '20px', minHeight: '500px' }}>
-                  <div style={{ textAlign: 'center', color: 'white', padding: '15px', background: '#27272a', borderRadius: '12px', marginBottom: '20px' }}>
+                  <div style={{ textAlign: 'center', color: 'white', padding: '15px', background: '#374151', borderRadius: '12px', marginBottom: '20px' }}>
                     <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '8px' }}>16:33</div>
                     <div style={{ fontWeight: 600, fontSize: '16px' }}>Order</div>
                   </div>
-                  <div style={{ background: '#27272a', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
-                    <div style={{ color: '#71717a', fontSize: '13px', marginBottom: '10px' }}>You can find a list of all your pending SMS here...</div>
+                  <div style={{ background: '#374151', borderRadius: '12px', padding: '15px', marginBottom: '15px' }}>
+                    <div style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '10px' }}>You can find a list of all your pending SMS here...</div>
                     <button style={{ background: themeColor, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', width: '100%', fontWeight: 600 }}>Archive all inactive orders</button>
                   </div>
-                  <div style={{ background: '#27272a', borderRadius: '12px', padding: '15px' }}>
+                  <div style={{ background: '#374151', borderRadius: '12px', padding: '15px' }}>
                     <div style={{ color: 'white', fontWeight: 600, marginBottom: '8px' }}>+1234567890 (US) 📋</div>
-                    <div style={{ color: '#71717a', fontSize: '13px', marginBottom: '8px' }}>Code</div>
-                    <div style={{ background: '#10b981', color: 'white', display: 'inline-block', padding: '6px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600 }}>Awaiting SMS (5733)</div>
-                    <div style={{ color: '#71717a', fontSize: '11px', marginTop: '8px' }}>2024-07-13 18:28:26</div>
+                    <div style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '8px' }}>Code</div>
+                    <div style={{ background: '#6E72D9', color: 'white', display: 'inline-block', padding: '6px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 600 }}>Awaiting SMS (5733)</div>
+                    <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '8px' }}>2024-07-13 18:28:26</div>
                   </div>
                 </div>
               </div>
@@ -355,9 +355,9 @@ const LandingSocialSMS = ({
       </section>
 
       {/* Testimonials Section */}
-      <section style={{ background: '#0a0a0a', padding: '80px 0' }}>
+      <section style={{ background: 'white', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#ffffff', textAlign: 'center', marginBottom: '60px' }}>Why choose {brandName}?</h2>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: '#1a1a1a', textAlign: 'center', marginBottom: '60px' }}>Why choose {brandName}?</h2>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
             {[
@@ -368,10 +368,10 @@ const LandingSocialSMS = ({
               { title: 'Convenient SMS verifications', text: 'Very convenient and guaranteed refund instantly if the number doesn\'t work.', author: 'Ziva' },
               { title: 'Best SMS Service without a doubt!', text: 'Their user-friendly service has truly been a game-changer for my business.', author: 'Pablo Romero' },
             ].map((testimonial, idx) => (
-              <div key={idx} style={{ background: '#18181b', padding: '30px', borderRadius: '16px' }}>
+              <div key={idx} style={{ background: '#f9fafb', padding: '30px', borderRadius: '16px' }}>
                 <div style={{ color: '#fbbf24', fontSize: '20px', marginBottom: '15px' }}>★★★★★</div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', marginBottom: '12px' }}>{testimonial.title}</h4>
-                <p style={{ color: '#a1a1aa', lineHeight: 1.7, marginBottom: '15px' }}>{testimonial.text}</p>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1a1a1a', marginBottom: '12px' }}>{testimonial.title}</h4>
+                <p style={{ color: '#6b7280', lineHeight: 1.7, marginBottom: '15px' }}>{testimonial.text}</p>
                 <div style={{ fontWeight: 600, color: themeColor, fontSize: '14px' }}>{testimonial.author}</div>
               </div>
             ))}
@@ -380,23 +380,23 @@ const LandingSocialSMS = ({
       </section>
 
       {/* About Section */}
-      <section id="about-us" style={{ background: '#0a0a0a', padding: '80px 0' }}>
+      <section id="about-us" style={{ background: 'white', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '5fr 2fr 5fr', gap: '40px', alignItems: 'center' }}>
             <div>
-              <p style={{ color: '#71717a', lineHeight: 1.8 }}>
+              <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>
                 <span style={{ color: themeColor, fontWeight: 600 }}>"{brandName}"</span> gives you the opportunity to buy a virtual number for registration in popular services at the best price on the net.
               </p>
-              <p style={{ color: '#71717a', lineHeight: 1.8 }}>First of all, it costs money to get a new SIM card. Secondly, it is a whole event - to come to the office, fill out a form with passport data...</p>
-              <p style={{ color: '#71717a', lineHeight: 1.8 }}>On this site you can buy a virtual phone number for Telegram, Whatsapp, Viber, Instagram, Facebook, and any other popular platform from just NGN 2000.</p>
+              <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>First of all, it costs money to get a new SIM card. Secondly, it is a whole event - to come to the office, fill out a form with passport data...</p>
+              <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>On this site you can buy a virtual phone number for Telegram, Whatsapp, Viber, Instagram, Facebook, and any other popular platform from just NGN 2000.</p>
             </div>
             <div style={{ textAlign: 'center' }}>
               <img src={logoUrl} alt="logo" style={{ height: '120px' }} />
             </div>
             <div>
-              <p style={{ color: '#71717a', lineHeight: 1.8 }}>The service is suitable for users who need one-time SMS verification of accounts in social networks, messengers, payment systems, dating sites.</p>
-              <p style={{ color: '#71717a', lineHeight: 1.8 }}>Get a virtual phone number in just a few minutes!</p>
-              <p style={{ color: '#71717a', lineHeight: 1.8 }}>The entire process is automated and occurs in a user-friendly interface. Support is always ready to help.</p>
+              <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>The service is suitable for users who need one-time SMS verification of accounts in social networks, messengers, payment systems, dating sites.</p>
+              <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>Get a virtual phone number in just a few minutes!</p>
+              <p style={{ color: '#5a5a5a', lineHeight: 1.8 }}>The entire process is automated and occurs in a user-friendly interface. Support is always ready to help.</p>
             </div>
           </div>
         </div>
@@ -412,14 +412,14 @@ const LandingSocialSMS = ({
             <div>
               <h2 style={{ fontSize: '2.5rem', color: 'white', fontWeight: 700, marginBottom: '20px' }}>We provide 24X7 Customer Support</h2>
               <p style={{ color: 'white', fontSize: '1rem', marginBottom: '24px', lineHeight: 1.7 }}>Our highly trained customer support executives are always ready to solve your each and every problem and answer your every query.</p>
-              <button style={{ background: '#ffffff', color: '#000000', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>Contact Us Today</button>
+              <button style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>Contact Us Today</button>
             </div>
           </div>
         </div>
       </section>
 
       {/* How To Use Section */}
-      <section id="features" style={{ background: '#0a0a0a', padding: '80px 0' }}>
+      <section id="features" style={{ background: '#f8f9fb', padding: '80px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 700, textAlign: 'center', marginBottom: '50px' }}>How To Use</h2>
           
@@ -430,10 +430,10 @@ const LandingSocialSMS = ({
               { icon: '📱', title: 'Get the OTP', desc: 'You will get the OTP for that number and your order will be completed!' },
               { icon: '💰', title: 'Easy to Recharge', desc: 'We provide easy payment methods for swift recharges and purchases!' },
             ].map((step, idx) => (
-              <div key={idx} style={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
+              <div key={idx} style={{ background: 'white', border: '2px solid #e5e7eb', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
                 <div style={{ fontSize: '3rem', color: themeColor, marginBottom: '20px' }}>{step.icon}</div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '12px', color: '#ffffff' }}>{step.title}</h3>
-                <p style={{ color: '#71717a', lineHeight: 1.6 }}>{step.desc}</p>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '12px', color: '#1a1a1a' }}>{step.title}</h3>
+                <p style={{ color: '#5a5a5a', lineHeight: 1.6 }}>{step.desc}</p>
               </div>
             ))}
           </div>
@@ -445,8 +445,8 @@ const LandingSocialSMS = ({
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', marginBottom: '24px' }}>Start using our Services</h2>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <button onClick={() => { setShowAuth(true); setIsLogin(true); }} data-testid="cta-login-btn" style={{ background: '#ffffff', color: '#000000', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>🔑 Login</button>
-            <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="cta-register-btn" style={{ background: '#ffffff', color: '#000000', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>📝 Register</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(true); }} data-testid="cta-login-btn" style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>🔑 Login</button>
+            <button onClick={() => { setShowAuth(true); setIsLogin(false); }} data-testid="cta-register-btn" style={{ background: 'white', border: 'none', borderRadius: '8px', padding: '14px 32px', fontWeight: 600, cursor: 'pointer' }}>📝 Register</button>
           </div>
         </div>
       </section>
@@ -455,11 +455,11 @@ const LandingSocialSMS = ({
       <footer style={{ background: '#1a1a1a', padding: '30px 0' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-            <p style={{ color: '#71717a', margin: 0 }}>© Copyright {new Date().getFullYear()}. {brandName}, All Rights Reserved.</p>
+            <p style={{ color: '#9ca3af', margin: 0 }}>© Copyright {new Date().getFullYear()}. {brandName}, All Rights Reserved.</p>
             <div style={{ display: 'flex', gap: '16px' }}>
-              <a href="#" style={{ color: '#71717a', textDecoration: 'none' }}>Privacy</a>
-              <span style={{ color: '#71717a' }}>·</span>
-              <a href="#" style={{ color: '#71717a', textDecoration: 'none' }}>Terms</a>
+              <a href="#" style={{ color: '#9ca3af', textDecoration: 'none' }}>Privacy</a>
+              <span style={{ color: '#9ca3af' }}>·</span>
+              <a href="#" style={{ color: '#9ca3af', textDecoration: 'none' }}>Terms</a>
             </div>
           </div>
         </div>
@@ -468,10 +468,10 @@ const LandingSocialSMS = ({
       {/* Auth Modal */}
       {showAuth && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setShowAuth(false)}>
-          <div style={{ width: '100%', maxWidth: '420px', background: '#0a0a0a', borderRadius: '24px', padding: '24px 32px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ width: '100%', maxWidth: '420px', background: 'white', borderRadius: '24px', padding: '24px 32px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }} onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowAuth(false)}
-              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#71717a' }}
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}
               data-testid="auth-modal-close"
             >
               <X style={{ width: '24px', height: '24px' }} />
@@ -488,18 +488,18 @@ const LandingSocialSMS = ({
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', padding: '4px', borderRadius: '12px', background: '#18181b' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', padding: '4px', borderRadius: '12px', background: '#f3f4f6' }}>
               <button
                 onClick={() => setIsLogin(true)}
                 data-testid="auth-login-tab"
-                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: isLogin ? '#ffffff' : 'transparent', color: isLogin ? '#000000' : '#71717a', boxShadow: isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: isLogin ? 'white' : 'transparent', color: isLogin ? (btnColor) : '#4b5563', boxShadow: isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
               >
                 Login
               </button>
               <button
                 onClick={() => setIsLogin(false)}
                 data-testid="auth-register-tab"
-                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: !isLogin ? '#ffffff' : 'transparent', color: !isLogin ? '#000000' : '#71717a', boxShadow: !isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                style={{ flex: 1, padding: '10px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: !isLogin ? 'white' : 'transparent', color: !isLogin ? (btnColor) : '#4b5563', boxShadow: !isLogin ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
               >
                 Register
               </button>
@@ -509,7 +509,7 @@ const LandingSocialSMS = ({
             {isLogin ? (
               <form onSubmit={handleLogin} data-testid="socialsms-login-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Email</label>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Email</label>
                   <input
                     type="email"
                     placeholder="you@example.com"
@@ -517,11 +517,11 @@ const LandingSocialSMS = ({
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
                     data-testid="socialsms-login-email"
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Password</label>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Password</label>
                   <input
                     type="password"
                     placeholder="••••••••"
@@ -529,7 +529,7 @@ const LandingSocialSMS = ({
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     required
                     data-testid="socialsms-login-password"
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -554,7 +554,7 @@ const LandingSocialSMS = ({
               <form onSubmit={handleRegister} data-testid="socialsms-register-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>First Name</label>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>First Name</label>
                     <input
                       type="text"
                       placeholder="John"
@@ -562,11 +562,11 @@ const LandingSocialSMS = ({
                       onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
                       required
                       data-testid="socialsms-register-firstname"
-                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Last Name</label>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Last Name</label>
                     <input
                       type="text"
                       placeholder="Doe"
@@ -574,12 +574,12 @@ const LandingSocialSMS = ({
                       onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
                       required
                       data-testid="socialsms-register-lastname"
-                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Email</label>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Email</label>
                   <input
                     type="email"
                     placeholder="you@example.com"
@@ -587,11 +587,11 @@ const LandingSocialSMS = ({
                     onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                     required
                     data-testid="socialsms-register-email"
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Phone Number <span style={{ color: '#ef4444' }}>*</span></label>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Phone Number <span style={{ color: '#ef4444' }}>*</span></label>
                   <input
                     type="tel"
                     placeholder="08168617185"
@@ -600,12 +600,12 @@ const LandingSocialSMS = ({
                     onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
                     required
                     data-testid="socialsms-register-phone"
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                   />
-                  <p style={{ fontSize: '12px', marginTop: '4px', color: '#a1a1aa' }}>Format: 08168617185</p>
+                  <p style={{ fontSize: '12px', marginTop: '4px', color: '#6b7280' }}>Format: 08168617185</p>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Password</label>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Password</label>
                   <input
                     type="password"
                     placeholder="••••••••"
@@ -613,7 +613,7 @@ const LandingSocialSMS = ({
                     onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                     required
                     data-testid="socialsms-register-password"
-                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                   />
                 </div>
                 <button
@@ -633,7 +633,7 @@ const LandingSocialSMS = ({
       {/* Forgot Password Modal */}
       {showForgotPassword && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: '#0a0a0a', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
+          <div style={{ background: 'white', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxWidth: '420px', width: '100%', overflow: 'hidden' }}>
             {/* Header */}
             <div style={{ padding: '24px', color: 'white', textAlign: 'center', background: `linear-gradient(135deg, ${btnColor}, ${themeColor})` }}>
               <h2 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>Reset Password</h2>
@@ -649,21 +649,21 @@ const LandingSocialSMS = ({
               <form onSubmit={handleForgotPassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {forgotPasswordStep === 1 && (
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Email Address</label>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Email Address</label>
                     <input
                       type="email"
                       placeholder="you@example.com"
                       value={forgotPasswordData.email}
                       onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, email: e.target.value })}
                       required
-                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                     />
                   </div>
                 )}
                 
                 {forgotPasswordStep === 2 && (
                   <div>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Reset Code</label>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Reset Code</label>
                     <input
                       type="text"
                       placeholder="Enter 6-digit code"
@@ -671,9 +671,9 @@ const LandingSocialSMS = ({
                       onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, code: e.target.value })}
                       required
                       maxLength={6}
-                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '24px', color: '#ffffff', textAlign: 'center', letterSpacing: '0.5em', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '24px', color: '#1f2937', textAlign: 'center', letterSpacing: '0.5em', fontFamily: 'monospace', boxSizing: 'border-box' }}
                     />
-                    <p style={{ fontSize: '14px', color: '#a1a1aa', marginTop: '8px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>
                       Didn't receive it? <button type="button" onClick={() => setForgotPasswordStep(1)} style={{ background: 'none', border: 'none', fontWeight: 500, color: btnColor, cursor: 'pointer' }}>Resend</button>
                     </p>
                   </div>
@@ -682,7 +682,7 @@ const LandingSocialSMS = ({
                 {forgotPasswordStep === 3 && (
                   <>
                     <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>New Password</label>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>New Password</label>
                       <input
                         type="password"
                         placeholder="••••••••"
@@ -690,11 +690,11 @@ const LandingSocialSMS = ({
                         onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, new_password: e.target.value })}
                         required
                         minLength={6}
-                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#d4d4d8', marginBottom: '8px' }}>Confirm Password</label>
+                      <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>Confirm Password</label>
                       <input
                         type="password"
                         placeholder="••••••••"
@@ -702,7 +702,7 @@ const LandingSocialSMS = ({
                         onChange={(e) => setForgotPasswordData({ ...forgotPasswordData, confirm_password: e.target.value })}
                         required
                         minLength={6}
-                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #3f3f46', outline: 'none', fontSize: '14px', color: '#ffffff', background: '#09090b', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', fontSize: '14px', color: '#1f2937', boxSizing: 'border-box' }}
                       />
                     </div>
                   </>
@@ -728,7 +728,7 @@ const LandingSocialSMS = ({
                   setForgotPasswordData({ email: '', code: '', new_password: '', confirm_password: '' });
                   setShowAuth(true);
                 }}
-                style={{ width: '100%', marginTop: '16px', padding: '8px', background: 'none', border: 'none', fontSize: '14px', color: '#a1a1aa', cursor: 'pointer' }}
+                style={{ width: '100%', marginTop: '16px', padding: '8px', background: 'none', border: 'none', fontSize: '14px', color: '#6b7280', cursor: 'pointer' }}
               >
                 Back to Login
               </button>

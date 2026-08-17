@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Receipt, Wallet, CreditCard, History, UserCircle, 
   MessageSquare, Gift, Settings, ChevronDown, Search, Phone, Plus,
-  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield, Plane
+  X, Check, Copy, RefreshCw, LogOut, Bell, User, Menu, Clock, ExternalLink, Server, Key, Eye, EyeOff, Mail, Camera, Shield, Plane, Globe
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -17,44 +17,36 @@ import AutoLogout from '../components/AutoLogout';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Shared Select styles - Dark monochrome theme
+// Shared Select styles to prevent blurry text and ensure dark, visible text
 const selectStyles = {
   control: (base) => ({
     ...base,
     minHeight: '48px',
-    borderWidth: '1px',
-    borderColor: '#3f3f46',
-    backgroundColor: '#18181b',
-    color: '#fff',
-    '&:hover': { borderColor: '#71717a' }
+    borderWidth: '2px',
+    borderColor: '#e5e7eb',
+    '&:hover': { borderColor: '#5B5FC7' }
   }),
   placeholder: (base) => ({
     ...base,
-    color: '#71717a'
+    color: '#9ca3af'
   }),
   singleValue: (base) => ({
     ...base,
-    color: '#ffffff',
+    color: '#1f2937',
     fontWeight: '500'
   }),
   input: (base) => ({
     ...base,
-    color: '#ffffff'
+    color: '#1f2937'
   }),
   menuPortal: (base) => ({
     ...base,
     zIndex: 9999
   }),
-  menu: (base) => ({
-    ...base,
-    backgroundColor: '#18181b',
-    borderColor: '#3f3f46',
-    border: '1px solid #3f3f46'
-  }),
   option: (base, state) => ({
     ...base,
-    backgroundColor: state.isFocused ? '#27272a' : state.isSelected ? '#3f3f46' : '#18181b',
-    color: '#ffffff',
+    backgroundColor: state.isFocused ? '#eef2ff' : state.isSelected ? '#e0e7ff' : 'white',
+    color: '#1f2937',
     cursor: 'pointer',
     fontWeight: state.isSelected ? '600' : '400'
   })
@@ -141,12 +133,12 @@ const NewDashboard = () => {
   const [branding, setBranding] = useState(cachedBranding || {
     brand_name: 'Social SMS WRLD',
     brand_logo_url: 'https://cloudsmsservice.org/img/social_logo.png',
-    primary_color_hex: '#059669',
-    secondary_color_hex: '#10b981',
+    primary_color_hex: '#5B5FC7',
+    secondary_color_hex: '#6E72D9',
     accent_color_hex: '#7c3aed',
     button_color_hex: '#7c3aed',
     header_bg_color_hex: '#ffffff',
-    hero_gradient_from: '#10b981',
+    hero_gradient_from: '#6E72D9',
     hero_gradient_to: '#06b6d4',
     landing_hero_title: 'Cheapest and Fastest\nOnline SMS Verification',
     landing_hero_subtitle:
@@ -513,8 +505,8 @@ const NewDashboard = () => {
   // If logging out, show nothing to prevent errors
   if (isLoggingOut) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
       </div>
     );
   }
@@ -805,41 +797,47 @@ const NewDashboard = () => {
 
   const allMenuItems = [
     {
-      category: 'OVERVIEW',
+      category: 'MAIN',
       items: [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'transactions', icon: Receipt, label: 'Transactions' }
+        ...(user.is_admin ? [{ id: 'admin', icon: Settings, label: 'Admin', toggle: 'enable_admin' }] : []),
+        { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
       ]
     },
     {
-      category: 'SERVICES',
+      category: 'BUY NUMBERS',
       items: [
-        { id: 'fund-wallet', icon: Wallet, label: 'Fund Wallet', toggle: 'enable_fund_wallet' },
-        { id: 'convert-currency', icon: RefreshCw, label: 'Convert Currency' },
-        { id: 'virtual-numbers', icon: Phone, label: 'Virtual Numbers', toggle: 'enable_virtual_numbers' },
-        { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
+        { id: 'usa-numbers', icon: Phone, label: 'Usa Numbers', toggle: 'enable_virtual_numbers' },
+        { id: 'other-usa-numbers', icon: Phone, label: 'Other Usa Numbers', toggle: 'enable_virtual_numbers' },
+        { id: 'all-country-numbers', icon: Globe, label: 'All Country Numbers', toggle: 'enable_virtual_numbers' },
+        { id: 'more-country-numbers', icon: Globe, label: 'More Country Numbers', toggle: 'enable_virtual_numbers' },
+      ]
+    },
+    {
+      category: 'ACCOUNT',
+      items: [
+        { id: 'support', icon: MessageSquare, label: 'FAQs' },
         ...(allBillsDisabled ? [] : [
           { id: 'airtime', icon: Phone, label: 'Airtime', toggle: 'enable_airtime' },
-          { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', badge: 'NEW', toggle: 'enable_bills' },
+          { id: 'bills-payment', icon: Receipt, label: 'Bills Payment', toggle: 'enable_bills' },
         ]),
         { id: 'virtual-cards', icon: CreditCard, label: 'Virtual Cards', toggle: 'enable_virtual_cards' },
-        // Travel is only shown on sites that have it enabled (site-specific feature)
-        ...(showTravelFeature ? [{ id: 'travel', icon: Plane, label: 'Travel', badge: 'NEW', toggle: 'enable_travel_booking' }] : [])
+        { id: 'giftcards', icon: Gift, label: 'Gift Cards', badge: 'NEW', toggle: 'enable_giftcards' },
+        ...(showTravelFeature ? [{ id: 'travel', icon: Plane, label: 'Travel', badge: 'NEW', toggle: 'enable_travel_booking' }] : []),
+      ]
+    },
+    {
+      category: 'HISTORY',
+      items: [
+        { id: 'sms-history', icon: History, label: 'Numbers History' },
+        { id: 'transactions', icon: Receipt, label: 'Transaction History' },
       ]
     },
     {
       category: 'RESELLER',
       items: [
-        { id: 'reseller', icon: Server, label: 'Reseller Portal', badge: 'API' }
-      ]
-    },
-    {
-      category: 'MANAGEMENT',
-      items: [
-        { id: 'sms-history', icon: History, label: 'SMS History' },
+        { id: 'reseller', icon: Server, label: 'Reseller Hub', badge: 'API' },
         { id: 'referral', icon: Gift, label: 'Referral Program', toggle: 'enable_referral' },
-        { id: 'profile', icon: UserCircle, label: 'Profile Settings' },
-        { id: 'support', icon: MessageSquare, label: 'Support Channels' }
       ]
     }
   ];
@@ -869,13 +867,13 @@ const NewDashboard = () => {
 
   const maintenanceContent = (title = 'Maintenance in progress') => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">{title}</h2>
-      <div className="bg-zinc-900 p-8 rounded-xl border shadow-none text-center">
-        <div className="mx-auto w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center mb-4">
-          <Settings className="w-7 h-7 text-zinc-200" />
+      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+      <div className="bg-white p-8 rounded-xl border shadow-sm text-center">
+        <div className="mx-auto w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+          <Settings className="w-7 h-7 text-indigo-700" />
         </div>
-        <p className="text-zinc-200 font-semibold">Maintenance in progress</p>
-        <p className="text-sm text-zinc-400 mt-1">This page is currently disabled by the admin.</p>
+        <p className="text-gray-700 font-semibold">Maintenance in progress</p>
+        <p className="text-sm text-gray-500 mt-1">This page is currently disabled by the admin.</p>
       </div>
     </div>
   );
@@ -886,7 +884,7 @@ const NewDashboard = () => {
 
   // Main Dashboard Render
   const renderDashboard = () => (
-    <div className="min-h-screen bg-black flex">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
@@ -899,8 +897,8 @@ const NewDashboard = () => {
       <aside className={`
         fixed lg:sticky top-0 left-0 h-screen z-50
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        w-56 lg:w-60 bg-black border-r border-zinc-800 transition-transform duration-300 ease-in-out
-        flex flex-col
+        w-56 lg:w-60 bg-white border-r border-gray-100 transition-transform duration-300 ease-in-out
+        shadow-sm flex flex-col
       `}>
         <div className="p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -909,7 +907,7 @@ const NewDashboard = () => {
               {branding.brand_logo_url ? (
                 <img src={branding.brand_logo_url} alt="Logo" className="h-14 sm:h-16 lg:h-20 object-contain" />
               ) : (
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow" style={{ backgroundColor: branding.primary_color_hex || '#5B5FC7' }}>
                   <Phone className="w-5 h-5 text-white" />
                 </div>
               )}
@@ -917,9 +915,9 @@ const NewDashboard = () => {
             {/* Close button for mobile */}
             <button 
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1.5 hover:bg-zinc-800 rounded-lg"
+              className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg"
             >
-              <X className="w-4 h-4 text-zinc-400" />
+              <X className="w-4 h-4 text-gray-600" />
             </button>
           </div>
         </div>
@@ -927,7 +925,7 @@ const NewDashboard = () => {
         <nav className="px-2 space-y-4 pb-28 flex-1 overflow-y-auto">
           {menuItems.map((section, idx) => (
             <div key={idx}>
-              <p className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider px-2 mb-1.5">{section.category}</p>
+              <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider px-2 mb-1.5">{section.category}</p>
               <div className="space-y-0.5">
                 {section.items.map((item) => (
                   <button
@@ -938,9 +936,10 @@ const NewDashboard = () => {
                     }}
                     className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition-all ${
                       activeSection === item.id
-                        ? 'bg-white text-black font-semibold'
-                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                        ? 'text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
+                    style={activeSection === item.id ? { backgroundColor: branding.primary_color_hex || '#5B5FC7' } : undefined}
                   >
                     <div className="flex items-center gap-2">
                       <item.icon className="w-4 h-4" />
@@ -949,9 +948,9 @@ const NewDashboard = () => {
                     {item.badge && (
                       <span className={`px-1.5 py-0.5 text-[8px] font-bold rounded-full ${
                         activeSection === item.id 
-                          ? 'bg-black/20 text-black' 
-                          : 'bg-zinc-800 text-zinc-300'
-                      }`}>
+                          ? 'bg-white/20 text-white' 
+                          : ''
+                      }`} style={activeSection !== item.id ? { backgroundColor: `${branding.primary_color_hex || '#5B5FC7'}15`, color: branding.primary_color_hex || '#5B5FC7' } : undefined}>
                         {item.badge}
                       </span>
                     )}
@@ -962,11 +961,12 @@ const NewDashboard = () => {
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-zinc-800 space-y-1 bg-black">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-100 space-y-1 bg-white">
           {user.is_admin && (
             <a
               href="/admin"
-              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-zinc-900 transition-colors font-medium text-xs text-white"
+              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium text-xs"
+              style={{ color: branding.primary_color_hex || '#5B5FC7' }}
             >
               <Settings className="w-4 h-4" />
               <span>Admin Panel</span>
@@ -974,7 +974,7 @@ const NewDashboard = () => {
           )}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-red-400 hover:bg-zinc-900 transition-colors font-medium text-xs"
+            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors font-medium text-xs"
           >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>
@@ -985,24 +985,44 @@ const NewDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 lg:ml-0">
         {/* Top Bar - Clean white design */}
-        <header className="bg-black/90 backdrop-blur-md border-b border-zinc-800 px-4 lg:px-6 py-3 sticky top-0 z-30">
+        <header className="bg-white border-b border-gray-100 px-4 lg:px-6 py-3 sticky top-0 z-30 shadow-sm">
           <div className="flex items-center justify-between">
             {/* Hamburger menu for mobile */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-zinc-800 rounded-xl transition-colors"
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-xl transition-colors"
             >
-              <Menu className="w-6 h-6 text-zinc-300" />
+              <Menu className="w-6 h-6 text-gray-600" />
             </button>
             
-            {/* Desktop: Welcome text */}
+            {/* Desktop: Page title */}
             <div className="hidden lg:block">
-              <p className="text-sm text-zinc-500">Welcome back,</p>
-              <p className="text-base font-semibold text-white">{user.full_name || user.email?.split('@')[0] || 'User'}</p>
+              <p className="text-lg font-bold text-gray-900 capitalize">
+                {activeSection === 'dashboard' ? 'Dashboard' : 
+                 activeSection === 'fund-wallet' ? 'Fund Wallet' :
+                 activeSection === 'virtual-numbers' ? 'Virtual Numbers' :
+                 activeSection === 'usa-numbers' ? 'USA Numbers' :
+                 activeSection === 'other-usa-numbers' ? 'Other USA Numbers' :
+                 activeSection === 'all-country-numbers' ? 'All Country Numbers' :
+                 activeSection === 'more-country-numbers' ? 'More Country Numbers' :
+                 activeSection === 'bills-payment' ? 'Bills Payment' :
+                 activeSection === 'airtime' ? 'Airtime' :
+                 activeSection === 'transactions' ? 'Transaction History' :
+                 activeSection === 'sms-history' ? 'Numbers History' :
+                 activeSection === 'profile' ? 'My Profile' :
+                 activeSection.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </p>
             </div>
             
             <div className="flex items-center gap-2 lg:gap-3">
-              {/* Refresh data button */}
+              {/* Balance Pill */}
+              <div 
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-sm font-semibold"
+                style={{ backgroundColor: branding.primary_color_hex || '#5B5FC7' }}
+              >
+                <Wallet className="w-4 h-4" />
+                ₦{(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              </div>
               <button 
                 onClick={() => {
                   fetchProfile();
@@ -1011,16 +1031,16 @@ const NewDashboard = () => {
                   fetchTransactions();
                   toast.success('Data refreshed!');
                 }}
-                className="p-2.5 hover:bg-zinc-800 rounded-xl transition-colors flex items-center justify-center" 
+                className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors flex items-center justify-center" 
                 title="Refresh data"
               >
-                <RefreshCw className="w-5 h-5 text-zinc-400 hover:text-white" />
+                <RefreshCw className="w-5 h-5 text-gray-500 hover:text-gray-700" />
               </button>
 
               {/* Dark mode toggle */}
               <button 
                 onClick={toggleDarkMode}
-                className="hidden sm:flex p-2.5 hover:bg-zinc-800 rounded-xl transition-colors items-center justify-center" 
+                className="hidden sm:flex p-2.5 hover:bg-gray-100 rounded-xl transition-colors items-center justify-center" 
                 title="Toggle theme"
               >
                 {darkMode ? (
@@ -1028,7 +1048,7 @@ const NewDashboard = () => {
                     <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
                 )}
@@ -1038,10 +1058,10 @@ const NewDashboard = () => {
               <div className="relative">
                 <button 
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2.5 hover:bg-zinc-800 rounded-xl transition-colors" 
+                  className="relative p-2.5 hover:bg-gray-100 rounded-xl transition-colors" 
                   title="Notifications"
                 >
-                  <Bell className="w-5 h-5 text-zinc-400" />
+                  <Bell className="w-5 h-5 text-gray-500" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
                       {unreadCount > 9 ? '9+' : unreadCount}
@@ -1051,34 +1071,34 @@ const NewDashboard = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="fixed right-4 top-16 sm:absolute sm:right-0 sm:top-auto mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-800 z-[100] max-h-96 overflow-hidden">
-                    <div className="p-3 sm:p-4 border-b border-zinc-800 flex items-center justify-between">
-                      <h3 className="font-semibold text-white text-sm sm:text-base">Notifications</h3>
+                  <div className="fixed right-4 top-16 sm:absolute sm:right-0 sm:top-auto mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white rounded-2xl shadow-xl border border-gray-100 z-[100] max-h-96 overflow-hidden">
+                    <div className="p-3 sm:p-4 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Notifications</h3>
                       <button 
                         onClick={() => setShowNotifications(false)}
-                        className="p-1.5 hover:bg-zinc-800 rounded-lg transition-colors"
+                        className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                       >
-                        <X className="w-4 h-4 text-zinc-400" />
+                        <X className="w-4 h-4 text-gray-500" />
                       </button>
                     </div>
                     <div className="overflow-y-auto max-h-72">
                       {notifications.length === 0 ? (
-                        <div className="p-8 text-center text-zinc-500 text-sm">
+                        <div className="p-8 text-center text-gray-400 text-sm">
                           No notifications yet
                         </div>
                       ) : (
                         notifications.slice(0, 10).map((notif) => (
                           <div 
                             key={notif.id}
-                            className={`p-3 sm:p-4 border-b border-zinc-800/50 hover:bg-zinc-900 cursor-pointer transition-colors ${!notif.read_at ? 'bg-zinc-900' : ''}`}
+                            className={`p-3 sm:p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!notif.read_at ? 'bg-purple-50' : ''}`}
                             onClick={() => markNotificationRead(notif.id)}
                           >
                             <div className="flex items-start gap-2 sm:gap-3">
-                              <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: !notif.read_at ? '#FFFFFF' : '#3f3f46' }}></div>
+                              <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: !notif.read_at ? branding.primary_color_hex || '#5B5FC7' : '#d1d5db' }}></div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-medium text-white">{notif.title}</p>
-                                <p className="text-[10px] sm:text-xs text-zinc-400 mt-1 line-clamp-2">{notif.message}</p>
-                                <p className="text-[10px] text-zinc-500 mt-1.5">
+                                <p className="text-xs sm:text-sm font-medium text-gray-900">{notif.title}</p>
+                                <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{notif.message}</p>
+                                <p className="text-[10px] text-gray-400 mt-1.5">
                                   {new Date(notif.created_at).toLocaleDateString()}
                                 </p>
                               </div>
@@ -1087,7 +1107,7 @@ const NewDashboard = () => {
                                   e.stopPropagation();
                                   dismissNotification(notif.id);
                                 }}
-                                className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-zinc-300 transition-colors"
+                                className="p-1 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -1103,16 +1123,17 @@ const NewDashboard = () => {
               {/* Refresh Balance Button */}
               <button
                 onClick={fetchProfile}
-                className="p-2.5 rounded-xl hover:bg-zinc-800 transition-colors"
+                className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                 title="Refresh balance"
                 data-testid="header-refresh-btn"
               >
-                <RefreshCw className="w-5 h-5 text-zinc-400" />
+                <RefreshCw className="w-5 h-5 text-gray-600" />
               </button>
               
-              {/* User avatar - Modern design */}
+              {/* User avatar - Modern design with dynamic color */}
               <div 
-                className="hidden sm:flex w-10 h-10 rounded-xl items-center justify-center text-black font-semibold text-sm bg-white"
+                className="hidden sm:flex w-10 h-10 rounded-xl items-center justify-center text-white font-semibold text-sm shadow-lg"
+                style={{ backgroundColor: branding.primary_color_hex || '#5B5FC7' }}
               >
                 {user.email?.slice(0, 2).toUpperCase() || 'U'}
               </div>
@@ -1124,7 +1145,7 @@ const NewDashboard = () => {
         <main className="px-4 lg:px-6 py-4 lg:py-6">
           {/* Account Suspension Banner */}
           {user.is_suspended && (
-            <div className="mb-6 p-6 bg-zinc-900 border-2 border-red-900/50 rounded-2xl">
+            <div className="mb-6 p-6 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl shadow-sm">
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-red-100 rounded-full">
@@ -1139,14 +1160,14 @@ const NewDashboard = () => {
                 </div>
                 <button
                   onClick={() => setActiveSection('profile')}
-                  className="lg:ml-auto px-6 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-medium hover:from-red-700 hover:to-orange-700 transition-all shadow-none hover:shadow-none flex items-center gap-2"
+                  className="lg:ml-auto px-6 py-2.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-medium hover:from-red-700 hover:to-orange-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
                   data-testid="upgrade-kyc-btn"
                 >
                   <Shield className="w-4 h-4" />
                   Upgrade KYC Now
                 </button>
               </div>
-              <div className="mt-4 p-3 bg-zinc-900/50 rounded-lg border border-red-100">
+              <div className="mt-4 p-3 bg-white/50 rounded-lg border border-red-100">
                 <p className="text-xs text-red-700">
                   <strong>Why was my account suspended?</strong> Your wallet balance has exceeded the maximum limit for your current KYC tier. 
                   To unlock your account and increase your limits, please verify your identity by upgrading to a higher KYC tier.
@@ -1170,6 +1191,70 @@ const NewDashboard = () => {
               )
             )}
 
+            {/* USA Numbers - Shows US provider cards directly */}
+            {activeSection === 'usa-numbers' && (
+              <VirtualNumbersSection
+                user={user}
+                orders={orders}
+                axiosConfig={axiosConfig}
+                fetchOrders={fetchOrders}
+                fetchProfile={fetchProfile}
+                initialServer="us_numbers"
+                pageTitle="USA Virtual Numbers — Premium"
+                pageSubtitle="High-quality US numbers for instant OTP verification"
+                pageIcon="🇺🇸"
+                accentColor={branding.primary_color_hex || '#5B5FC7'}
+              />
+            )}
+
+            {/* Other USA Numbers */}
+            {activeSection === 'other-usa-numbers' && (
+              <VirtualNumbersSection
+                user={user}
+                orders={orders}
+                axiosConfig={axiosConfig}
+                fetchOrders={fetchOrders}
+                fetchProfile={fetchProfile}
+                initialServer="us_server"
+                pageTitle="Other USA Numbers"
+                pageSubtitle="Additional US number options with more services"
+                pageIcon="🇺🇸"
+                accentColor={branding.primary_color_hex || '#5B5FC7'}
+              />
+            )}
+
+            {/* All Country Numbers */}
+            {activeSection === 'all-country-numbers' && (
+              <VirtualNumbersSection
+                user={user}
+                orders={orders}
+                axiosConfig={axiosConfig}
+                fetchOrders={fetchOrders}
+                fetchProfile={fetchProfile}
+                initialServer="other_countries"
+                pageTitle="All Country Numbers"
+                pageSubtitle="Virtual numbers from 190+ countries worldwide"
+                pageIcon="🌍"
+                accentColor={branding.primary_color_hex || '#5B5FC7'}
+              />
+            )}
+
+            {/* More Country Numbers */}
+            {activeSection === 'more-country-numbers' && (
+              <VirtualNumbersSection
+                user={user}
+                orders={orders}
+                axiosConfig={axiosConfig}
+                fetchOrders={fetchOrders}
+                fetchProfile={fetchProfile}
+                initialServer="server1"
+                pageTitle="More Country Numbers"
+                pageSubtitle="Extended coverage with additional global servers"
+                pageIcon="🌐"
+                accentColor={branding.primary_color_hex || '#5B5FC7'}
+              />
+            )}
+
             {activeSection === 'fund-wallet' && (isPageEnabled('fund-wallet') ? (
               <FundWalletSection 
                 user={user}
@@ -1180,16 +1265,16 @@ const NewDashboard = () => {
               />
             ) : maintenanceContent("Fund Wallet"))}
             {activeSection === 'airtime' && (isPageEnabled('airtime') ? <AirtimeSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} /> : maintenanceContent("Airtime"))}
-            {activeSection === 'bills-payment' && (isPageEnabled('bills-payment') ? <BillsPaymentSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} setActiveSection={setActiveSection} primaryColor={'#ffffff'} pageToggles={pageToggles} defaultTab={defaultBillTab} /> : maintenanceContent("Bills Payment"))}
+            {activeSection === 'bills-payment' && (isPageEnabled('bills-payment') ? <BillsPaymentSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} fetchTransactions={fetchTransactions} user={user} setActiveSection={setActiveSection} primaryColor={branding.primary_color_hex || '#5B5FC7'} pageToggles={pageToggles} defaultTab={defaultBillTab} /> : maintenanceContent("Bills Payment"))}
             {activeSection === 'transactions' && (isPageEnabled('transactions') ? <TransactionsSection /> : maintenanceContent("Transactions"))}
             {activeSection === 'dashboard' && (isPageEnabled('dashboard') ? <DashboardOverview /> : maintenanceContent("Dashboard"))}
             {activeSection === 'sms-history' && (isPageEnabled('sms-history') ? <SMSHistorySection /> : maintenanceContent("SMS History"))}
             {activeSection === 'profile' && (isPageEnabled('profile') ? <ProfileSection /> : maintenanceContent("Profile Settings"))}
             {activeSection === 'referral' && (isPageEnabled('referral') ? <ReferralSection /> : maintenanceContent("Referral Program"))}
             {activeSection === 'support' && (isPageEnabled('support') ? <SupportSection /> : maintenanceContent("Support Channels"))}
-            {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} user={user} primaryColor={'#ffffff'} branding={branding} onNavigateToKYC={() => setActiveSection('profile')} /> : maintenanceContent("Virtual Cards"))}
+            {activeSection === 'virtual-cards' && (isPageEnabled('virtual-cards') ? <VirtualCardsSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} user={user} primaryColor={branding.primary_color_hex || '#5B5FC7'} branding={branding} onNavigateToKYC={() => setActiveSection('profile')} /> : maintenanceContent("Virtual Cards"))}
             {activeSection === 'giftcards' && (isPageEnabled('giftcards') ? <GiftCardsSection /> : maintenanceContent("Gift Cards"))}
-            {activeSection === 'travel' && <TravelSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} user={user} primaryColor={'#ffffff'} branding={branding} />}
+            {activeSection === 'travel' && <TravelSection axiosConfig={axiosConfig} fetchProfile={fetchProfile} user={user} primaryColor={branding.primary_color_hex || '#5B5FC7'} branding={branding} />}
             {activeSection === 'convert-currency' && <ConvertCurrencySection />}
             {activeSection === 'reseller' && <ResellerSection />}
           </div>
@@ -1229,14 +1314,14 @@ const NewDashboard = () => {
     }, [bannerImages.length]);
 
     // Service cards with dynamic colors from branding
-    const primaryColor = branding.primary_color_hex || '#059669';
+    const primaryColor = branding.primary_color_hex || '#5B5FC7';
     
     // Country flags component for Virtual Numbers card
     const CountryFlags = () => (
       <div className="flex -space-x-2">
-        <img src="https://flagcdn.com/w40/us.png" alt="USA" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-none" />
-        <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-none" />
-        <img src="https://flagcdn.com/w40/ng.png" alt="Nigeria" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-none" />
+        <img src="https://flagcdn.com/w40/us.png" alt="USA" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+        <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+        <img src="https://flagcdn.com/w40/ng.png" alt="Nigeria" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
       </div>
     );
 
@@ -1250,28 +1335,28 @@ const NewDashboard = () => {
     const airtimeHidden = pageToggles.disable_airtime_bills === true;
     
     const allServiceCards = [
-      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: CountryFlags, bgColor: 'bg-zinc-900 border border-zinc-800', iconBg: 'bg-transparent', isCustomIcon: true, isBill: false, hidden: false },
-      { name: 'Internet Data', action: () => { setDefaultBillTab('data'); setActiveSection('bills-payment'); }, bgColor: 'bg-zinc-900 border border-zinc-800', iconBg: 'bg-zinc-900', isBill: true, hidden: dataHidden, icon: () => (
-        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      { name: 'Virtual Numbers', action: () => setActiveSection('virtual-numbers'), icon: CountryFlags, bgColor: 'bg-gradient-to-br from-emerald-50 to-green-100', iconBg: 'bg-transparent', isCustomIcon: true, isBill: false, hidden: false },
+      { name: 'Internet Data', action: () => { setDefaultBillTab('data'); setActiveSection('bills-payment'); }, bgColor: 'bg-gradient-to-br from-blue-50 to-sky-100', iconBg: 'bg-blue-500', isBill: true, hidden: dataHidden, icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
         </svg>
       )},
-      { name: 'TV Sub', action: () => { setDefaultBillTab('tv'); setActiveSection('bills-payment'); }, bgColor: 'bg-zinc-900 border border-zinc-800', iconBg: 'bg-zinc-900', isBill: true, hidden: tvHidden, icon: () => (
-        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      { name: 'TV Sub', action: () => { setDefaultBillTab('tv'); setActiveSection('bills-payment'); }, bgColor: 'bg-gradient-to-br from-purple-50 to-violet-100', iconBg: 'bg-purple-500', isBill: true, hidden: tvHidden, icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       )},
-      { name: 'Airtime', action: () => setActiveSection('airtime'), bgColor: 'bg-zinc-900 border border-zinc-800', iconBg: 'bg-zinc-900', isBill: true, hidden: airtimeHidden, icon: () => (
-        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      { name: 'Airtime', action: () => setActiveSection('airtime'), bgColor: 'bg-gradient-to-br from-orange-50 to-amber-100', iconBg: 'bg-orange-500', isBill: true, hidden: airtimeHidden, icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
         </svg>
       )},
-      { name: 'Electricity', action: () => { setDefaultBillTab('electricity'); setActiveSection('bills-payment'); }, bgColor: 'bg-zinc-900 border border-zinc-800', iconBg: 'bg-zinc-900', isBill: true, hidden: electricityHidden, icon: () => (
-        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      { name: 'Electricity', action: () => { setDefaultBillTab('electricity'); setActiveSection('bills-payment'); }, bgColor: 'bg-gradient-to-br from-yellow-50 to-amber-100', iconBg: 'bg-yellow-500', isBill: true, hidden: electricityHidden, icon: () => (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       )},
-      { name: 'Virtual Cards', action: () => setActiveSection('virtual-cards'), icon: CreditCard, bgColor: 'bg-zinc-900 border border-zinc-800', iconBg: 'bg-zinc-900', isBill: false, hidden: false },
+      { name: 'Virtual Cards', action: () => setActiveSection('virtual-cards'), icon: CreditCard, bgColor: 'bg-gradient-to-br from-pink-50 to-rose-100', iconBg: 'bg-pink-500', isBill: false, hidden: false },
     ];
 
     // Filter out bill services if disabled (master toggle or individual)
@@ -1281,260 +1366,264 @@ const NewDashboard = () => {
 
     return (
       <div className="space-y-5 sm:space-y-6">
-        {/* Top Row: Balance Card + My Card (Desktop) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Balance Card - Dark monochrome */}
-          <div 
-            className="lg:col-span-2 rounded-2xl p-5 sm:p-6 relative overflow-hidden bg-zinc-900 border border-zinc-800"
-          >
-            {/* Decorative circles */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-900/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-zinc-900/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-zinc-400">Total Balance</h3>
-                {/* Currency Toggle */}
-                <div className="flex bg-zinc-800 rounded-xl p-1">
-                  <button 
-                    onClick={() => setDashboardCurrency('NGN')}
-                    className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${
-                      dashboardCurrency === 'NGN' ? 'bg-zinc-900 shadow-none text-black' : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    NGN
-                  </button>
-                  <button 
-                    onClick={() => setDashboardCurrency('USD')}
-                    className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${
-                      dashboardCurrency === 'USD' ? 'bg-zinc-900 shadow-none text-black' : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    USD
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-end justify-between mb-5">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
-                    {dashboardCurrency === 'NGN' 
-                      ? `₦${(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
-                      : `$${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-                    <span className="text-sm font-normal text-zinc-500 ml-2">{dashboardCurrency}</span>
-                  </h1>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-zinc-800 text-zinc-300">+0.00%</span>
-                    <span className="text-xs text-zinc-500">vs previous month</span>
-                  </div>
-                </div>
-                <div className="hidden sm:flex gap-2">
-                  <button 
-                    onClick={() => setActiveSection('fund-wallet')}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white text-black rounded-xl font-semibold text-sm transition-colors hover:bg-zinc-200"
-                  >
-                    Add Money
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Mobile button */}
-              <div className="flex sm:hidden gap-2 mt-3">
-                <button 
-                  onClick={() => setActiveSection('fund-wallet')}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white text-black rounded-xl font-semibold text-sm transition-colors hover:bg-zinc-200"
-                >
-                  Add Money
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+        {/* Balance Card - Full width blue gradient */}
+        <div 
+          className="rounded-2xl p-5 sm:p-6 shadow-lg relative overflow-hidden"
+          style={{ 
+            background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 50%, ${primaryColor}bb 100%)` 
+          }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div className="relative z-10 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-white/80 mb-1">NGN Wallet Balance</h3>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+                ₦{(user.ngn_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              </h1>
             </div>
-          </div>
-
-          {/* My Card - Hidden on mobile, visible on desktop */}
-          <div className="hidden lg:block bg-zinc-900 rounded-2xl p-5 sm:p-6 border border-zinc-800 shadow-none">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-zinc-400">My Cards</h3>
-              <button 
-                onClick={() => setActiveSection('virtual-cards')}
-                className="text-xs font-medium hover:underline"
-                style={{ color: '#ffffff' }}
-              >
-                Manage Cards
-              </button>
-            </div>
-
-            {/* Gradient Card Visual - using team green color */}
-            <div className="rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden" style={{ background: '#18181b', border: '1px solid #3f3f46' }}>
-              {/* Card pattern overlay */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-900 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-zinc-900 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-              </div>
-              
-              <div className="relative">
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-white/80 text-xs font-medium">Debit</span>
-                  <span className="text-white/80 text-xs">•••• 1234</span>
-                </div>
-                <div className="mb-4">
-                  <p className="text-2xl sm:text-3xl font-bold">
-                    ${(user.usd_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                  </p>
-                  <p className="text-white/70 text-xs mt-1">Your Balance</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  {/* Logo image instead of text */}
-                  {branding.brand_logo_url ? (
-                    <img src={branding.brand_logo_url} alt="Logo" className="h-6 object-contain" />
-                  ) : (
-                    <span className="text-white/90 font-semibold text-lg">{branding.brand_name || 'UltraCloud'}</span>
-                  )}
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-zinc-900/30"></div>
-                    <div className="w-8 h-8 rounded-full bg-zinc-900/20"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-center text-xs text-zinc-500 mt-3">1/1 Cards</p>
-          </div>
-        </div>
-
-        {/* Banner Carousel */}
-        {bannerImages.length > 0 && (
-        <div className="relative overflow-hidden rounded-2xl">
-          <div 
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${bannerIndex * 100}%)` }}
-          >
-            {bannerImages.map((banner) => (
-              <div 
-                key={banner.id}
-                className="min-w-full cursor-pointer"
-                onClick={banner.action}
-              >
-                <img 
-                  src={banner.image} 
-                  alt="Banner"
-                  className="w-full h-32 sm:h-40 lg:h-48 object-cover rounded-2xl"
-                />
-              </div>
-            ))}
-          </div>
-          {/* Dots indicator */}
-          {bannerImages.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
-            {bannerImages.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setBannerIndex(i)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  i === bannerIndex ? 'bg-white w-6' : 'bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
-          )}
-        </div>
-        )}
-
-        {/* Quick Services - Grid Cards with dynamic color */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base sm:text-lg font-bold text-white">Quick Services</h3>
-            <button className="text-sm font-medium hover:underline" style={{ color: '#ffffff' }}>View all</button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {serviceCards.map((service, index) => (
-              <div 
-                key={index}
-                onClick={service.action}
-                className={`${service.bgColor} rounded-2xl p-4 sm:p-5 hover:border-zinc-600 hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden`}
-              >
-                {/* Icon Circle or Custom Icon */}
-                {service.isCustomIcon ? (
-                  <div className="mb-3">
-                    <service.icon />
-                  </div>
-                ) : (
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 ${service.iconBg} rounded-xl flex items-center justify-center mb-3 text-black`}>
-                    {typeof service.icon === 'function' ? <service.icon /> : <service.icon className="w-5 h-5 sm:w-6 sm:h-6" />}
-                  </div>
-                )}
-                
-                <h4 className="text-sm sm:text-base font-bold text-zinc-100 mb-2">
-                  {service.name}
-                </h4>
-                
-                <div className="flex items-center text-xs text-zinc-300 group-hover:text-zinc-100 transition-colors">
-                  <span>Get started</span>
-                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Transactions */}
-        <div className="bg-zinc-900 rounded-2xl p-5 sm:p-6 border border-zinc-800 shadow-none">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base sm:text-lg font-bold text-white">Recent Transactions</h3>
             <button 
-              onClick={() => setActiveSection('transactions')}
-              className="text-sm font-medium hover:underline"
-              style={{ color: '#ffffff' }}
+              onClick={() => setActiveSection('fund-wallet')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-800 rounded-xl font-semibold text-sm transition-colors shadow-lg hover:bg-gray-100"
             >
-              View All
+              <Plus className="w-4 h-4" />
+              Fund Wallet
             </button>
           </div>
-          
-          {transactions.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <Receipt className="w-8 h-8 text-zinc-500" />
+        </div>
+
+        {/* Pay with Opay - Quick Deposit Row */}
+        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-sm" style={{ backgroundColor: '#00C853' }}>
+                OP
               </div>
-              <p className="text-zinc-400 text-sm">No transactions yet</p>
-              <p className="text-zinc-500 text-xs mt-1">Your transaction history will appear here</p>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Pay with Opay</p>
+                <p className="text-xs text-gray-500">Instant · credited automatically</p>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {transactions.slice(0, 5).map((tx, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-zinc-950 rounded-xl hover:bg-zinc-800 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      tx.type === 'deposit' ? 'bg-zinc-800 text-white' :
-                      tx.type === 'purchase' ? 'bg-zinc-800 text-white' :
-                      tx.type === 'refund' ? 'bg-zinc-800 text-zinc-200' :
-                      'bg-zinc-800 text-zinc-300'
-                    }`}>
-                      {tx.type === 'deposit' ? <Plus className="w-5 h-5" /> :
-                       tx.type === 'purchase' ? <Phone className="w-5 h-5" /> :
-                       tx.type === 'refund' ? <RefreshCw className="w-5 h-5" /> :
-                       <Wallet className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white capitalize">{tx.type}</p>
-                      <p className="text-xs text-zinc-400">{new Date(tx.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-bold ${tx.type === 'deposit' || tx.type === 'refund' ? 'text-white' : 'text-white'}`}>
-                      {tx.type === 'deposit' || tx.type === 'refund' ? '+' : '-'}
-                      {tx.currency === 'NGN' ? '₦' : '$'}{tx.amount?.toLocaleString() || '0'}
-                    </p>
-                    <p className={`text-xs ${tx.status === 'completed' ? 'text-white' : 'text-amber-500'}`}>
-                      {tx.status}
-                    </p>
-                  </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="number"
+                placeholder="₦ 1,000"
+                className="w-28 py-2 px-3 rounded-lg border border-gray-200 text-sm font-medium text-gray-900 focus:outline-none focus:border-indigo-400"
+                data-testid="opay-amount-input"
+              />
+              <div className="flex gap-1">
+                {['1k', '2k', '5k'].map(amt => (
+                  <button 
+                    key={amt}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                    data-testid={`opay-preset-${amt}`}
+                  >
+                    {amt}
+                  </button>
+                ))}
+              </div>
+              <button 
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: primaryColor }}
+                data-testid="opay-continue-btn"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* BUY NUMBERS Grid - Matching screenshot layout */}
+        <div>
+          <h3 className="text-base font-bold text-gray-900 mb-3 uppercase tracking-wide">Buy Numbers</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            {/* USA Numbers */}
+            <div 
+              onClick={() => setActiveSection('usa-numbers')}
+              className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group text-center"
+              data-testid="buy-usa-numbers-card"
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-blue-50">
+                <img src="https://flagcdn.com/w40/us.png" alt="USA" className="w-8 h-8 rounded-full object-cover" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">USA Numbers</h4>
+              <p className="text-[10px] text-gray-500 mt-1">Premium · Server A, B</p>
+            </div>
+
+            {/* Other USA Numbers */}
+            <div 
+              onClick={() => setActiveSection('other-usa-numbers')}
+              className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group text-center"
+              data-testid="buy-other-usa-card"
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-indigo-50">
+                <div className="relative">
+                  <Phone className="w-6 h-6 text-indigo-500" />
+                  <img src="https://flagcdn.com/w20/us.png" alt="USA" className="w-4 h-4 rounded-full absolute -bottom-1 -right-1 border border-white" />
                 </div>
-              ))}
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">Other USA</h4>
+              <p className="text-[10px] text-gray-500 mt-1">Servers C, D, F</p>
             </div>
-          )}
+
+            {/* All Country Numbers */}
+            <div 
+              onClick={() => setActiveSection('all-country-numbers')}
+              className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group text-center"
+              data-testid="buy-all-country-card"
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-green-50">
+                <Globe className="w-6 h-6 text-green-500" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">All Countries</h4>
+              <p className="text-[10px] text-gray-500 mt-1">Global · 190+ countries</p>
+            </div>
+
+            {/* More Country Numbers */}
+            <div 
+              onClick={() => setActiveSection('more-country-numbers')}
+              className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group text-center"
+              data-testid="buy-more-country-card"
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-purple-50">
+                <Globe className="w-6 h-6 text-purple-500" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">More Countries</h4>
+              <p className="text-[10px] text-gray-500 mt-1">Extended coverage</p>
+            </div>
+
+            {/* Fund Wallet */}
+            <div 
+              onClick={() => setActiveSection('fund-wallet')}
+              className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group text-center"
+              data-testid="buy-fund-wallet-card"
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-amber-50">
+                <Wallet className="w-6 h-6 text-amber-500" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">Fund Wallet</h4>
+              <p className="text-[10px] text-gray-500 mt-1">Add money instantly</p>
+            </div>
+
+            {/* History */}
+            <div 
+              onClick={() => setActiveSection('transactions')}
+              className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group text-center"
+              data-testid="buy-history-card"
+            >
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center bg-gray-100">
+                <History className="w-6 h-6 text-gray-500" />
+              </div>
+              <h4 className="text-sm font-bold text-gray-800">History</h4>
+              <p className="text-[10px] text-gray-500 mt-1">View transactions</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Two Column: Recent Activations + Recent Transactions */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
+          {/* Recent Activations (larger) */}
+          <div className="lg:col-span-3 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-gray-900">Recent Activations</h3>
+              <button 
+                onClick={() => setActiveSection('sms-history')}
+                className="text-sm font-medium hover:underline"
+                style={{ color: primaryColor }}
+              >
+                View All
+              </button>
+            </div>
+            {orders.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Phone className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500 text-sm">No activations yet</p>
+                <p className="text-gray-400 text-xs mt-1">Buy a number to see your activations here</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {orders.slice(0, 5).map((order, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-100">
+                        <Phone className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{order.service_name || order.service_code || 'Service'}</p>
+                        <p className="text-xs text-gray-500">{order.phone_number || 'Pending'}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                        order.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                        order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Transactions (smaller) */}
+          <div className="lg:col-span-2 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-gray-900">Recent Transactions</h3>
+              <button 
+                onClick={() => setActiveSection('transactions')}
+                className="text-sm font-medium hover:underline"
+                style={{ color: primaryColor }}
+              >
+                View All
+              </button>
+            </div>
+            
+            {transactions.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Receipt className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500 text-sm">No transactions yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {transactions.slice(0, 5).map((tx, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        tx.type === 'deposit' ? 'bg-green-100 text-green-600' :
+                        tx.type === 'purchase' ? 'bg-purple-100 text-purple-600' :
+                        tx.type === 'refund' ? 'bg-amber-100 text-amber-600' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {tx.type === 'deposit' ? <Plus className="w-4 h-4" /> :
+                         tx.type === 'purchase' ? <Phone className="w-4 h-4" /> :
+                         tx.type === 'refund' ? <RefreshCw className="w-4 h-4" /> :
+                         <Wallet className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 capitalize">{tx.type}</p>
+                        <p className="text-xs text-gray-500">{new Date(tx.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-bold ${tx.type === 'deposit' || tx.type === 'refund' ? 'text-green-600' : 'text-gray-900'}`}>
+                        {tx.type === 'deposit' || tx.type === 'refund' ? '+' : '-'}
+                        {tx.currency === 'NGN' ? '₦' : '$'}{tx.amount?.toLocaleString() || '0'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -1567,7 +1656,7 @@ const NewDashboard = () => {
       
       return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-          <div className="bg-zinc-900 rounded-xl max-w-md w-full shadow-none" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl max-w-md w-full shadow-xl" onClick={e => e.stopPropagation()}>
             <div className={`p-4 rounded-t-xl ${isCredit ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-rose-500 to-pink-500'} text-white`}>
               <h3 className="font-bold text-lg">Transaction Details</h3>
               <p className="text-white/80 text-sm">{txn.type?.replace(/_/g, ' ').toUpperCase()}</p>
@@ -1575,24 +1664,24 @@ const NewDashboard = () => {
             <div className="p-4 space-y-4">
               {/* Amount */}
               <div className="text-center py-4 border-b">
-                <p className="text-zinc-400 text-sm">Amount</p>
-                <p className={`text-3xl font-bold ${isCredit ? 'text-white' : 'text-rose-600'}`}>
+                <p className="text-gray-500 text-sm">Amount</p>
+                <p className={`text-3xl font-bold ${isCredit ? 'text-indigo-600' : 'text-rose-600'}`}>
                   {isCredit ? '+' : '-'}{txn.currency === 'NGN' ? '₦' : '$'}{txn.amount?.toLocaleString()}
                 </p>
               </div>
               
               {/* Balance Before & After */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-zinc-950 p-3 rounded-lg">
-                  <p className="text-xs text-zinc-400">Balance Before</p>
-                  <p className="font-semibold text-zinc-100">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500">Balance Before</p>
+                  <p className="font-semibold text-gray-800">
                     {txn.currency === 'NGN' ? '₦' : '$'}
                     {txn.balance_before !== undefined ? txn.balance_before.toLocaleString() : 'N/A'}
                   </p>
                 </div>
-                <div className="bg-zinc-950 p-3 rounded-lg">
-                  <p className="text-xs text-zinc-400">Balance After</p>
-                  <p className="font-semibold text-zinc-100">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500">Balance After</p>
+                  <p className="font-semibold text-gray-800">
                     {txn.currency === 'NGN' ? '₦' : '$'}
                     {txn.balance_after !== undefined ? txn.balance_after.toLocaleString() : 'N/A'}
                   </p>
@@ -1602,38 +1691,38 @@ const NewDashboard = () => {
               {/* Details */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-zinc-400">Transaction ID</span>
-                  <span className="font-medium text-zinc-100">{txn.id || txn._id || 'N/A'}</span>
+                  <span className="text-gray-500">Transaction ID</span>
+                  <span className="font-medium text-gray-800">{txn.id || txn._id || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-zinc-400">Reference</span>
-                  <span className="font-medium text-zinc-100">{txn.reference || 'N/A'}</span>
+                  <span className="text-gray-500">Reference</span>
+                  <span className="font-medium text-gray-800">{txn.reference || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-zinc-400">Status</span>
+                  <span className="text-gray-500">Status</span>
                   <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
-                    txn.status === 'completed' ? 'bg-zinc-800 text-zinc-200' :
-                    txn.status === 'pending' ? 'bg-zinc-800 text-amber-700' :
-                    'bg-zinc-800 text-zinc-200'
+                    txn.status === 'completed' ? 'bg-emerald-100 text-indigo-700' :
+                    txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                    'bg-gray-100 text-gray-700'
                   }`}>
                     {txn.status}
                   </span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-zinc-400">Date</span>
-                  <span className="font-medium text-zinc-100">{new Date(txn.created_at).toLocaleString()}</span>
+                  <span className="text-gray-500">Date</span>
+                  <span className="font-medium text-gray-800">{new Date(txn.created_at).toLocaleString()}</span>
                 </div>
                 {txn.description && (
                   <div className="py-2">
-                    <span className="text-zinc-400 block mb-1">Description</span>
-                    <span className="font-medium text-zinc-100 text-xs">{txn.description}</span>
+                    <span className="text-gray-500 block mb-1">Description</span>
+                    <span className="font-medium text-gray-800 text-xs">{txn.description}</span>
                   </div>
                 )}
               </div>
               
               <button 
                 onClick={onClose}
-                className="w-full py-2 bg-zinc-800 text-zinc-200 rounded-lg hover:bg-zinc-700 font-medium text-sm"
+                className="w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
               >
                 Close
               </button>
@@ -1648,10 +1737,10 @@ const NewDashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Transactions</h2>
-            <p className="text-xs sm:text-sm text-zinc-300">Track your wallet activity</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Transactions</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Track your wallet activity</p>
           </div>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-zinc-600 rounded-lg hover:bg-zinc-900 transition-colors text-sm">
+          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -1660,22 +1749,22 @@ const NewDashboard = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-zinc-900 rounded-xl border shadow-none p-4 sm:p-6">
+        <div className="bg-white rounded-xl border shadow-sm p-4 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <svg className="w-5 h-5 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
-            <h3 className="font-semibold text-white text-sm sm:text-base">Filter Transactions</h3>
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Filter Transactions</h3>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-4">
             {/* Type Filter */}
             <div>
-              <label className="block text-xs sm:text-sm text-zinc-300 mb-1 sm:mb-2">Type</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Type</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 border border-zinc-600 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               >
                 <option value="all">All Types</option>
                 <option value="credit">Credit</option>
@@ -1685,11 +1774,11 @@ const NewDashboard = () => {
 
             {/* Currency Filter */}
             <div>
-              <label className="block text-xs sm:text-sm text-zinc-300 mb-1 sm:mb-2">Currency</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Currency</label>
               <select
                 value={filterCurrency}
                 onChange={(e) => setFilterCurrency(e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 border border-zinc-600 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               >
                 <option value="all">All</option>
                 <option value="NGN">NGN</option>
@@ -1699,11 +1788,11 @@ const NewDashboard = () => {
 
             {/* Status Filter */}
             <div>
-              <label className="block text-xs sm:text-sm text-zinc-300 mb-1 sm:mb-2">Status</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 border border-zinc-600 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               >
                 <option value="all">All Status</option>
                 <option value="completed">Completed</option>
@@ -1714,37 +1803,37 @@ const NewDashboard = () => {
 
             {/* From Date */}
             <div>
-              <label className="block text-xs sm:text-sm text-zinc-300 mb-1 sm:mb-2">From</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">From</label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 border border-zinc-600 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               />
             </div>
 
             {/* To Date */}
             <div>
-              <label className="block text-xs sm:text-sm text-zinc-300 mb-1 sm:mb-2">To</label>
+              <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">To</label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="w-full px-2 sm:px-3 py-2 border border-zinc-600 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
+                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               />
             </div>
           </div>
 
           {/* Search */}
           <div>
-            <label className="block text-xs sm:text-sm text-zinc-300 mb-1 sm:mb-2">Search</label>
+            <label className="block text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Search</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Search..."
-                className="flex-1 min-w-0 px-2 sm:px-3 py-2 border border-zinc-600 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
+                className="flex-1 min-w-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#005E3A] text-xs sm:text-sm"
               />
               <button className="px-3 sm:px-6 py-2 bg-[#005E3A] text-white rounded-lg hover:bg-[#004A2D] transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm flex-shrink-0">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1759,32 +1848,32 @@ const NewDashboard = () => {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           {/* Total */}
-          <div className="bg-zinc-900 rounded-lg sm:rounded-xl border shadow-none p-3 sm:p-6">
-            <p className="text-[10px] sm:text-sm text-zinc-300 mb-1 sm:mb-2">TOTAL</p>
-            <p className="text-lg sm:text-3xl font-bold text-white">{totalTransactions}</p>
+          <div className="bg-white rounded-lg sm:rounded-xl border shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-gray-600 mb-1 sm:mb-2">TOTAL</p>
+            <p className="text-lg sm:text-3xl font-bold text-gray-900">{totalTransactions}</p>
           </div>
 
           {/* Credit */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl border border-green-200 shadow-none p-3 sm:p-6">
-            <p className="text-[10px] sm:text-sm text-zinc-300 mb-1 sm:mb-2">CREDIT</p>
-            <p className="text-lg sm:text-3xl font-bold text-white">₦{creditTotal.toFixed(0)}</p>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl border border-green-200 shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-green-800 mb-1 sm:mb-2">CREDIT</p>
+            <p className="text-lg sm:text-3xl font-bold text-green-900">₦{creditTotal.toFixed(0)}</p>
           </div>
 
           {/* Debit */}
-          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg sm:rounded-xl border border-red-200 shadow-none p-3 sm:p-6">
+          <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg sm:rounded-xl border border-red-200 shadow-sm p-3 sm:p-6">
             <p className="text-[10px] sm:text-sm text-red-800 mb-1 sm:mb-2">DEBIT</p>
             <p className="text-lg sm:text-3xl font-bold text-red-900">₦{debitTotal.toFixed(0)}</p>
           </div>
 
           {/* Net */}
-          <div className="bg-zinc-900 rounded-lg sm:rounded-xl border shadow-none p-3 sm:p-6">
-            <p className="text-[10px] sm:text-sm text-zinc-300 mb-1 sm:mb-2">NET</p>
-            <p className="text-lg sm:text-3xl font-bold text-white">₦{netAmount.toFixed(0)}</p>
+          <div className="bg-white rounded-lg sm:rounded-xl border shadow-sm p-3 sm:p-6">
+            <p className="text-[10px] sm:text-sm text-gray-600 mb-1 sm:mb-2">NET</p>
+            <p className="text-lg sm:text-3xl font-bold text-gray-900">₦{netAmount.toFixed(0)}</p>
           </div>
         </div>
 
         {/* Transactions Table or Empty State */}
-        <div className="bg-zinc-900 rounded-lg sm:rounded-xl border shadow-none p-3 sm:p-6">
+        <div className="bg-white rounded-lg sm:rounded-xl border shadow-sm p-3 sm:p-6">
           {transactions.length > 0 ? (
             <>
               {/* Mobile Card View */}
@@ -1795,7 +1884,7 @@ const NewDashboard = () => {
                       <div>
                         <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${
                           txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
-                            ? 'bg-zinc-800 text-zinc-200' 
+                            ? 'bg-green-100 text-green-700' 
                             : 'bg-red-100 text-red-700'
                         }`}>
                           {txn.type.replace('_', ' ').toUpperCase()}
@@ -1803,7 +1892,7 @@ const NewDashboard = () => {
                       </div>
                       <span className={`font-bold text-sm ${
                         txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
-                          ? 'text-white' 
+                          ? 'text-green-600' 
                           : 'text-red-600'
                       }`}>
                         {txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' ? '+' : '-'}
@@ -1811,18 +1900,18 @@ const NewDashboard = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="text-[10px] text-zinc-400">{new Date(txn.created_at).toLocaleDateString()}</div>
+                      <div className="text-[10px] text-gray-500">{new Date(txn.created_at).toLocaleDateString()}</div>
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
-                          txn.status === 'completed' ? 'bg-zinc-800 text-zinc-200' :
-                          txn.status === 'pending' ? 'bg-zinc-800 text-amber-700' :
-                          'bg-zinc-800 text-zinc-200'
+                          txn.status === 'completed' ? 'bg-emerald-100 text-indigo-700' :
+                          txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-700'
                         }`}>
                           {txn.status}
                         </span>
                         <button 
                           onClick={() => setSelectedTxn(txn)}
-                          className="px-2 py-1 text-[10px] font-semibold text-white hover:bg-zinc-900 rounded"
+                          className="px-2 py-1 text-[10px] font-semibold text-indigo-600 hover:bg-indigo-50 rounded"
                         >
                           View
                         </button>
@@ -1836,22 +1925,22 @@ const NewDashboard = () => {
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b bg-zinc-950">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Date</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Type</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Amount</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Status</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Actions</th>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {transactions.map((txn) => (
-                      <tr key={txn.id} className="border-b hover:bg-zinc-900 transition-colors">
-                        <td className="py-4 px-4 text-sm text-zinc-200">{new Date(txn.created_at).toLocaleDateString()}</td>
+                      <tr key={txn.id} className="border-b hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-4 text-sm text-gray-700">{new Date(txn.created_at).toLocaleDateString()}</td>
                         <td className="py-4 px-4">
                           <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${
                             txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
-                              ? 'bg-zinc-800 text-zinc-200' 
+                              ? 'bg-green-100 text-green-700' 
                               : 'bg-red-100 text-red-700'
                           }`}>
                             {txn.type.replace('_', ' ').toUpperCase()}
@@ -1860,7 +1949,7 @@ const NewDashboard = () => {
                         <td className="py-4 px-4">
                           <span className={`font-semibold ${
                             txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd'
-                              ? 'text-white' 
+                              ? 'text-green-600' 
                               : 'text-red-600'
                           }`}>
                             {txn.type === 'credit' || txn.type === 'deposit_ngn' || txn.type === 'deposit_usd' ? '+' : '-'}
@@ -1869,9 +1958,9 @@ const NewDashboard = () => {
                         </td>
                         <td className="py-4 px-4">
                           <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                            txn.status === 'completed' ? 'bg-zinc-800 text-zinc-200' :
-                            txn.status === 'pending' ? 'bg-zinc-800 text-amber-700' :
-                            'bg-zinc-800 text-zinc-200'
+                            txn.status === 'completed' ? 'bg-emerald-100 text-indigo-700' :
+                            txn.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                            'bg-gray-100 text-gray-700'
                           }`}>
                             {txn.status}
                           </span>
@@ -1879,7 +1968,7 @@ const NewDashboard = () => {
                         <td className="py-4 px-4">
                           <button 
                             onClick={() => setSelectedTxn(txn)}
-                            className="px-3 py-1.5 text-xs font-semibold text-white hover:text-zinc-200 hover:bg-zinc-900 rounded-lg transition-colors"
+                            className="px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
                           >
                             View
                           </button>
@@ -1892,11 +1981,11 @@ const NewDashboard = () => {
             </>
           ) : (
             <div className="text-center py-8 sm:py-16">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 bg-zinc-800 rounded-full flex items-center justify-center">
-                <Wallet className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-500" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <Wallet className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">No Transactions Found</h3>
-              <p className="text-sm text-zinc-400 mb-4 sm:mb-6">Your wallet history will appear here</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Transactions Found</h3>
+              <p className="text-sm text-gray-500 mb-4 sm:mb-6">Your wallet history will appear here</p>
               <button 
                 onClick={() => setActiveSection('fund-wallet')}
                 className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#005E3A] text-white rounded-lg font-semibold text-sm hover:bg-[#004A2D] transition-colors"
@@ -1927,55 +2016,55 @@ const NewDashboard = () => {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">SMS History</h2>
-            <p className="text-xs sm:text-sm text-zinc-300">Track your OTP requests</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">SMS History</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Track your OTP requests</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <span className="px-2 py-1 bg-zinc-800 text-zinc-200 rounded-lg font-medium">{orders.length}</span>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="px-2 py-1 bg-emerald-100 text-indigo-700 rounded-lg font-medium">{orders.length}</span>
             <span>Total Orders</span>
           </div>
         </div>
         
         {orders.length > 0 ? (
-          <div className="bg-zinc-900 p-3 sm:p-6 rounded-xl border shadow-none">
+          <div className="bg-white p-3 sm:p-6 rounded-xl border shadow-sm">
             {/* Mobile Card Layout */}
             <div className="block md:hidden space-y-3">
               {orders.map((order) => (
-                <div key={order.id} className={`rounded-xl p-3 border ${(order.otp || order.otp_code) ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-950 border-zinc-800'}`}>
+                <div key={order.id} className={`rounded-xl p-3 border ${(order.otp || order.otp_code) ? 'bg-emerald-50 border-indigo-200' : 'bg-gray-50 border-gray-100'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">{(order.service || '?')[0].toUpperCase()}</span>
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <span className="text-indigo-600 text-xs font-bold">{(order.service || '?')[0].toUpperCase()}</span>
                       </div>
-                      <span className="font-medium text-sm text-white">{getServiceName(order.service)}</span>
+                      <span className="font-medium text-sm text-gray-900">{getServiceName(order.service)}</span>
                     </div>
                     <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${
-                      order.status === 'active' || order.status === 'RECEIVED' ? 'bg-zinc-800 text-zinc-200' :
+                      order.status === 'active' || order.status === 'RECEIVED' ? 'bg-emerald-100 text-indigo-700' :
                       order.status === 'cancelled' || order.status === 'CANCELED' ? 'bg-red-100 text-red-700' :
-                      order.status === 'completed' ? 'bg-zinc-800 text-zinc-200' :
-                      'bg-zinc-800 text-zinc-200'
+                      order.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                      'bg-gray-100 text-gray-700'
                     }`}>
                       {order.status}
                     </span>
                   </div>
                   
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] text-zinc-400">Phone:</span>
-                    <span className="font-mono text-xs text-zinc-100">{order.phone_number}</span>
+                    <span className="text-[10px] text-gray-500">Phone:</span>
+                    <span className="font-mono text-xs text-gray-800">{order.phone_number}</span>
                   </div>
                   
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] text-zinc-400">Code:</span>
+                    <span className="text-[10px] text-gray-500">Code:</span>
                     {order.otp || order.otp_code ? (
-                      <span className="font-mono text-lg font-bold text-white bg-zinc-900 px-2 py-0.5 rounded">
+                      <span className="font-mono text-lg font-bold text-indigo-600 bg-white px-2 py-0.5 rounded">
                         {order.otp || order.otp_code}
                       </span>
                     ) : (
-                      <span className="text-zinc-500 text-xs italic">Not received</span>
+                      <span className="text-gray-400 text-xs italic">Not received</span>
                     )}
                   </div>
                   
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                  <div className="flex items-center justify-between text-[10px] text-gray-500">
                     <span>{new Date(order.created_at).toLocaleDateString()}</span>
                     <span>{new Date(order.created_at).toLocaleTimeString()}</span>
                   </div>
@@ -1987,49 +2076,49 @@ const NewDashboard = () => {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-black">
                 <thead>
-                  <tr className="bg-zinc-950 border-b">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Service</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Phone Number</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Code</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Status</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-zinc-300">Date</th>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Phone Number</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Code</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {orders.map((order) => (
-                    <tr key={order.id} className="border-b hover:bg-zinc-900 transition-colors">
+                    <tr key={order.id} className="border-b hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">{(order.service || '?')[0].toUpperCase()}</span>
+                          <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <span className="text-indigo-600 text-xs font-bold">{(order.service || '?')[0].toUpperCase()}</span>
                           </div>
-                          <span className="font-medium text-white">{getServiceName(order.service)}</span>
+                          <span className="font-medium text-gray-900">{getServiceName(order.service)}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4 font-mono text-sm text-white">
+                      <td className="py-4 px-4 font-mono text-sm text-gray-900">
                         {order.phone_number}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-4 text-gray-900">
                         {order.otp || order.otp_code ? (
-                          <span className="font-mono text-lg font-bold text-white bg-zinc-900 px-2 py-1 rounded-lg">
+                          <span className="font-mono text-lg font-bold text-indigo-600 bg-emerald-50 px-2 py-1 rounded-lg">
                             {order.otp || order.otp_code}
                           </span>
                         ) : (
-                          <span className="text-zinc-500 italic">Not received</span>
+                          <span className="text-gray-400 italic">Not received</span>
                         )}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                          order.status === 'active' || order.status === 'RECEIVED' ? 'bg-zinc-800 text-zinc-200' :
+                          order.status === 'active' || order.status === 'RECEIVED' ? 'bg-emerald-100 text-indigo-700' :
                           order.status === 'cancelled' || order.status === 'CANCELED' ? 'bg-red-100 text-red-700' :
-                          order.status === 'completed' ? 'bg-zinc-800 text-zinc-200' :
-                          order.status === 'pending' || order.status === 'PENDING' ? 'bg-zinc-800 text-amber-700' :
-                          'bg-zinc-800 text-zinc-200'
+                          order.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'pending' || order.status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-700'
                         }`}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-sm text-zinc-300">
+                      <td className="py-4 px-4 text-sm text-gray-600">
                         {new Date(order.created_at).toLocaleString()}
                       </td>
                     </tr>
@@ -2039,13 +2128,13 @@ const NewDashboard = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-zinc-900 p-6 rounded-xl border shadow-none text-center py-12">
-            <History className="w-16 h-16 mx-auto text-zinc-600 mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No SMS History</h3>
-            <p className="text-zinc-400 mb-6">Your OTP request history will appear here</p>
+          <div className="bg-white p-6 rounded-xl border shadow-sm text-center py-12">
+            <History className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No SMS History</h3>
+            <p className="text-gray-500 mb-6">Your OTP request history will appear here</p>
             <button 
               onClick={() => setActiveSection('virtual-numbers')}
-              className="px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-700 transition-colors"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
             >
               Get Virtual Number
             </button>
@@ -2118,7 +2207,7 @@ const NewDashboard = () => {
     const [savingPin, setSavingPin] = useState(false);
     const [requestingReset, setRequestingReset] = useState(false);
 
-    const primaryColor = branding.primary_color_hex || '#059669';
+    const primaryColor = branding.primary_color_hex || '#5B5FC7';
     const accentColor = branding.accent_color_hex || '#7c3aed';
     const userTier = user.tier || 1;
     const KYC_FEE = branding.kyc_tier3_fee || 200; // Fee for Express KYC (Tier 3 upgrade)
@@ -2605,39 +2694,39 @@ const NewDashboard = () => {
     // Verification Popup Component
     const VerificationPopup = () => (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-zinc-900 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-pulse-slow">
+        <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-pulse-slow">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-white mb-2">Express KYC Verification</h3>
-            <p className="text-sm text-zinc-400 mb-6">₦{KYC_FEE} total will be deducted for verification</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Express KYC Verification</h3>
+            <p className="text-sm text-gray-500 mb-6">₦{KYC_FEE} total will be deducted for verification</p>
             
             {/* Progress Steps */}
             <div className="flex items-center justify-center gap-4 mb-8">
               {/* BVN Step */}
               <div className={`flex flex-col items-center ${verificationStep === 'bvn' ? 'scale-110' : ''} transition-transform`}>
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                  bvnVerified ? 'bg-zinc-900' : verificationStep === 'bvn' ? 'bg-zinc-900 animate-pulse' : 'bg-gray-300'
+                  bvnVerified ? 'bg-green-500' : verificationStep === 'bvn' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
                 }`}>
                   {bvnVerified ? <Check className="w-7 h-7" /> : 'BVN'}
                 </div>
-                <span className="text-xs mt-2 font-medium text-zinc-300">BVN</span>
+                <span className="text-xs mt-2 font-medium text-gray-600">BVN</span>
                 {verificationStep === 'bvn' && !bvnVerified && (
-                  <RefreshCw className="w-4 h-4 mt-1 animate-spin text-white" />
+                  <RefreshCw className="w-4 h-4 mt-1 animate-spin text-blue-500" />
                 )}
               </div>
               
               {/* Connector */}
-              <div className={`w-12 h-1 rounded ${bvnVerified ? 'bg-zinc-900' : 'bg-gray-300'}`} />
+              <div className={`w-12 h-1 rounded ${bvnVerified ? 'bg-green-500' : 'bg-gray-300'}`} />
               
               {/* NIN Step */}
               <div className={`flex flex-col items-center ${verificationStep === 'nin' ? 'scale-110' : ''} transition-transform`}>
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                  ninVerified ? 'bg-zinc-900' : verificationStep === 'nin' ? 'bg-zinc-900 animate-pulse' : 'bg-gray-300'
+                  ninVerified ? 'bg-green-500' : verificationStep === 'nin' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
                 }`}>
                   {ninVerified ? <Check className="w-7 h-7" /> : 'NIN'}
                 </div>
-                <span className="text-xs mt-2 font-medium text-zinc-300">NIN</span>
+                <span className="text-xs mt-2 font-medium text-gray-600">NIN</span>
                 {verificationStep === 'nin' && !ninVerified && (
-                  <RefreshCw className="w-4 h-4 mt-1 animate-spin text-white" />
+                  <RefreshCw className="w-4 h-4 mt-1 animate-spin text-blue-500" />
                 )}
               </div>
             </div>
@@ -2646,11 +2735,11 @@ const NewDashboard = () => {
             <div className="min-h-[60px]">
               {verifying && !verificationError && !verificationSuccess && (
                 <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 text-white">
+                  <div className="flex items-center justify-center gap-2 text-blue-600">
                     <RefreshCw className="w-5 h-5 animate-spin" />
                     <span className="font-medium">Verifying {verificationStep.toUpperCase()}...</span>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-2">
+                  <p className="text-xs text-gray-500 mt-2">
                     {verificationStep === 'bvn' 
                       ? 'Matching phone, DOB & name with BVN records...'
                       : 'Matching DOB & name with NIN records...'
@@ -2660,7 +2749,7 @@ const NewDashboard = () => {
               )}
               
               {verificationSuccess && (
-                <div className="bg-zinc-900 text-zinc-200 px-4 py-3 rounded-xl flex items-center gap-2">
+                <div className="bg-green-50 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2">
                   <Check className="w-5 h-5" />
                   <span className="font-medium">{verificationSuccess}</span>
                 </div>
@@ -2671,27 +2760,27 @@ const NewDashboard = () => {
                   <p className="font-medium text-sm mb-3">{verificationError}</p>
                   
                   {/* Editable Fields for Retry */}
-                  <div className="space-y-3 mt-4 p-3 bg-zinc-900 rounded-lg border border-red-200">
-                    <p className="text-xs text-zinc-300 font-medium">Update your details and retry (₦{KYC_FEE} per attempt):</p>
+                  <div className="space-y-3 mt-4 p-3 bg-white rounded-lg border border-red-200">
+                    <p className="text-xs text-gray-600 font-medium">Update your details and retry (₦{KYC_FEE} per attempt):</p>
                     
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs text-zinc-400">First Name</label>
+                        <label className="text-xs text-gray-500">First Name</label>
                         <input
                           type="text"
                           value={editFirstName}
                           onChange={(e) => setEditFirstName(e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-white text-white"
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
                           placeholder="First name"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-400">Last Name</label>
+                        <label className="text-xs text-gray-500">Last Name</label>
                         <input
                           type="text"
                           value={editLastName}
                           onChange={(e) => setEditLastName(e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-white text-white"
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
                           placeholder="Last name"
                         />
                       </div>
@@ -2699,22 +2788,22 @@ const NewDashboard = () => {
                     
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-xs text-zinc-400">Phone Number</label>
+                        <label className="text-xs text-gray-500">Phone Number</label>
                         <input
                           type="tel"
                           value={editPhone}
                           onChange={(e) => setEditPhone(e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-white text-white"
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
                           placeholder="08012345678"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-zinc-400">Date of Birth</label>
+                        <label className="text-xs text-gray-500">Date of Birth</label>
                         <input
                           type="date"
                           value={editDob}
                           onChange={(e) => setEditDob(e.target.value)}
-                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-white text-white"
+                          className="w-full px-2 py-1.5 text-sm border rounded focus:ring-1 focus:ring-blue-500 text-gray-900"
                         />
                       </div>
                     </div>
@@ -2723,14 +2812,14 @@ const NewDashboard = () => {
                       <button 
                         onClick={handleRetryVerification}
                         disabled={verifying}
-                        className="flex-1 bg-zinc-900 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-zinc-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         {verifying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         Retry (₦{KYC_FEE})
                       </button>
                       <button 
                         onClick={() => setShowVerificationPopup(false)}
-                        className="px-4 py-2 border border-zinc-600 rounded-lg text-sm text-zinc-300 hover:bg-zinc-900"
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
                       >
                         Cancel
                       </button>
@@ -2756,16 +2845,16 @@ const NewDashboard = () => {
       <div className="space-y-6">
         {showVerificationPopup && <VerificationPopup />}
         
-        <h2 className="text-2xl font-bold text-white">Profile Settings</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
         
         {/* Profile/KYC Tabs */}
-        <div className="flex gap-2 border-b border-zinc-700 pb-2">
+        <div className="flex gap-2 border-b border-gray-200 pb-2">
           <button
             onClick={() => setActiveTab('profile')}
             className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors ${
               activeTab === 'profile' 
-                ? 'bg-zinc-900 text-zinc-200 border-b-2 border-white' 
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-emerald-50 text-indigo-700 border-b-2 border-indigo-500' 
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Profile Info
@@ -2774,8 +2863,8 @@ const NewDashboard = () => {
             onClick={() => setActiveTab('security')}
             className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'security' 
-                ? 'bg-zinc-900 text-zinc-200 border-b-2 border-white' 
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-emerald-50 text-indigo-700 border-b-2 border-indigo-500' 
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Security & PIN
@@ -2785,137 +2874,137 @@ const NewDashboard = () => {
             onClick={() => setActiveTab('kyc')}
             className={`px-4 py-2 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'kyc' 
-                ? 'bg-zinc-900 text-zinc-200 border-b-2 border-white' 
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-emerald-50 text-indigo-700 border-b-2 border-indigo-500' 
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Account Upgrade (KYC)
-            {userTier < 3 && <span className="px-2 py-0.5 bg-zinc-800 text-amber-700 text-xs rounded-full">Upgrade</span>}
+            {userTier < 3 && <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full">Upgrade</span>}
           </button>
         </div>
 
         {activeTab === 'profile' && (
           <>
             {/* Profile Info Card */}
-            <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-              <h3 className="text-lg font-semibold text-white mb-4">Account Information</h3>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     First Name
-                    {userTier >= 2 && <span className="ml-2 text-xs text-zinc-500">(Locked after KYC)</span>}
+                    {userTier >= 2 && <span className="ml-2 text-xs text-gray-400">(Locked after KYC)</span>}
                   </label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     disabled={userTier >= 2}
-                    className={`w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent ${userTier >= 2 ? 'bg-zinc-950 text-zinc-400 cursor-not-allowed' : ''}`}
-                    style={{ '--tw-ring-color': '#ffffff' }}
+                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent ${userTier >= 2 ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
+                    style={{ '--tw-ring-color': primaryColor }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Last Name
-                    {userTier >= 2 && <span className="ml-2 text-xs text-zinc-500">(Locked after KYC)</span>}
+                    {userTier >= 2 && <span className="ml-2 text-xs text-gray-400">(Locked after KYC)</span>}
                   </label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     disabled={userTier >= 2}
-                    className={`w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent ${userTier >= 2 ? 'bg-zinc-950 text-zinc-400 cursor-not-allowed' : ''}`}
-                    style={{ '--tw-ring-color': '#ffffff' }}
+                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent ${userTier >= 2 ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
+                    style={{ '--tw-ring-color': primaryColor }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
                     type="email"
                     value={user.email}
                     disabled
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-xl bg-zinc-950 text-zinc-400"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                   <input
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                     placeholder="Enter your address"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">Account Tier</label>
-                  <div className="px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700">
-                    <span className="font-semibold" style={{ color: '#ffffff' }}>Tier {userTier}</span>
-                    <span className="text-zinc-400 text-sm ml-2">(Limit: {getTierLimit(userTier)})</span>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Account Tier</label>
+                  <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
+                    <span className="font-semibold" style={{ color: primaryColor }}>Tier {userTier}</span>
+                    <span className="text-gray-500 text-sm ml-2">(Limit: {getTierLimit(userTier)})</span>
                   </div>
                 </div>
                 {user.payscribe_customer_id && (
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">PCID</label>
-                    <div className="px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 flex items-center justify-between">
-                      <span className="text-zinc-300 font-mono text-sm">{user.payscribe_customer_id}</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">PCID</label>
+                    <div className="px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
+                      <span className="text-gray-600 font-mono text-sm">{user.payscribe_customer_id}</span>
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(user.payscribe_customer_id);
                           toast.success('PCID copied!');
                         }}
-                        className="p-1.5 hover:bg-zinc-700 rounded-lg transition-colors"
+                        className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
                         title="Copy PCID"
                       >
-                        <Copy className="w-4 h-4 text-zinc-400" />
+                        <Copy className="w-4 h-4 text-gray-500" />
                       </button>
                     </div>
-                    <p className="text-xs text-zinc-500 mt-1">Payment Card ID for virtual card services</p>
+                    <p className="text-xs text-gray-400 mt-1">Payment Card ID for virtual card services</p>
                   </div>
                 )}
               </div>
 
               {/* Verification Address - Read Only (only shown if user has verification address) */}
               {user.kyc_address && (
-                <div className="mt-6 pt-6 border-t border-zinc-700">
-                  <h4 className="text-md font-semibold text-zinc-100 mb-3 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-white" />
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h4 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-indigo-600" />
                     Verification Address
-                    <span className="text-xs text-zinc-500 font-normal">(Read-only)</span>
+                    <span className="text-xs text-gray-400 font-normal">(Read-only)</span>
                   </h4>
-                  <div className="bg-zinc-950 rounded-xl p-4 border border-zinc-700">
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-zinc-400 mb-1">Street Address</p>
-                        <p className="text-sm font-medium text-zinc-100">{user.kyc_address.street || '-'}</p>
+                        <p className="text-xs text-gray-500 mb-1">Street Address</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.street || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-zinc-400 mb-1">City</p>
-                        <p className="text-sm font-medium text-zinc-100">{user.kyc_address.city || '-'}</p>
+                        <p className="text-xs text-gray-500 mb-1">City</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.city || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-zinc-400 mb-1">State</p>
-                        <p className="text-sm font-medium text-zinc-100">{user.kyc_address.state || '-'}</p>
+                        <p className="text-xs text-gray-500 mb-1">State</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.state || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-zinc-400 mb-1">Postal Code</p>
-                        <p className="text-sm font-medium text-zinc-100">{user.kyc_address.postal_code || '-'}</p>
+                        <p className="text-xs text-gray-500 mb-1">Postal Code</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.postal_code || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-zinc-400 mb-1">Country</p>
-                        <p className="text-sm font-medium text-zinc-100">{user.kyc_address.country || 'Nigeria'}</p>
+                        <p className="text-xs text-gray-500 mb-1">Country</p>
+                        <p className="text-sm font-medium text-gray-800">{user.kyc_address.country || 'Nigeria'}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-zinc-500 mt-3">This address was provided during KYC verification and cannot be edited. Contact support if you need to update it.</p>
+                    <p className="text-xs text-gray-400 mt-3">This address was provided during KYC verification and cannot be edited. Contact support if you need to update it.</p>
                   </div>
                 </div>
               )}
@@ -2924,58 +3013,58 @@ const NewDashboard = () => {
                 onClick={handleUpdateProfile}
                 disabled={savingProfile}
                 className="mt-4 px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
-                style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                style={{ backgroundColor: primaryColor }}
               >
                 {savingProfile ? 'Saving...' : 'Save Profile'}
               </button>
             </div>
 
             {/* Balance Card */}
-            <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-              <h3 className="text-lg font-semibold text-white mb-4">Wallet Balances</h3>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Wallet Balances</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl" style={{ backgroundColor: '#18181b' }}>
-                  <p className="text-sm text-zinc-300">NGN Balance</p>
-                  <p className="text-3xl font-bold" style={{ color: '#ffffff' }}>₦{(user.ngn_balance || 0).toLocaleString()}</p>
+                <div className="p-4 rounded-xl" style={{ backgroundColor: `${primaryColor}10` }}>
+                  <p className="text-sm text-gray-600">NGN Balance</p>
+                  <p className="text-3xl font-bold" style={{ color: primaryColor }}>₦{(user.ngn_balance || 0).toLocaleString()}</p>
                 </div>
-                <div className="p-4 bg-zinc-900 rounded-xl">
-                  <p className="text-sm text-zinc-300">USD Balance</p>
-                  <p className="text-3xl font-bold text-white">${(user.usd_balance || 0).toFixed(2)}</p>
+                <div className="p-4 bg-blue-50 rounded-xl">
+                  <p className="text-sm text-gray-600">USD Balance</p>
+                  <p className="text-3xl font-bold text-blue-600">${(user.usd_balance || 0).toFixed(2)}</p>
                 </div>
               </div>
             </div>
 
             {/* Change Password Card */}
-            <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-              <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
               <div className="space-y-4 max-w-md">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">Current Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
                   <input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                     placeholder="Enter current password"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                     placeholder="Enter new password"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-2">Confirm New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-transparent"
                     placeholder="Confirm new password"
                   />
                 </div>
@@ -2983,7 +3072,7 @@ const NewDashboard = () => {
                   onClick={handleChangePassword}
                   disabled={savingPassword}
                   className="px-6 py-3 text-white rounded-xl font-semibold transition-colors disabled:bg-gray-300"
-                  style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   {savingPassword ? 'Changing...' : 'Change Password'}
                 </button>
@@ -2996,9 +3085,9 @@ const NewDashboard = () => {
         {activeTab === 'security' && (
           <div className="space-y-6">
             {/* Transaction PIN Section */}
-            <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-              <h3 className="text-lg font-semibold text-white mb-2">Transaction PIN</h3>
-              <p className="text-sm text-zinc-400 mb-4">
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Transaction PIN</h3>
+              <p className="text-sm text-gray-500 mb-4">
                 Your 4-digit PIN is required to confirm all bill payments and bank transfers.
               </p>
               
@@ -3016,7 +3105,7 @@ const NewDashboard = () => {
                     <button
                       onClick={() => setPinAction('set')}
                       className="px-4 py-2 text-white rounded-lg font-medium"
-                      style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                      style={{ backgroundColor: primaryColor }}
                     >
                       Set Transaction PIN
                     </button>
@@ -3024,14 +3113,14 @@ const NewDashboard = () => {
                     <>
                       <button
                         onClick={() => setPinAction('change')}
-                        className="px-4 py-2 bg-zinc-800 text-zinc-200 rounded-lg font-medium hover:bg-zinc-700"
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
                       >
                         Change PIN
                       </button>
                       <button
                         onClick={handleRequestPinReset}
                         disabled={requestingReset}
-                        className="px-4 py-2 bg-zinc-800 text-amber-700 rounded-lg font-medium hover:bg-amber-200"
+                        className="px-4 py-2 bg-amber-100 text-amber-700 rounded-lg font-medium hover:bg-amber-200"
                       >
                         {requestingReset ? 'Sending...' : 'Forgot PIN?'}
                       </button>
@@ -3042,29 +3131,29 @@ const NewDashboard = () => {
 
               {/* Set PIN Form */}
               {pinAction === 'set' && (
-                <div className="space-y-4 mt-4 p-4 bg-zinc-950 rounded-xl">
-                  <h4 className="font-medium text-white">Create Transaction PIN</h4>
+                <div className="space-y-4 mt-4 p-4 bg-gray-50 rounded-xl">
+                  <h4 className="font-medium text-gray-900">Create Transaction PIN</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">New PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={newPin}
                         onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">Confirm PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={confirmPin}
                         onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                   </div>
@@ -3073,13 +3162,13 @@ const NewDashboard = () => {
                       onClick={handleSetPin}
                       disabled={savingPin}
                       className="px-4 py-2 text-white rounded-lg font-medium"
-                      style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                      style={{ backgroundColor: primaryColor }}
                     >
                       {savingPin ? 'Setting...' : 'Set PIN'}
                     </button>
                     <button
                       onClick={() => { setPinAction(''); setNewPin(''); setConfirmPin(''); }}
-                      className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg font-medium"
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
                     >
                       Cancel
                     </button>
@@ -3089,40 +3178,40 @@ const NewDashboard = () => {
 
               {/* Change PIN Form */}
               {pinAction === 'change' && (
-                <div className="space-y-4 mt-4 p-4 bg-zinc-950 rounded-xl">
-                  <h4 className="font-medium text-white">Change Transaction PIN</h4>
+                <div className="space-y-4 mt-4 p-4 bg-gray-50 rounded-xl">
+                  <h4 className="font-medium text-gray-900">Change Transaction PIN</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">Current PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={currentPin}
                         onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">New PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={newPin}
                         onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">Confirm PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={confirmPin}
                         onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                   </div>
@@ -3131,13 +3220,13 @@ const NewDashboard = () => {
                       onClick={handleChangePin}
                       disabled={savingPin}
                       className="px-4 py-2 text-white rounded-lg font-medium"
-                      style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                      style={{ backgroundColor: primaryColor }}
                     >
                       {savingPin ? 'Changing...' : 'Change PIN'}
                     </button>
                     <button
                       onClick={() => { setPinAction(''); setCurrentPin(''); setNewPin(''); setConfirmPin(''); }}
-                      className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg font-medium"
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
                     >
                       Cancel
                     </button>
@@ -3147,54 +3236,54 @@ const NewDashboard = () => {
 
               {/* Reset PIN Form */}
               {pinAction === 'reset' && (
-                <div className="space-y-4 mt-4 p-4 bg-zinc-900 rounded-xl border border-amber-200">
+                <div className="space-y-4 mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
                   <h4 className="font-medium text-amber-900">Reset Transaction PIN</h4>
                   <p className="text-sm text-amber-700">
                     A reset code has been sent to your email. Enter the code and your BVN to reset your PIN.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">Reset Code (from email)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Reset Code (from email)</label>
                       <input
                         type="text"
                         maxLength={6}
                         value={resetCode}
                         onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         placeholder="123456"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">BVN (for verification)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">BVN (for verification)</label>
                       <input
                         type="text"
                         maxLength={11}
                         value={resetBvn}
                         onChange={(e) => setResetBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
                         placeholder="Enter your BVN"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">New PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={newPin}
                         onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-1">Confirm PIN</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm PIN</label>
                       <input
                         type="password"
                         maxLength={4}
                         value={confirmPin}
                         onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         placeholder="••••"
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl text-center text-xl tracking-widest"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-xl tracking-widest"
                       />
                     </div>
                   </div>
@@ -3203,13 +3292,13 @@ const NewDashboard = () => {
                       onClick={handleResetPin}
                       disabled={savingPin}
                       className="px-4 py-2 text-white rounded-lg font-medium"
-                      style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                      style={{ backgroundColor: primaryColor }}
                     >
                       {savingPin ? 'Resetting...' : 'Reset PIN'}
                     </button>
                     <button
                       onClick={() => { setPinAction(''); setResetCode(''); setResetBvn(''); setNewPin(''); setConfirmPin(''); }}
-                      className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg font-medium"
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
                     >
                       Cancel
                     </button>
@@ -3218,9 +3307,9 @@ const NewDashboard = () => {
               )}
 
               {hasPin && !pinAction && (
-                <div className="mt-4 p-3 bg-zinc-900 border border-green-200 rounded-xl flex items-center gap-2">
-                  <Check className="w-5 h-5 text-white" />
-                  <span className="text-sm text-zinc-300">Transaction PIN is active</span>
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="text-sm text-green-800">Transaction PIN is active</span>
                 </div>
               )}
             </div>
@@ -3230,8 +3319,8 @@ const NewDashboard = () => {
         {activeTab === 'kyc' && (
           <div className="space-y-6">
             {/* Tier Progress */}
-            <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-              <h3 className="text-lg font-semibold text-white mb-4">Account Tier Status</h3>
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Tier Status</h3>
               <div className="flex items-center gap-4 mb-4">
                 {[
                   { tier: 1, limit: `₦${(branding.kyc_tier1_max_balance || 50000).toLocaleString()}`, desc: 'Basic' },
@@ -3240,15 +3329,15 @@ const NewDashboard = () => {
                 ].map((t) => (
                   <div key={t.tier} className={`flex-1 text-center p-3 rounded-xl transition-all ${
                     userTier >= t.tier 
-                      ? 'bg-zinc-800 border-2 border-white' 
-                      : 'bg-zinc-800 border-2 border-zinc-700'
+                      ? 'bg-emerald-100 border-2 border-indigo-500' 
+                      : 'bg-gray-100 border-2 border-gray-200'
                   }`}>
-                    <p className={`font-bold text-lg ${userTier >= t.tier ? 'text-white' : 'text-zinc-500'}`}>
+                    <p className={`font-bold text-lg ${userTier >= t.tier ? 'text-indigo-600' : 'text-gray-400'}`}>
                       Tier {t.tier}
                     </p>
-                    <p className="text-xs text-zinc-400">{t.limit}</p>
-                    <p className="text-[10px] text-zinc-500">{t.desc}</p>
-                    {userTier === t.tier && <span className="text-xs text-white font-medium">Current</span>}
+                    <p className="text-xs text-gray-500">{t.limit}</p>
+                    <p className="text-[10px] text-gray-400">{t.desc}</p>
+                    {userTier === t.tier && <span className="text-xs text-indigo-600 font-medium">Current</span>}
                   </div>
                 ))}
               </div>
@@ -3256,35 +3345,35 @@ const NewDashboard = () => {
 
             {/* Tier 1 → Tier 2 Upgrade */}
             {userTier === 1 && (
-              <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-                <h3 className="text-lg font-semibold text-white mb-2">Upgrade to Tier 2</h3>
-                <p className="text-sm text-zinc-400 mb-4">Increase your limit to ₦{(branding.kyc_tier2_max_balance || 500000).toLocaleString()} by providing your BVN.</p>
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Upgrade to Tier 2</h3>
+                <p className="text-sm text-gray-500 mb-4">Increase your limit to ₦{(branding.kyc_tier2_max_balance || 500000).toLocaleString()} by providing your BVN.</p>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">BVN (11 digits)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">BVN (11 digits)</label>
                     <input
                       type="text"
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-white"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       placeholder="Enter your BVN"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                     <input
                       type="tel"
                       value={kycPhone}
                       onChange={(e) => setKycPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-white"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       placeholder="08012345678"
                     />
                   </div>
                   <button
                     onClick={handleTier2Submit}
                     disabled={bvn.length !== 11}
-                    className="w-full py-3 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-700 disabled:bg-gray-300"
+                    className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:bg-gray-300"
                   >
                     Upgrade to Tier 2
                   </button>
@@ -3294,105 +3383,105 @@ const NewDashboard = () => {
 
             {/* Tier 2 → Tier 3 Express KYC */}
             {userTier === 2 && (
-              <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Express KYC Verification</h3>
-                    <p className="text-sm text-zinc-400">Upgrade to Tier 3 with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Express KYC Verification</h3>
+                    <p className="text-sm text-gray-500">Upgrade to Tier 3 with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit</p>
                   </div>
-                  <div className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: '#27272a', color: '#ffffff' }}>
+                  <div className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
                     ₦{KYC_FEE} total fee
                   </div>
                 </div>
                 
-                <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 mb-6">
-                  <h4 className="font-medium text-white mb-2">What we verify:</h4>
-                  <ul className="text-sm text-zinc-200 space-y-1">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                  <h4 className="font-medium text-blue-900 mb-2">What we verify:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
                     <li>• <strong>BVN:</strong> Phone number, Date of Birth, Names</li>
                     <li>• <strong>NIN:</strong> Date of Birth, Names</li>
                   </ul>
-                  <p className="text-xs text-white mt-2">Verification is instant - results in seconds!</p>
+                  <p className="text-xs text-blue-600 mt-2">Verification is instant - results in seconds!</p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">BVN (11 digits) *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">BVN (11 digits) *</label>
                     <input
                       type="text"
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': '#ffffff' }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                       placeholder="Enter your BVN"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">NIN (11 digits) *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">NIN (11 digits) *</label>
                     <input
                       type="text"
                       value={nin}
                       onChange={(e) => setNin(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': '#ffffff' }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                       placeholder="Enter your NIN"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">Phone Number *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                     <input
                       type="tel"
                       value={kycPhone}
                       onChange={(e) => setKycPhone(e.target.value)}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': '#ffffff' }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                       placeholder="Must match BVN phone"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-200 mb-2">Date of Birth *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
                     <input
                       type="date"
                       value={dob}
                       onChange={(e) => setDob(e.target.value)}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': '#ffffff' }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2"
+                      style={{ '--tw-ring-color': primaryColor }}
                     />
                   </div>
                 </div>
 
                 {/* Address Section for Payscribe */}
-                <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 mb-4">
-                  <h4 className="text-sm font-semibold text-zinc-200 mb-3">Address Information (Required for Card Services)</h4>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                  <h4 className="text-sm font-semibold text-blue-800 mb-3">Address Information (Required for Card Services)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-zinc-200 mb-2">Street Address *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Street Address *</label>
                       <input
                         type="text"
                         value={kycStreet}
                         onChange={(e) => setKycStreet(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 bg-zinc-900"
-                        style={{ '--tw-ring-color': '#ffffff' }}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 bg-white"
+                        style={{ '--tw-ring-color': primaryColor }}
                         placeholder="e.g., 123 Main Street, Lekki Phase 1"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-2">City *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                       <input
                         type="text"
                         value={kycCity}
                         onChange={(e) => setKycCity(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 bg-zinc-900"
-                        style={{ '--tw-ring-color': '#ffffff' }}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 bg-white"
+                        style={{ '--tw-ring-color': primaryColor }}
                         placeholder="e.g., Lagos"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-2">State *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
                       <select
                         value={kycState}
                         onChange={(e) => setKycState(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 bg-zinc-900"
-                        style={{ '--tw-ring-color': '#ffffff' }}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 bg-white"
+                        style={{ '--tw-ring-color': primaryColor }}
                       >
                         <option value="">Select State</option>
                         <option value="Abia">Abia</option>
@@ -3435,23 +3524,23 @@ const NewDashboard = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-2">Postal Code</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
                       <input
                         type="text"
                         value={kycPostalCode}
                         onChange={(e) => setKycPostalCode(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 bg-zinc-900"
-                        style={{ '--tw-ring-color': '#ffffff' }}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 bg-white"
+                        style={{ '--tw-ring-color': primaryColor }}
                         placeholder="e.g., 100001"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-200 mb-2">Country</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
                       <select
                         value={kycCountry}
                         onChange={(e) => setKycCountry(e.target.value)}
-                        className="w-full px-4 py-3 border border-zinc-700 rounded-xl focus:outline-none focus:ring-2 bg-zinc-900"
-                        style={{ '--tw-ring-color': '#ffffff' }}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 bg-white"
+                        style={{ '--tw-ring-color': primaryColor }}
                       >
                         <option value="NG">Nigeria</option>
                       </select>
@@ -3459,26 +3548,26 @@ const NewDashboard = () => {
                   </div>
                 </div>
 
-                <div className="bg-zinc-950 rounded-xl p-4 mb-4">
-                  <p className="text-sm text-zinc-300">
+                <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-gray-600">
                     <strong>Important:</strong> Your registered name ({user.first_name} {user.last_name}) must match your BVN/NIN records.
                   </p>
                 </div>
 
                 {/* Selfie Verification Section */}
-                <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 mb-4">
+                <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-white">Selfie Verification</h4>
-                      <p className="text-xs text-zinc-400">Take a selfie to prove you're a real person</p>
+                      <h4 className="font-medium text-gray-900">Selfie Verification</h4>
+                      <p className="text-xs text-gray-500">Take a selfie to prove you're a real person</p>
                     </div>
-                    {selfieImage && <Check className="w-5 h-5 text-white" />}
+                    {selfieImage && <Check className="w-5 h-5 text-green-500" />}
                   </div>
                   
                   {!selfieImage ? (
                     <button
                       onClick={startCamera}
-                      className="w-full py-3 border-2 border-dashed border-zinc-600 rounded-xl text-zinc-300 hover:border-gray-400 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                     >
                       <Camera className="w-5 h-5" />
                       Open Camera to Take Selfie
@@ -3487,7 +3576,7 @@ const NewDashboard = () => {
                     <div className="flex items-center gap-3">
                       <img src={selfieImage} alt="Selfie" className="w-16 h-16 rounded-lg object-cover" />
                       <div className="flex-1">
-                        <p className="text-sm text-white font-medium">Selfie captured!</p>
+                        <p className="text-sm text-green-600 font-medium">Selfie captured!</p>
                         <button 
                           onClick={() => setSelfieImage(null)} 
                           className="text-xs text-red-500 hover:underline"
@@ -3506,8 +3595,8 @@ const NewDashboard = () => {
                 <button
                   onClick={startTier3Verification}
                   disabled={bvn.length !== 11 || nin.length !== 11 || !kycPhone || !dob || !kycStreet.trim() || !kycCity.trim() || !kycState.trim() || !selfieImage}
-                  className="w-full py-4 text-white rounded-xl font-bold transition-all shadow-none disabled:bg-gray-300 disabled:shadow-none"
-                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && kycStreet.trim() && kycCity.trim() && kycState.trim() && selfieImage ? '#ffffff' : undefined, color: '#000000' }}
+                  className="w-full py-4 text-white rounded-xl font-bold transition-all shadow-lg disabled:bg-gray-300 disabled:shadow-none"
+                  style={{ backgroundColor: bvn.length === 11 && nin.length === 11 && kycPhone && dob && kycStreet.trim() && kycCity.trim() && kycState.trim() && selfieImage ? primaryColor : undefined }}
                 >
                   Start Express KYC (₦{KYC_FEE})
                 </button>
@@ -3515,15 +3604,15 @@ const NewDashboard = () => {
                 {/* Camera Modal - Simple selfie capture */}
                 {showCamera && (
                   <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-                    <div className="bg-zinc-900 rounded-2xl max-w-md w-full overflow-hidden">
-                      <div className="p-4 border-b border-zinc-700">
+                    <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+                      <div className="p-4 border-b border-gray-200">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-white">Take a Selfie</h3>
-                          <button onClick={stopCamera} className="text-zinc-400 hover:text-zinc-200">
+                          <h3 className="font-semibold text-gray-900">Take a Selfie</h3>
+                          <button onClick={stopCamera} className="text-gray-500 hover:text-gray-700">
                             <X className="w-5 h-5" />
                           </button>
                         </div>
-                        <p className="text-xs text-zinc-400 mt-1">Position your face in the frame and capture</p>
+                        <p className="text-xs text-gray-500 mt-1">Position your face in the frame and capture</p>
                       </div>
                       
                       <div className="relative aspect-[4/3] bg-black">
@@ -3554,12 +3643,12 @@ const NewDashboard = () => {
                           onClick={captureSelfie}
                           disabled={isCapturing}
                           className="w-full py-3 text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
-                          style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                          style={{ backgroundColor: primaryColor }}
                         >
                           {isCapturing ? 'Capturing...' : '📸 Capture Selfie'}
                         </button>
                         
-                        <p className="text-xs text-center text-zinc-400">
+                        <p className="text-xs text-center text-gray-500">
                           Position your face within the oval for best results
                         </p>
                       </div>
@@ -3571,18 +3660,18 @@ const NewDashboard = () => {
 
             {/* Tier 3 Complete */}
             {userTier >= 3 && (
-              <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none text-center">
+              <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center">
                 <div className="w-20 h-20 mx-auto bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mb-4">
                   <Check className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Fully Verified!</h3>
-                <p className="text-zinc-400 mb-4">Your account is at maximum tier with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Fully Verified!</h3>
+                <p className="text-gray-500 mb-4">Your account is at maximum tier with ₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit.</p>
                 <div className="flex justify-center gap-4">
-                  <div className="bg-zinc-900 px-4 py-2 rounded-lg">
-                    <span className="text-zinc-200 font-medium">BVN ✓</span>
+                  <div className="bg-green-50 px-4 py-2 rounded-lg">
+                    <span className="text-green-700 font-medium">BVN ✓</span>
                   </div>
-                  <div className="bg-zinc-900 px-4 py-2 rounded-lg">
-                    <span className="text-zinc-200 font-medium">NIN ✓</span>
+                  <div className="bg-green-50 px-4 py-2 rounded-lg">
+                    <span className="text-green-700 font-medium">NIN ✓</span>
                   </div>
                 </div>
               </div>
@@ -3594,7 +3683,7 @@ const NewDashboard = () => {
   }
 
   function ReferralSection() {
-    const primaryColor = branding.primary_color_hex || '#059669';
+    const primaryColor = branding.primary_color_hex || '#5B5FC7';
     const referralCode = user.referral_code || user.email?.split('@')[0]?.toUpperCase() || 'NOCODE';
     const referralLink = `${window.location.origin}?ref=${referralCode}`;
     
@@ -3610,35 +3699,35 @@ const NewDashboard = () => {
 
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Referral Program</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Referral Program</h2>
         
         {/* Referral Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-none text-center">
-            <p className="text-3xl font-bold" style={{ color: '#ffffff' }}>{user.referral_count || 0}</p>
-            <p className="text-sm text-zinc-400 mt-1">Total Referrals</p>
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <p className="text-3xl font-bold" style={{ color: primaryColor }}>{user.referral_count || 0}</p>
+            <p className="text-sm text-gray-500 mt-1">Total Referrals</p>
           </div>
-          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-none text-center">
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
             <p className="text-3xl font-bold text-amber-500">₦{(user.referral_earnings || 0).toLocaleString()}</p>
-            <p className="text-sm text-zinc-400 mt-1">Total Earnings</p>
+            <p className="text-sm text-gray-500 mt-1">Total Earnings</p>
           </div>
-          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-none text-center">
-            <p className="text-3xl font-bold text-white">5%</p>
-            <p className="text-sm text-zinc-400 mt-1">Commission Rate</p>
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <p className="text-3xl font-bold text-blue-500">5%</p>
+            <p className="text-sm text-gray-500 mt-1">Commission Rate</p>
           </div>
         </div>
         
         {/* Referral Code Card */}
-        <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-          <h3 className="text-lg font-semibold text-white mb-4">Your Referral Code</h3>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Referral Code</h3>
           
-          <div className="p-4 rounded-xl mb-4" style={{ backgroundColor: '#18181b' }}>
+          <div className="p-4 rounded-xl mb-4" style={{ backgroundColor: `${primaryColor}10` }}>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold tracking-wider" style={{ color: '#ffffff' }}>{referralCode}</span>
+              <span className="text-2xl font-bold tracking-wider" style={{ color: primaryColor }}>{referralCode}</span>
               <button 
                 onClick={copyReferralCode}
                 className="px-4 py-2 text-white rounded-lg text-sm font-semibold"
-                style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                style={{ backgroundColor: primaryColor }}
               >
                 Copy Code
               </button>
@@ -3646,18 +3735,18 @@ const NewDashboard = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-zinc-200">Referral Link</label>
+            <label className="block text-sm font-medium text-gray-700">Referral Link</label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={referralLink}
                 readOnly
-                className="flex-1 px-4 py-3 border border-zinc-700 rounded-xl bg-zinc-950 text-sm"
+                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm"
               />
               <button 
                 onClick={copyReferralLink}
                 className="px-4 py-3 text-white rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                style={{ backgroundColor: primaryColor }}
               >
                 Copy Link
               </button>
@@ -3666,8 +3755,8 @@ const NewDashboard = () => {
         </div>
 
         {/* How It Works */}
-        <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-none">
-          <h3 className="text-lg font-semibold text-white mb-4">How It Works</h3>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">How It Works</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { step: '1', title: 'Share Your Link', desc: 'Share your unique referral link with friends' },
@@ -3675,11 +3764,11 @@ const NewDashboard = () => {
               { step: '3', title: 'Earn Rewards', desc: 'Get 5% of their first deposit as bonus!' }
             ].map((item, idx) => (
               <div key={idx} className="text-center p-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-white font-bold" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-white font-bold" style={{ backgroundColor: primaryColor }}>
                   {item.step}
                 </div>
-                <h4 className="font-semibold text-white">{item.title}</h4>
-                <p className="text-sm text-zinc-400 mt-1">{item.desc}</p>
+                <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                <p className="text-sm text-gray-500 mt-1">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -3788,39 +3877,39 @@ const NewDashboard = () => {
         </div>
 
         {/* Tier Status */}
-        <div className="bg-zinc-900 rounded-2xl p-6 border shadow-none">
-          <h2 className="text-xl font-bold text-white mb-4">Current Tier: Tier {userTier}</h2>
+        <div className="bg-white rounded-2xl p-6 border shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Current Tier: Tier {userTier}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Tier 1 */}
-            <div className={`p-4 rounded-xl border-2 ${userTier >= 1 ? 'border-green-500 bg-zinc-900' : 'border-zinc-700'}`}>
+            <div className={`p-4 rounded-xl border-2 ${userTier >= 1 ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
               <div className="flex items-center gap-2 mb-2">
-                {userTier >= 1 && <Check className="w-5 h-5 text-white" />}
+                {userTier >= 1 && <Check className="w-5 h-5 text-green-600" />}
                 <h3 className="font-bold">Tier 1: Basic</h3>
               </div>
-              <p className="text-sm text-zinc-300 mb-2">Email verification</p>
+              <p className="text-sm text-gray-600 mb-2">Email verification</p>
               <p className="text-lg font-bold text-[#005E3A]">₦{(branding.kyc_tier1_max_balance || 50000).toLocaleString()} limit</p>
-              {userTier >= 1 && <p className="text-xs text-white mt-2">✓ Approved</p>}
+              {userTier >= 1 && <p className="text-xs text-green-600 mt-2">✓ Approved</p>}
             </div>
 
             {/* Tier 2 */}
-            <div className={`p-4 rounded-xl border-2 ${userTier >= 2 ? 'border-green-500 bg-zinc-900' : 'border-zinc-700'}`}>
+            <div className={`p-4 rounded-xl border-2 ${userTier >= 2 ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
               <div className="flex items-center gap-2 mb-2">
-                {userTier >= 2 && <Check className="w-5 h-5 text-white" />}
+                {userTier >= 2 && <Check className="w-5 h-5 text-green-600" />}
                 <h3 className="font-bold">Tier 2: Standard</h3>
               </div>
-              <p className="text-sm text-zinc-300 mb-2">BVN verification</p>
+              <p className="text-sm text-gray-600 mb-2">BVN verification</p>
               <p className="text-lg font-bold text-[#005E3A]">₦{(branding.kyc_tier2_max_balance || 500000).toLocaleString()} limit</p>
-              {userTier >= 2 && <p className="text-xs text-white mt-2">✓ Approved</p>}
+              {userTier >= 2 && <p className="text-xs text-green-600 mt-2">✓ Approved</p>}
             </div>
 
             {/* Tier 3 */}
-            <div className={`p-4 rounded-xl border-2 ${userTier >= 3 ? 'border-green-500 bg-zinc-900' : 'border-yellow-400 bg-zinc-900'}`}>
+            <div className={`p-4 rounded-xl border-2 ${userTier >= 3 ? 'border-green-500 bg-green-50' : 'border-yellow-400 bg-yellow-50'}`}>
               <div className="flex items-center gap-2 mb-2">
-                {userTier >= 3 ? <Check className="w-5 h-5 text-white" /> : <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /></svg>}
+                {userTier >= 3 ? <Check className="w-5 h-5 text-green-600" /> : <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" /></svg>}
                 <h3 className="font-bold">Tier 3: Premium</h3>
               </div>
-              <p className="text-sm text-zinc-300 mb-2">Full KYC verification</p>
+              <p className="text-sm text-gray-600 mb-2">Full KYC verification</p>
               <p className="text-lg font-bold text-[#005E3A]">₦{(branding.kyc_tier3_max_balance || 2000000).toLocaleString()} limit</p>
               {userTier < 3 && <p className="text-xs text-yellow-600 mt-2">⚠ Upgrade Required</p>}
             </div>
@@ -3840,12 +3929,12 @@ const NewDashboard = () => {
 
         {/* Upgrade Form */}
         {userTier < 3 && (
-          <div className="bg-zinc-900 rounded-2xl p-6 border shadow-none">
-            <h2 className="text-xl font-bold text-white mb-4">Upgrade to Tier 3</h2>
-            <p className="text-zinc-300 mb-6">
+          <div className="bg-white rounded-2xl p-6 border shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Upgrade to Tier 3</h2>
+            <p className="text-gray-600 mb-6">
               Complete full KYC verification to unlock:
             </p>
-            <ul className="list-disc list-inside text-zinc-200 mb-6 space-y-1">
+            <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
               <li>₦1,000,000 wallet limit</li>
               <li>USDT/USDC stablecoin deposits</li>
               <li>Virtual card creation</li>
@@ -3856,11 +3945,11 @@ const NewDashboard = () => {
               {/* Document Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">Document Type</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Document Type</label>
                   <select
                     value={documentType}
                     onChange={(e) => setDocumentType(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   >
                     <option value="">-- Select Document Type --</option>
                     <option value="NIN">National ID (NIN)</option>
@@ -3871,20 +3960,20 @@ const NewDashboard = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">Document Number</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Document Number</label>
                   <input
                     type="text"
                     placeholder="Enter document number"
                     value={documentNumber}
                     onChange={(e) => setDocumentNumber(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
               </div>
 
               {/* BVN - REQUIRED */}
               <div>
-                <label className="block text-sm font-semibold text-zinc-200 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Bank Verification Number (BVN) <span className="text-red-500">*Required</span>
                 </label>
                 <input
@@ -3893,112 +3982,112 @@ const NewDashboard = () => {
                   value={bvn}
                   onChange={(e) => setBvn(e.target.value.replace(/\D/g, '').slice(0, 11))}
                   maxLength={11}
-                  className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 />
-                <p className="text-xs text-zinc-400 mt-1">Required for Payscribe customer creation</p>
+                <p className="text-xs text-gray-500 mt-1">Required for Payscribe customer creation</p>
               </div>
 
               {/* Date of Birth */}
               <div>
-                <label className="block text-sm font-semibold text-zinc-200 mb-2">Date of Birth</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
                 <input
                   type="date"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 />
               </div>
 
               {/* Document Upload */}
               <div>
-                <label className="block text-sm font-semibold text-zinc-200 mb-2">Upload ID Document</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Upload ID Document</label>
                 <input
                   type="file"
                   accept="image/jpeg,image/png"
                   onChange={(e) => setIdDocument(e.target.files[0])}
-                  className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 />
-                <p className="text-xs text-zinc-400 mt-1">JPEG, PNG only. Max 4MB</p>
+                <p className="text-xs text-gray-500 mt-1">JPEG, PNG only. Max 4MB</p>
               </div>
 
               {/* Selfie Upload */}
               <div>
-                <label className="block text-sm font-semibold text-zinc-200 mb-2">Upload Selfie</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Upload Selfie</label>
                 <input
                   type="file"
                   accept="image/jpeg,image/png"
                   onChange={(e) => setSelfie(e.target.files[0])}
-                  className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                 />
-                <p className="text-xs text-zinc-400 mt-1">Clear photo of your face. JPEG, PNG only. Max 4MB</p>
+                <p className="text-xs text-gray-500 mt-1">Clear photo of your face. JPEG, PNG only. Max 4MB</p>
               </div>
 
               {/* Address */}
-              <h3 className="text-lg font-bold text-white mt-6">Address Information</h3>
+              <h3 className="text-lg font-bold text-gray-900 mt-6">Address Information</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">Street Address</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Street Address</label>
                   <input
                     type="text"
                     placeholder="e.g. 56, Adeola Odeku, Victoria Island"
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">Apartment / Suite (Optional)</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Apartment / Suite (Optional)</label>
                   <input
                     type="text"
                     placeholder="Apt 4B"
                     value={apartment}
                     onChange={(e) => setApartment(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">City</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
                   <input
                     type="text"
                     placeholder="Lagos"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">State</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
                   <input
                     type="text"
                     placeholder="Lagos State"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">Postal Code</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
                   <input
                     type="text"
                     placeholder="100001"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg focus:border-[#005E3A] focus:outline-none text-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#005E3A] focus:outline-none text-gray-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-200 mb-2">Country</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Country</label>
                   <input
                     type="text"
                     value={country}
                     disabled
-                    className="w-full px-4 py-3 border-2 border-zinc-700 rounded-lg bg-zinc-800 text-zinc-200"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-700"
                   />
                 </div>
               </div>
@@ -4011,7 +4100,7 @@ const NewDashboard = () => {
                 {submitting ? 'Submitting...' : 'Submit Documents for Review'}
               </button>
 
-              <p className="text-xs text-zinc-400 mt-3 text-center">
+              <p className="text-xs text-gray-500 mt-3 text-center">
                 Your documents will be securely reviewed by our team within 1-2 business days.
               </p>
             </div>
@@ -4020,20 +4109,20 @@ const NewDashboard = () => {
 
         {/* Already Tier 3 */}
         {userTier >= 3 && (
-          <div className="bg-zinc-900 border-2 border-green-300 rounded-2xl p-8 text-center">
-            <div className="w-20 h-20 mx-auto mb-4 bg-zinc-900 rounded-full flex items-center justify-center">
+          <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-8 text-center">
+            <div className="w-20 h-20 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
               <Check className="w-12 h-12 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">You&apos;re All Set!</h3>
-            <p className="text-zinc-200 mb-4">Your account is verified with Tier 3 Premium access.</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">You&apos;re All Set!</h3>
+            <p className="text-gray-700 mb-4">Your account is verified with Tier 3 Premium access.</p>
             <p className="text-lg font-semibold text-[#005E3A]">Wallet Limit: ₦1,000,000</p>
           </div>
         )}
 
         {/* Need Help */}
-        <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
-          <p className="text-sm text-white">
-            <strong>Need Help?</strong> Contact support at <a href="mailto:support@blissdigitals.com" className="text-white hover:underline">support@blissdigitals.com</a>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-sm text-blue-900">
+            <strong>Need Help?</strong> Contact support at <a href="mailto:support@blissdigitals.com" className="text-blue-600 hover:underline">support@blissdigitals.com</a>
           </p>
         </div>
       </div>
@@ -4044,8 +4133,8 @@ const NewDashboard = () => {
   function SupportSection() {
     return (
       <div className="space-y-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-white">Support Channels</h2>
-        <p className="text-zinc-300 text-sm">Need help? Reach out to us through any of these channels</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Support Channels</h2>
+        <p className="text-gray-600 text-sm">Need help? Reach out to us through any of these channels</p>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* WhatsApp */}
@@ -4054,16 +4143,16 @@ const NewDashboard = () => {
             target="_blank" 
             rel="noopener noreferrer"
             data-testid="support-whatsapp-link"
-            className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-2xl border border-green-200 hover:shadow-none transition-all hover:-translate-y-1 flex flex-col items-center text-center"
+            className="bg-gradient-to-br from-green-50 to-emerald-100 p-6 rounded-2xl border border-green-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col items-center text-center"
           >
-            <div className="w-14 h-14 bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+            <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
               </svg>
             </div>
-            <h3 className="font-bold text-white mb-1">WhatsApp</h3>
-            <p className="text-sm text-zinc-300">Chat with us on WhatsApp</p>
-            <span className="mt-2 text-xs text-white font-semibold">Click to open</span>
+            <h3 className="font-bold text-gray-900 mb-1">WhatsApp</h3>
+            <p className="text-sm text-gray-600">Chat with us on WhatsApp</p>
+            <span className="mt-2 text-xs text-green-600 font-semibold">Click to open</span>
           </a>
 
           {/* Telegram */}
@@ -4072,35 +4161,35 @@ const NewDashboard = () => {
             target="_blank" 
             rel="noopener noreferrer"
             data-testid="support-telegram-link"
-            className="bg-gradient-to-br from-zinc-900 to-zinc-800 p-6 rounded-2xl border border-zinc-700 hover:shadow-none transition-all hover:-translate-y-1 flex flex-col items-center text-center"
+            className="bg-gradient-to-br from-blue-50 to-sky-100 p-6 rounded-2xl border border-blue-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col items-center text-center"
           >
-            <div className="w-14 h-14 bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+            <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center mb-4">
               <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
               </svg>
             </div>
-            <h3 className="font-bold text-white mb-1">Telegram</h3>
-            <p className="text-sm text-zinc-300">Join our Telegram channel</p>
-            <span className="mt-2 text-xs text-white font-semibold">Click to open</span>
+            <h3 className="font-bold text-gray-900 mb-1">Telegram</h3>
+            <p className="text-sm text-gray-600">Join our Telegram channel</p>
+            <span className="mt-2 text-xs text-blue-600 font-semibold">Click to open</span>
           </a>
 
           {/* Email */}
           <a 
             href={`mailto:${supportUrls.support_email}`}
             data-testid="support-email-link"
-            className="bg-gradient-to-br from-zinc-900 to-zinc-800 p-6 rounded-2xl border border-zinc-700 hover:shadow-none transition-all hover:-translate-y-1 flex flex-col items-center text-center"
+            className="bg-gradient-to-br from-purple-50 to-violet-100 p-6 rounded-2xl border border-purple-200 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col items-center text-center"
           >
-            <div className="w-14 h-14 bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+            <div className="w-14 h-14 bg-purple-500 rounded-full flex items-center justify-center mb-4">
               <Mail className="w-7 h-7 text-white" />
             </div>
-            <h3 className="font-bold text-white mb-1">Email</h3>
-            <p className="text-sm text-zinc-300">{supportUrls.support_email}</p>
-            <span className="mt-2 text-xs text-white font-semibold">Send email</span>
+            <h3 className="font-bold text-gray-900 mb-1">Email</h3>
+            <p className="text-sm text-gray-600">{supportUrls.support_email}</p>
+            <span className="mt-2 text-xs text-purple-600 font-semibold">Send email</span>
           </a>
         </div>
 
         {/* FAQ or additional info */}
-        <div className="bg-zinc-900 border border-amber-200 rounded-xl p-4 mt-6">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
           <h4 className="font-semibold text-amber-800 mb-2">Response Time</h4>
           <p className="text-sm text-amber-700">We typically respond within 1-2 hours during business hours (9AM - 9PM WAT).</p>
         </div>
@@ -4178,10 +4267,10 @@ const NewDashboard = () => {
     if (resellerLoading) {
       return (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Reseller Portal</h2>
-          <div className="bg-zinc-900 p-8 rounded-xl border shadow-none text-center">
-            <RefreshCw className="w-8 h-8 mx-auto text-zinc-500 animate-spin" />
-            <p className="text-sm text-zinc-400 mt-2">Loading...</p>
+          <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
+          <div className="bg-white p-8 rounded-xl border shadow-sm text-center">
+            <RefreshCw className="w-8 h-8 mx-auto text-gray-400 animate-spin" />
+            <p className="text-sm text-gray-500 mt-2">Loading...</p>
           </div>
         </div>
       );
@@ -4544,21 +4633,21 @@ print_r(json_decode($response, true));`,
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowDocs(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               ← Back to Portal
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
                 <Server className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-sm text-white">API Documentation</span>
+              <span className="font-semibold text-sm text-gray-900">API Documentation</span>
             </div>
           </div>
 
           {/* Endpoint Selector */}
-          <div className="bg-zinc-900 rounded-xl border p-4">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Select Endpoint</p>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Select Endpoint</p>
             <div className="flex flex-wrap gap-2">
               {endpoints.map((ep) => (
                 <button
@@ -4566,13 +4655,13 @@ print_r(json_decode($response, true));`,
                   onClick={() => setActiveEndpoint(ep.id)}
                   className={`px-3 py-2 text-xs rounded-lg transition-colors flex items-center gap-2 ${
                     activeEndpoint === ep.id 
-                      ? 'bg-zinc-900 text-white' 
-                      : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                      ? 'bg-emerald-600 text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   <span>{ep.name}</span>
                   <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                    ep.method === 'GET' ? 'bg-zinc-900 text-white' : 'bg-zinc-900 text-white'
+                    ep.method === 'GET' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
                   }`}>{ep.method}</span>
                 </button>
               ))}
@@ -4581,34 +4670,34 @@ print_r(json_decode($response, true));`,
 
           {/* API Key Info */}
           <div className="bg-gray-900 rounded-xl p-4">
-            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Authentication</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Authentication</p>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-zinc-500">Header:</span>
-              <code className="text-zinc-300 text-xs bg-gray-800 px-2 py-1 rounded">X-API-KEY: {apiKey.substring(0, 16)}...</code>
+              <span className="text-xs text-gray-400">Header:</span>
+              <code className="text-emerald-400 text-xs bg-gray-800 px-2 py-1 rounded">X-API-KEY: {apiKey.substring(0, 16)}...</code>
             </div>
           </div>
 
           {/* Endpoint Details */}
-          <div className="bg-zinc-900 rounded-xl border p-4 sm:p-6">
+          <div className="bg-white rounded-xl border p-4 sm:p-6">
             <div className="mb-6">
-              <h1 className="text-xl sm:text-2xl font-bold text-white">{currentEndpoint.title}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{currentEndpoint.title}</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <span className={`px-2 py-1 text-xs font-bold rounded ${
                   currentEndpoint.method === 'GET' 
-                    ? 'bg-zinc-800 text-zinc-200' 
-                    : 'bg-zinc-800 text-zinc-200'
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-blue-100 text-blue-700'
                 }`}>{currentEndpoint.method}</span>
-                <code className="text-xs sm:text-sm text-zinc-300 bg-zinc-800 px-2 py-1 rounded break-all">
+                <code className="text-xs sm:text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded break-all">
                   {API_BASE_URL}{currentEndpoint.path}
                 </code>
               </div>
-              <p className="mt-3 text-sm text-zinc-300">{currentEndpoint.description}</p>
+              <p className="mt-3 text-sm text-gray-600">{currentEndpoint.description}</p>
             </div>
             
             {/* Headers */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-white mb-2">Headers</h3>
-              <ul className="list-disc list-inside text-sm text-zinc-300">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Headers</h3>
+              <ul className="list-disc list-inside text-sm text-gray-600">
                 {currentEndpoint.headers.map((h, i) => (
                   <li key={i} className="break-all">{h}</li>
                 ))}
@@ -4618,16 +4707,16 @@ print_r(json_decode($response, true));`,
             {/* Request Body (for POST endpoints) */}
             {currentEndpoint.requestBody && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-white mb-2">Request Body</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Request Body</h3>
                 <div className="space-y-2">
                   {currentEndpoint.requestBody.map((field, i) => (
-                    <div key={i} className="bg-zinc-950 p-3 rounded-lg">
+                    <div key={i} className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <code className="text-xs font-mono text-white bg-zinc-900 px-2 py-0.5 rounded">{field.name}</code>
-                        <span className="text-xs text-zinc-400">{field.type}</span>
+                        <code className="text-xs font-mono text-gray-900 bg-white px-2 py-0.5 rounded">{field.name}</code>
+                        <span className="text-xs text-gray-500">{field.type}</span>
                         {field.required && <span className="text-xs text-red-500">Required</span>}
                       </div>
-                      <p className="text-xs text-zinc-300 mt-1">{field.desc}</p>
+                      <p className="text-xs text-gray-600 mt-1">{field.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -4636,19 +4725,19 @@ print_r(json_decode($response, true));`,
             
             {/* Response Fields */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-white mb-2">Response</h3>
-              <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
-                <Check className="w-4 h-4 text-white" />
-                <span className="text-xs sm:text-sm text-zinc-200 font-medium">Status code: 200 OK</span>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">Response</h3>
+              <div className="bg-emerald-50 border border-indigo-200 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+                <Check className="w-4 h-4 text-indigo-600" />
+                <span className="text-xs sm:text-sm text-indigo-700 font-medium">Status code: 200 OK</span>
               </div>
               <div className="space-y-2">
                 {currentEndpoint.responseFields.map((field, i) => (
-                  <div key={i} className="bg-zinc-950 p-3 rounded-lg">
+                  <div key={i} className="bg-gray-50 p-3 rounded-lg">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <code className="text-xs font-mono text-white bg-zinc-900 px-2 py-0.5 rounded">{field.name}</code>
-                      <span className="text-xs text-zinc-400">{field.type}</span>
+                      <code className="text-xs font-mono text-gray-900 bg-white px-2 py-0.5 rounded">{field.name}</code>
+                      <span className="text-xs text-gray-500">{field.type}</span>
                     </div>
-                    <p className="text-xs text-zinc-300 mt-1">{field.desc}</p>
+                    <p className="text-xs text-gray-600 mt-1">{field.desc}</p>
                   </div>
                 ))}
               </div>
@@ -4665,8 +4754,8 @@ print_r(json_decode($response, true));`,
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-3 text-xs font-medium capitalize transition-colors ${
                     activeTab === tab 
-                      ? 'text-white border-b-2 border-white' 
-                      : 'text-zinc-500 hover:text-white'
+                      ? 'text-white border-b-2 border-indigo-500' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   {tab === 'shell' ? 'Shell' : tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -4676,9 +4765,9 @@ print_r(json_decode($response, true));`,
             
             {/* Request Example */}
             <div className="p-4">
-              <p className="text-xs text-zinc-500 mb-2">Request example</p>
+              <p className="text-xs text-gray-400 mb-2">Request example</p>
               <div className="bg-[#151c24] rounded-lg p-3 overflow-x-auto">
-                <pre className="text-xs text-zinc-300 whitespace-pre-wrap font-mono break-all">
+                <pre className="text-xs text-emerald-400 whitespace-pre-wrap font-mono break-all">
                   {currentEndpoint.examples[activeTab]}
                 </pre>
               </div>
@@ -4686,7 +4775,7 @@ print_r(json_decode($response, true));`,
             
             {/* Response Example */}
             <div className="p-4 pt-0">
-              <p className="text-xs text-zinc-500 mb-2">Response example</p>
+              <p className="text-xs text-gray-400 mb-2">Response example</p>
               <div className="bg-[#151c24] rounded-lg p-3 overflow-x-auto">
                 <pre className="text-xs font-mono whitespace-pre-wrap break-all">
                   {currentEndpoint.response.split('\n').map((line, i) => {
@@ -4694,17 +4783,17 @@ print_r(json_decode($response, true));`,
                       return <span key={i} className="text-cyan-400">{line}{'\n'}</span>;
                     }
                     if (line.includes(': true') || line.includes(': false')) {
-                      return <span key={i}><span className="text-zinc-600">{line.split(':')[0]}:</span><span className="text-orange-400">{line.split(':')[1]}</span>{'\n'}</span>;
+                      return <span key={i}><span className="text-gray-300">{line.split(':')[0]}:</span><span className="text-orange-400">{line.split(':')[1]}</span>{'\n'}</span>;
                     }
                     if (line.includes('": "')) {
                       const parts = line.split('": "');
-                      return <span key={i}><span className="text-cyan-400">{parts[0]}&quot;</span><span className="text-zinc-600">: </span><span className="text-green-400">&quot;{parts[1]}</span>{'\n'}</span>;
+                      return <span key={i}><span className="text-cyan-400">{parts[0]}&quot;</span><span className="text-gray-300">: </span><span className="text-green-400">&quot;{parts[1]}</span>{'\n'}</span>;
                     }
                     if (line.match(/: \d/)) {
                       const parts = line.split(': ');
-                      return <span key={i}><span className="text-cyan-400">{parts[0]}</span><span className="text-zinc-600">: </span><span className="text-purple-400">{parts[1]}</span>{'\n'}</span>;
+                      return <span key={i}><span className="text-cyan-400">{parts[0]}</span><span className="text-gray-300">: </span><span className="text-purple-400">{parts[1]}</span>{'\n'}</span>;
                     }
-                    return <span key={i} className="text-zinc-600">{line}{'\n'}</span>;
+                    return <span key={i} className="text-gray-300">{line}{'\n'}</span>;
                   })}
                 </pre>
               </div>
@@ -4723,19 +4812,19 @@ print_r(json_decode($response, true));`,
     if (!resellerProfile?.is_reseller) {
       return (
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white">Reseller Portal</h2>
+          <h2 className="text-xl font-bold text-gray-900">Reseller Portal</h2>
           
           {/* Hero Card */}
           <div className="bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 text-white">
             <h3 className="text-2xl font-bold mb-2">Become a Reseller</h3>
-            <p className="text-zinc-300 text-sm mb-4">
+            <p className="text-purple-100 text-sm mb-4">
               Access our API to resell SMS verification services. Get competitive pricing, 
               dedicated support, and comprehensive documentation.
             </p>
             <button
               onClick={handleRegister}
               disabled={registering}
-              className="px-6 py-2.5 bg-zinc-900 text-white rounded-full font-semibold text-sm hover:bg-zinc-900 transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 bg-white text-purple-600 rounded-full font-semibold text-sm hover:bg-purple-50 transition-colors disabled:opacity-50"
             >
               {registering ? 'Registering...' : 'Register for Free'}
             </button>
@@ -4743,28 +4832,28 @@ print_r(json_decode($response, true));`,
 
           {/* Plans */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Available Plans</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Plans</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {resellerPlans.map((plan) => (
-                <div key={plan.id} className={`bg-zinc-900 rounded-xl border-2 p-5 ${plan.name === 'Pro' ? 'border-purple-400 ring-2 ring-purple-200' : 'border-zinc-700'}`}>
+                <div key={plan.id} className={`bg-white rounded-xl border-2 p-5 ${plan.name === 'Pro' ? 'border-purple-400 ring-2 ring-purple-200' : 'border-gray-200'}`}>
                   {plan.name === 'Pro' && (
-                    <span className="px-2 py-0.5 bg-zinc-800 text-zinc-200 text-[10px] font-bold rounded-full mb-2 inline-block">POPULAR</span>
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold rounded-full mb-2 inline-block">POPULAR</span>
                   )}
-                  <h4 className="text-lg font-bold text-white">{plan.name}</h4>
+                  <h4 className="text-lg font-bold text-gray-900">{plan.name}</h4>
                   <div className="mt-2 mb-3">
-                    <span className="text-2xl font-bold text-white">₦{plan.monthly_fee_ngn?.toLocaleString()}</span>
-                    <span className="text-sm text-zinc-400">/month</span>
+                    <span className="text-2xl font-bold text-gray-900">₦{plan.monthly_fee_ngn?.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500">/month</span>
                   </div>
-                  <p className="text-xs text-zinc-400 mb-3">{plan.description}</p>
+                  <p className="text-xs text-gray-500 mb-3">{plan.description}</p>
                   <div className="space-y-1.5">
                     {(plan.features || []).map((f, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
-                        <Check className="w-3.5 h-3.5 text-white" />
+                      <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
+                        <Check className="w-3.5 h-3.5 text-green-500" />
                         <span>{f}</span>
                       </div>
                     ))}
-                    <div className="flex items-center gap-2 text-xs text-zinc-300">
-                      <Check className="w-3.5 h-3.5 text-white" />
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Check className="w-3.5 h-3.5 text-green-500" />
                       <span>{Math.round((1 - plan.markup_multiplier) * 100)}% markup discount</span>
                     </div>
                   </div>
@@ -4780,15 +4869,15 @@ print_r(json_decode($response, true));`,
     return (
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <h2 className="text-lg sm:text-xl font-bold text-white">Reseller Portal</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Reseller Portal</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowDocs(true)}
-              className="px-3 sm:px-4 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold hover:bg-zinc-700"
+              className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700"
             >
               API Documentation
             </button>
-            <span className="px-2 sm:px-3 py-1 bg-zinc-800 text-zinc-200 rounded-full text-xs font-semibold">
+            <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
               {resellerProfile.plan} Plan
             </span>
           </div>
@@ -4796,38 +4885,38 @@ print_r(json_decode($response, true));`,
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-zinc-900 rounded-xl border p-4">
-            <p className="text-xs text-zinc-400 mb-1">Total Orders</p>
-            <p className="text-2xl font-bold text-white">{resellerProfile.total_orders || 0}</p>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Total Orders</p>
+            <p className="text-2xl font-bold text-gray-900">{resellerProfile.total_orders || 0}</p>
           </div>
-          <div className="bg-zinc-900 rounded-xl border p-4">
-            <p className="text-xs text-zinc-400 mb-1">Total Revenue</p>
-            <p className="text-2xl font-bold text-white">₦{(resellerProfile.total_revenue_ngn || 0).toLocaleString()}</p>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Total Revenue</p>
+            <p className="text-2xl font-bold text-indigo-600">₦{(resellerProfile.total_revenue_ngn || 0).toLocaleString()}</p>
           </div>
-          <div className="bg-zinc-900 rounded-xl border p-4">
-            <p className="text-xs text-zinc-400 mb-1">Markup Discount</p>
-            <p className="text-2xl font-bold text-white">
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Markup Discount</p>
+            <p className="text-2xl font-bold text-purple-600">
               {resellerProfile.custom_markup_multiplier 
                 ? `${Math.round((1 - resellerProfile.custom_markup_multiplier) * 100)}%`
                 : `${Math.round((1 - (resellerProfile.plan_details?.markup_multiplier || 1)) * 100)}%`}
             </p>
           </div>
-          <div className="bg-zinc-900 rounded-xl border p-4">
-            <p className="text-xs text-zinc-400 mb-1">Your Balance</p>
-            <p className="text-2xl font-bold text-white">₦{user.ngn_balance?.toLocaleString()}</p>
+          <div className="bg-white rounded-xl border p-4">
+            <p className="text-xs text-gray-500 mb-1">Your Balance</p>
+            <p className="text-2xl font-bold text-gray-900">₦{user.ngn_balance?.toLocaleString()}</p>
           </div>
         </div>
 
         {/* API Key Section */}
-        <div className="bg-zinc-900 rounded-xl border p-5">
+        <div className="bg-white rounded-xl border p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Key className="w-5 h-5 text-white" />
-              <h3 className="text-sm font-semibold text-white">API Key</h3>
+              <Key className="w-5 h-5 text-purple-600" />
+              <h3 className="text-sm font-semibold text-gray-900">API Key</h3>
             </div>
             <button
               onClick={() => copyToClipboard(resellerProfile.api_key)}
-              className="px-3 py-1.5 bg-zinc-800 text-zinc-200 rounded-lg text-xs font-semibold hover:bg-zinc-700"
+              className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-semibold hover:bg-purple-200"
             >
               <Copy className="w-3.5 h-3.5 inline mr-1" />
               Copy
@@ -4838,21 +4927,21 @@ print_r(json_decode($response, true));`,
               type={showApiKey ? 'text' : 'password'}
               value={resellerProfile.api_key || ''}
               readOnly
-              className="flex-1 px-4 py-2.5 bg-zinc-950 border border-zinc-700 rounded-lg text-sm font-mono text-zinc-200"
+              className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-700"
             />
             <button
               onClick={() => setShowApiKey(!showApiKey)}
-              className="p-2.5 bg-zinc-800 rounded-lg hover:bg-zinc-700"
+              className="p-2.5 bg-gray-100 rounded-lg hover:bg-gray-200"
             >
-              {showApiKey ? <EyeOff className="w-4 h-4 text-zinc-300" /> : <Eye className="w-4 h-4 text-zinc-300" />}
+              {showApiKey ? <EyeOff className="w-4 h-4 text-gray-600" /> : <Eye className="w-4 h-4 text-gray-600" />}
             </button>
           </div>
-          <p className="text-[10px] text-zinc-500 mt-2">Use this key in the X-API-KEY header or as api_key query parameter</p>
+          <p className="text-[10px] text-gray-400 mt-2">Use this key in the X-API-KEY header or as api_key query parameter</p>
         </div>
 
         {/* Quick Start */}
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-zinc-700 p-4 sm:p-5">
-          <h3 className="text-sm font-semibold text-white mb-3">Quick Start</h3>
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4 sm:p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Start</h3>
           <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto max-w-full">
             <pre className="text-[10px] sm:text-xs text-green-400 whitespace-pre-wrap break-all">{`# 1. Get your balance
 curl "${resellerApiBaseUrl}/api/reseller/v1/balance?api_key=${resellerProfile.api_key?.substring(0,8)}..."
@@ -4870,64 +4959,64 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
           </div>
           <button
             onClick={() => setShowDocs(true)}
-            className="mt-3 text-sm text-white font-semibold hover:text-zinc-200"
+            className="mt-3 text-sm text-purple-600 font-semibold hover:text-purple-700"
           >
             View Full Documentation →
           </button>
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-zinc-900 rounded-xl border p-5">
+        <div className="bg-white rounded-xl border p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-white">Recent Orders</h3>
-            <button onClick={refreshOrders} className="text-xs text-white hover:text-zinc-200 font-semibold">
+            <h3 className="text-sm font-semibold text-gray-900">Recent Orders</h3>
+            <button onClick={refreshOrders} className="text-xs text-purple-600 hover:text-purple-700 font-semibold">
               <RefreshCw className="w-3.5 h-3.5 inline mr-1" />
               Refresh
             </button>
           </div>
           {resellerOrders.length === 0 ? (
             <div className="text-center py-8">
-              <Server className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-              <p className="text-sm text-zinc-400">No orders yet</p>
-              <p className="text-xs text-zinc-500">Orders made through API will appear here</p>
+              <Server className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-sm text-gray-500">No orders yet</p>
+              <p className="text-xs text-gray-400">Orders made through API will appear here</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs min-w-[500px]">
-                <thead className="border-b border-zinc-700 bg-zinc-950">
+                <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>
-                    <th className="text-left px-3 py-2 font-semibold text-zinc-300">Service</th>
-                    <th className="text-left px-3 py-2 font-semibold text-zinc-300">Phone</th>
-                    <th className="text-left px-3 py-2 font-semibold text-zinc-300">OTP</th>
-                    <th className="text-left px-3 py-2 font-semibold text-zinc-300">Price</th>
-                    <th className="text-left px-3 py-2 font-semibold text-zinc-300">Status</th>
-                    <th className="text-left px-3 py-2 font-semibold text-zinc-300">Date</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Service</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Phone</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">OTP</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Price</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Status</th>
+                    <th className="text-left px-3 py-2 font-semibold text-gray-600">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {resellerOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-zinc-800 hover:bg-zinc-900">
-                      <td className="px-3 py-2.5 font-medium text-zinc-100">{order.service_name || order.service}</td>
-                      <td className="px-3 py-2.5 font-mono text-zinc-200">{order.phone_number || '-'}</td>
+                    <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-3 py-2.5 font-medium text-gray-800">{order.service_name || order.service}</td>
+                      <td className="px-3 py-2.5 font-mono text-gray-700">{order.phone_number || '-'}</td>
                       <td className="px-3 py-2.5">
                         {order.otp ? (
-                          <span className="font-mono font-bold text-white">{order.otp}</span>
+                          <span className="font-mono font-bold text-indigo-600">{order.otp}</span>
                         ) : (
-                          <span className="text-zinc-500">Waiting...</span>
+                          <span className="text-gray-400">Waiting...</span>
                         )}
                       </td>
-                      <td className="px-3 py-2.5 text-zinc-200">₦{order.cost_ngn?.toFixed(2)}</td>
+                      <td className="px-3 py-2.5 text-gray-700">₦{order.cost_ngn?.toFixed(2)}</td>
                       <td className="px-3 py-2.5">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          order.status === 'completed' ? 'bg-zinc-800 text-zinc-200' :
-                          order.status === 'active' ? 'bg-zinc-800 text-zinc-200' :
+                          order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          order.status === 'active' ? 'bg-blue-100 text-blue-700' :
                           order.status === 'refunded' ? 'bg-orange-100 text-orange-700' :
-                          'bg-zinc-800 text-zinc-200'
+                          'bg-gray-100 text-gray-700'
                         }`}>
                           {order.status?.toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 text-zinc-400">{new Date(order.created_at).toLocaleDateString()}</td>
+                      <td className="px-3 py-2.5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
 
@@ -4940,17 +5029,17 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         {/* Upgrade Plans */}
         {resellerProfile.plan !== 'Enterprise' && (
           <div>
-            <h3 className="text-sm font-semibold text-white mb-3">Upgrade Plan</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Upgrade Plan</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {resellerPlans.filter(p => p.monthly_fee_ngn > (resellerProfile.plan_details?.monthly_fee_ngn || 0)).map((plan) => (
-                <div key={plan.id} className="bg-zinc-900 rounded-xl border p-4">
-                  <h4 className="font-semibold text-white">{plan.name}</h4>
-                  <p className="text-lg font-bold text-white mt-1">₦{plan.monthly_fee_ngn?.toLocaleString()}<span className="text-xs text-zinc-400">/mo</span></p>
-                  <p className="text-xs text-zinc-400 mt-1">{Math.round((1 - plan.markup_multiplier) * 100)}% markup discount</p>
+                <div key={plan.id} className="bg-white rounded-xl border p-4">
+                  <h4 className="font-semibold text-gray-900">{plan.name}</h4>
+                  <p className="text-lg font-bold text-gray-900 mt-1">₦{plan.monthly_fee_ngn?.toLocaleString()}<span className="text-xs text-gray-500">/mo</span></p>
+                  <p className="text-xs text-gray-500 mt-1">{Math.round((1 - plan.markup_multiplier) * 100)}% markup discount</p>
                   <button
                     onClick={() => handleUpgrade(plan.name)}
                     disabled={upgrading}
-                    className="w-full mt-3 px-4 py-2 bg-zinc-900 text-white rounded-lg text-xs font-semibold hover:bg-zinc-700 disabled:opacity-50"
+                    className="w-full mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 disabled:opacity-50"
                   >
                     {upgrading ? 'Upgrading...' : 'Upgrade'}
                   </button>
@@ -5055,15 +5144,15 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white">Convert Currency</h2>
-          <p className="text-xs sm:text-sm text-zinc-300">Convert between USD and NGN</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Convert Currency</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Convert between USD and NGN</p>
         </div>
 
         {/* Balance Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div 
             className="rounded-xl p-5 text-white"
-            style={{ background: '#18181b', border: '1px solid #3f3f46' }}
+            style={{ background: `linear-gradient(135deg, ${branding.primary_color_hex || '#5B5FC7'}, ${branding.secondary_color_hex || '#6E72D9'})` }}
           >
             <p className="text-sm opacity-90">USD Balance</p>
             <p className="text-3xl font-bold">${(user?.usd_balance || 0).toFixed(2)}</p>
@@ -5078,17 +5167,17 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         </div>
 
         {/* Conversion Direction Toggle */}
-        <div className="bg-zinc-900 rounded-xl border p-4">
-          <p className="text-sm font-medium text-zinc-200 mb-3">Select Conversion Type</p>
+        <div className="bg-white rounded-xl border p-4">
+          <p className="text-sm font-medium text-gray-700 mb-3">Select Conversion Type</p>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => { setConversionDirection('usd-to-ngn'); setConvertAmount(''); }}
               className={`py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                 conversionDirection === 'usd-to-ngn' 
-                  ? 'text-white shadow-none' 
-                  : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                  ? 'text-white shadow-lg' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
-              style={conversionDirection === 'usd-to-ngn' ? { backgroundColor: '#ffffff', color: '#000000' } : {}}
+              style={conversionDirection === 'usd-to-ngn' ? { backgroundColor: branding.primary_color_hex || '#5B5FC7' } : {}}
             >
               <span className="text-lg">$</span> → <span className="text-lg">₦</span>
               <span className="hidden sm:inline ml-1">USD to NGN</span>
@@ -5097,8 +5186,8 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               onClick={() => { setConversionDirection('ngn-to-usd'); setConvertAmount(''); }}
               className={`py-3 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${
                 conversionDirection === 'ngn-to-usd' 
-                  ? 'text-white shadow-none' 
-                  : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                  ? 'text-white shadow-lg' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
               style={conversionDirection === 'ngn-to-usd' ? { backgroundColor: branding.accent_color_hex || '#7c3aed' } : {}}
             >
@@ -5109,37 +5198,37 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         </div>
 
         {/* Exchange Rate Info */}
-        <div className="bg-zinc-900 border border-amber-200 rounded-xl p-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <div className="flex items-center gap-2">
-            <RefreshCw className="w-5 h-5 text-zinc-200" />
+            <RefreshCw className="w-5 h-5 text-amber-600" />
             <span className="font-semibold text-amber-800">Current Exchange Rates</span>
           </div>
           <div className="grid grid-cols-2 gap-4 mt-3">
             <div>
-              <p className="text-xs text-zinc-200">USD → NGN</p>
+              <p className="text-xs text-amber-600">USD → NGN</p>
               <p className="text-lg font-bold text-amber-900">$1 = ₦{usdToNgnRate.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-xs text-zinc-200">NGN → USD</p>
+              <p className="text-xs text-amber-600">NGN → USD</p>
               <p className="text-lg font-bold text-amber-900">₦{ngnToUsdRate.toLocaleString()} = $1</p>
             </div>
           </div>
-          <p className="text-xs text-zinc-200 mt-2">Rates are set by admin and may change</p>
+          <p className="text-xs text-amber-600 mt-2">Rates are set by admin and may change</p>
         </div>
 
         {/* Conversion Form */}
-        <div className="bg-zinc-900 rounded-xl border p-6">
-          <h3 className="font-bold text-white mb-4">
+        <div className="bg-white rounded-xl border p-6">
+          <h3 className="font-bold text-gray-900 mb-4">
             Convert {sourceCurrency} to {targetCurrency}
           </h3>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-200 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Amount ({sourceCurrency})
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                   {conversionDirection === 'usd-to-ngn' ? '$' : '₦'}
                 </span>
                 <input
@@ -5152,7 +5241,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   step={conversionDirection === 'usd-to-ngn' ? '0.01' : '1'}
                 />
               </div>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Available: {conversionDirection === 'usd-to-ngn' 
                   ? `$${sourceBalance.toFixed(2)}` 
                   : `₦${sourceBalance.toLocaleString()}`}
@@ -5171,9 +5260,9 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     convertAmount === preset 
                       ? 'text-white' 
-                      : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
-                  style={convertAmount === preset ? { backgroundColor: '#ffffff', color: '#000000' } : {}}
+                  style={convertAmount === preset ? { backgroundColor: branding.primary_color_hex || '#5B5FC7' } : {}}
                 >
                   {conversionDirection === 'usd-to-ngn' ? `$${preset}` : `₦${parseInt(preset).toLocaleString()}`}
                 </button>
@@ -5182,14 +5271,14 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
             {/* Preview */}
             {convertAmount && parseFloat(convertAmount) > 0 && (
-              <div className="bg-zinc-900 rounded-lg p-4">
-                <p className="text-sm text-zinc-300">You will receive:</p>
-                <p className="text-2xl font-bold text-zinc-200">
+              <div className="bg-emerald-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">You will receive:</p>
+                <p className="text-2xl font-bold text-indigo-700">
                   {conversionDirection === 'usd-to-ngn' 
                     ? `₦${previewAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
                     : `$${previewAmount.toFixed(2)}`}
                 </p>
-                <p className="text-xs text-zinc-400 mt-1">
+                <p className="text-xs text-gray-500 mt-1">
                   Rate: {conversionDirection === 'usd-to-ngn' 
                     ? `$1 = ₦${currentRate.toLocaleString()}`
                     : `₦${currentRate.toLocaleString()} = $1`}
@@ -5201,7 +5290,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               onClick={handleConvert}
               disabled={converting || !convertAmount || parseFloat(convertAmount) <= 0 || parseFloat(convertAmount) > sourceBalance}
               className="w-full py-3 text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ backgroundColor: '#ffffff', color: '#000000' }}
+              style={{ backgroundColor: conversionDirection === 'usd-to-ngn' ? (branding.primary_color_hex || '#5B5FC7') : (branding.accent_color_hex || '#7c3aed') }}
             >
               {converting ? (
                 <>
@@ -5219,24 +5308,24 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         </div>
 
         {/* Recent Conversions */}
-        <div className="bg-zinc-900 rounded-xl border p-6">
-          <h3 className="font-bold text-white mb-4">Recent Conversions</h3>
+        <div className="bg-white rounded-xl border p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Recent Conversions</h3>
           
           {loading ? (
             <div className="text-center py-4">
-              <RefreshCw className="w-6 h-6 mx-auto text-zinc-500 animate-spin" />
+              <RefreshCw className="w-6 h-6 mx-auto text-gray-400 animate-spin" />
             </div>
           ) : transactions.length === 0 ? (
             <div className="text-center py-8">
-              <RefreshCw className="w-10 h-10 mx-auto text-zinc-600 mb-2" />
-              <p className="text-zinc-400">No conversions yet</p>
+              <RefreshCw className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+              <p className="text-gray-500">No conversions yet</p>
             </div>
           ) : (
             <div className="space-y-3">
               {transactions.map((tx, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-zinc-950 rounded-lg">
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-gray-900">
                       {tx.amount_usd !== undefined && tx.amount_usd < 0
                         ? `$${Math.abs(tx.amount_usd || 0).toFixed(2)} → ₦${(tx.amount_ngn || tx.amount || 0).toLocaleString()}`
                         : tx.metadata?.usd_received 
@@ -5244,11 +5333,11 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                           : `$${Math.abs(tx.amount_usd || 0).toFixed(2)} → ₦${(tx.amount_ngn || 0).toLocaleString()}`
                       }
                     </p>
-                    <p className="text-xs text-zinc-400">Rate: ₦{(tx.exchange_rate || tx.metadata?.rate || usdToNgnRate)?.toLocaleString()}/USD</p>
+                    <p className="text-xs text-gray-500">Rate: ₦{(tx.exchange_rate || tx.metadata?.rate || usdToNgnRate)?.toLocaleString()}/USD</p>
                   </div>
                   <div className="text-right">
-                    <span className="px-2 py-1 bg-zinc-800 text-zinc-200 text-xs rounded-full">Completed</span>
-                    <p className="text-xs text-zinc-400 mt-1">{new Date(tx.created_at).toLocaleDateString()}</p>
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Completed</span>
+                    <p className="text-xs text-gray-500 mt-1">{new Date(tx.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}
@@ -5398,53 +5487,53 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         <div className="space-y-4">
           <button 
             onClick={() => setSelectedProduct(null)}
-            className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
           >
             ← Back to Gift Cards
           </button>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Info */}
-            <div className="bg-zinc-900 rounded-xl border p-6">
+            <div className="bg-white rounded-xl border p-6">
               <div className="flex items-start gap-4">
                 {selectedProduct.logoUrls?.[0] && (
-                  <img src={selectedProduct.logoUrls[0]} alt="" className="w-20 h-20 object-contain rounded-lg bg-zinc-950" />
+                  <img src={selectedProduct.logoUrls[0]} alt="" className="w-20 h-20 object-contain rounded-lg bg-gray-50" />
                 )}
                 <div>
-                  <h2 className="text-xl font-bold text-white">{selectedProduct.productName}</h2>
-                  <p className="text-sm text-zinc-400">{selectedProduct.brand?.brandName}</p>
-                  <p className="text-sm text-zinc-400">{selectedProduct.country?.name}</p>
+                  <h2 className="text-xl font-bold text-gray-900">{selectedProduct.productName}</h2>
+                  <p className="text-sm text-gray-500">{selectedProduct.brand?.brandName}</p>
+                  <p className="text-sm text-gray-500">{selectedProduct.country?.name}</p>
                 </div>
               </div>
               
               {selectedProduct.redeemInstruction?.verbose && (
-                <div className="mt-4 p-3 bg-zinc-950 rounded-lg">
-                  <p className="text-xs text-zinc-300">{selectedProduct.redeemInstruction.verbose}</p>
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-600">{selectedProduct.redeemInstruction.verbose}</p>
                 </div>
               )}
               
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-400">Card Currency</span>
+                  <span className="text-gray-500">Card Currency</span>
                   <span className="font-medium">{selectedProduct.recipientCurrencyCode}</span>
                 </div>
                 {selectedProduct.recipientCurrencyCode !== 'USD' && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">{selectedProduct.recipientCurrencyCode} to USD</span>
+                    <span className="text-gray-500">{selectedProduct.recipientCurrencyCode} to USD</span>
                     <span className="font-medium">1 {selectedProduct.recipientCurrencyCode} = ${(selectedProduct.currency_to_usd_rate || 1).toFixed(4)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-400">USD to NGN Rate</span>
+                  <span className="text-gray-500">USD to NGN Rate</span>
                   <span className="font-medium">₦{(selectedProduct.admin_usd_to_ngn_rate || 1650).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm border-t pt-2">
-                  <span className="text-zinc-200 font-medium">Final Rate</span>
-                  <span className="font-bold text-white">1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || exchangeRate).toLocaleString()}</span>
+                  <span className="text-gray-700 font-medium">Final Rate</span>
+                  <span className="font-bold text-indigo-600">1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || exchangeRate).toLocaleString()}</span>
                 </div>
                 {selectedProduct.senderFee > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">Service Fee</span>
+                    <span className="text-gray-500">Service Fee</span>
                     <span className="font-medium">${selectedProduct.senderFee}</span>
                   </div>
                 )}
@@ -5452,13 +5541,13 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
             </div>
             
             {/* Order Form */}
-            <div className="bg-zinc-900 rounded-xl border p-6">
-              <h3 className="font-bold text-white mb-4">Purchase Details</h3>
+            <div className="bg-white rounded-xl border p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Purchase Details</h3>
               
               <div className="space-y-4">
                 {/* Amount Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Gift Card Value ({selectedProduct.recipientCurrencyCode})
                   </label>
                   {isFixed ? (
@@ -5469,8 +5558,8 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                           onClick={() => setOrderForm({ ...orderForm, amount: val.toString() })}
                           className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                             orderForm.amount === val.toString()
-                              ? 'bg-zinc-900 text-white border-emerald-600'
-                              : 'bg-zinc-900 text-zinc-200 hover:bg-zinc-900'
+                              ? 'bg-emerald-600 text-white border-emerald-600'
+                              : 'bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
                           {selectedProduct.recipientCurrencyCode} {val}
@@ -5492,7 +5581,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                 
                 {/* Recipient Email */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Recipient Email <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -5502,12 +5591,12 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                     placeholder="recipient@example.com"
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
-                  <p className="text-xs text-zinc-400 mt-1">Gift card will be sent to this email</p>
+                  <p className="text-xs text-gray-500 mt-1">Gift card will be sent to this email</p>
                 </div>
                 
                 {/* Recipient Phone */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Recipient Phone <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -5521,7 +5610,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                 
                 {/* Sender Name (optional) */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-200 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Your Name (optional)
                   </label>
                   <input
@@ -5535,12 +5624,12 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                 
                 {/* Price Summary */}
                 {orderForm.amount && (
-                  <div className="bg-zinc-900 rounded-lg p-4 space-y-2">
+                  <div className="bg-emerald-50 rounded-lg p-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Card Value</span>
                       <span>{selectedProduct.recipientCurrencyCode} {orderForm.amount}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-zinc-300">
+                    <div className="flex justify-between text-sm text-gray-600">
                       <span>Rate</span>
                       <span>1 {selectedProduct.recipientCurrencyCode} = ₦{(selectedProduct.final_ngn_rate || exchangeRate).toLocaleString()}</span>
                     </div>
@@ -5550,7 +5639,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                         <span>${selectedProduct.senderFee}</span>
                       </div>
                     )}
-                    <div className="flex justify-between font-bold text-zinc-200 pt-2 border-t border-zinc-700">
+                    <div className="flex justify-between font-bold text-indigo-700 pt-2 border-t border-indigo-200">
                       <span>Total (NGN)</span>
                       <span>₦{(parseFloat(orderForm.amount) * (selectedProduct.final_ngn_rate || exchangeRate) + (selectedProduct.senderFee || 0) * (selectedProduct.final_ngn_rate || exchangeRate)).toLocaleString()}</span>
                     </div>
@@ -5560,12 +5649,12 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                 <button
                   onClick={handlePlaceOrder}
                   disabled={ordering || !orderForm.amount || !orderForm.recipient_email || !orderForm.recipient_phone}
-                  className="w-full py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {ordering ? 'Processing...' : 'Purchase Gift Card'}
                 </button>
                 
-                <p className="text-xs text-zinc-400 text-center">
+                <p className="text-xs text-gray-500 text-center">
                   Payment will be deducted from your NGN wallet balance
                 </p>
               </div>
@@ -5581,32 +5670,32 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         <div className="space-y-4">
           <button 
             onClick={() => { setSelectedOrder(null); setOrderDetails(null); }}
-            className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
           >
             ← Back to Order History
           </button>
           
-          <div className="bg-zinc-900 rounded-xl border overflow-hidden">
+          <div className="bg-white rounded-xl border overflow-hidden">
             <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-6 text-white">
               <h2 className="text-xl font-bold">{selectedOrder.product_name}</h2>
-              <p className="text-zinc-300">{selectedOrder.brand_name}</p>
+              <p className="text-emerald-100">{selectedOrder.brand_name}</p>
             </div>
             
             <div className="p-6 space-y-6">
               {loadingDetails ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full mx-auto"></div>
-                  <p className="text-zinc-400 mt-2">Loading details...</p>
+                  <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                  <p className="text-gray-500 mt-2">Loading details...</p>
                 </div>
               ) : (
                 <>
                   {/* Order Status */}
-                  <div className="flex items-center justify-between p-4 bg-zinc-950 rounded-lg">
-                    <span className="text-zinc-300">Status</span>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <span className="text-gray-600">Status</span>
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      selectedOrder.status === 'SUCCESSFUL' ? 'bg-zinc-800 text-zinc-200' :
+                      selectedOrder.status === 'SUCCESSFUL' ? 'bg-green-100 text-green-700' :
                       selectedOrder.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-zinc-800 text-zinc-200'
+                      'bg-gray-100 text-gray-700'
                     }`}>
                       {selectedOrder.status}
                     </span>
@@ -5614,23 +5703,23 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   
                   {/* Redeem Code Section */}
                   {orderDetails?.cards && orderDetails.cards.length > 0 && (
-                    <div className="border-2 border-zinc-700 rounded-lg p-4 bg-zinc-900">
-                      <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                    <div className="border-2 border-indigo-200 rounded-lg p-4 bg-emerald-50">
+                      <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
                         <Gift className="w-5 h-5" />
                         Redeem Code{orderDetails.cards.length > 1 ? 's' : ''}
                       </h3>
                       {orderDetails.cards.map((card, idx) => (
-                        <div key={idx} className="bg-zinc-900 rounded-lg p-4 mb-2 border">
+                        <div key={idx} className="bg-white rounded-lg p-4 mb-2 border">
                           {card.cardNumber && (
                             <div className="mb-2">
-                              <p className="text-xs text-zinc-400">Card Number / Code</p>
-                              <p className="font-mono text-lg font-bold text-zinc-200 select-all">{card.cardNumber}</p>
+                              <p className="text-xs text-gray-500">Card Number / Code</p>
+                              <p className="font-mono text-lg font-bold text-indigo-700 select-all">{card.cardNumber}</p>
                             </div>
                           )}
                           {card.pinCode && (
                             <div className="mb-2">
-                              <p className="text-xs text-zinc-400">PIN</p>
-                              <p className="font-mono text-lg font-bold text-zinc-200 select-all">{card.pinCode}</p>
+                              <p className="text-xs text-gray-500">PIN</p>
+                              <p className="font-mono text-lg font-bold text-indigo-700 select-all">{card.pinCode}</p>
                             </div>
                           )}
                           <button
@@ -5639,7 +5728,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                               navigator.clipboard.writeText(text);
                               toast.success('Copied to clipboard!');
                             }}
-                            className="mt-2 px-3 py-1 text-xs bg-zinc-900 text-white rounded hover:bg-zinc-700"
+                            className="mt-2 px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-indigo-700"
                           >
                             Copy Code
                           </button>
@@ -5650,22 +5739,22 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   
                   {/* Order Details */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-zinc-100">Order Details</h3>
+                    <h3 className="font-semibold text-gray-800">Order Details</h3>
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="p-3 bg-zinc-950 rounded-lg">
-                        <p className="text-zinc-400">Transaction ID</p>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Transaction ID</p>
                         <p className="font-semibold">{selectedOrder.transaction_id}</p>
                       </div>
-                      <div className="p-3 bg-zinc-950 rounded-lg">
-                        <p className="text-zinc-400">Amount Paid</p>
-                        <p className="font-semibold text-white">₦{selectedOrder.total_ngn?.toLocaleString()}</p>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Amount Paid</p>
+                        <p className="font-semibold text-indigo-600">₦{selectedOrder.total_ngn?.toLocaleString()}</p>
                       </div>
-                      <div className="p-3 bg-zinc-950 rounded-lg">
-                        <p className="text-zinc-400">Card Value</p>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Card Value</p>
                         <p className="font-semibold">${selectedOrder.unit_price} x {selectedOrder.quantity}</p>
                       </div>
-                      <div className="p-3 bg-zinc-950 rounded-lg">
-                        <p className="text-zinc-400">Date</p>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Date</p>
                         <p className="font-semibold">{new Date(selectedOrder.created_at).toLocaleString()}</p>
                       </div>
                     </div>
@@ -5673,14 +5762,14 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                   
                   {/* Recipient Details */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-zinc-100">Recipient Details</h3>
+                    <h3 className="font-semibold text-gray-800">Recipient Details</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                      <div className="p-3 bg-zinc-950 rounded-lg">
-                        <p className="text-zinc-400">Email</p>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Email</p>
                         <p className="font-semibold">{selectedOrder.recipient_email}</p>
                       </div>
-                      <div className="p-3 bg-zinc-950 rounded-lg">
-                        <p className="text-zinc-400">Phone</p>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Phone</p>
                         <p className="font-semibold">{selectedOrder.recipient_phone}</p>
                       </div>
                     </div>
@@ -5700,48 +5789,48 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setShowHistory(false)}
-              className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white"
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
             >
               ← Back to Gift Cards
             </button>
-            <button onClick={fetchOrderHistory} className="text-sm text-white hover:underline">
+            <button onClick={fetchOrderHistory} className="text-sm text-indigo-600 hover:underline">
               Refresh
             </button>
           </div>
           
-          <h2 className="text-xl font-bold text-white">Order History</h2>
+          <h2 className="text-xl font-bold text-gray-900">Order History</h2>
           
           {orderHistory.length === 0 ? (
-            <div className="bg-zinc-900 rounded-xl border p-8 text-center">
-              <Gift className="w-12 h-12 mx-auto text-zinc-600 mb-3" />
-              <p className="text-zinc-400">No gift card orders yet</p>
+            <div className="bg-white rounded-xl border p-8 text-center">
+              <Gift className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">No gift card orders yet</p>
             </div>
           ) : (
             <div className="space-y-3">
               {orderHistory.map((order) => (
-                <div key={order._id} className="bg-zinc-900 rounded-xl border p-4">
+                <div key={order._id} className="bg-white rounded-xl border p-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-semibold text-white">{order.product_name}</p>
-                      <p className="text-sm text-zinc-400">{order.brand_name}</p>
-                      <p className="text-xs text-zinc-500 mt-1">To: {order.recipient_email}</p>
+                      <p className="font-semibold text-gray-900">{order.product_name}</p>
+                      <p className="text-sm text-gray-500">{order.brand_name}</p>
+                      <p className="text-xs text-gray-400 mt-1">To: {order.recipient_email}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-white">₦{order.total_ngn?.toLocaleString()}</p>
+                      <p className="font-bold text-indigo-600">₦{order.total_ngn?.toLocaleString()}</p>
                       <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
-                        order.status === 'SUCCESSFUL' ? 'bg-zinc-800 text-zinc-200' :
+                        order.status === 'SUCCESSFUL' ? 'bg-green-100 text-green-700' :
                         order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-zinc-800 text-zinc-200'
+                        'bg-gray-100 text-gray-700'
                       }`}>
                         {order.status}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                    <p className="text-xs text-zinc-500">{new Date(order.created_at).toLocaleString()}</p>
+                    <p className="text-xs text-gray-400">{new Date(order.created_at).toLocaleString()}</p>
                     <button
                       onClick={() => fetchOrderDetails(order)}
-                      className="px-3 py-1 text-xs bg-zinc-800 text-zinc-200 rounded-lg hover:bg-emerald-200 font-medium"
+                      className="px-3 py-1 text-xs bg-emerald-100 text-indigo-700 rounded-lg hover:bg-emerald-200 font-medium"
                     >
                       View Details
                     </button>
@@ -5760,12 +5849,12 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Gift Cards</h2>
-            <p className="text-xs sm:text-sm text-zinc-300">Buy gift cards for any occasion</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Gift Cards</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Buy gift cards for any occasion</p>
           </div>
           <button
             onClick={() => { setShowHistory(true); fetchOrderHistory(); }}
-            className="px-3 py-2 text-sm bg-zinc-800 text-zinc-200 rounded-lg hover:bg-zinc-700"
+            className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
           >
             Order History
           </button>
@@ -5790,21 +5879,21 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               onChange={(e) => { setCountrySearch(e.target.value); setShowCountryDropdown(true); }}
               onFocus={() => setShowCountryDropdown(true)}
               placeholder="Select Country..."
-              className="w-full sm:w-56 px-4 py-2 border rounded-lg text-sm bg-zinc-900"
+              className="w-full sm:w-56 px-4 py-2 border rounded-lg text-sm bg-white"
             />
             {selectedCountry && (
               <button
                 onClick={() => { setSelectedCountry(''); setCountrySearch(''); }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
             {showCountryDropdown && (
-              <div className="absolute z-50 mt-1 w-full bg-zinc-900 border rounded-lg shadow-none max-h-60 overflow-y-auto">
+              <div className="absolute z-50 mt-1 w-full bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
                 <button
                   onClick={() => { setSelectedCountry(''); setCountrySearch(''); setShowCountryDropdown(false); }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-800"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
                 >
                   All Countries
                 </button>
@@ -5819,7 +5908,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                         setCountrySearch(c.name); 
                         setShowCountryDropdown(false); 
                       }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-800"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
                     >
                       {c.name}
                     </button>
@@ -5833,13 +5922,13 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         {/* Products Grid */}
         {loading ? (
           <div className="text-center py-12">
-            <RefreshCw className="w-8 h-8 mx-auto text-zinc-500 animate-spin" />
-            <p className="text-zinc-400 mt-2">Loading gift cards...</p>
+            <RefreshCw className="w-8 h-8 mx-auto text-gray-400 animate-spin" />
+            <p className="text-gray-500 mt-2">Loading gift cards...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-12 bg-zinc-900 rounded-xl border">
-            <Gift className="w-12 h-12 mx-auto text-zinc-600" />
-            <p className="text-zinc-400 mt-2">No gift cards found</p>
+          <div className="text-center py-12 bg-white rounded-xl border">
+            <Gift className="w-12 h-12 mx-auto text-gray-300" />
+            <p className="text-gray-500 mt-2">No gift cards found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -5847,22 +5936,22 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               <div
                 key={product.productId}
                 onClick={() => setSelectedProduct(product)}
-                className="bg-zinc-900 rounded-xl border p-3 sm:p-4 cursor-pointer hover:shadow-none hover:-translate-y-1 transition-all"
+                className="bg-white rounded-xl border p-3 sm:p-4 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all"
               >
                 {product.logoUrls?.[0] ? (
                   <img 
                     src={product.logoUrls[0]} 
                     alt="" 
-                    className="w-full h-16 sm:h-20 object-contain mb-2 bg-zinc-950 rounded-lg"
+                    className="w-full h-16 sm:h-20 object-contain mb-2 bg-gray-50 rounded-lg"
                   />
                 ) : (
-                  <div className="w-full h-16 sm:h-20 bg-zinc-800 rounded-lg flex items-center justify-center mb-2">
-                    <Gift className="w-8 h-8 text-zinc-600" />
+                  <div className="w-full h-16 sm:h-20 bg-gray-100 rounded-lg flex items-center justify-center mb-2">
+                    <Gift className="w-8 h-8 text-gray-300" />
                   </div>
                 )}
-                <h3 className="font-semibold text-white text-xs sm:text-sm truncate">{product.brand?.brandName}</h3>
-                <p className="text-[10px] sm:text-xs text-zinc-400 truncate">{product.country?.name}</p>
-                <div className="mt-2 text-xs text-white font-medium">
+                <h3 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{product.brand?.brandName}</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">{product.country?.name}</p>
+                <div className="mt-2 text-xs text-indigo-600 font-medium">
                   {product.fixedRecipientDenominations?.length > 0 
                     ? `${product.recipientCurrencyCode} ${product.fixedRecipientDenominations[0]}+`
                     : `${product.recipientCurrencyCode} ${product.minRecipientDenomination}-${product.maxRecipientDenomination}`
@@ -5874,7 +5963,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
         )}
         
         {filteredProducts.length > 50 && (
-          <p className="text-center text-sm text-zinc-400">
+          <p className="text-center text-sm text-gray-500">
             Showing 50 of {filteredProducts.length} products. Use search to find specific cards.
           </p>
         )}
@@ -5893,15 +5982,15 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
     const getPopupIcon = () => {
       switch (popup.popup_type) {
         case 'promo':
-          return <Gift className="w-12 h-12 text-white" />;
+          return <Gift className="w-12 h-12 text-green-500" />;
         case 'support':
-          return <MessageSquare className="w-12 h-12 text-white" />;
+          return <MessageSquare className="w-12 h-12 text-blue-500" />;
         case 'deposit_bonus':
-          return <Wallet className="w-12 h-12 text-white" />;
+          return <Wallet className="w-12 h-12 text-purple-500" />;
         case 'downtime':
           return <Bell className="w-12 h-12 text-red-500" />;
         default:
-          return <Bell className="w-12 h-12 text-zinc-400" />;
+          return <Bell className="w-12 h-12 text-gray-500" />;
       }
     };
 
@@ -5922,10 +6011,10 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
 
     return (
       <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-        <div className="bg-zinc-900 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
           {/* Header with gradient */}
           <div className={`bg-gradient-to-r ${getPopupColor()} p-6 text-white text-center`}>
-            <div className="w-16 h-16 bg-zinc-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
               {getPopupIcon()}
             </div>
             <h2 className="text-xl font-bold">{popup.title}</h2>
@@ -5940,7 +6029,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
                 className="w-full h-40 object-cover rounded-lg mb-4"
               />
             )}
-            <p className="text-zinc-300 text-center whitespace-pre-wrap">{popup.message}</p>
+            <p className="text-gray-600 text-center whitespace-pre-wrap">{popup.message}</p>
             
             {/* Action Buttons */}
             <div className="mt-6 space-y-3">
@@ -5956,7 +6045,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
               )}
               <button
                 onClick={dismissLoginPopup}
-                className="w-full py-3 border border-zinc-600 text-zinc-200 rounded-xl font-medium hover:bg-zinc-900 transition-colors"
+                className="w-full py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
               >
                 {currentPopupIndex < loginPopups.length - 1 ? 'Next' : 'Close'}
               </button>
@@ -5964,7 +6053,7 @@ curl -X POST "${resellerApiBaseUrl}/api/reseller/v1/buy" \\
             
             {/* Popup counter */}
             {loginPopups.length > 1 && (
-              <p className="text-center text-xs text-zinc-500 mt-3">
+              <p className="text-center text-xs text-gray-400 mt-3">
                 {currentPopupIndex + 1} of {loginPopups.length}
               </p>
             )}

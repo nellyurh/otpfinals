@@ -137,27 +137,27 @@ function LocationSearch({ value, onChange, placeholder, label, primaryColor, typ
   
   return (
     <div className="relative flex-1" ref={dropdownRef}>
-      <label className="block text-xs font-medium text-zinc-400 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
       <div 
-        className={`flex items-center gap-3 p-3 bg-zinc-900 border rounded-lg transition-all cursor-text ${
-          isOpen ? 'border-gray-400 ring-2 ring-opacity-20' : 'border-zinc-600'
+        className={`flex items-center gap-3 p-3 bg-white border rounded-lg transition-all cursor-text ${
+          isOpen ? 'border-gray-400 ring-2 ring-opacity-20' : 'border-gray-300'
         }`}
         style={{ '--tw-ring-color': primaryColor }}
         onClick={() => inputRef.current?.focus()}
       >
         {type === 'city' ? (
-          <MapPin className="w-5 h-5 text-zinc-500 flex-shrink-0" />
+          <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0" />
         ) : (
-          <Plane className="w-5 h-5 text-zinc-500 flex-shrink-0" />
+          <Plane className="w-5 h-5 text-gray-400 flex-shrink-0" />
         )}
         
         <div className="flex-1 min-w-0">
           {!isOpen && selectedLocation ? (
             <div>
-              <p className="font-semibold text-white text-sm truncate">
+              <p className="font-semibold text-gray-900 text-sm truncate">
                 {selectedLocation.name} ({selectedLocation.code})
               </p>
-              <p className="text-xs text-zinc-400 truncate">{selectedLocation.country}</p>
+              <p className="text-xs text-gray-500 truncate">{selectedLocation.country}</p>
             </div>
           ) : (
             <input
@@ -167,29 +167,29 @@ function LocationSearch({ value, onChange, placeholder, label, primaryColor, typ
               onChange={(e) => setSearch(e.target.value)}
               onFocus={handleInputFocus}
               placeholder={selectedLocation ? `${selectedLocation.name} (${selectedLocation.code})` : placeholder}
-              className="w-full bg-transparent focus:outline-none text-sm text-white placeholder-gray-400"
+              className="w-full bg-transparent focus:outline-none text-sm text-gray-900 placeholder-gray-400"
               data-testid={`location-search-${label.toLowerCase().replace(/\s/g, '-')}`}
             />
           )}
         </div>
         
-        <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </div>
       
       {/* Wide Dropdown - Booking.com Style */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-zinc-900 rounded-lg shadow-2xl border border-zinc-700 z-50 overflow-hidden"
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 overflow-hidden"
              style={{ width: 'max(100%, 400px)', maxWidth: '500px' }}>
           {/* Search Input in Dropdown */}
-          <div className="p-3 border-b border-zinc-800 bg-zinc-950">
+          <div className="p-3 border-b border-gray-100 bg-gray-50">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="City, airport, or place"
-                className="w-full pl-10 pr-4 py-2.5 text-sm border border-zinc-700 rounded-lg focus:outline-none focus:border-gray-400 bg-zinc-900"
+                className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 bg-white"
                 autoFocus
               />
             </div>
@@ -199,17 +199,17 @@ function LocationSearch({ value, onChange, placeholder, label, primaryColor, typ
           <div className="max-h-80 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-5 h-5 animate-spin text-zinc-500 mr-2" />
-                <span className="text-sm text-zinc-400">Searching...</span>
+                <RefreshCw className="w-5 h-5 animate-spin text-gray-400 mr-2" />
+                <span className="text-sm text-gray-500">Searching...</span>
               </div>
             ) : results.length === 0 ? (
               <div className="py-8 text-center">
                 {search.length >= 2 ? (
-                  <p className="text-sm text-zinc-400">No results found for "{search}"</p>
+                  <p className="text-sm text-gray-500">No results found for "{search}"</p>
                 ) : (
                   <div className="px-4">
-                    <p className="text-sm text-zinc-400 mb-2">Start typing to search</p>
-                    <p className="text-xs text-zinc-500">Search by city name, airport code, or country</p>
+                    <p className="text-sm text-gray-500 mb-2">Start typing to search</p>
+                    <p className="text-xs text-gray-400">Search by city name, airport code, or country</p>
                   </div>
                 )}
               </div>
@@ -220,33 +220,33 @@ function LocationSearch({ value, onChange, placeholder, label, primaryColor, typ
                     key={`${location.code}-${idx}`}
                     type="button"
                     onClick={() => handleSelect(location)}
-                    className={`w-full flex items-center gap-4 px-4 py-3 hover:bg-zinc-900 transition-colors text-left ${
-                      value === location.code ? 'bg-zinc-900' : ''
+                    className={`w-full flex items-center gap-4 px-4 py-3 hover:bg-blue-50 transition-colors text-left ${
+                      value === location.code ? 'bg-blue-50' : ''
                     }`}
                   >
                     {/* Icon based on type */}
                     <div 
                       className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        location.subType === 'AIRPORT' ? 'bg-zinc-800' : 'bg-zinc-800'
+                        location.subType === 'AIRPORT' ? 'bg-blue-100' : 'bg-gray-100'
                       }`}
                     >
                       {location.subType === 'AIRPORT' ? (
-                        <Plane className="w-5 h-5 text-white" />
+                        <Plane className="w-5 h-5 text-blue-600" />
                       ) : (
-                        <Building2 className="w-5 h-5 text-zinc-300" />
+                        <Building2 className="w-5 h-5 text-gray-600" />
                       )}
                     </div>
                     
                     {/* Location Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-white text-sm">{location.name}</span>
+                        <span className="font-semibold text-gray-900 text-sm">{location.name}</span>
                         <span className="px-1.5 py-0.5 text-xs font-medium rounded" 
                               style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}>
                           {location.code}
                         </span>
                       </div>
-                      <p className="text-xs text-zinc-400 truncate mt-0.5">
+                      <p className="text-xs text-gray-500 truncate mt-0.5">
                         {location.subType === 'AIRPORT' ? (
                           <>Airport • {location.fullName || location.name}</>
                         ) : (
@@ -256,7 +256,7 @@ function LocationSearch({ value, onChange, placeholder, label, primaryColor, typ
                     </div>
                     
                     {/* Country */}
-                    <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded flex-shrink-0">
+                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded flex-shrink-0">
                       {location.country}
                     </span>
                   </button>
@@ -280,50 +280,50 @@ function FlightCard({ flight, onSelect, dollarRate, primaryColor }) {
   const stops = segments.length - 1;
   
   return (
-    <div className="bg-zinc-900 rounded-lg border border-zinc-700 p-4 hover:shadow-none transition-all hover:border-zinc-600" data-testid="flight-card">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all hover:border-gray-300" data-testid="flight-card">
       <div className="flex flex-col md:flex-row md:items-center gap-4">
         {/* Airline Info */}
         <div className="flex items-center gap-3 md:w-28">
-          <div className="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center">
+          <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center">
             <Plane className="w-5 h-5" style={{ color: primaryColor }} />
           </div>
           <div>
-            <p className="font-semibold text-white text-sm">{firstSegment?.carrierCode || 'Airline'}</p>
-            <p className="text-xs text-zinc-400">{firstSegment?.number || ''}</p>
+            <p className="font-semibold text-gray-900 text-sm">{firstSegment?.carrierCode || 'Airline'}</p>
+            <p className="text-xs text-gray-500">{firstSegment?.number || ''}</p>
           </div>
         </div>
         
         {/* Flight Route */}
         <div className="flex-1 flex items-center gap-3">
           <div className="text-center">
-            <p className="text-lg font-bold text-white">{formatTime(firstSegment?.departure?.at)}</p>
+            <p className="text-lg font-bold text-gray-900">{formatTime(firstSegment?.departure?.at)}</p>
             <p className="text-sm font-medium" style={{ color: primaryColor }}>{firstSegment?.departure?.iataCode}</p>
           </div>
           
           <div className="flex-1 flex flex-col items-center px-2">
-            <p className="text-xs text-zinc-400 mb-1">{formatDuration(itinerary?.duration)}</p>
+            <p className="text-xs text-gray-500 mb-1">{formatDuration(itinerary?.duration)}</p>
             <div className="w-full flex items-center">
               <div className="w-2 h-2 rounded-full border-2" style={{ borderColor: primaryColor }} />
               <div className="flex-1 h-0.5 bg-gray-300 relative">
                 {stops > 0 && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-zinc-900" />
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-orange-500" />
                 )}
               </div>
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#18181b' }} />
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
             </div>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               {stops === 0 ? 'Direct' : `${stops} stop${stops > 1 ? 's' : ''}`}
             </p>
           </div>
           
           <div className="text-center">
-            <p className="text-lg font-bold text-white">{formatTime(lastSegment?.arrival?.at)}</p>
+            <p className="text-lg font-bold text-gray-900">{formatTime(lastSegment?.arrival?.at)}</p>
             <p className="text-sm font-medium" style={{ color: primaryColor }}>{lastSegment?.arrival?.iataCode}</p>
           </div>
         </div>
         
         {/* Price & Select */}
-        <div className="flex items-center gap-4 md:flex-col md:items-end border-t md:border-t-0 md:border-l border-zinc-800 pt-3 md:pt-0 md:pl-4">
+        <div className="flex items-center gap-4 md:flex-col md:items-end border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4">
           <div className="text-right">
             <p className="text-xl font-bold" style={{ color: primaryColor }}>
               {formatCurrencyNGN(price?.total, dollarRate)}
@@ -332,7 +332,7 @@ function FlightCard({ flight, onSelect, dollarRate, primaryColor }) {
           <button
             onClick={() => onSelect(flight)}
             className="px-5 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
-            style={{ backgroundColor: '#18181b' }}
+            style={{ backgroundColor: primaryColor }}
             data-testid="flight-select-btn"
           >
             Select
@@ -341,7 +341,7 @@ function FlightCard({ flight, onSelect, dollarRate, primaryColor }) {
       </div>
       
       {/* Additional Info */}
-      <div className="mt-3 pt-3 border-t border-zinc-800 flex flex-wrap gap-4 text-xs text-zinc-400">
+      <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-4 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <Luggage className="w-3 h-3" />
           {flight.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.includedCheckedBags?.weight || 'Check baggage policy'}
@@ -366,8 +366,8 @@ function HotelCard({ hotel, onSelect, dollarRate, primaryColor }) {
   const imageUrl = `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop&q=80`;
   
   return (
-    <div className="bg-zinc-900 rounded-lg border border-zinc-700 overflow-hidden hover:shadow-none transition-all hover:border-zinc-600 group" data-testid="hotel-card">
-      <div className="relative h-44 bg-zinc-700 overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:border-gray-300 group" data-testid="hotel-card">
+      <div className="relative h-44 bg-gray-200 overflow-hidden">
         <img 
           src={imageUrl}
           alt={hotelName}
@@ -376,22 +376,22 @@ function HotelCard({ hotel, onSelect, dollarRate, primaryColor }) {
         />
         <div 
           className="absolute top-2 right-2 text-white px-2 py-1 rounded text-xs font-semibold"
-          style={{ backgroundColor: '#18181b' }}
+          style={{ backgroundColor: primaryColor }}
         >
           {rating}.0
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-white mb-1 line-clamp-1 text-sm">{hotelName}</h3>
+        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1 text-sm">{hotelName}</h3>
         <div className="flex items-center gap-1 mb-2">
           {[...Array(rating)].map((_, i) => (
             <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
           ))}
           {[...Array(5 - rating)].map((_, i) => (
-            <Star key={i} className="w-3 h-3 text-zinc-600" />
+            <Star key={i} className="w-3 h-3 text-gray-300" />
           ))}
         </div>
-        <p className="text-xs text-zinc-400 mb-3 flex items-center gap-1">
+        <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
           <MapPin className="w-3 h-3" />
           {cityName}
         </p>
@@ -402,12 +402,12 @@ function HotelCard({ hotel, onSelect, dollarRate, primaryColor }) {
               <p className="text-lg font-bold" style={{ color: primaryColor }}>
                 {formatCurrencyNGN(price?.total, dollarRate)}
               </p>
-              <p className="text-xs text-zinc-400">per night</p>
+              <p className="text-xs text-gray-500">per night</p>
             </div>
             <button
               onClick={() => onSelect(hotel)}
               className="px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
-              style={{ backgroundColor: '#18181b' }}
+              style={{ backgroundColor: primaryColor }}
               data-testid="hotel-book-btn"
             >
               Book
@@ -425,17 +425,17 @@ function TransferCard({ transfer, onSelect, dollarRate, primaryColor }) {
   const vehicle = transfer.vehicle;
   
   return (
-    <div className="bg-zinc-900 rounded-lg border border-zinc-700 p-4 hover:shadow-none transition-all hover:border-zinc-600" data-testid="transfer-card">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all hover:border-gray-300" data-testid="transfer-card">
       <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0">
+        <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
           <Car className="w-8 h-8" style={{ color: primaryColor }} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-white">{vehicle?.description || transfer.transferType}</h3>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h3 className="font-semibold text-gray-900">{vehicle?.description || transfer.transferType}</h3>
+          <p className="text-sm text-gray-500 mt-1">
             {vehicle?.seats?.length || '4'} seats • {transfer.transferType}
           </p>
-          <div className="flex items-center gap-2 mt-2 text-xs text-zinc-400">
+          <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
             <Clock className="w-3 h-3" />
             <span>Est. {transfer.duration || 'varies'}</span>
           </div>
@@ -447,7 +447,7 @@ function TransferCard({ transfer, onSelect, dollarRate, primaryColor }) {
           <button
             onClick={() => onSelect(transfer)}
             className="mt-2 px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
-            style={{ backgroundColor: '#18181b' }}
+            style={{ backgroundColor: primaryColor }}
             data-testid="transfer-book-btn"
           >
             Book
@@ -463,8 +463,8 @@ function ActivityCard({ activity, onSelect, dollarRate, primaryColor }) {
   const imageUrl = activity.pictures?.[0] || 'https://images.unsplash.com/photo-1499678329028-101435549a4e?w=400&h=300&fit=crop&q=80';
   
   return (
-    <div className="bg-zinc-900 rounded-lg border border-zinc-700 overflow-hidden hover:shadow-none transition-all hover:border-zinc-600 group" data-testid="activity-card">
-      <div className="relative h-44 bg-zinc-700 overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all hover:border-gray-300 group" data-testid="activity-card">
+      <div className="relative h-44 bg-gray-200 overflow-hidden">
         <img 
           src={imageUrl}
           alt={activity.name || 'Activity'}
@@ -473,8 +473,8 @@ function ActivityCard({ activity, onSelect, dollarRate, primaryColor }) {
         />
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-white mb-1 line-clamp-2 text-sm">{activity.name || 'Activity'}</h3>
-        <p className="text-xs text-zinc-400 mb-3 line-clamp-2">{activity.shortDescription || ''}</p>
+        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 text-sm">{activity.name || 'Activity'}</h3>
+        <p className="text-xs text-gray-500 mb-3 line-clamp-2">{activity.shortDescription || ''}</p>
         
         <div className="flex items-end justify-between">
           <div>
@@ -487,7 +487,7 @@ function ActivityCard({ activity, onSelect, dollarRate, primaryColor }) {
           <button
             onClick={() => onSelect(activity)}
             className="px-4 py-2 text-white rounded-md font-medium hover:opacity-90 transition-colors text-sm"
-            style={{ backgroundColor: '#18181b' }}
+            style={{ backgroundColor: primaryColor }}
             data-testid="activity-view-btn"
           >
             View
@@ -506,15 +506,15 @@ function PinModal({ isOpen, onClose, onConfirm, loading, primaryColor }) {
   
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-zinc-900 rounded-lg max-w-sm w-full p-6 shadow-xl">
+      <div className="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Enter Transaction PIN</h3>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+          <h3 className="text-lg font-semibold text-gray-900">Enter Transaction PIN</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <p className="text-sm text-zinc-400 mb-4">Enter your 4-digit PIN to confirm this booking</p>
+        <p className="text-sm text-gray-500 mb-4">Enter your 4-digit PIN to confirm this booking</p>
         
         <input
           type="password"
@@ -531,7 +531,7 @@ function PinModal({ isOpen, onClose, onConfirm, loading, primaryColor }) {
           onClick={() => onConfirm(pin)}
           disabled={pin.length !== 4 || loading}
           className="w-full py-3 text-white rounded-lg font-semibold disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90 transition-colors"
-          style={{ backgroundColor: '#18181b' }}
+          style={{ backgroundColor: primaryColor }}
           data-testid="confirm-booking-btn"
         >
           {loading ? (
@@ -556,9 +556,9 @@ function MultiCitySegment({ index, segment, onChange, onRemove, primaryColor, ca
   const minDate = new Date().toISOString().split('T')[0];
   
   return (
-    <div className="flex flex-col lg:flex-row gap-3 items-end p-4 bg-zinc-950 rounded-lg mb-3">
+    <div className="flex flex-col lg:flex-row gap-3 items-end p-4 bg-gray-50 rounded-lg mb-3">
       <div className="flex items-center justify-between w-full lg:w-auto mb-2 lg:mb-0">
-        <span className="text-sm font-medium text-zinc-300">Flight {index + 1}</span>
+        <span className="text-sm font-medium text-gray-600">Flight {index + 1}</span>
         {canRemove && (
           <button
             onClick={onRemove}
@@ -586,13 +586,13 @@ function MultiCitySegment({ index, segment, onChange, onRemove, primaryColor, ca
       />
       
       <div className="flex-1 min-w-[140px]">
-        <label className="block text-xs font-medium text-zinc-400 mb-1">Departure</label>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Departure</label>
         <input
           type="date"
           value={segment.date}
           onChange={(e) => onChange({ ...segment, date: e.target.value })}
           min={minDate}
-          className="w-full p-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 text-sm"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
           style={{ '--tw-ring-color': primaryColor }}
         />
       </div>
@@ -929,13 +929,13 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
   if (!travelEnabled) {
     return (
       <div className="space-y-6" data-testid="travel-section">
-        <h2 className="text-2xl font-bold text-white">Travel Booking</h2>
-        <div className="bg-zinc-900 rounded-xl p-8 text-center border border-zinc-700">
-          <div className="w-16 h-16 mx-auto rounded-full bg-zinc-800 flex items-center justify-center mb-4">
+        <h2 className="text-2xl font-bold text-gray-900">Travel Booking</h2>
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 text-center border border-gray-200">
+          <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 flex items-center justify-center mb-4">
             <Plane className="w-8 h-8" style={{ color: themeColor }} />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Travel Booking Coming Soon</h3>
-          <p className="text-zinc-300 max-w-md mx-auto">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Travel Booking Coming Soon</h3>
+          <p className="text-gray-600 max-w-md mx-auto">
             Book flights, hotels, car rentals, and experiences all in one place. This feature will be available soon.
           </p>
         </div>
@@ -962,8 +962,8 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium whitespace-nowrap transition-all text-sm ${
                   activeTab === tab.id 
-                    ? 'bg-zinc-900/20 border border-white' 
-                    : 'hover:bg-zinc-900/10 border border-transparent'
+                    ? 'bg-white/20 border border-white' 
+                    : 'hover:bg-white/10 border border-transparent'
                 }`}
                 data-testid={`tab-${tab.id}`}
               >
@@ -984,7 +984,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
       </div>
       
       {/* Search Forms - White Card */}
-      <div className="bg-zinc-900 rounded-lg border border-zinc-600 shadow-none p-4 -mt-12 relative z-10" data-testid="search-form">
+      <div className="bg-white rounded-lg border border-gray-300 shadow-lg p-4 -mt-12 relative z-10" data-testid="search-form">
         
         {/* Flights Search */}
         {activeTab === 'flights' && (
@@ -999,7 +999,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   className="w-4 h-4"
                   style={{ accentColor: themeColor }}
                 />
-                <span className="text-sm font-medium text-zinc-200">Round trip</span>
+                <span className="text-sm font-medium text-gray-700">Round trip</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -1009,7 +1009,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   className="w-4 h-4"
                   style={{ accentColor: themeColor }}
                 />
-                <span className="text-sm font-medium text-zinc-200">One way</span>
+                <span className="text-sm font-medium text-gray-700">One way</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -1019,7 +1019,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                   className="w-4 h-4"
                   style={{ accentColor: themeColor }}
                 />
-                <span className="text-sm font-medium text-zinc-200">Multi-city</span>
+                <span className="text-sm font-medium text-gray-700">Multi-city</span>
               </label>
             </div>
             
@@ -1041,7 +1041,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 {multiCitySegments.length < 6 && (
                   <button
                     onClick={addMultiCitySegment}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-zinc-900 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
                     style={{ color: themeColor }}
                   >
                     <Plus className="w-4 h-4" />
@@ -1051,9 +1051,9 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 
                 <div className="flex flex-wrap gap-3 items-end pt-2">
                   <div className="flex-1 min-w-[160px]">
-                    <label className="block text-xs font-medium text-zinc-400 mb-1">Travelers</label>
-                    <div className="flex items-center gap-2 p-3 border border-zinc-600 rounded-lg">
-                      <Users className="w-4 h-4 text-zinc-500" />
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Travelers</label>
+                    <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg">
+                      <Users className="w-4 h-4 text-gray-400" />
                       <select
                         value={passengers.adults}
                         onChange={(e) => setPassengers(p => ({ ...p, adults: parseInt(e.target.value) }))}
@@ -1092,10 +1092,10 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 {/* Swap Button */}
                 <button
                   onClick={swapLocations}
-                  className="hidden lg:flex w-10 h-10 bg-zinc-900 border border-zinc-600 rounded-full items-center justify-center hover:bg-zinc-900 transition-colors flex-shrink-0 mb-1"
+                  className="hidden lg:flex w-10 h-10 bg-white border border-gray-300 rounded-full items-center justify-center hover:bg-gray-50 transition-colors flex-shrink-0 mb-1"
                   data-testid="swap-locations-btn"
                 >
-                  <ArrowLeftRight className="w-4 h-4 text-zinc-400" />
+                  <ArrowLeftRight className="w-4 h-4 text-gray-500" />
                 </button>
                 
                 <LocationSearch
@@ -1108,13 +1108,13 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 
                 {/* Dates */}
                 <div className="flex-1 min-w-[140px]">
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Depart</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Depart</label>
                   <input
                     type="date"
                     value={departureDate}
                     onChange={(e) => setDepartureDate(e.target.value)}
                     min={minDate}
-                    className="w-full p-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
                     style={{ '--tw-ring-color': themeColor }}
                     data-testid="departure-date"
                   />
@@ -1122,13 +1122,13 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 
                 {tripType === 'roundtrip' && (
                   <div className="flex-1 min-w-[140px]">
-                    <label className="block text-xs font-medium text-zinc-400 mb-1">Return</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Return</label>
                     <input
                       type="date"
                       value={returnDate}
                       onChange={(e) => setReturnDate(e.target.value)}
                       min={departureDate || minDate}
-                      className="w-full p-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
                       style={{ '--tw-ring-color': themeColor }}
                       data-testid="return-date"
                     />
@@ -1137,9 +1137,9 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
                 
                 {/* Passengers & Class */}
                 <div className="flex-1 min-w-[160px]">
-                  <label className="block text-xs font-medium text-zinc-400 mb-1">Travelers & Class</label>
-                  <div className="flex items-center gap-2 p-3 border border-zinc-600 rounded-lg">
-                    <Users className="w-4 h-4 text-zinc-500" />
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Travelers & Class</label>
+                  <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg">
+                    <Users className="w-4 h-4 text-gray-400" />
                     <select
                       value={passengers.adults}
                       onChange={(e) => setPassengers(p => ({ ...p, adults: parseInt(e.target.value) }))}
@@ -1181,33 +1181,33 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
             />
             
             <div className="flex-1 min-w-[140px]">
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Check-in</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Check-in</label>
               <input
                 type="date"
                 value={checkInDate}
                 onChange={(e) => setCheckInDate(e.target.value)}
                 min={minDate}
-                className="w-full p-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
                 style={{ '--tw-ring-color': themeColor }}
               />
             </div>
             
             <div className="flex-1 min-w-[140px]">
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Check-out</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Check-out</label>
               <input
                 type="date"
                 value={checkOutDate}
                 onChange={(e) => setCheckOutDate(e.target.value)}
                 min={checkInDate || minDate}
-                className="w-full p-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
                 style={{ '--tw-ring-color': themeColor }}
               />
             </div>
             
             <div className="flex-1 min-w-[160px]">
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Guests & Rooms</label>
-              <div className="flex items-center gap-2 p-3 border border-zinc-600 rounded-lg">
-                <Users className="w-4 h-4 text-zinc-500" />
+              <label className="block text-xs font-medium text-gray-500 mb-1">Guests & Rooms</label>
+              <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg">
+                <Users className="w-4 h-4 text-gray-400" />
                 <select
                   value={hotelGuests}
                   onChange={(e) => setHotelGuests(parseInt(e.target.value))}
@@ -1253,13 +1253,13 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
             />
             
             <div className="flex-1 min-w-[140px]">
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Pick-up Date</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Pick-up Date</label>
               <input
                 type="date"
                 value={transferDate}
                 onChange={(e) => setTransferDate(e.target.value)}
                 min={minDate}
-                className="w-full p-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 text-sm"
                 style={{ '--tw-ring-color': themeColor }}
               />
             </div>
@@ -1308,7 +1308,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         {activeTab === 'flights' && flights.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-white">{flights.length} flights found</h3>
+              <h3 className="font-semibold text-gray-900">{flights.length} flights found</h3>
             </div>
             <div className="space-y-3">
               {flights.map((flight, idx) => (
@@ -1326,7 +1326,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         
         {activeTab === 'hotels' && hotels.length > 0 && (
           <div className="space-y-4">
-            <h3 className="font-semibold text-white">{hotels.length} properties found</h3>
+            <h3 className="font-semibold text-gray-900">{hotels.length} properties found</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {hotels.map((hotel, idx) => (
                 <HotelCard
@@ -1343,7 +1343,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         
         {activeTab === 'transfers' && transfers.length > 0 && (
           <div className="space-y-4">
-            <h3 className="font-semibold text-white">{transfers.length} vehicles available</h3>
+            <h3 className="font-semibold text-gray-900">{transfers.length} vehicles available</h3>
             <div className="space-y-3">
               {transfers.map((transfer, idx) => (
                 <TransferCard
@@ -1360,7 +1360,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         
         {activeTab === 'experiences' && activities.length > 0 && (
           <div className="space-y-4">
-            <h3 className="font-semibold text-white">{activities.length} experiences found</h3>
+            <h3 className="font-semibold text-gray-900">{activities.length} experiences found</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activities.map((activity, idx) => (
                 <ActivityCard
@@ -1379,7 +1379,7 @@ export function TravelSection({ axiosConfig, fetchProfile, user, primaryColor = 
         {loading && (
           <div className="text-center py-12">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: themeColor }} />
-            <p className="text-zinc-400">Searching for the best deals...</p>
+            <p className="text-gray-500">Searching for the best deals...</p>
           </div>
         )}
       </div>
